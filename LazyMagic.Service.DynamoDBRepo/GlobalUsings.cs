@@ -1,0 +1,10 @@
+﻿global using Amazon.DynamoDBv2;
+global using Amazon.DynamoDBv2.Model;
+global using Amazon.Runtime;
+global using LazyMagic.Shared;
+global using Microsoft.AspNetCore.Mvc;
+global using Newtonsoft.Json;
+global using System;
+global using System.Collections.Generic;
+global using System.Linq;
+global using System.Threading.Tasks;

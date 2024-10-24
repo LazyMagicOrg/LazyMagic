@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="$(SolutionDir)CommonPackageHandling.targets" />
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>12.0</LangVersion>
+
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+		<Description>Gnerate LazyMagic ViewModel Helper Classes</Description>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+		<IncludeBuildOutput>true</IncludeBuildOutput>
+	</PropertyGroup>
+	<ItemGroup>
+	  <Content Remove="LazyMagicModelValidatorGenerator.cs" />
+	  <Content Remove="LzModelSyntaxReceiver.cs" />
+	  <Content Remove="LzModelValidatorSyntaxReceiver.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.CodeAnalysis" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
+		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" PrivateAssets="all" />
+	</ItemGroup>
+	<ItemGroup>
+		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+		<None Include="$(OutputPath)\$(AssemblyName).pdb" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+	</ItemGroup>
+</Project>

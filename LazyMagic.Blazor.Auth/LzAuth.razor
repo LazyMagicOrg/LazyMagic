@@ -1,0 +1,241 @@
+﻿@namespace LazyMagic.Blazor
+@inherits LzComponentBasePassViewModel<IAuthProcess>
+@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
+
+@if(ViewModel is not null)
+{
+    <EditForm Model="ViewModel" >
+        @if (ViewModel.IsNotLongBusy)
+        {
+            <div class="lzauth-container">
+
+                @if (ViewModel.CurrentChallengeIsLogin)
+                {
+                    <div class="form-group">
+                        <label for="login">@Msg("AuthComponent_LoginLabel")</label>
+                        <InputText id="login" class="form-control" @bind-Value="ViewModel.Login" @oninput="OnInput" @onkeydown="VerifyKey" @onfocus="CheckFormatOnFocus" />
+                        <small id="loginHelp" class="form-text text-muted">@Msg(@ViewModel.LoginFormatMessage!)</small>
+                    </div>
+                }
+                @if (ViewModel.CurrentChallengeIsNewLogin)
+                {
+                    <div class="form-group">
+                        <label for="login">@Msg("AuthComponent_NewLoginLabel")</label>
+                        <InputText id="newlogin" class="form-control" @bind-Value="ViewModel.NewLogin" @oninput="OnInput" @onkeydown="VerifyKey" @onfocus="CheckFormatOnFocus" />
+                        <small id="loginHelp" class="form-text text-muted">@Msg(@ViewModel.NewLoginFormatMessage!)</small>
+                    </div>
+                }
+                @if (ViewModel.CurrentChallengeIsPassword)
+                {
+                    <div class="form-group">
+                        <label for="password">@Msg("AuthComponent_PasswordLabel")</label>
+                        <InputText  id="password" type="password" class="form-control" @bind-Value="ViewModel.Password" @oninput="OnInput" @onkeydown="VerifyKey" @onfocus="CheckFormatOnFocus" />
+                        <small id="loginHelp" class="form-text text-muted">@Msg(@ViewModel.PasswordFormatMessage!)</small>
+                    </div>
+
+                }
+                @if (ViewModel.CurrentChallengeIsNewPassword)
+                {
+                    <div class="form-group">
+                        <label for="newpassword">@Msg("AuthComponent_NewPasswordLabel")</label>
+                        <InputText  id="newpassword" type="password" class="form-control" @bind-Value="ViewModel.NewPassword" @oninput="OnInput" @onkeydown="VerifyKey" @onfocus="CheckFormatOnFocus" />
+                        <small id="loginHelp" class="form-text text-muted">@Msg(@ViewModel.NewPasswordFormatMessage!)</small>
+                    </div>
+
+                }
+                @if (ViewModel.CurrentChallengeIsEmail)
+                {
+                    <div class="form-group">
+                        <label for="email">@Msg("AuthComponent_EmailLabel")</label>
+                        <InputText  id="email" class="form-control" @bind-Value="ViewModel.Email" @oninput="OnInput" @onkeydown="VerifyKey" @onfocus="CheckFormatOnFocus" />
+                        <small id="loginHelp" class="form-text text-muted">@Msg(@ViewModel.EmailFormatMessage!)</small>
+                    </div>
+
+                }
+                @if (ViewModel.CurrentChallengeIsNewEmail)
+                {
+                    <div class="form-group">
+                        <label for="newemail">@Msg("AuthComponent_NewEmailLabel")</label>
+                        <InputText id="newemail" class="form-control" @bind-Value="ViewModel.NewEmail" @oninput="OnInput" @onkeydown="VerifyKey" @onfocus="CheckFormatOnFocus" />
+                        <small id="loginHelp" class="form-text text-muted">@Msg(@ViewModel.NewEmailFormatMessage!)</small>
+                    </div>
+                }
+                @if (ViewModel.CurrentChallengeIsPhone)
+                {
+                    <div class="form-group">
+                        <label for="phone">@Msg("AuthComponent_PhoneLabel")</label>
+                        <InputText id="phone" class="form-control" @bind-Value="ViewModel.Phone" @oninput="OnInput" @onkeydown="VerifyKey" @onfocus="CheckFormatOnFocus" />
+                        <small id="loginHelp" class="form-text text-muted">@Msg(@ViewModel.PhoneFormatMessage!)</small>
+                    </div>
+
+                }
+                @if (ViewModel.CurrentChallengeIsNewPhone)
+                {
+                    <div class="form-group">
+                        <label for="newphone">@Msg("AuthComponent_NewPhoneLabel")</label>
+                        <InputText id="newphone" class="form-control" @bind-Value="ViewModel.NewPhone" @oninput="OnInput" @onkeydown="VerifyKey" @onfocus="CheckFormatOnFocus" />
+                        <small id="loginHelp" class="form-text text-muted">@Msg(@ViewModel.NewPhoneFormatMessage!)</small>
+                    </div>
+                }
+                @if (ViewModel.CurrentChallengeIsCode)
+                {
+                    <div class="form-group">
+                        <label for="code">@Msg("AuthComponent_CodeLabel")</label>
+                        <InputText id="code" class="form-control" @bind-Value="ViewModel.Code" @oninput="OnInput" @onkeydown="VerifyKey" @onfocus="CheckFormatOnFocus" />
+                        <small id="loginHelp" class="form-text text-muted">@Msg(@ViewModel.CodeFormatMessage!)</small>
+                    </div>
+                }
+            </div>
+            <div>
+                @if (ViewModel.CanSignIn)
+                {
+                    <button type="button" style="@btnstyle" class="lz-btn btn btn-secondary" @onclick="@(async() => await ViewModel.StartSignInAsync())">@Msg("AuthComponent_SignIn")</button>
+                }
+                @if (ViewModel.CanSignUp)
+                {
+                    <button type="button" style="@btnstyle" class="lz-btn btn btn-secondary" @onclick="@(async()=>await ViewModel.StartSignUpAsync())">@Msg("AuthComponent_SignUp")</button>
+                }
+                @if (ViewModel.CanResetPassword)
+                {
+                    <button type="button" style="@btnstyle" class="lz-btn btn btn-secondary" @onclick="@(async()=>await ViewModel.StartResetPasswordAsync())">@Msg("AuthComponent_ResetPassword")</button>
+                }
+                @if (ViewModel.CanUpdateEmail)
+                {
+                    <button type="button" style="@btnstyle" class="lz-btn btn btn-secondary" @onclick="@(async()=>await ViewModel.StartUpdateEmailAsync())">@Msg("AuthComponent_UpdateEmail")</button>
+                }
+                @if (ViewModel.CanUpdatePassword)
+                {
+                    <button type="button" style="@btnstyle" class="lz-btn btn btn-secondary" @onclick="@(async()=>await ViewModel.StartUpdatePasswordAsync())">@Msg("AuthComponent_UpdatePassword")</button>
+                }
+                @if (ViewModel.CanUpdatePhone)
+                {
+                    <button type="button" style="@btnstyle" class="lz-btn btn btn-secondary" @onclick="@(async()=>await ViewModel.StartUpdatePhoneAsync())">@Msg("AuthComponent_UpdatePhone")</button>
+                }
+                @if (ViewModel.CanSignOut)
+                {
+                    <button type="button" style="@btnstyle" class="lz-btn btn btn-secondary" @onclick="@(async() => await ViewModel.SignOutAsync())">@Msg("AuthComponent_SignOut")</button>
+                } 
+                @if (ViewModel.CanResendCode)
+                {
+                    <button type="button" style="@btnstyle" class="lz-btn btn btn-secondary" @onclick="@(async()=>await ViewModel.ResendCodeAsync())">@Msg("AuthComponent_ResendCode")</button>
+                }
+                @if (ViewModel.CanCancel)
+                {
+                    <button style="@btnstyle" type="button" class="btn btn-secondary" @onclick="@(async()=>
+                    { 
+                        ViewModel.ClearAllFields = true;
+                        await ViewModel.CancelAsync();
+                    })"
+                    disabled="@cancelButtonDisabled">
+                        @Msg("AuthComponent_Cancel")
+                    </button>
+                }
+
+                @if (ViewModel.CanNext)
+                {
+                    <button style="@btnstyle" type="button" class="btn btn-secondary" @onclick="@VerifyNoArg">
+                        @Msg("AuthComponent_Next")
+                    </button>
+                }
+            </div>
+        } else
+        {
+            <div class="busy-indicator">
+                <div class="spinner">
+                </div>
+            </div>
+        }
+    </EditForm>
+}
+
+
+@code {
+    private bool cancelButtonDisabled = false;
+    const KeyboardEventArgs emptyKeyboardEventArgs = null;
+    private IJSObjectReference? lzauth;
+    private string btnstyle = "margin: 5px 5px 5px 5px;"; // isolated css not working as expected when wrapped in a Blazorise Component so just hit it with a hammer
+
+    protected override async Task OnInitializedAsync()
+    {
+        ViewModel!.IsChatty = true;
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if(firstRender)
+        {
+            lzauth = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/LazyMagic.Blazor/lzauth.js");
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+
+        bool isActiveElementTabStop = await IsActiveElementTabStop();
+        if(!isActiveElementTabStop) 
+        {
+            switch(ViewModel!.CurrentChallenge)
+            {
+                case AuthChallengeEnum.Login:
+                    await Focus("login");
+                    break;
+                case AuthChallengeEnum.NewLogin:
+                    await Focus("newLogin");
+                    break;
+                case AuthChallengeEnum.Password:
+                    await Focus("password");
+                    break;
+            }
+        }
+
+    }
+
+    private void OnInput(ChangeEventArgs e)
+    {
+        ViewModel!.CheckFormat(e.Value!.ToString());
+    }
+
+    protected async Task VerifyNoArg()
+    {
+        await ViewModel!.Verify();
+    }
+
+    protected async Task VerifyKey(KeyboardEventArgs e)
+    {
+
+        if (e == null || e.Key == "Enter" || e.Key == "Tab")
+        {
+            await ViewModel!.Verify();
+        }
+    }
+    protected void CheckFormatOnFocus(FocusEventArgs e)
+    {
+        ViewModel!.CheckFormat();
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (lzauth is not null)
+        {
+            await lzauth.DisposeAsync();
+        }
+    }
+    private Task Focus(string id)
+    {
+        lzauth!.InvokeVoidAsync("focusElement", id);
+        return Task.CompletedTask;
+    }
+
+    private async Task<string?> ActiveElement()
+    {
+        if (lzauth is null) return null;
+        return await lzauth!.InvokeAsync<string?>("activeElement");
+    }
+
+    private async Task<bool> IsActiveElementTabStop()
+    {
+        if (lzauth is null) return false;
+        var result = await lzauth!.InvokeAsync<bool>("isActiveElementTabStop");
+        return result;
+    }
+}

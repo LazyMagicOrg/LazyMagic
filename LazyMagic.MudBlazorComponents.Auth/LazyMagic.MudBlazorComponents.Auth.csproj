@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+	<Import Project="$(SolutionDir)CommonPackageHandling.targets" />
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<Description>LazyMagic MudBlazor Auth Components</Description>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+	<ItemGroup>
+	  <Content Remove="Config\ConfigureLazyMagicMudBlazorComponentsMessages.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\LazyMagic.MudBlazor.Components\LazyMagic.MudBlazor.Components.csproj" />
+		<ProjectReference Include="..\LazyMagic.Client.ViewModels.Auth\LazyMagic.Client.ViewModels.Auth.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="wwwroot\" />
+	</ItemGroup>
+</Project>

@@ -1,0 +1,44 @@
+<Project>
+    <PropertyGroup>
+        <!-- PetStore Solution Dependencies
+            Important: When you update The Directory.Packages.props file, you 
+            must update this file as well so solutions that consume LazyMagic 
+            projects will have the correct versions and avoid package version 
+            conflicts.
+        -->
+        <Amazon_Extensions_CognitoAuthentication>2.5.2</Amazon_Extensions_CognitoAuthentication>
+		<AwsSignatureVersion4>4.0.1</AwsSignatureVersion4>
+		<AWSSDK_CloudFormation>3.7.302.4</AWSSDK_CloudFormation>
+        <AWSSDK_SecurityToken>3.7.300.18</AWSSDK_SecurityToken>
+		<Blazorise>1.4.0</Blazorise>
+		<Blazorise_Bootstrap5>1.4.0</Blazorise_Bootstrap5>
+		<Blazorise_Components>1.4.0</Blazorise_Components>
+        <CommandLineParser>2.9.1</CommandLineParser>
+		<coverlet_collector>6.0.0</coverlet_collector>
+        <DeepCloner>0.10.4</DeepCloner>
+        <DynamicData>8.3.27</DynamicData>
+        <FluentValidation_DependencyInjectionExtensions>11.8.1</FluentValidation_DependencyInjectionExtensions>
+        <FluentValidation>11.8.1</FluentValidation>
+        <JsonSubTypes>2.0.1</JsonSubTypes>
+        <MailKit>4.3.0</MailKit>
+        <Microsoft_AspNetCore_Components_Forms>8.0.0</Microsoft_AspNetCore_Components_Forms>
+        <Microsoft_AspNetCore_Components_Web>8.0.0</Microsoft_AspNetCore_Components_Web>
+		<Microsoft_CodeAnalysis>4.8.0</Microsoft_CodeAnalysis>
+		<Microsoft_CodeAnalysis_Common>4.8.0</Microsoft_CodeAnalysis_Common>
+		<Microsoft_CodeAnalysis_CSharp>4.8.0</Microsoft_CodeAnalysis_CSharp>
+		<Microsoft_CodeAnalysis_Workspaces_Common>4.8.0</Microsoft_CodeAnalysis_Workspaces_Common>
+		<Microsoft_Maui_Controls>8.0.3</Microsoft_Maui_Controls>
+		<Microsoft_Extensions_Configuration>8.0.0</Microsoft_Extensions_Configuration>
+		<Microsoft_Extensions_Configuration_Binder>8.0.0</Microsoft_Extensions_Configuration_Binder>
+        <Microsoft_Extensions_DependencyInjection>8.0.0</Microsoft_Extensions_DependencyInjection>
+		<Microsoft_NET_Test_Sdk>17.8.0</Microsoft_NET_Test_Sdk>
+		<MSTest_TestAdaptor>3.1.1</MSTest_TestAdaptor>
+		<MSTEST_TestFramework>3.1.1</MSTEST_TestFramework>
+		<ReactiveUI>19.5.1</ReactiveUI>
+		<ReactiveUI_Blazor>19.5.1</ReactiveUI_Blazor>
+        <ReactiveUI_Fody>19.5.1</ReactiveUI_Fody>
+        <System_ComponentModel_Annotations>5.0.0</System_ComponentModel_Annotations>
+        <System_IdentityModel_Tokens_Jwt>7.0.0</System_IdentityModel_Tokens_Jwt>
+        <YamlDotNet>13.1.1</YamlDotNet>
+    </PropertyGroup>
+</Project>

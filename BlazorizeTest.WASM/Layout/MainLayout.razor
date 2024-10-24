@@ -1,0 +1,27 @@
+﻿@namespace BlazorizeTest
+@inherits LzLayoutComponentBaseInjectViewModel<ISessionsViewModel>
+<Layout>
+    <LayoutHeader Fixed>
+        <Div>Hello</Div>
+    </LayoutHeader>
+    <Layout Sider>
+        <LayoutSider>
+            <LayoutSiderContent>
+                <NavMenu />
+            </LayoutSiderContent>
+        </LayoutSider>
+        <Layout>
+            <LayoutContent Padding="Padding.Is4.OnX.Is4.FromTop">
+                @Body
+            </LayoutContent>
+        </Layout>
+    </Layout>
+</Layout>
+
+@code {
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        return base.OnAfterRenderAsync(firstRender);
+    }
+
+}

@@ -1,0 +1,49 @@
+﻿@*
+@inherits CoreComponentBase<DevConnectViewModel>
+
+<Card Margin="Margin.Is1">
+        <CardHeader>Connection Options</CardHeader>
+        <CardBody>
+            <Field>
+                <FieldLabel>API</FieldLabel>
+                <Select TValue="string"
+                    @bind-SelectedValue="@ViewModel!.RunConfig.Apis">
+                    @foreach (var item in ViewModel.RunConfig.AllowedApis)
+                    {
+                        <SelectItem Value="@item">@item</SelectItem>
+                    }
+                </Select>
+            </Field>
+
+            <Field>
+                <FieldLabel>Assets</FieldLabel>
+                <Select TValue="string"
+                    @bind-SelectedValue="@ViewModel!.RunConfig.Assets">
+                    @foreach (var item in ViewModel.RunConfig.AllowedAssets)
+                    {
+                        <SelectItem Value="@item">@item</SelectItem>
+                    }
+                </Select>
+            </Field>
+
+            <Field>
+                <FieldLabel>Tenant</FieldLabel>
+                <Select TValue="string"
+                    @bind-SelectedValue="@ViewModel!.RunConfig.Tenant">
+                    @foreach(var item in ViewModel.Tenants)
+                    {
+                        <SelectItem Value="@item.Key">@item.Key</SelectItem>
+                    }
+                </Select>
+            </Field>
+        </CardBody>
+</Card>
+
+
+@code {
+    // Using Direct Binding to Model instance in ViewModel
+    // This is perhaps the most trival use-case possible because:
+    // - We only change the values in memory (there is never a write)
+    // - No other view model needs to observe this change.
+}
+*@

@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+	<Import Project="$(SolutionDir)CommonPackageHandling.targets" />
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+
+		<Description>LazyMagic Blazorise Auth component</Description>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+		<RootNamespace>LazyMagic.BlazoriseComponents</RootNamespace>
+	</PropertyGroup>
+	<ItemGroup>
+	  <Content Remove="Config\ConfigureLazyMagicBlazoriseComponentsAuthMessages.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\LazyMagic.BlazoriseComponents\LazyMagic.BlazoriseComponents.csproj" />
+	  <ProjectReference Include="..\LazyMagic.Client.ViewModels.Auth\LazyMagic.Client.ViewModels.Auth.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <UpToDateCheckInput Remove="_imports.razor" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <_ContentIncludedByDefault Remove="_imports.razor" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="wwwroot\" />
+	</ItemGroup>
+
+</Project>

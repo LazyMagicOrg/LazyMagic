@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="$(SolutionDir)CommonPackageHandling.targets" />
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<UserSecretsId>76925471-91ff-459d-8f16-a8b8c691549b</UserSecretsId>
+		<Description>Generalized authentication model with support for AWS Cognito - V2.</Description>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		<Nullable>enable</Nullable>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+	<ItemGroup>
+		<Content Remove="Creds.cs" />
+		<Content Remove="IAuthProvider.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!--<PackageReference Include="MailKit" />-->
+		<PackageReference Include="System.ComponentModel.Annotations" />
+		<PackageReference Include="JsonSubTypes" />
+		<PackageReference Include="Microsoft.Extensions.Configuration" />
+		<PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\LazyMagic.Client.Base\LazyMagic.Client.Base.csproj" />
+		<ProjectReference Include="..\LazyMagic.Shared\LazyMagic.Shared.csproj" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<None Update="LICENSE.txt">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+
+</Project>

@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="$(SolutionDir)CommonPackageHandling.targets" />
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+
+		<Description>LazyMagic ViewModels base</Description>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+	<ItemGroup>
+	  <Content Remove="Session\LzSessionsViewModel.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!--<FrameworkReference Include="Microsoft.AspNetCore.App" />-->
+		<PackageReference Include="DeepCloner" />
+		<PackageReference Include="DynamicData" />
+	
+		<PackageReference Include="FluentValidation" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Forms" />
+
+		<PackageReference Include="ReactiveUI" />
+		<PackageReference Include="ReactiveUI.Fody" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\LazyMagic.Client.Base\LazyMagic.Client.Base.csproj" />
+		<ProjectReference Include="..\LazyMagic.Shared\LazyMagic.Shared.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="ClientConfig\" />
+	</ItemGroup>
+
+</Project>

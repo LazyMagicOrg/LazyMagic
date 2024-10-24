@@ -1,0 +1,7 @@
+<Project>
+	<PropertyGroup>
+		<PackageSuffix Condition="$(MSBuildProjectDirectory.Contains('_Dev'))">-dev</PackageSuffix>
+		<PackageSuffix Condition="$(MSBuildProjectDirectory.Contains('_Test'))">-test</PackageSuffix>
+		<PackageSuffix Condition="$(MSBuildProjectDirectory .Contains('_Prod'))"></PackageSuffix>		
+	</PropertyGroup>
+</Project>

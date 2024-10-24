@@ -1,0 +1,61 @@
+﻿
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject ILzHost Host
+@inject HttpClient HttpClient
+@inject ILzClientConfig ClientConfig
+@inject IOSAccess OSAccess
+@inject IBlazorInternetConnectivity InternetConnectivity
+@inject ILzMessages Messages
+
+@if (ClientConfig.Configured)
+{
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>Not found</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p role="alert">Sorry, there's nothing at this address.</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
+}
+@code {
+    private bool isConfigured = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!ClientConfig.Configured)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("setAssetHostUrl", Host.AssetsUrl);
+
+                InternetConnectivity.SetJSRuntime(JSRuntime);
+                var staticAssets = new BlazorStaticAssets(new HttpClient());
+                Messages.SetStaticAssets(staticAssets);
+
+                await ClientConfig.ReadAuthConfigAsync(Host.RemoteApiUrl + "config");
+
+                // The following extension methods add to the Mesaages.MessageFiles list
+                Messages
+                    .AddLazyMagicBlazorMessages()
+                    .AddLazyMagicBlazorAuthMessages()
+                    ;
+                Messages.MessageFiles.AddRange([Host.AssetsUrl + "Tenancy/en-US/SetsApp/Messages.json"]);
+
+                // Read message files for the current culture and configure for current units
+                await Messages.SetMessageSetAsync("en-US", LzMessageUnits.Imperial);
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+        await base.OnInitializedAsync();
+    }
+}

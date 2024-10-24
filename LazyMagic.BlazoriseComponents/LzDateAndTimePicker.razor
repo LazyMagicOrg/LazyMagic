@@ -1,0 +1,67 @@
+﻿@namespace LazyMagic.BlazoriseComponents
+<Row>
+    <Column>@Label</Column>
+</Row>
+<Row>
+    <Column>
+        <Field>
+            <FieldBody>
+                <DateEdit TValue="DateTime?" Date="@date" DateChanged="@OnDateChanged" ></DateEdit>
+            </FieldBody>
+        </Field>
+    </Column> 
+    <Column>
+        <Field>
+            <FieldBody>
+                <TimeEdit TValue="TimeSpan?" Time="@time" TimeChanged="@OnTimeChanged"></TimeEdit>
+            </FieldBody>
+        </Field>
+    </Column>
+</Row>
+
+
+@code {
+    [Parameter]
+    public long DateTimeTicks { get; set; }
+    [Parameter]
+    public EventCallback<long> DateTimeTicksChanged { get; set; }
+    [Parameter]
+    public string TimeZoneId { get; set; } = string.Empty;
+    [Parameter]
+    public string Label { get; set; } = string.Empty;
+
+    private DateTime? date;
+    private TimeSpan? time;
+    private TimeZoneInfo? localTimeZoneInfo;
+
+    protected override Task OnParametersSetAsync()
+    {
+        localTimeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(TimeZoneId);
+        var localDateTime = new DateTime(DateTimeTicks,DateTimeKind.Utc);
+        localDateTime = TimeZoneInfo.ConvertTime(localDateTime, TimeZoneInfo.Utc, localTimeZoneInfo);
+        date = localDateTime.Date;
+        time = localDateTime.TimeOfDay;
+        return base.OnParametersSetAsync();
+    }
+
+    private async Task OnTimeChanged(TimeSpan? newTime) 
+    {
+        time = newTime;
+        await ChangeValue();
+    }
+
+    private async Task OnDateChanged(DateTime? newDate)
+    {
+        date = newDate;
+        await ChangeValue();
+    }
+
+    private async Task ChangeValue()
+    {
+
+        var newDateTime = new DateTime(date!.Value.Ticks + time!.Value.Ticks);
+        newDateTime = TimeZoneInfo.ConvertTime(newDateTime, localTimeZoneInfo!, TimeZoneInfo.Utc);
+        await DateTimeTicksChanged.InvokeAsync(newDateTime.Ticks);
+    }
+
+}

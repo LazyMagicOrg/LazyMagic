@@ -1,0 +1,29 @@
+﻿@namespace BlazorizeTest
+@page "/Login"
+@inherits LzComponentBaseAssignViewModel<ISessionViewModel>
+@inject ISessionsViewModel SessionsViewModel
+@inject NavigationManager NavigationManager
+
+<h1>Login</h1>
+
+@if(ViewModel!.IsSignedIn)
+{
+ <h1>Welcome!</h1>   
+}
+else 
+{
+    <h1>Let's get connected'</h1>
+}
+
+<LzAuth ViewModel="@ViewModel!.AuthProcess" />
+
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        ViewModel = SessionsViewModel.SessionViewModel;
+        await base.OnInitializedAsync();
+    }
+}

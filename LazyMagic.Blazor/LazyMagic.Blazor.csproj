@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+	<Import Project="$(SolutionDir)CommonPackageHandling.targets" />
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+
+		<Description>LazyMagic Blazor Core</Description>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+	<ItemGroup>
+	  <Content Remove="BlazorStaticAssets.cs" />
+	  <Content Remove="Components\Msg.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<SupportedPlatform Include="browser" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+		<PackageReference Include="ReactiveUI.Blazor" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\LazyMagic.Client.Base\LazyMagic.Client.Base.csproj" />
+	</ItemGroup>
+
+</Project>

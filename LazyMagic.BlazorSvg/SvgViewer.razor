@@ -1,0 +1,84 @@
+﻿@inject IJSRuntime JSRuntime
+
+<div id="svg" class="svgviewer" @Style></div>
+@code {
+    [Parameter] public string? SvgUrl { get; set; }
+    [Parameter] public EventCallback<string> PathSelected { get; set; }
+    [Parameter] public EventCallback<string> PathUnselected { get; set; }
+    [Parameter] public List<string> InitialPaths { get; set; } = new() { "" };  
+    [Parameter] public string Style { get; set; } = "width: 100%; height: 100%;";
+    [Parameter] public int ChangeCount { get; set; } = 0;
+
+    private string style = "";
+    private SvgViewerJS? svgViewerJS;
+    private ElementReference svg;
+    private string? lastSvgUrl;
+    private bool busy;
+    private string paths = string.Empty;
+    private int lastChangeCount = 0;    
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        await base.OnInitializedAsync();
+        svgViewerJS ??= new SvgViewerJS(JSRuntime);
+        svgViewerJS.PathSelectedEvent += OnPathSelected;
+        svgViewerJS.PathUnselectedEvent += OnPathUnselected;
+    }
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            busy = true;
+            await svgViewerJS!.InitAsync();
+            busy = false;
+
+        }
+        var svgChanged = !SvgUrl!.Equals(lastSvgUrl);
+        var newPaths = string.Join(",", InitialPaths);
+        var pathsChanged = newPaths != paths;
+        var changeCountChanged = ChangeCount != lastChangeCount;
+        if (!busy && ( svgChanged || pathsChanged || changeCountChanged ))
+        {
+
+            busy = true;
+            if (svgChanged)
+            {
+                lastSvgUrl = SvgUrl;
+                await svgViewerJS!.LoadSvgAsync(SvgUrl!);
+            }
+            if (pathsChanged || changeCountChanged)
+            {
+                paths = newPaths;
+                await svgViewerJS!.UnselectAllPaths();
+
+                foreach (var path in InitialPaths)
+                    await svgViewerJS!.SelectPath(path);
+            }
+            lastChangeCount = ChangeCount;  
+            busy = false;
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        style = "style = " + Style;
+        await base.OnParametersSetAsync();
+        if (svgViewerJS is null)
+            throw new InvalidOperationException("svgViewerJS is null");
+        if (SvgUrl is null)
+            throw new InvalidOperationException("SvgUrl is null");
+    }   
+
+    public void OnPathSelected(string pathId)
+    {
+        PathSelected.InvokeAsync(pathId);
+    }
+    public void OnPathUnselected(string pathId) => PathUnselected.InvokeAsync(pathId);    
+    
+    public async Task SelectPath(string pathId) => await svgViewerJS!.SelectPath(pathId);
+    public async Task UnslectPath(string pathId) =>await svgViewerJS!.UnselectPath(pathId);
+    public async Task UnselectAllPaths() => await svgViewerJS!.UnselectAllPaths();
+    // todo - dispose
+}

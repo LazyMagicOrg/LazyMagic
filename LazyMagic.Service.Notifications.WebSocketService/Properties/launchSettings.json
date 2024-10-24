@@ -1,0 +1,12 @@
+{
+  "profiles": {
+    "LazyMagic.Notifications.WebSocketService": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:53047;http://localhost:53048"
+    }
+  }
+}

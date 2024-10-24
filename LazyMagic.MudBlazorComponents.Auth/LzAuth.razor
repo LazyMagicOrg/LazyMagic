@@ -1,0 +1,268 @@
+﻿@namespace LazyMagic.MudBlazorComponents
+@inherits LzComponentBasePassViewModel<IAuthProcess>
+@implements IAsyncDisposable
+@inject IJSRuntime JSRuntime
+
+@*
+    This component is a simple form that can be used to authenticate a user.
+    We use onInput, onkeydown, and onfocus to call validation methods in the view model.
+*@
+@if (ViewModel is not null)
+{
+    <MudForm Model="ViewModel">
+        @if (ViewModel.IsNotLongBusy)
+        {
+            <div class="lzauth-container">
+
+                @if (ViewModel.CurrentChallengeIsLogin)
+                {
+                    <MudTextField id="login"
+                                  Immediate="true"
+                                  Label="@Msg("AuthComponent_LoginLabel").ToString()"
+                                  HelperText="@Msg(@ViewModel.LoginFormatMessage!).ToString()"
+                                  @bind-Value="ViewModel.Login"
+                                  @oninput="OnInput"
+                                  @onkeydown="VerifyKey"
+                                  @onfocus="CheckFormatOnFocus" />
+                }
+                @if (ViewModel.CurrentChallengeIsNewLogin)
+                {
+                    <MudTextField id="newlogin"
+                                  Immediate="true"
+                                  Label="@Msg("AuthComponent_NewLoginLabel").ToString()"
+                                  HelperText="@Msg(@ViewModel.LoginFormatMessage!).ToString()"
+                                  @bind-Value="ViewModel.NewLogin"
+                                  @oninput="OnInput"
+                                  @onkeydown="VerifyKey"
+                                  @onfocus="CheckFormatOnFocus" />
+                }
+                @if (ViewModel.CurrentChallengeIsPassword)
+                {
+                    <MudTextField id="password"
+                                  Immediate="true"
+                                  Label="@Msg("AuthComponent_PasswordLabel").ToString()"
+                                  InputType="InputType.Password"
+                                  HelperText="@Msg(ViewModel.PasswordFormatMessage!).ToString()"
+                                  @bind-Value="ViewModel.Password"
+                                  @oninput="OnInput"
+                                  @onkeydown="VerifyKey"
+                                  @onfocus="CheckFormatOnFocus" />
+                }
+                @if (ViewModel.CurrentChallengeIsNewPassword)
+                {
+                    <MudTextField Immediate="true"
+                                  id="newpassword"
+                                  Label="@Msg("AuthComponent_NewPasswordLabel").ToString()"
+                                  InputType="InputType.Password"
+                                  HelperText="@Msg(@ViewModel.NewPasswordFormatMessage!).ToString()"
+                                  @bind-Value="ViewModel.NewPassword"
+                                  @oninput="OnInput"
+                                  @onkeydown="VerifyKey"
+                                  @onfocus="CheckFormatOnFocus" />
+                }
+                @if (ViewModel.CurrentChallengeIsEmail)
+                {
+                    <MudTextField id="email"
+                                  Immediate="true"
+                                  InputType="InputType.Email"
+                                  Label="@Msg("AuthComponent_EmailLabel").ToString()"
+                                  HelperText="@Msg(@ViewModel.EmailFormatMessage!).ToString()"
+                                  @bind-Value="ViewModel.Email"
+                                  @oninput="OnInput"
+                                  @onkeydown="VerifyKey"
+                                  @onfocus="CheckFormatOnFocus" />
+                }
+                @if (ViewModel.CurrentChallengeIsNewEmail)
+                {
+                    <MudTextField id="newemail"
+                                  Immediate="true"
+                                  InputType="InputType.Email"
+                                  Label="@Msg("AuthComponent_NewEmailLabel").ToString()"
+                                  HelperText="@Msg(@ViewModel.EmailFormatMessage!).ToString()"
+                                  @bind-Value="ViewModel.NewEmail"
+                                  @oninput="OnInput"
+                                  @onkeydown="VerifyKey"
+                                  @onfocus="CheckFormatOnFocus" />
+                }
+                @if (ViewModel.CurrentChallengeIsPhone)
+                {
+                    <MudTextField id="phone"
+                                  Immediate="true"
+                                  InputType="InputType.Telephone"
+                                  Label="@Msg("AuthComponent_PhoneLabel").ToString()"
+                                  HelperText="@Msg(@ViewModel.PhoneFormatMessage!).ToString()"
+                                  @bind-Value="ViewModel.Phone"
+                                  @oninput="OnInput"
+                                  @onkeydown="VerifyKey"
+                                  @onfocus="CheckFormatOnFocus" />
+                }
+                @if (ViewModel.CurrentChallengeIsNewPhone)
+                {
+                    <MudTextField id="newphone"
+                                  Immediate="true"
+                                  InputType="InputType.Telephone"
+                                  Label="@Msg("AuthComponent_NewPhoneLabel").ToString()"
+                                  HelperText="@Msg(@ViewModel.PhoneFormatMessage!).ToString()"
+                                  @bind-Value="ViewModel.NewPhone"
+                                  @oninput="OnInput"
+                                  @onkeydown="VerifyKey"
+                                  @onfocus="CheckFormatOnFocus" />
+                }
+                @if (ViewModel.CurrentChallengeIsCode)
+                {
+                    <MudTextField id="code"
+                                  Immediate="true"
+                                  Label="@Msg("AuthComponent_CodeLabel").ToString()"
+                                  HelperText="@Msg(@ViewModel.CodeFormatMessage!).ToString()"
+                                  @bind-Value="ViewModel.Code"
+                                  @oninput="OnInput"
+                                  @onkeydown="VerifyKey"
+                                  @onfocus="CheckFormatOnFocus" />
+                }
+            </div>
+            <div>
+                @if (ViewModel.CanSignIn)
+                {
+                    <MudButton Variant="Variant.Filled" @onclick="@(async() => await ViewModel.StartSignInAsync())">@Msg("AuthComponent_SignIn")</MudButton>
+                }
+                @if (ViewModel.CanSignUp)
+                {
+                    <MudButton Variant="Variant.Filled" @onclick="@(async() => await ViewModel.StartSignUpAsync())">@Msg("AuthComponent_SignUp")</MudButton>
+                }
+                @if (ViewModel.CanResetPassword)
+                {
+                    <MudButton Variant="Variant.Filled" @onclick="@(async() => await ViewModel.StartResetPasswordAsync())">@Msg("AuthComponent_ResetPassword")</MudButton>
+                }
+                @if (ViewModel.CanUpdateEmail)
+                {
+                    <MudButton Variant="Variant.Filled" @onclick="@(async() => await ViewModel.StartUpdateEmailAsync())">@Msg("AuthComponent_UpdateEmail")</MudButton>
+                }
+                @if (ViewModel.CanUpdatePassword)
+                {
+                    <MudButton Variant="Variant.Filled" @onclick="@(async() => await ViewModel.StartUpdatePasswordAsync())">@Msg("AuthComponent_UpdatePassword")</MudButton>
+                }
+                @if (ViewModel.CanUpdatePhone)
+                {
+                    <MudButton Variant="Variant.Filled" @onclick="@(async() => await ViewModel.StartUpdatePhoneAsync())">@Msg("AuthComponent_UpdatePhone")</MudButton>
+                }
+                @if (ViewModel.CanSignOut)
+                {
+                    <MudButton Variant="Variant.Filled" @onclick="@(async() => await ViewModel.SignOutAsync())">@Msg("AuthComponent_SignOut")</MudButton>
+                }
+                @if (ViewModel.CanResendCode)
+                {
+                    <MudButton Variant="Variant.Filled" @onclick="@(async() => await ViewModel.ResendCodeAsync())">@Msg("AuthComponent_ResendCode")</MudButton>
+                }
+                @if (ViewModel.CanCancel)
+                {
+                    <MudButton Variant="Variant.Filled" @onclick="@(async() =>
+                        {
+                        ViewModel.ClearAllFields = true;
+                        await ViewModel.CancelAsync();
+                        })"
+                               Disabled="@cancelButtonDisabled">
+                        @Msg("AuthComponent_Cancel")
+                    </MudButton>
+                }
+                @if (ViewModel.CanNext)
+                {
+                    <MudButton Variant="Variant.Filled" @onclick="@VerifyNoArg">@Msg("AuthComponent_Next")</MudButton>
+                }
+            </div>
+        }
+        else
+        {
+            <MudProgressCircular Color="Color.Default" Indeterminate="true" />
+        }
+    </MudForm>
+}
+
+
+@code {
+    private bool cancelButtonDisabled = false;
+    const KeyboardEventArgs emptyKeyboardEventArgs = null;
+    private IJSObjectReference? lzauth;
+    private string btnstyle = "margin: 5px 5px 5px 5px;"; // isolated css not working as expected when wrapped in a Blazorise Component so just hit it with a hammer
+
+    protected override async Task OnInitializedAsync()
+    {
+        ViewModel!.IsChatty = true;
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            lzauth = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/LazyMagic.Blazor/lzauth.js");
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+
+        bool isActiveElementTabStop = await IsActiveElementTabStop();
+        if (!isActiveElementTabStop)
+        {
+            switch (ViewModel!.CurrentChallenge)
+            {
+                case AuthChallengeEnum.Login:
+                    await Focus("login");
+                    break;
+                case AuthChallengeEnum.NewLogin:
+                    await Focus("newLogin");
+                    break;
+                case AuthChallengeEnum.Password:
+                    await Focus("password");
+                    break;
+            }
+        }
+    }
+
+    private void OnInput(ChangeEventArgs e)
+    {
+        ViewModel!.CheckFormat(e.Value!.ToString());
+    }
+
+    protected async Task VerifyNoArg()
+    {
+        await ViewModel!.Verify();
+    }
+
+    protected async Task VerifyKey(KeyboardEventArgs e)
+    {
+        if (e == null || e.Key == "Enter" || e.Key == "Tab")
+        {
+            await ViewModel!.Verify();
+        }
+    }
+    protected void CheckFormatOnFocus(FocusEventArgs e)
+    {
+        ViewModel!.CheckFormat();
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (lzauth is not null)
+        {
+            await lzauth.DisposeAsync();
+        }
+    }
+    private Task Focus(string id)
+    {
+        lzauth!.InvokeVoidAsync("focusElement", id);
+        return Task.CompletedTask;
+    }
+
+    private async Task<string?> ActiveElement()
+    {
+        if (lzauth is null) return null;
+        return await lzauth!.InvokeAsync<string?>("activeElement");
+    }
+
+    private async Task<bool> IsActiveElementTabStop()
+    {
+        if (lzauth is null) return false;
+        var result = await lzauth!.InvokeAsync<bool>("isActiveElementTabStop");
+        return result;
+    }
+}
+

@@ -1,0 +1,33 @@
+name: Publish NuGet
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.x' # Update to your .NET version
+
+    - name: Restore dependencies
+      run: |
+        dotnet restore
+
+    - name: Build # Build solution
+      run: dotnet build --no-restore
+
+    - name: Publish
+      run: |
+        dotnet nuget push ./Packages/*.nupkg --source https://nuget.pkg.github.com/LazyMagicOrg/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
+        dotnet nuget push ./Packages/*.snupkg --source https://nuget.pkg.github.com/LazyMagicOrg/index.json --api-key ${{ secrets.GITHUB_TOKEN }}

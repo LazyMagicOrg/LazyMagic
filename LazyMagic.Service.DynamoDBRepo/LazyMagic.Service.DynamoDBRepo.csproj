@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="$(SolutionDir)CommonPackageHandling.targets" />
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Description>DynamoDB Helper Library</Description>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+	<PropertyGroup>
+		<CodeAnalysisRuleSet></CodeAnalysisRuleSet>
+		<CodeAnalysisAdditionalOptions>-disablerule:IDE0019</CodeAnalysisAdditionalOptions>
+	</PropertyGroup>
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+		<PackageReference Include="AWSSDK.DynamoDBv2" />
+		<PackageReference Include="Newtonsoft.Json" />		
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\LazyMagic.Shared\LazyMagic.Shared.csproj" />
+	</ItemGroup>	
+</Project>

@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="$(SolutionDir)CommonPackageHandling.targets" />
+	<PropertyGroup>
+		<Description>Wrapper project for commonly used Analyizers</Description>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<LangVersion>12.0</LangVersion>
+
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\LazyMagic.Client.DIHelper\LazyMagic.Client.DIHelper.csproj" />
+		<ProjectReference Include="..\LazyMagic.Client.FactoryGenerator\LazyMagic.Client.FactoryGenerator.csproj" />
+		<ProjectReference Include="..\LazyMagic.Client.TreeViewModel\LazyMagic.Client.TreeViewModel.csproj" />
+	</ItemGroup>
+
+</Project>

@@ -1,0 +1,10 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="..\CommonPackageHandling.targets" />
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<Description>LazyMagic Base</Description>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+
+</Project>

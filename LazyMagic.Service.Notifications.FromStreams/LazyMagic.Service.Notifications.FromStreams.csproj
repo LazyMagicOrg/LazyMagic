@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="$(SolutionDir)CommonPackageHandling.targets" />
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Description>LazyMagic Notifications FromStreams Lambda</Description>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+		<AWSProjectType>Lambda</AWSProjectType>
+		<!-- This property makes the build directory similar to a publish directory and helps the AWS .NET Lambda Mock Test Tool find project dependencies. -->
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<!-- Generate ready to run images during publishing to improve cold start time. -->
+		<PublishReadyToRun>true</PublishReadyToRun>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Amazon.Lambda.APIGatewayEvents" />
+		<PackageReference Include="Amazon.Lambda.Serialization.SystemTextJson"/>
+		<PackageReference Include="AWSSDK.Extensions.NETCore.Setup"/>
+		<PackageReference Include="AWSSDK.ApiGatewayManagementApi"/>
+		<PackageReference Include="Newtonsoft.Json"/>
+	</ItemGroup>
+</Project>

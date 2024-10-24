@@ -1,0 +1,37 @@
+﻿@namespace BlazorizeTest
+@page "/"
+@inherits LzComponentBaseInjectViewModel<ISessionsViewModel>
+@inject NavigationManager NavigationManager
+@inject ILzClientConfig ClientConfig
+
+@if (ClientConfig.ConfigureError)
+{
+        <p>Could not read configuration </p>
+        <p>@ClientConfig.ConfigError</p>
+}
+@*
+    This page is the first page that is loaded when the app starts. In a POS Muti-User app, this page
+    is used to select from a list of available sessions or create a new session. In a Single-User app,
+    this page doesn't appear because the session is created automatically.
+*@
+
+
+@code {
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+
+        if (ClientConfig.Configured)
+        {
+            if(ViewModel!.SessionViewModel is null)
+            {
+                await ViewModel.CreateSessionAsync();
+                ViewModel!.SessionViewModel!.AuthProcess.SetSignUpAllowed(true);
+            }
+            NavigationManager.NavigateTo("Login");
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+}

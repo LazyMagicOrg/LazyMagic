@@ -1,0 +1,256 @@
+{
+  "DocMetaData": {
+    "Description":  "LazyMagic Auth Default Messages"
+  },
+  "Messages": {
+    "AppName": {
+      "Msg": "LazyMagicSaaS.AdminApp"
+    },
+    "AuthProcessLabels_SignIn": {
+      "Msg": "Sign In"
+    },
+    "AuthProcessLabels_SignUp": {
+      "Msg": "Sign Up"
+    },
+    "AuthProcessLabels_ResettingPassword": {
+      "Msg": "Reset Password"
+    },
+    "AuthProcessLabels_UpdatingLogin": {
+      "Msg": "Update Login"
+    },
+    "AuthProcessLabels_UpdatingEmail": {
+      "Msg": "Update Email"
+    },
+    "AuthProcessLabels_UpdatingPhone": {
+      "Msg": "Update Phone"
+    },
+    "AuthProcessLabels_UpdatingPassword": {
+      "Msg": "Update Password"
+    },
+    "AuthProcessLabels_SignOut": {
+      "Msg": "Sign Out"
+    },
+    "AuthFormatMessages_Login01": {
+      "Msg": "Login length must be at least 8 characters long."
+    },
+    "AuthFormatMessages_Password01": {
+      "Msg": "Password must contain at least one capital letter."
+    },
+    "AuthFormatMessages_Password02": {
+      "Msg": "Password must contain at least one lowercase letter."
+    },
+    "AuthFormatMessages_Password03": {
+      "Msg": "Password must contain at least one digit."
+    },
+    "AuthFormatMessages_Password04": {
+      "Msg": "Password length must be at least 8 characters long."
+    },
+    "AuthFormatMessages_Email01": {
+      "Msg": "Enter a valid email address."
+    },
+    "AuthFormatMessages_Code01": {
+      "Msg": "Code must be six digits."
+    },
+    "AuthFormatMessages_Phone01": {
+      "Msg": "Invalid phone number."
+    },
+    "AuthChallengeMessages_Login": {
+      "Msg": "Enter your Login"
+    },
+    "AuthChallengeMessages_NewLogin": {
+      "Msg": "Enter new Login"
+    },
+    "AuthChallengeMessages_Password": {
+      "Msg": "Enter your Password"
+    },
+    "AuthChallengeMessages_NewPassword": {
+      "Msg": "Enter a new Password"
+    },
+    "AuthChallengeMessages_Email": {
+      "Msg": "Enter your Email address"
+    },
+    "AuthChallengeMessages_NewEmail": {
+      "Msg": "Enter your new Email address"
+    },
+    "AuthChallengeMessages_Phone": {
+      "Msg": "Enter your mobile phone number"
+    },
+    "AuthChallengeMessages_NewPhone": {
+      "Msg": "Enter you new mobile phone number"
+    },
+    "AuthChallengeMessages_Code": {
+      "Msg": "Enter authentication code"
+    },
+    "AuthAlert_AuthProcessAlreadyStarted": {
+      "Msg": "Another Authentication Process is already started."
+    },
+    "AuthAlert_DifferentAuthProcessActive": {
+      "Msg": "Different Authentication Process is active."
+    },
+    "AuthAlert_IncorrectAuthProcess": {
+      "Msg": "Invalid call for currently active Authentication Process."
+    },
+    "AuthAlert_NoActiveAuthProcess": {
+      "Msg": "No Authentication Process is active."
+    },
+    "AuthAlert_AlreadySignedIn": {
+      "Msg": "You are already Signed In."
+    },
+    "AuthAlert_InternalSignInError": {
+      "Msg": "Internal Sign In Error."
+    },
+    "AuthAlert_InternalSignUpError": {
+      "Msg": "Internal Sign Up Error."
+    },
+    "AuthAlert_InternalProcessError": {
+      "Msg": "Internal Authentication Process Error."
+    },
+    "AuthAlert_SignUpMissingLogin": {
+      "Msg": "Attempt to Sign Up with no Login value."
+    },
+    "AuthAlert_SignUpMissingPassword": {
+      "Msg": "Attempt to Sign UP with no Password value."
+    },
+    "AuthAlert_SignUpMissingEmail": {
+      "Msg": "Attempt to Sign Up with no Email value."
+    },
+    "AuthAlert_SignUpMissingCode": {
+      "Msg": "Attempt to Sign Up with no Code value."
+    },
+    "AuthAlert_AuthAlreadyStarted": {
+      "Msg": "Authentication is already started."
+    },
+    "AuthAlert_InvalidCallToResendAsyncCode": {
+      "Msg": "Invalid request to resend authentication code."
+    },
+    "AuthAlert_AccountWithThatEmailAlreadyExists": {
+      "Msg": "Another account with that email already exists."
+    },
+    "AuthAlert_RefreshUserDetailsDone": {
+      "Msg": "Refresh of user details completed."
+    },
+    "AuthAlert_EmailAddressIsTheSame": {
+      "Msg": "New email address is the same as currently registered email address."
+    },
+    "AuthAlert_VerifyCalledButNoChallengeFound": {
+      "Msg": "A verify challenge was called but no current challenge was found."
+    },
+    "AuthAlert_CantRetrieveUserDetails": {
+      "Msg": "Can't retrieve user details."
+    },
+    "AuthAlert_NeedToBeSignedIn": {
+      "Msg": "You need to be signed in to perform the requested operation."
+    },
+    "AuthAlert_InvalidOperationWhenSignedIn": {
+      "Msg": "You need to be signed out to perform the requested operation."
+    },
+    "AuthAlert_UserNotFound": {
+      "Msg": "User Login not found."
+    },
+    "AuthAlert_NotConfirmed": {
+      "Msg": "User credentials can not be confirmed."
+    },
+    "AuthAlert_NotAuthorized": {
+      "Msg": "User is not authorized."
+    },
+    "AuthAlert_VerifyFailed": {
+      "Msg": "User verification failed."
+    },
+    "AuthAlert_LoginAlreadyUsed": {
+      "Msg": "Sorry, that user login is already used. Please choose another."
+    },
+    "AuthAlert_LoginMustBeSuppliedFirst": {
+      "Msg": "Login must be supplied first."
+    },
+    "AuthAlert_LoginFormatRequirementsFailed": {
+      "Msg": "Login format requirements not satisfied."
+    },
+    "AuthAlert_PasswordFormatRequirementsFailed": {
+      "Msg": "Password format requirements not satisfied."
+    },
+    "AuthAlert_EmailFormatRequirementsFailed": {
+      "Msg": "The supplied Email is not valid."
+    },
+    "AuthAlert_PhoneFormatRequirementsFailed": {
+      "Msg": "The supplied Phone is not valid."
+    },
+    "AuthAlert_TooManyAttempts": {
+      "Msg": "You have exceeded the login attempt limit. Try again later."
+    },
+    "AuthAlert_NothingToDo": {
+      "Msg": ""
+    },
+    "AuthAlert_OperationNotSupportedByAuthProvider": {
+      "Msg": "Operation not supported by current auth provider."
+    },
+    "AuthAlert_LimitExceededException": {
+      "Msg": "Too many attempts. Try again later."
+    },
+    "AuthAlert_PasswordResetRequiredException": {
+      "Msg": "Password must be reset."
+    },
+    "AuthAlert_Unknown": {
+      "Msg": "Unknown Alert Raised."
+    },
+    "AuthComponent_LoginLabel": {
+      "Msg": "Login"
+    },
+    "AuthComponent_NewLoginLabel": {
+      "Msg": "New Login"
+    },
+    "AuthComponent_PasswordLabel": {
+      "Msg": "Password"
+    },
+    "AuthComponent_NewPasswordLabel": {
+      "Msg": "New Password"
+    },
+    "AuthComponent_EmailLabel": {
+      "Msg": "Email"
+    },
+    "AuthComponent_NewEmailLabel": {
+      "Msg": "New Email"
+    },
+    "AuthComponent_PhoneLabel": {
+      "Msg": "Phone"
+    },
+    "AuthComponent_NewPhoneLabel": {
+      "Msg": "New Phone"
+    },
+    "AuthComponent_CodeLabel": {
+      "Msg": "Code"
+    },
+    "AuthComponent_SignIn": {
+      "Msg": "Sign In"
+    },
+    "AuthComponent_SignUp": {
+      "Msg": "Sign Up"
+    },
+    "AuthComponent_UpdatePassword": {
+      "Msg": "Update Password"
+    },
+    "AuthComponent_ResetPassword": {
+      "Msg": "Reset Password"
+    },
+    "AuthComponent_UpdateEmail": {
+      "Msg": "Update Email"
+    },
+    "AuthCopmponent_UpdatePassword": {
+      "Msg": "Update Password"
+    },
+    "AuthComponent_UpdatePhone": {
+      "Msg": "Update Phone"
+    },
+    "AuthComponent_SignOut": {
+      "Msg": "Sign Out"
+    },
+    "AuthComponent_ResendCode": {
+      "Msg": "Resend Code"
+    },
+    "AuthComponent_Cancel": {
+      "Msg": "Cancel"
+    },
+    "AuthComponent_Next": {
+      "Msg": "Next"
+    }
+  }
+}

@@ -1,0 +1,14 @@
+﻿global using Amazon.CognitoIdentity;
+global using Amazon.CognitoIdentityProvider.Model;
+global using Amazon.CognitoIdentityProvider;
+global using Amazon.Extensions.CognitoAuthentication;
+global using Amazon.Runtime;
+global using Amazon;
+global using LazyMagic.Client.Base;
+global using LazyMagic.Shared;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.DependencyInjection.Extensions;
+global using Newtonsoft.Json.Linq;
+global using System.Diagnostics;
+global using System.Reflection;
+global using System.Runtime.CompilerServices;

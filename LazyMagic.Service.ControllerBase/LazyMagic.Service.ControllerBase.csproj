@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="$(SolutionDir)CommonPackageHandling.targets" />
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Description>LazyMagic Controller Base (Utilities used by other controllers)</Description>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+		<PackageReference Include="Newtonsoft.Json" />
+	</ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\LazyMagic.Shared\LazyMagic.Shared.csproj" />
+	</ItemGroup>
+</Project>

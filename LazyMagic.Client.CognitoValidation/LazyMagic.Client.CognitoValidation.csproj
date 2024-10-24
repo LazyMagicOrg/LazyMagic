@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="$(SolutionDir)CommonPackageHandling.targets"/>
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+
+		<Description>LazyMagic AWS Cognito Token Validator</Description>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+	<ItemGroup>
+		<!-- Other package references -->
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+	</ItemGroup>
+</Project>

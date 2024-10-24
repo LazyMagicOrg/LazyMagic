@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+	<Import Project="$(SolutionDir)CommonPackageHandling.targets" />
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+
+		<Description>LazyMagic Blazorise Components</Description>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+	<ItemGroup>
+	  <Compile Remove="Config\ConfigureLazyMagicBlazoriseComponentsMessages.cs" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+		<SupportedPlatform Include="browser" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Blazorise.Bootstrap5" />
+		<PackageReference Include="Blazorise.Components" />
+		<PackageReference Include="Blazorise.LoadingIndicator" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\LazyMagic.Blazor\LazyMagic.Blazor.csproj" />
+	</ItemGroup>
+
+</Project>

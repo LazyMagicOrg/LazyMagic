@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<RootNamespace>BlazorTest</RootNamespace>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <_ContentIncludedByDefault Remove="wwwroot\indexinit.js" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
+		<PackageReference Include="ReactiveUI.Fody" />
+		<PackageReference Include="ReactiveUI" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\LazyMagic.Client.FactoryGenerator\LazyMagic.Client.FactoryGenerator.csproj" PrivateAssets="all" OutputItemType="Analyzer" />
+		<ProjectReference Include="..\LazyMagic.Client.Auth.Cognito\LazyMagic.Client.Auth.Cognito.csproj" />
+		<ProjectReference Include="..\LazyMagic.Blazor.Auth\LazyMagic.Blazor.Auth.csproj" />
+		<ProjectReference Include="..\LazyMagic.Client.ViewModels.Auth\LazyMagic.Client.ViewModels.Auth.csproj" />
+	</ItemGroup>
+
+</Project>

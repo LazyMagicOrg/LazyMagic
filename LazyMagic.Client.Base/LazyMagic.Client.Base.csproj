@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="$(SolutionDir)CommonPackageHandling.targets" />
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+
+		<Description>LazyMagic Base</Description>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		
+		<LangVersion>latest</LangVersion>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+	<ItemGroup>
+	  <Compile Remove="ILzMessages.cs" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Content Remove="IStaticAssets.cs" />
+	  <Content Remove="Messages\MsgItemModel.cs" />
+	  <Content Remove="Messages\MsgItemsModel.cs" />
+	</ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="ReactiveUI" />
+		<PackageReference Include="ReactiveUI.Fody" />
+	</ItemGroup>
+
+</Project>
