@@ -32,7 +32,7 @@ jobs:
           </packageSources>
           <packageSourceCredentials>
             <github>
-              <add key="Username" value="USERNAME" />
+              <add key="Username" value="${{ github.actor }}" />
               <add key="ClearTextPassword" value="${{ secrets.GITHUB_TOKEN }}" />
             </github>
           </packageSourceCredentials>
@@ -59,4 +59,3 @@ jobs:
     - name: Publish
       run: |
         dotnet nuget push ./Packages/*.nupkg --source https://nuget.pkg.github.com/LazyMagicOrg/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
-        dotnet nuget push ./Packages/*.snupkg --source https://nuget.pkg.github.com/LazyMagicOrg/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
