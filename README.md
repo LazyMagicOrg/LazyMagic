@@ -1,0 +1,2 @@
+# LazyMagic
+LazyMagic Libs Repository
