@@ -28,7 +28,7 @@ jobs:
           <packageSources>
             <clear />
             <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
-            <add key="LazyMagicOrg" value="https://nuget.pkg.github.com/LazyMagicOrg/index.json" />
+            <add key="github" value="https://nuget.pkg.github.com/LazyMagicOrg/index.json" />
           </packageSources>
           <packageSourceCredentials>
             <github>
@@ -40,7 +40,7 @@ jobs:
             <packageSource key="nuget.org">
               <package pattern="*" />
             </packageSource>
-            <packageSource key="LazyMagicOrg">
+            <packageSource key="github">
               <package pattern="LazyMagic.*" />
             </packageSource>
           </packageSourceMapping>
@@ -58,4 +58,4 @@ jobs:
 
     - name: Publish
       run: |
-        dotnet nuget push ./Packages/*.nupkg --source https://nuget.pkg.github.com/LazyMagicOrg/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
+        dotnet nuget push ./Packages/*.nupkg --source "github" --api-key ${{ secrets.GITHUB_TOKEN }} --skip-duplicate
