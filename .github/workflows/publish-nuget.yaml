@@ -20,6 +20,35 @@ jobs:
       with:
         dotnet-version: '8.x' # Update to your .NET version
 
+    - name: Configure NuGet
+      run: |
+        cat > NuGet.Config << EOF
+        <?xml version="1.0" encoding="utf-8"?>
+        <configuration>
+          <packageSources>
+            <clear />
+            <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+            <add key="LazyMagicOrg" value="https://nuget.pkg.github.com/LazyMagicOrg/index.json" />
+          </packageSources>
+          <packageSourceCredentials>
+            <github>
+              <add key="Username" value="USERNAME" />
+              <add key="ClearTextPassword" value="${{ secrets.GITHUB_TOKEN }}" />
+            </github>
+          </packageSourceCredentials>
+          <packageSourceMapping>
+            <packageSource key="nuget.org">
+              <package pattern="*" />
+            </packageSource>
+            <packageSource key="LazyMagicOrg">
+              <package pattern="LazyMagic.*" />
+            </packageSource>
+          </packageSourceMapping>
+        </configuration>
+        EOF
+
+        cat NuGet.Config
+
     - name: Restore dependencies
       run: |
         dotnet restore
