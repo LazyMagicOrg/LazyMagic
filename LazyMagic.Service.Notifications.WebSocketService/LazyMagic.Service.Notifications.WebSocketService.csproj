@@ -2,7 +2,7 @@
 	<Import Project="$(SolutionDir)CommonPackageHandling.targets" />
 	<PropertyGroup>
 		<TargetFramework>net8.0</TargetFramework>
-		<Description>LazyMagic Notifications WebSocket for load WebAPI (debugging)</Description>
+		<Description>LazyMagic Notifications WebSocket for local WebAPI (debugging)</Description>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 		<IsPackable>true</IsPackable>
 		<ImplicitUsings>enable</ImplicitUsings>

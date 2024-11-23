@@ -86,7 +86,8 @@ public interface IAuthProvider
     public bool CheckCodeFormat(string? code);
 
     public Task<Creds?> GetCredsAsync();
-    public Task<string?> GetJWTAsync();
+    public Task<string?> GetIdentityToken();
+    public Task<string?> GetAccessToken();
     public void SetAuthenticator(JObject authenticator);
     public void SetSignUpAllowed(bool isAllowed);
 

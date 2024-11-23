@@ -21,19 +21,18 @@ public interface ILzItemViewModel<TModel>
     public bool IsDeleted { get; }
     public bool IsDirty { get; set; }
     public ILzParentViewModel? ParentViewModel { get; set; }
-    public void CheckAuth();   
 
     // Public Methods
-    public Task<(bool, string)> CreateAsync(string? id);
-    public Task<(bool, string)> ReadAsync(string id);
-    public Task<(bool, string)> ReadAsync();
-    public Task<(bool, string)> UpdateAsync(string? id);
-    public Task<(bool, string)> SaveEditAsync(string? id);
-    public Task<(bool, string)> DeleteAsync(string id);
-    public void OpenEdit(bool forceCopy = false);
-    public Task OpenEditAsync(bool forceCopy = false);
+    public Task<(bool, string)> CheckAuthAsync();   
+    public Task<(bool, string)> CheckIdAsync(string? id = null);  
+    public Task<(bool, string)> CreateAsync();
+    public Task<(bool, string)> ReadAsync(string? id = null);
+    public Task<(bool, string)> UpdateAsync();
+    public Task<(bool, string)> SaveEditAsync();
+    public Task<(bool, string)> DeleteAsync(string? id = null);
+    public Task<(bool, string)> OpenEditAsync(bool forceCopy = false);
     public Task<(bool, string)> CancelEditAsync();
-    public bool Validate();
+    public Task<(bool, string)> ValidateAsync();
     public Task<(bool, string)> ReadChildrenAsync(bool forceload);
 
 

@@ -1,7 +1,8 @@
 ﻿namespace LazyMagic.Client.ViewModels;
-
-public interface ILzItemsViewModelAuthNotifications<TVM, TDTO, TModel> : ILzParentViewModel
-        where TVM : class, ILzItemViewModel<TModel>
+/// <inheritdoc/>
+public interface ILzItemsViewModelAuthNotifications<TVM, TDTO, TModel> :
+        ILzItemsViewModelAuth<TVM, TDTO, TModel>
+        where TVM : class, ILzItemViewModelAuthNotifications<TModel>
         where TDTO : class, new()
         where TModel : class, IRegisterObservables, TDTO, new()
 {

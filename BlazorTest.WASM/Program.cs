@@ -67,6 +67,8 @@ public class Program
             
         RegisterFactories.Register(builder.Services);
 
+        builder.Logging.SetMinimumLevel(LogLevel.Information);
+
 
         var host = builder.Build();
         // Wait for the page to fully load to finish up the Blazor app configuration

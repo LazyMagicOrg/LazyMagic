@@ -5,40 +5,44 @@ public static class LzViewModelFactory
     public static void RegisterLz(IServiceCollection services, Assembly assembly)
     {
         Type[] iTypes = { typeof(ILzSingleton), typeof(ILzTransient), typeof(ILzScoped) };
-
         var factoryTypes = assembly
             .GetTypes()
-            .Where(t => 
-                iTypes.Any(iType =>  iType.IsAssignableFrom(t) && !t.IsAbstract));
-
+            .Where(t =>
+                iTypes.Any(iType => iType.IsAssignableFrom(t) && !t.IsAbstract));
         foreach (var type in factoryTypes)
         {
-            var iTypeName = "I" + type.Name;
             var interfaces = type.GetInterfaces();
-            foreach (var iface in interfaces)
-                if (iface.Name.Equals(iTypeName))
-                { 
-                    string scope = "";  
-                    var registered = true;
-                    if (typeof(ILzSingleton).IsAssignableFrom(type))
+            // First find the Lz interface to determine the scope
+            string scope = "";
+            if (typeof(ILzSingleton).IsAssignableFrom(type))
+                scope = "Singleton";
+            else if (typeof(ILzTransient).IsAssignableFrom(type))
+                scope = "Transient";
+            else if (typeof(ILzScoped).IsAssignableFrom(type))
+                scope = "Scoped";
+
+            if (!string.IsNullOrEmpty(scope))
+            {
+                // Then find the matching interface for registration
+                var iTypeName = "I" + type.Name;
+                var serviceInterface = interfaces.FirstOrDefault(i => i.Name.Equals(iTypeName));
+                if (serviceInterface != null)
+                {
+                    switch (scope)
                     {
-                        scope = "Singleton";
-                        services.TryAddSingleton(iface, type);
+                        case "Singleton":
+                            services.TryAddSingleton(serviceInterface, type);
+                            break;
+                        case "Transient":
+                            services.TryAddTransient(serviceInterface, type);
+                            break;
+                        case "Scoped":
+                            services.TryAddScoped(serviceInterface, type);
+                            break;
                     }
-                    else
-                    if (typeof(ILzTransient).IsAssignableFrom(type)) {
-                        scope = "Transient";
-                        services.TryAddTransient(iface, type);
-                    }
-                    else
-                    if (typeof(ILzScoped).IsAssignableFrom(type)) {
-                        scope = "Scoped";   
-                        services.TryAddScoped(iface, type);
-                    }
-                    else registered = false;
-                    if (registered)
-                        Console.WriteLine($"Registered {type.Name} as {scope}");
+                    Console.WriteLine($"Registered {type.Name} as {scope}");
                 }
+            }
         }
     }
 }

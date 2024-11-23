@@ -1,18 +1,16 @@
 ﻿namespace LazyMagic.Client.ViewModels;
-
+/// <inheritdoc/>
 public abstract class LzItemsViewModelAuthNotifications<TVM, TDTO, TModel> : 
-    LzItemsViewModel<TVM, TDTO, TModel>, 
-    INotifyCollectionChanged, 
+    LzItemsViewModelAuth<TVM, TDTO, TModel>, 
     ILzItemsViewModelAuthNotifications<TVM, TDTO, TModel> where TDTO : class, new()
     where TModel : class, TDTO, IRegisterObservables, new()
-    where TVM : class, ILzItemViewModel<TModel>
+    where TVM : class, ILzItemViewModelAuthNotifications<TModel>
 {
     public LzItemsViewModelAuthNotifications(
-        ILzSessionViewModel sessionViewModel,
-        IDictionary<string, TDTO>? dtos = null,
-        IDictionary<string,TModel>? models = null
+        ILoggerFactory loggerFactory,
+        ILzSessionViewModel sessionViewModel
         ) 
-        : base(sessionViewModel, dtos, models)
+        : base(loggerFactory, sessionViewModel)
     {
         this.WhenAnyValue(x => x.NotificationsSvc!.Notification!)
             .WhereNotNull()

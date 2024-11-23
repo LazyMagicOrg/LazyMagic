@@ -15,7 +15,7 @@ public abstract
     public DYDBRepository(IAmazonDynamoDB client)
     {
         this.client = client;
-        PK = $"{nameof(T)}:";
+        PK = $"{typeof(T).Name}:";
         ConstructorExtensions();
     }
 
@@ -23,6 +23,7 @@ public abstract
 
     #region Fields
     protected string tablename;
+    protected bool alwaysUseLocalTablenameProperty = false;
     protected IAmazonDynamoDB client;
     protected Dictionary<string, (TEnv envelope, long lastReadTick)> cache = new();
     #endregion
@@ -53,7 +54,8 @@ public abstract
     public bool UseIsDeleted { get; set; }
     public bool UseSoftDelete { get; set; }
     public string PK { get; set; }
-    public bool UseNotifications { get; set; }  
+    public bool UseNotifications { get; set; }
+    public string NotificationsTablename { get; set; } = "";
     #endregion
     
     protected virtual long GetTTL()
@@ -69,7 +71,7 @@ public abstract
     /// Override in derived class to suite your messaging requirements.
     /// </summary>
     /// <returns>Json String</returns>
-    public virtual string SetTopics() => $"[\"{nameof(T)}:\"]";
+    public virtual string SetTopics() => $"[\"{typeof(T).Name}:\"]";
     /// <summary>
     /// Make sure cache has less than MaxItems 
     /// MaxItems == 0 means infinite cache
@@ -77,7 +79,7 @@ public abstract
     /// <returns></returns>
     protected void PruneCache(string table = null)
     {
-        if (string.IsNullOrEmpty(table))
+        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
             table = tablename;
 
         if (MaxItems == 0) return;
@@ -96,20 +98,18 @@ public abstract
     }
     public async Task FlushCache(string table = null)
     {
-        if (string.IsNullOrEmpty(table))
+        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
             table = tablename;
 
         await Task.Delay(0);
         cache = new Dictionary<string, (TEnv, long)>();
     }
-    public virtual async Task<ActionResult<TEnv>> CreateEAsync(string table, T data, bool? useCache = null)
-        => await CreateEAsync(new CallerInfo() { Table = table }, data, useCache);
     public virtual async Task<ActionResult<TEnv>> CreateEAsync(ICallerInfo callerInfo, T data, bool? useCache = null)
     {
         callerInfo ??= new CallerInfo();
         var table = callerInfo.Table;
 
-        if (string.IsNullOrEmpty(table))
+        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
             table = tablename;
 
         bool useCache2 = (useCache != null) ? (bool)useCache : AlwaysCache;
@@ -129,7 +129,7 @@ public abstract
             var jsonData = JsonConvert.SerializeObject(envelope.EntityInstance);
             envelope.DbRecord.Add("Data", new AttributeValue() { S = jsonData });
 
-            AddOptionalAttributes(callerInfo, envelope); // Adds TTL, Topics when specified
+            AddOptionalAttributes(callerInfo, envelope); // Adds Topics when specified 
             AddOptionalTTLAttribute(callerInfo, envelope); // Adds TTL attribute when GetTTL() is not 0
             var topics = AddOptionalTopicsAttribute(callerInfo, envelope); // Adds Topics attribute when GetTopics() is not empty
 
@@ -162,14 +162,10 @@ public abstract
     {
         throw new NotImplementedException();
     }
-
     public virtual Task WriteDeleteNotificationAsync(ICallerInfo callerInfo, string dataType, string sk, string topics, long updatedUtcTick)
     {
         throw new NotImplementedException();
     }
-
-    public virtual async Task<ActionResult<T>> CreateAsync(string table, T data, bool? useCache = null)
-        => await CreateAsync(new CallerInfo() { Table = table }, data, useCache);
     public virtual async Task<ActionResult<T>> CreateAsync(ICallerInfo callerInfo, T data, bool? useCache = null)
     {
         callerInfo ??= new CallerInfo();
@@ -178,17 +174,13 @@ public abstract
             return result.Result;
         return result.Value.EntityInstance;
     }
-    public virtual async Task<ActionResult<T>> ReadAsync(string table, string id, bool? useCache = null)
-        => await ReadAsync(new CallerInfo() { Table = table }, id, useCache);
     public virtual async Task<ActionResult<T>> ReadAsync(ICallerInfo callerInfo, string id, bool? useCache = null)
         => await ReadAsync(callerInfo, this.PK, $"{id}:", useCache);
-    public virtual async Task<ActionResult<T>> ReadAsync(string table, string pK, string sK, bool? useCache = null)
-        => await ReadAsync(new CallerInfo() { Table = table }, pK, sK, useCache);
     public virtual async Task<ActionResult<T>> ReadAsync(ICallerInfo callerInfo, string pK, string sK, bool? useCache = null)
     {
         callerInfo ??= new CallerInfo();
         var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table))
+        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
             table = tablename;
 
         try
@@ -204,17 +196,13 @@ public abstract
         catch (AmazonServiceException) { return new StatusCodeResult(503); }
         catch { return new StatusCodeResult(406); }
     }
-    public virtual async Task<ActionResult<T>> ReadSkAsync(string table, string indexName, string id, bool? useCache = null)
-        => await ReadSkAsync(new CallerInfo() { Table = table }, indexName, id, useCache);
     public virtual async Task<ActionResult<T>> ReadSkAsync(ICallerInfo callerInfo, string indexName, string id, bool? useCache = null)
         => await ReadSkAsync(callerInfo, this.PK, indexName, $"{id}:", useCache);
-    public virtual async Task<ActionResult<T>> ReadSKAsync(string table, string pK, string indexName, string sK, bool? useCache = null)
-        => await ReadSkAsync(new CallerInfo() { Table = table }, pK, indexName, sK, useCache);
     public virtual async Task<ActionResult<T>> ReadSkAsync(ICallerInfo callerInfo, string pK, string indexName, string sK, bool? useCache = null)
     {
         callerInfo ??= new CallerInfo();
         var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table))
+        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
             table = tablename;
 
         try
@@ -240,7 +228,7 @@ public abstract
     {
         callerInfo ??= new CallerInfo();
         var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table))
+        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
             table = tablename;
 
         bool useCache2 = (useCache != null) ? (bool)useCache : AlwaysCache;
@@ -281,12 +269,8 @@ public abstract
         catch (AmazonServiceException) { return new StatusCodeResult(503); }
         catch { return new StatusCodeResult(406); }
     }
-    public virtual async Task<ActionResult<TEnv>> ReadSkEAsync(string table, string indexName, string id, bool? useCache = null)
-        => await ReadSkEAsync(new CallerInfo() { Table = table }, indexName, id, useCache);
     public virtual async Task<ActionResult<TEnv>> ReadSkEAsync(ICallerInfo callerInfo, string indexName, string id, bool? useCache = null)
         => await ReadSkEAsync(callerInfo, this.PK, indexName, $"{id}:", useCache);
-    public virtual async Task<ActionResult<TEnv>> ReadSKEAsync(string table, string pK, string indexName, string sK, bool? useCache = null)
-        => await ReadSkEAsync(new CallerInfo() { Table = table }, pK, indexName, sK, useCache);
     public virtual async Task<ActionResult<TEnv>> ReadSkEAsync(ICallerInfo callerInfo, string pK, string indexName, string sK, bool? useCache = null)
     {
         callerInfo ??= new CallerInfo();
@@ -331,14 +315,12 @@ public abstract
         return;
     }   
 
-    public virtual async Task<ActionResult<TEnv>> UpdateEAsync(string table, T data)
-        => await UpdateEAsync(new CallerInfo() { Table = table }, data);
     public virtual async Task<ActionResult<TEnv>> UpdateEAsync(ICallerInfo callerInfo, T data, bool forceUpdate = false)
     {
         callerInfo ??= new CallerInfo();
         var table = callerInfo.Table;
 
-        if (string.IsNullOrEmpty(table))
+        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
             table = tablename;
 
         if (data.Equals(null))
@@ -414,8 +396,6 @@ public abstract
             return result.Result;
         return result.Value.EntityInstance;
     }
-    public virtual async Task<ActionResult<T>> UpdateAsync(string table, T data)
-        => await UpdateAsync(new CallerInfo() { Table = table }, data);
     public virtual async Task<ActionResult<T>> UpdateAsync(ICallerInfo callerInfo, T data)
     {
         callerInfo ??= new CallerInfo();
@@ -424,16 +404,12 @@ public abstract
             return result.Result; 
         return result.Value.EntityInstance;
     }
-    public virtual async Task<StatusCodeResult> DeleteAsync(string table, string id)
-        => await DeleteAsync(new CallerInfo() { Table = table }, id);
     public virtual async Task<StatusCodeResult> DeleteAsync(ICallerInfo callerInfo, string id) => await DeleteAsync(callerInfo, this.PK, $"{id}:");
-    public virtual async Task<StatusCodeResult> DeleteAsync(string table, string pK, string sK = null)
-        => await DeleteAsync(new CallerInfo() { Table = table }, pK, sK);
     public virtual async Task<StatusCodeResult> DeleteAsync(ICallerInfo callerInfo, string pK, string sK = null)
     {
         callerInfo ??= new CallerInfo();
         var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table))
+        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
             table = tablename;
         try
         {
@@ -581,64 +557,48 @@ public abstract
         var (actionResult, _) = await ListAndSizeAsync(queryRequest, useCache, limit);
         return actionResult;
     }
-    public virtual async Task<ObjectResult> ListAsync(string table)
-        => await ListAsync(new CallerInfo() { Table = table });
     public virtual async Task<ObjectResult> ListAsync(ICallerInfo callerInfo)
     {
         var queryRequest = QueryEquals(PK, callerInfo: callerInfo);
         var (objResult, _) = await ListAndSizeAsync(queryRequest);
         return objResult;
     }
-    public virtual async Task<ObjectResult> ListAsync(string table, string indexName, string indexValue)
-        => await ListAsync(new CallerInfo() { Table = table }, indexName, indexValue);
     public virtual async Task<ObjectResult> ListAsync(ICallerInfo callerInfo, string indexName, string indexValue)
     {
         var queryRequest = QueryEquals(PK, indexName, indexValue, callerInfo: callerInfo);
         var (objResult, _) = await ListAndSizeAsync(queryRequest);
         return objResult;
     }
-    public virtual async Task<ObjectResult> ListBeginsWithAsync(string table, string indexName, string indexValue)
-        => await ListBeginsWithAsync(new CallerInfo() { Table = table }, indexName, indexValue);
     public virtual async Task<ObjectResult> ListBeginsWithAsync(ICallerInfo callerInfo, string indexName, string indexValue)
     {
         var queryRequest = QueryBeginsWith(PK, indexName, indexValue, callerInfo: callerInfo);
         var (objResult, _) = await ListAndSizeAsync(queryRequest);
         return objResult;
     }
-    public virtual async Task<ObjectResult> ListLessThanAsync(string table, string indexName, string indexValue)
-        => await ListLessThanAsync(new CallerInfo() { Table = table }, indexName, indexValue);
     public virtual async Task<ObjectResult> ListLessThanAsync(ICallerInfo callerInfo, string indexName, string indexValue)
     {
         var queryRequest = QueryLessThan(PK, indexName, indexValue, callerInfo: callerInfo);
         var (objResult, _) = await ListAndSizeAsync(queryRequest);
         return objResult;
     }
-    public virtual async Task<ObjectResult> ListLessThanOrEqualAsync(string table, string indexName, string indexValue)
-        => await ListLessThanOrEqualAsync(new CallerInfo() { Table = table }, indexName, indexValue);
     public virtual async Task<ObjectResult> ListLessThanOrEqualAsync(ICallerInfo callerInfo, string indexName, string indexValue)
     {
         var queryRequest = QueryLessThanOrEqual(PK, indexName, indexValue, callerInfo: callerInfo);
         var (objResult, _) = await ListAndSizeAsync(queryRequest);
         return objResult;
     }
-    public virtual async Task<ObjectResult> ListGreaterThanAsync(string table, string indexName, string indexValue)
-        => await ListGreaterThanAsync(new CallerInfo() { Table = table }, indexName, indexValue);
     public virtual async Task<ObjectResult> ListGreaterThanAsync(ICallerInfo callerInfo, string indexName, string indexValue)
     {
         var queryRequest = QueryGreaterThan(PK, indexName, indexValue, callerInfo: callerInfo);
         var (objResult, _) = await ListAndSizeAsync(queryRequest);
         return objResult;
     }
-    public virtual async Task<ObjectResult> ListGreaterThanOrEqualAsync(string table, string indexName, string indexValue)
-        => await ListGreaterThanOrEqualAsync(new CallerInfo() { Table = table }, indexName, indexValue);
     public virtual async Task<ObjectResult> ListGreaterThanOrEqualAsync(ICallerInfo callerInfo, string indexName, string indexValue)
     {
         var queryRequest = QueryGreaterThanOrEqual(PK, indexName, indexValue, callerInfo: callerInfo);
         var (objResult, _) = await ListAndSizeAsync(queryRequest);
         return objResult;
     }
-    public virtual async Task<ObjectResult> ListBetweenAsync(string table, string indexName, string indexValue1, string indexValue2)
-        => await ListBetweenAsync(new CallerInfo() { Table = table }, indexName, indexValue1, indexValue2);
     public virtual async Task<ObjectResult> ListBetweenAsync(ICallerInfo callerInfo, string indexName, string indexValue1, string indexValue2)
     {
         var queryRequest = QueryRange(PK, indexName, indexValue1, indexValue2, callerInfo: callerInfo);
@@ -667,7 +627,7 @@ public abstract
     {
         callerInfo ??= new CallerInfo();
         var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table))
+        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
             table = tablename;
 
         expressionAttributeNames = GetExpressionAttributeNames(expressionAttributeNames);
@@ -698,7 +658,7 @@ public abstract
     {
         callerInfo ??= new CallerInfo();
         var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table))
+        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
             table = tablename;
 
         expressionAttributeNames = GetExpressionAttributeNames(expressionAttributeNames);
@@ -730,7 +690,7 @@ public abstract
     {
         callerInfo ??= new CallerInfo();
         var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table))
+        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
             table = tablename;
 
         expressionAttributeNames = GetExpressionAttributeNames(expressionAttributeNames);
@@ -762,7 +722,7 @@ public abstract
     {
         callerInfo ??= new CallerInfo();
         var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table))
+        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
             table = tablename;
 
         expressionAttributeNames = GetExpressionAttributeNames(expressionAttributeNames);
@@ -794,7 +754,7 @@ public abstract
     {
         callerInfo ??= new CallerInfo();
         var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table))
+        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
             table = tablename;
 
         expressionAttributeNames = GetExpressionAttributeNames(expressionAttributeNames);
@@ -826,7 +786,7 @@ public abstract
     {
         callerInfo ??= new CallerInfo();
         var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table))
+        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
             table = tablename;
 
         expressionAttributeNames = GetExpressionAttributeNames(expressionAttributeNames);
@@ -858,7 +818,7 @@ public abstract
     {
         callerInfo ??= new CallerInfo();
         var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table))
+        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
             table = tablename;
 
         expressionAttributeNames = GetExpressionAttributeNames(expressionAttributeNames);
@@ -890,7 +850,7 @@ public abstract
     {
         callerInfo ??= new CallerInfo();
         var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table))
+        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
             table = tablename;
 
         expressionAttributeNames = GetExpressionAttributeNames(expressionAttributeNames);
@@ -936,7 +896,7 @@ public abstract
     {
         callerInfo ??= new CallerInfo();
         var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table))
+        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
             table = tablename;
 
         expressionAttributeNames = GetExpressionAttributeNames(expressionAttributeNames);

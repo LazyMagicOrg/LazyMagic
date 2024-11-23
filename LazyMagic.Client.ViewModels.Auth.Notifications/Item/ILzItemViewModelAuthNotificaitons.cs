@@ -1,7 +1,8 @@
 ﻿
 namespace LazyMagic.Client.ViewModels;
-
-public interface ILzItemViewModelNotificationsBase<TModel> : ILzItemViewModel<TModel>
+/// <inheritdoc/>
+public interface ILzItemViewModelAuthNotifications<TModel> 
+    : ILzItemViewModelAuth<TModel>
     where TModel : class, new()
 {
     public TModel? NotificationData { get; set; }

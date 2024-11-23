@@ -11,7 +11,10 @@
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 	</PropertyGroup>
 	<ItemGroup>
-	  <Content Remove="Session\LzSessionsViewModel.cs" />
+	  <Compile Remove="ClientConfig\**" />
+	  <Content Remove="ClientConfig\**" />
+	  <EmbeddedResource Remove="ClientConfig\**" />
+	  <None Remove="ClientConfig\**" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -29,9 +32,6 @@
 	<ItemGroup>
 		<ProjectReference Include="..\LazyMagic.Client.Base\LazyMagic.Client.Base.csproj" />
 		<ProjectReference Include="..\LazyMagic.Shared\LazyMagic.Shared.csproj" />
-	</ItemGroup>
-	<ItemGroup>
-	  <Folder Include="ClientConfig\" />
 	</ItemGroup>
 
 </Project>

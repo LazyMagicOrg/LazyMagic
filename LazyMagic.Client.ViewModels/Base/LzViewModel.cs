@@ -1,7 +1,16 @@
-﻿namespace LazyMagic.Client.ViewModels;
+﻿using Microsoft.Extensions.Logging;
+
+namespace LazyMagic.Client.ViewModels;
 
 public abstract class LzViewModel: ReactiveObject, IDisposable
 {
+    protected readonly ILogger _logger;
+
+    public LzViewModel(ILoggerFactory loggerFactory)
+    {
+        _logger = loggerFactory.CreateLogger(GetType());
+    }   
+
     public virtual void Dispose()
     {
         Dispose(true);
@@ -20,13 +29,15 @@ public abstract class LzViewModel: ReactiveObject, IDisposable
     {
         var msgLoc = $"{m!.ReflectedType!.Name}.{m.Name}";
         msg = $"{msgLoc} failed {msg}";
-        Console.WriteLine(msg);
+        //Console.WriteLine(msg);
+        _logger.LogError(msg);  
         return msg;
     }
 
     protected virtual string Log(string userMsg, string detailedMsg)
     {
-        Console.WriteLine(userMsg + " | " + detailedMsg);
+        //Console.WriteLine(userMsg + " | " + detailedMsg);
+        _logger.LogError(userMsg + " | " + detailedMsg);
         return userMsg;
     }
 }

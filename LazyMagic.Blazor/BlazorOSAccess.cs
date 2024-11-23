@@ -2,7 +2,9 @@
 
 public class BlazorOSAccess : IOSAccess
 {
-    public BlazorOSAccess(HttpClient httpClient) { 
+    private readonly ILogger _logger;
+    public BlazorOSAccess(ILoggerFactory loggerFactory, HttpClient httpClient) {
+        _logger = loggerFactory.CreateLogger<BlazorOSAccess>(); 
         this.httpClient = httpClient;
     }
     HttpClient httpClient;
@@ -26,7 +28,7 @@ public class BlazorOSAccess : IOSAccess
         catch (Exception ex)
         {
            
-                Console.WriteLine($"ReadAuthConfigAsync error reading: {url}, {ex.Message}");
+                _logger.LogDebug($"ReadAuthConfigAsync error reading: {url}, {ex.Message}");
                 return string.Empty;
         }
     }

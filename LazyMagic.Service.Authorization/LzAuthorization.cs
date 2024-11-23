@@ -76,6 +76,8 @@ public abstract class LzAuthorization : ILzAuthorization
 
             string tenantConfigBucket = await GetTenantConfigBucketAsync(request, tenantKey);
 
+            string sessionId = GetSessionId(request);
+
             // Authorization Header  - used to get user identity
             (string lzUserId, string userName) = GetUserInfo(request);
 
@@ -94,7 +96,8 @@ public abstract class LzAuthorization : ILzAuthorization
                 Table = table,
                 TenantConfigBucket = tenantConfigBucket,
                 Permissions = permissions,
-                Tenancy = tenantKey 
+                Tenancy = tenantKey ,
+                SessionId = sessionId   
             };
         }
         catch (Exception)
@@ -135,6 +138,16 @@ public abstract class LzAuthorization : ILzAuthorization
         // Override this method to return the table for a tenantKey if its not the same as the tenantKey
         return tenantKey; 
     }
+
+    // Extract SessionId information
+    public virtual string GetSessionId(HttpRequest request)
+    {
+        var foundSessionIdhHeader = request.Headers.TryGetValue("SessionId", out Microsoft.Extensions.Primitives.StringValues sessionIdHeader);
+        if (foundSessionIdhHeader)
+            return sessionIdHeader[0]!.ToString();
+        return "";
+    }
+
     // Extract user identity information
     public virtual (string lzUserId, string userName) GetUserInfo(HttpRequest request)
     {

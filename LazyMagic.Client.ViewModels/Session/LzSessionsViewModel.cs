@@ -1,19 +1,18 @@
-﻿using LazyMagic.Client.Base;
-
-namespace LazyMagic.Client.ViewModels;
+﻿namespace LazyMagic.Client.ViewModels;
 
 public abstract class LzSessionsViewModel<T> : LzViewModel, ILzSessionsViewModel<T>
     where T : ILzSessionViewModel
 {
-    public LzSessionsViewModel()
-    {
-    }
     [Reactive] public virtual T? SessionViewModel { get; set; }
     private Dictionary<string, T> _sessions = new();
     [Reactive] public bool IsInitialized { get; protected set; }
     [ObservableAsProperty] public bool IsOnline { get; }
     protected readonly CompositeDisposable sessionDisposables = new();
     //public virtual async Task InitAsync(IOSAccess osAccess, ILzClientConfig clientConfig, IInternetConnectivitySvc internetConnectivitySvc)
+
+    public LzSessionsViewModel(ILoggerFactory loggerFactory) : base(loggerFactory)
+    {
+    }
 
     public virtual async Task<bool> CreateSessionAsync()
     {

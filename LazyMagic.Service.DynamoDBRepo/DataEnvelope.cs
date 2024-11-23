@@ -14,8 +14,8 @@ public abstract class DataEnvelope<T> : IDataEnvelope<T>
             OpenEnvelope();
         }
     }
-    public virtual string DefaultPK { get; } = $"{nameof(T)}:"; 
-    public virtual string CurrentTypeName { get; set; } = $"{nameof(T)}:v1.0.0";
+    public virtual string DefaultPK { get; } = $"{typeof(T).Name}:"; 
+    public virtual string CurrentTypeName { get; set; } = $"{typeof(T).Name}:v1.0.0";
 
     /// <summary>
     /// Set this value to false if you are not using Utc for optimistic locking

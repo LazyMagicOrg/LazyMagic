@@ -1,1 +1,6 @@
-﻿# LazyMagic.Notifications.ViewModels 
+﻿# LazyMagic.Client.ViewModels.Auth.Notifications
+
+```
+
+
+```

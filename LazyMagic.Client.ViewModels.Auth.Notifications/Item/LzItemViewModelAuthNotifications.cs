@@ -1,17 +1,13 @@
 ﻿namespace LazyMagic.Client.ViewModels;
 
-/// <summary>
-/// ItemViewModelNotificationsBase<T,TEdit>
-/// This class is the base class for all ItemViewModels that will use Notifications.
-/// </summary>
-/// <typeparam name="TDTO">DTO Type</typeparam>
-/// <typeparam name="TModel">Model Type (extended model off of TDTO)</typeparam>
-public abstract class LzItemViewModelAuthNotifications<TDTO, TModel> : LzItemViewModel<TDTO,TModel>, ILzItemViewModelNotificationsBase<TModel>
+/// <inheritdoc/>
+public abstract class LzItemViewModelAuthNotifications<TDTO, TModel> 
+    : LzItemViewModelAuth<TDTO,TModel>, 
+    ILzItemViewModelAuthNotifications<TModel>
     where TDTO : class, new()
     where TModel : class, TDTO, IRegisterObservables, new()
 {
-    public LzItemViewModelAuthNotifications(ILzSessionViewModel sessionViewModel, TDTO? dto = null, TModel? model = null,  bool? isLoaded = null) 
-        : base(sessionViewModel, dto: dto, model: model, isLoaded: isLoaded)
+    public LzItemViewModelAuthNotifications(ILoggerFactory loggerFactory, ILzSessionViewModel sessionViewModel, TDTO? dto = null, TModel? model = null, bool? isLoaded = null) : base(loggerFactory,  sessionViewModel, dto: dto, model: model, isLoaded: isLoaded)
     {
         this.WhenAnyValue(x => x.NotificationsSvc!.Notification!)
             .WhereNotNull()
@@ -114,23 +110,23 @@ public abstract class LzItemViewModelAuthNotifications<TDTO, TModel> : LzItemVie
             LastNotificationTick = UpdatedAt;
         return (success, msg);
     }
-    public override async Task<(bool, string)> UpdateAsync(string? id)
+    public override async Task<(bool, string)> UpdateAsync()
     {
-        var (success, msg) = await base.UpdateAsync(id);
+        var (success, msg) = await base.UpdateAsync();
         if (success)
             LastNotificationTick = UpdatedAt;
         return (success, msg);
     }
-    public override async Task<(bool, string)> SaveEditAsync(string? id)
+    public override async Task<(bool, string)> SaveEditAsync()
     {
-        var (success, msg) = await base.SaveEditAsync(id);
+        var (success, msg) = await base.SaveEditAsync();
         if (success)
             IsMerge = false;
         return (success, msg);
     }
-    public override (bool, string) CancelEdit()
+    public override async Task<(bool, string)> CancelEditAsync()
     {
-
+        await Task.Delay(0);
         if (State != LzItemViewModelState.Edit && State != LzItemViewModelState.New)
             return (false, Log(MethodBase.GetCurrentMethod()!, "No Active Edit"));
 
@@ -140,6 +136,8 @@ public abstract class LzItemViewModelAuthNotifications<TDTO, TModel> : LzItemVie
             UpdateData(NotificationData!);
         else
             RestoreFromDataCopy();
+        if (ParentViewModel is not null) await ParentViewModel.ItemUpdateCanceled(Id);
+
         IsMerge = false;
         return (true, String.Empty);
     }

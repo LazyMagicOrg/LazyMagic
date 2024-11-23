@@ -1,6 +1,7 @@
 
 
 using Amazon.CognitoIdentityProvider.Model;
+using Amazon.Runtime.Internal.Util;
 
 /// <summary> 
 /// AWS Authentication and Authorization Strategy
@@ -52,7 +53,9 @@ namespace LazyMagic.Client.Auth;
 /// </summary>
 public class AuthProviderCognito : IAuthProviderCognito
 {
+    private readonly Microsoft.Extensions.Logging.ILogger _logger;
     public AuthProviderCognito(
+        ILoggerFactory loggerFactory,
         ILoginFormat loginFormat,
         IPasswordFormat passwordFormat,
         IEmailFormat emailFormat,
@@ -61,6 +64,7 @@ public class AuthProviderCognito : IAuthProviderCognito
     //,ICognitoConfig cognitoConfig = null
     )
     {
+        _logger = loggerFactory.CreateLogger(nameof(AuthProviderCognito));
         this.loginFormat = loginFormat;
         this.passwordFormat = passwordFormat;
         this.emailFormat = emailFormat;
@@ -125,11 +129,6 @@ public class AuthProviderCognito : IAuthProviderCognito
               ? AuthChallengeList[0]
               : AuthChallengeEnum.None;
         }
-    }
-    public async Task<string?> GetJWTAsync()
-    {
-        await Task.Delay(0);
-        return CognitoUser?.SessionTokens?.IdToken;
     }
     public async Task<Creds?> GetCredsAsync()
     {
@@ -272,7 +271,6 @@ public class AuthProviderCognito : IAuthProviderCognito
 
         identityPoolId = (string?)authConfig["identityPoolId"];
 
-        //Console.WriteLine($"About to call AmazonCognitoIdentityProviderClient(.., {regionEndpoint.DisplayName})");
         try
         {
             providerClient = new AmazonCognitoIdentityProviderClient(new AnonymousAWSCredentials(), regionEndpoint);
@@ -280,12 +278,11 @@ public class AuthProviderCognito : IAuthProviderCognito
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"InnerExcpetion {ex.InnerException?.Message}");
-            Console.WriteLine($"InnerExcpetion2 {ex.InnerException?.InnerException?.Message}");
-            Console.WriteLine($"InnerExcpetion3 {ex.InnerException?.InnerException?.InnerException?.Message}");
+            _logger.LogDebug($"InnerExcpetion {ex.InnerException?.Message}");
+            _logger.LogDebug($"InnerExcpetion2 {ex.InnerException?.InnerException?.Message}");
+            _logger.LogDebug($"InnerExcpetion3 {ex.InnerException?.InnerException?.InnerException?.Message}");
             throw ex;   
         }
-        //Console.WriteLine($"SetAuthenticator. userPoolId:{userPoolId}, clientId:{clientId}");
         userPool = new CognitoUserPool(userPoolId, clientId, providerClient);
 
         AuthInitialized = true;
@@ -483,7 +480,7 @@ public class AuthProviderCognito : IAuthProviderCognito
         catch (TooManyFailedAttemptsException) { return AuthEventEnum.Alert_TooManyAttempts; }
         catch (Exception e)
         {
-            Debug.WriteLine($"VerifyLogin() threw an exception {e}");
+            _logger.LogDebug($"VerifyLogin() threw an exception {e}");   
             CognitoUser = null;
             return AuthEventEnum.Alert_Unknown;
         }
@@ -556,7 +553,7 @@ public class AuthProviderCognito : IAuthProviderCognito
         catch (UserNotConfirmedException) { return AuthEventEnum.Alert_NotConfirmed; }
         catch (Exception e)
         {
-            Debug.WriteLine($"VerifyPassword() threw an exception {e}");
+            _logger.LogDebug($"VerifyPassword() threw an exception {e}");   
             CognitoUser = null;
             return AuthEventEnum.Alert_Unknown;
         }
@@ -611,7 +608,7 @@ public class AuthProviderCognito : IAuthProviderCognito
         catch (UserNotConfirmedException) { return AuthEventEnum.Alert_NotConfirmed; }
         catch (Exception e)
         {
-            Debug.WriteLine($"VerifyPassword() threw an exception {e}");
+            _logger.LogDebug($"VerifyPassword() threw an exception {e}");
             CognitoUser = null;
             return AuthEventEnum.Alert_Unknown;
         }
@@ -642,7 +639,7 @@ public class AuthProviderCognito : IAuthProviderCognito
         catch (TooManyFailedAttemptsException) { return AuthEventEnum.Alert_TooManyAttempts; }
         catch (Exception e)
         {
-            Debug.WriteLine($"UpdateEmail() threw an exception {e}");
+            _logger.LogDebug($"UpdateEmail() threw an exception {e}");
             return AuthEventEnum.Alert_Unknown;
         }
 
@@ -694,7 +691,7 @@ public class AuthProviderCognito : IAuthProviderCognito
         catch (TooManyFailedAttemptsException) { return AuthEventEnum.Alert_TooManyAttempts; }
         catch (Exception e)
         {
-            Debug.WriteLine($"UpdateEmail() threw an exception {e}");
+            _logger.LogDebug($"UpdateEmail() threw an exception {e}");
             return AuthEventEnum.Alert_Unknown;
         }
     }
@@ -792,7 +789,7 @@ public class AuthProviderCognito : IAuthProviderCognito
         catch (AliasExistsException) { return AuthEventEnum.Alert_AccountWithThatEmailAlreadyExists; }
         catch (Exception e)
         {
-            Debug.WriteLine($"VerifyCode() threw an exception {e}");
+            _logger.LogDebug($"VerifyCode() threw an exception {e}");
             CognitoUser = null;
             return AuthEventEnum.Alert_Unknown;
         }
@@ -857,7 +854,7 @@ public class AuthProviderCognito : IAuthProviderCognito
         }
         catch (Exception e)
         {
-            Debug.WriteLine($"SignUp() threw an exception {e}");
+            _logger.LogDebug($"SignUp() threw an exception {e}");
             return AuthEventEnum.Alert_Unknown;
         }
     }
@@ -979,7 +976,7 @@ public class AuthProviderCognito : IAuthProviderCognito
         catch (PasswordResetRequiredException) { return AuthEventEnum.Alert_PasswordResetRequiredException; }
         catch (Exception e)
         {
-            Debug.WriteLine($"SignUp() threw an exception {e}");
+            _logger.LogDebug($"SignUp() threw an exception {e}");
             return AuthEventEnum.Alert_Unknown;
         }
 
@@ -1046,7 +1043,7 @@ public class AuthProviderCognito : IAuthProviderCognito
     {
         return Task.CompletedTask;
     }
-    public virtual async Task<string> GetAccessToken()
+    public virtual async Task<string?> GetAccessToken()
     {
         if (CognitoUser == null)
             return string.Empty;
@@ -1070,12 +1067,12 @@ public class AuthProviderCognito : IAuthProviderCognito
             try
             {
                 var IpIdentity = await credentials.GetIdentityIdAsync();
-                Debug.WriteLine($" IpIdentity {IpIdentity}");
+                _logger.LogDebug($" IpIdentity {IpIdentity}");
                 return IpIdentity;
             }
             catch (Exception e)
             {
-                Debug.WriteLine($"{e.Message}");
+                _logger.LogDebug($"{e.Message}");
                 return string.Empty;
             }
         }
@@ -1102,7 +1099,7 @@ public class AuthProviderCognito : IAuthProviderCognito
         }
         catch (Exception e)
         {
-            Debug.WriteLine($"RefreshToken() threw an exception {e}");
+            _logger.LogDebug($"RefreshToken() threw an exception {e}");
             return false;
         }
     }
@@ -1128,7 +1125,7 @@ public class AuthProviderCognito : IAuthProviderCognito
         }
         catch (Exception e)
         {
-            Debug.WriteLine($"RefreshUserDetails threw an exception {e}");
+            _logger.LogDebug($"RefreshUserDetails threw an exception {e}");
             return AuthEventEnum.Alert_Unknown;
         }
     }

@@ -4,17 +4,22 @@ using LazyMagic.Shared;
 using Amazon.Runtime;
 using AwsSignatureVersion4;
 using Microsoft.IdentityModel.Tokens;
+using Amazon.Runtime.Internal.Util;
+using Microsoft.Extensions.Logging;
 
 public partial class LzHttpClientSigV4 : LzHttpClient, ILzHttpClient   
 {
+    private readonly Microsoft.Extensions.Logging.ILogger _logger;
     public LzHttpClientSigV4(
+        ILoggerFactory loggerFactory,
         string awsRegion, // AWS region for the API 
         int securityLevel, // 0 = no security, 1 = JWT, 2 = AWS Signature V4    
         string tenantKey, // necessary for local debugging, CloudFront replaces this header value in the tenancy cache function
         IAuthProvider authProvider, // Auth service. ex: AuthProviderCognito
         ILzHost lzHost // Runtime environment. IsMAUI, IsWASM, URL etc.
-        ) : base(securityLevel, tenantKey, authProvider, lzHost)
+        ) : base(loggerFactory, securityLevel, tenantKey, authProvider, lzHost)
     {
+        _logger = loggerFactory.CreateLogger<LzHttpClientSigV4>();  
         this.awsRegion = awsRegion;    
     }
     private string awsRegion;
@@ -29,7 +34,7 @@ public partial class LzHttpClientSigV4 : LzHttpClient, ILzHttpClient
         // Note: For this ApiGateway we need to add a copy of the JWT header 
         // to make it available to the Lambda. This type of ApiGateway will not
         // pass the authorization header through to the Lambda.
-        var token = await authProvider!.GetJWTAsync();
+        var token = await authProvider!.GetIdentityToken();
         requestMessage.Headers.Add("LzIdentity", token);
 
         var iCreds = await authProvider.GetCredsAsync();

@@ -9,36 +9,45 @@
 /// When used in a browser, .NET ClientWebSocket does not allow us to 
 /// attach an authorization header when communicating to the WebSocket 
 /// Service. For this reason, we do unauthenticated websocket connections.
-/// Note that subscriptions use the REST API and usually subject to authentication.
-/// Since we use subscriptions to send messages to websocket connections, no 
-/// messages will be sent to websocket connections that have not had subsequent 
-/// subscriptions. So, in a nutshell, websocket connections are not authenticated
-/// but subscription channels usually are. Also, we are using wss:// so the websocket
-/// connection transport is secure.
+/// Note that we subscribe using the REST API and subscription is usually subject to 
+/// authentication.
+/// On the server side, we only send messages to websocket connections, 
+/// related to current subscriptions. 
+/// So, in a nutshell, websocket connections are not authenticated
+/// but subscription channels usually are. 
+/// 
+/// To mitigate DOS attacks, the service side should delete any websocket connections 
+/// that are not subscribed to any topics within a reasonable time period, like
+/// 5 seconds.
+/// 
+/// Also, we are using wss:// so the websocket connection transport is secure.
 /// 
 /// Client side Usage Notes
 /// After signing in, use the ClientSDK.SubscribeAsync(Subscription subscription) to subscribe to 
-/// one or more topics.
+/// one or more topics. Do at least one subscription with a short time to avoid having the 
+/// service side delete the websocket connection. 
 /// 
 /// Flow:
 /// - Singleton injection, should happen before authentication
-/// - Set UsePolling = true before authentication if you want to avoid attempt to establish web socket connection
 /// 
 /// </summary>
 public abstract class LzNotificationSvc : LzViewModel, ILzNotificationSvc, IDisposable
 {
     public LzNotificationSvc(
+        ILoggerFactory loggerFactory,
         ILzClientConfig clientConfig,
         ILzHost lzHost,
         IAuthProcess authProces,
-        IInternetConnectivitySvc internetConnectivity)
+        IInternetConnectivitySvc internetConnectivity,
+        string? sessionId = null) : base(loggerFactory) 
     {
         this.clientConfig = clientConfig;
         this.lzHost = lzHost;
-        this.authProcess = authProces;
-        this.internetConnectivity = internetConnectivity;
+        AuthProcess = authProces;
+        InternetConnectivitySvc = internetConnectivity;
+        this.sessionId = sessionId ?? "";
 
-        this.WhenAnyValue(x => x.internetConnectivity.IsOnline, x => x.authProcess.IsSignedIn, (x, y) => x && y )
+        this.WhenAnyValue(x => x.InternetConnectivitySvc.IsOnline, x => x.AuthProcess.IsSignedIn, (x, y) => x && y )
             .Throttle(TimeSpan.FromMilliseconds(100))
             .DistinctUntilChanged()
             .Subscribe(async x =>
@@ -49,13 +58,15 @@ public abstract class LzNotificationSvc : LzViewModel, ILzNotificationSvc, IDisp
     }
 
     protected ILzClientConfig clientConfig;
-    protected IAuthProcess authProcess;
-    protected IInternetConnectivitySvc internetConnectivity;    
+    public IAuthProcess AuthProcess { get; init; }
+    public IInternetConnectivitySvc InternetConnectivitySvc { get; init; }
     protected string? wsBaseUri; 
     protected Timer? timer;
     protected ClientWebSocket? ws;
     protected string connectionId = string.Empty;
     protected ILzHost lzHost;
+    protected string sessionId;    
+    public bool Debug { get; set; } = false;
 
     protected long lastDateTimeTicks = 0;
     public ObservableCollection<string> Topics { get; set; } = new();
@@ -76,7 +87,9 @@ public abstract class LzNotificationSvc : LzViewModel, ILzNotificationSvc, IDisp
     /// have endpoints supporting Notifications using the 
     /// Service solution's NotificationsSvc.yaml and have
     /// appropriate Notification methods in the ClientSDK.
-    /// Note: The method should have the 'async' modifier.
+    /// Note: The method implementation should have the 
+    /// 'async' modifier as it is expected to call the system 
+    /// service using the system ClientSDK.
     /// </summary>
     /// <param name="lastDateTimeTick"></param>
     /// <returns></returns>
@@ -90,17 +103,19 @@ public abstract class LzNotificationSvc : LzViewModel, ILzNotificationSvc, IDisp
 
     public async Task ConnectAsync()
     {
-        Console.WriteLine("NotificationSvc.ConnectAsync()");
+        if(Debug)
+            _logger.LogDebug("NotificationSvc.ConnectAsync()");
         await EnsureConnectedAsync();
     }
 
-    private async Task EnsureConnectedAsync()
+    public virtual async Task EnsureConnectedAsync()
     {
 
         //Todo: Clean up the handling of the websocket lifecycle. 
         ws ??= new ClientWebSocket();
 
-        Console.WriteLine($"EnsureConnectedAsync. WebSocketState={ws.State}");
+        if(Debug)
+            _logger.LogDebug($"EnsureConnectedAsync. WebSocketState={ws.State}");
 
         if (ws.State == WebSocketState.Open || ws.State == WebSocketState.Connecting)
             return;
@@ -114,36 +129,42 @@ public abstract class LzNotificationSvc : LzViewModel, ILzNotificationSvc, IDisp
         var uri = new Uri(lzHost.WsUrl);   
         try
         {
-            Console.WriteLine("Calling ws.ConnectAsync");
+            if (Debug)
+                _logger.LogDebug("Calling ws.ConnectAsync");
             await ws.ConnectAsync(uri, CancellationToken.None);
             await ListenForMessages();
         } catch (Exception ex)
         {
-            Console.WriteLine(ex.Message.ToString());   
+            _logger.LogDebug(ex.Message.ToString());   
         }
     }
 
-    private async Task ListenForMessages()
+    protected async Task ListenForMessages()
     {
-        Console.WriteLine("Listening for web socket messages");
+        if (Debug)
+            _logger.LogDebug("Listening for web socket messages");
         var buffer = new byte[1024];
         if (ws is null)
             return;
         while (ws.State == WebSocketState.Open)
         {
             var result = await ws.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
-            Console.WriteLine($"Received message. type:{result.MessageType}");
+            if (Debug)
+                _logger.LogDebug($"Received message. type:{result.MessageType}");
             switch(result.MessageType)
             {
                 case WebSocketMessageType.Close:
-                    Console.WriteLine("WebSocket Close");
+                    if (Debug)
+                        _logger.LogDebug("WebSocket Close");
                     break;
                 case WebSocketMessageType.Text:
                     var message = Encoding.UTF8.GetString(buffer, 0, result.Count);
-                    Console.WriteLine($"WebSocket Text message. {message}");
+                    if (Debug)
+                        _logger.LogDebug($"WebSocket Text message. {message}");
                     break;
                 case WebSocketMessageType.Binary:
-                    Console.WriteLine($"WebSocket Binary message.");
+                    if (Debug)
+                        _logger.LogDebug($"WebSocket Binary message.");
                     break;
             }
         }
@@ -153,13 +174,15 @@ public abstract class LzNotificationSvc : LzViewModel, ILzNotificationSvc, IDisp
     {
         if(ws is null)
         {
-            Console.WriteLine($"WebScoket SendAsync failed. WebSocketClient is null");
+            if (Debug)
+                _logger.LogDebug($"WebSocket SendAsync failed. WebSocketClient is null");
             return;
         }
 
         if (ws.State != WebSocketState.Open)
         {
-            Console.WriteLine($"WebScoket SendAsync failed. State={ws.State}");
+            if (Debug)
+                _logger.LogDebug($"WebSocket SendAsync failed. State={ws.State}");
             return;
         }    
 
@@ -169,7 +192,8 @@ public abstract class LzNotificationSvc : LzViewModel, ILzNotificationSvc, IDisp
 
         await ws.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true, CancellationToken.None);
 
-        Console.WriteLine($"WebScoket SendAsync done. State={ws.State}");
+        if (Debug)
+            _logger.LogDebug($"WebSocket SendAsync done. State={ws.State}");
 
     }
 
@@ -180,7 +204,8 @@ public abstract class LzNotificationSvc : LzViewModel, ILzNotificationSvc, IDisp
         if (ws.State == WebSocketState.Open)
         {
             await ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
-            Console.WriteLine($"DisconnectAsync called. ws.State={ws.State.ToString()}");
+            if (Debug)
+                _logger.LogDebug($"DisconnectAsync called. ws.State={ws.State.ToString()}");
         }
         ws = null;  
     }

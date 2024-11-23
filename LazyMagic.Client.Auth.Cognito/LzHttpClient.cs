@@ -17,17 +17,22 @@ namespace LazyMagic.Client.Auth;
 /// </summary>
 public class LzHttpClient : NotifyBase, ILzHttpClient
 {
+    private readonly ILogger _logger;
     public LzHttpClient(
+        ILoggerFactory loggerFactory,
         int securityLevel, // 0 = no security, 1 = JWT, 2 = AWS Signature V4
         string tenantKey, // necessary for local debugging, CloudFront replaces this header value in the tenancy cache function
         IAuthProvider? authProvider, // Auth service. ex: AuthProviderCognito
-        ILzHost lzHost // Runtime environment. IsMAUI, IsWASM, URL etc.
+        ILzHost lzHost, // Runtime environment. IsMAUI, IsWASM, URL etc.
+        string? sessionId = null
         )
     {
+        _logger = loggerFactory.CreateLogger<LzHttpClient>();   
         this.securityLevel = securityLevel;
         this.authProvider = authProvider;
         this.lzHost= lzHost;
-        this.tenantKey = tenantKey; 
+        this.tenantKey = tenantKey;
+        this.sessionId = sessionId ?? "";
     }
     protected int securityLevel = 0;
     protected IAuthProvider? authProvider;
@@ -35,6 +40,7 @@ public class LzHttpClient : NotifyBase, ILzHttpClient
     protected HttpClient? httpClient;
     protected bool isServiceAvailable = false;
     protected string? tenantKey;
+    protected string? sessionId; 
 
     public async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage requestMessage,
@@ -46,7 +52,8 @@ public class LzHttpClient : NotifyBase, ILzHttpClient
         if(!baseUrl.EndsWith("/"))
             baseUrl += "/"; // baseUrl must end with a / or contcat with relative path may fail
 
-        requestMessage.Headers.Add("tenantKey", tenantKey); 
+        requestMessage.Headers.Add("tenantKey", tenantKey);
+        requestMessage.Headers.Add("SessionId", sessionId);
 
         // Create HttpClient if it doesn't exist
         if (httpClient is null)
@@ -76,12 +83,12 @@ public class LzHttpClient : NotifyBase, ILzHttpClient
                         // request failed due to an underlying issue such as network connectivity,
                         // DNS failure, server certificate validation or timeout
                         isServiceAvailable = false;
-                        Console.WriteLine($"HttpRequestException {e.Message}");
+                        _logger.LogDebug($"HttpRequestException {e.Message}");  
                         return new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest);
                     } 
                     catch (Exception e)
                     {
-                        Debug.WriteLine($"Error: {callerMemberName} {e.Message}");
+                        _logger.LogDebug($"Error: {callerMemberName} {e.Message}");
                         return new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest);
                     }
 
@@ -90,13 +97,13 @@ public class LzHttpClient : NotifyBase, ILzHttpClient
                     {
                         if(authProvider is null)
                         {
-                            Debug.WriteLine("authProvider is null");
+                            _logger.LogDebug("authProvider is null");
                             return new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest);
                         }   
                         string? token = "";
                         try
                         {
-                            token = await authProvider!.GetJWTAsync();
+                            token = await authProvider!.GetIdentityToken();
                             requestMessage.Headers.Add("Authorization", token);
                         }
                         catch
@@ -104,7 +111,7 @@ public class LzHttpClient : NotifyBase, ILzHttpClient
                             // Ignore. We ignore this error and let the 
                             // api handle the missing token. This gives us a 
                             // way of testing an improperly configured API.
-                            Debug.WriteLine("authProvider.GetJWTAsync() failed");
+                            _logger.LogDebug("authProvider.GetJWTAsync() failed");
                             return new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest);
                         }
 
@@ -118,13 +125,13 @@ public class LzHttpClient : NotifyBase, ILzHttpClient
                     {
                         // request failed due to an underlying issue such as network connectivity,
                         // DNS failure, server certificate validation or timeout
-                        Console.WriteLine($"HttpRequestException {e.Message}");
+                        _logger.LogDebug($"HttpRequestException {e.Message}");
                         isServiceAvailable = false;
                         return new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest);
                     }
                     catch (Exception e)
                     {
-                        Debug.WriteLine($"Error: {callerMemberName} {e.Message}");
+                        _logger.LogDebug($"Error: {callerMemberName} {e.Message}");
                         return new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest);
                     }
                 case 2: // Use AWS Signature V4 signing process
@@ -134,7 +141,7 @@ public class LzHttpClient : NotifyBase, ILzHttpClient
                     }
                     catch (System.Exception e)
                     {
-                        Debug.WriteLine($"Error: {e.Message}");
+                        _logger.LogDebug($"Error: {e.Message}");
                     }
                     break;
                     throw new Exception($"Security Level {securityLevel} not supported.");
@@ -142,7 +149,7 @@ public class LzHttpClient : NotifyBase, ILzHttpClient
         }
         catch (Exception ex)
         {
-            Debug.WriteLine($"Error: {ex.Message}");
+            _logger.LogDebug($"Error: {ex.Message}");
             return new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest);
         }
         return new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest);

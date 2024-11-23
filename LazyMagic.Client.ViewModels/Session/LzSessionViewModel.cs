@@ -3,13 +3,14 @@
 /// <summary>
 /// Orchestrates the connection to services.
 /// </summary>
-public abstract class LzSessionViewModel : LzViewModel, ILzSessionViewModel, INotifyPropertyChanged
+public abstract class LzSessionViewModel : LzViewModel, ILzSessionViewModel
 {
     public LzSessionViewModel(
+        ILoggerFactory loggerFactory,
         IInternetConnectivitySvc internetConnectivity,
     	ILzMessages messages
-		)
-	{
+		) : base(loggerFactory) 
+    {
         InternetConnectivity = internetConnectivity ?? throw new ArgumentNullException(nameof(internetConnectivity));
         Messages = messages ?? throw new ArgumentNullException(nameof(messages));
         // Maintain a local instance of the MessageSetSelector so we can react to changes in that value 

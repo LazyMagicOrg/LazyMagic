@@ -2,8 +2,9 @@
 public class SessionsViewModel : LzSessionsViewModelAuth<ISessionViewModel>, ISessionsViewModel
 {
     public SessionsViewModel(
+        ILoggerFactory loggerFactory,   
         ISessionViewModelFactory sessionViewModelFactory
-        ) 
+        ) : base(loggerFactory)
     {
         _sessionViewModelFactory = sessionViewModelFactory;
         IsInitialized = true;

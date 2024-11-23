@@ -2,7 +2,9 @@
 
 public class BlazorStaticAssets : IStaticAssets
 {
-    public BlazorStaticAssets(HttpClient httpClient) { 
+    private readonly ILogger _logger;   
+    public BlazorStaticAssets(ILoggerFactory loggerFactory, HttpClient httpClient) {
+        _logger = loggerFactory.CreateLogger<BlazorStaticAssets>();
         this.httpClient = httpClient;
     }
     HttpClient httpClient;
@@ -17,7 +19,7 @@ public class BlazorStaticAssets : IStaticAssets
         catch (Exception ex)
         {
            
-            Console.WriteLine($"ReadAuthConfigAsync error reading: {url}, {ex.Message}");
+            _logger.LogDebug($"ReadAuthConfigAsync error reading: {url}, {ex.Message}");
             return string.Empty;
         }
     }
@@ -29,7 +31,7 @@ public class BlazorStaticAssets : IStaticAssets
             return text;
         } catch (Exception ex)
         {
-            Console.WriteLine($"ReadTenancyConfigAsync error reading: {url}, {ex.Message}");
+            _logger.LogDebug($"ReadTenancyConfigAsync error reading: {url}, {ex.Message}");
             return string.Empty;
         }
     }
@@ -42,7 +44,7 @@ public class BlazorStaticAssets : IStaticAssets
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"ReadContentAsync error reading: {url}, {ex.Message}");
+            _logger.LogDebug($"ReadContentAsync error reading: {url}, {ex.Message}");
             return string.Empty;
         }
     }
@@ -56,7 +58,7 @@ public class BlazorStaticAssets : IStaticAssets
 
         catch (Exception ex)
         {
-            Console.WriteLine($"HttpReadAsync error reading: {url}, {ex.Message}");
+            _logger.LogDebug($"HttpReadAsync error reading: {url}, {ex.Message}");
             return string.Empty;
         }
     }

@@ -24,11 +24,11 @@ namespace LazyMagic.Client.Auth;
 /// </summary>
 public class AuthProcess : NotifyBase, IAuthProcess
 {
-
-    public AuthProcess(IAuthProvider authProvider)
+    private readonly ILogger _logger;   
+    public AuthProcess(ILoggerFactory loggerFactory, IAuthProvider authProvider)
     {
         _authProvider = authProvider;
-
+        _logger = loggerFactory.CreateLogger<AuthProcess>();  
     }
 
     #region Fields
@@ -48,6 +48,8 @@ public class AuthProcess : NotifyBase, IAuthProcess
     public bool AuthInitialized { get; set; }    
     public AuthChallengeEnum CurrentChallenge => _authProvider.CurrentChallenge;
     public AuthProcessEnum CurrentAuthProcess => _authProvider.CurrentAuthProcess;
+
+    
 
     private string _login = string.Empty;
     public string Login
@@ -845,9 +847,13 @@ public class AuthProcess : NotifyBase, IAuthProcess
         return await _authProvider!.GetCredsAsync();
     }
 
-    public async Task<string?> GetJWTAsync()
+    public async Task<string?> GetAccessToken()
     {
-        return await _authProvider.GetJWTAsync();
+        return await _authProvider.GetAccessToken();
+    }   
+    public async Task<string?> GetIdentityToken()
+    {
+        return await _authProvider.GetIdentityToken();
     }
 
     // Wrap an execution in a IsBusy

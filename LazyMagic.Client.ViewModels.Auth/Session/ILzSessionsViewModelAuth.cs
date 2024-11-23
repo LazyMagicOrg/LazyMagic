@@ -1,5 +1,6 @@
 ﻿namespace LazyMagic.Client.ViewModels;
 
+/// <inheritdoc/>
 public interface ILzSessionsViewModelAuth<T> : ILzSessionsViewModel<T>
     where T : ILzSessionViewModelAuth
 {

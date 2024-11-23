@@ -142,7 +142,7 @@ namespace {namespaceName}
     {{
         {className} Create({nonInjectedParametersText});
     }} 
-    public class {className}Factory : I{className}Factory, ILzTransient
+    public class {className}Factory : I{className}Factory
     {{
 
         public {className}Factory({injectedParametersText}) 

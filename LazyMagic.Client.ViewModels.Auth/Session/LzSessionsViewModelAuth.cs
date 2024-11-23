@@ -1,11 +1,13 @@
 ﻿namespace LazyMagic.Client.ViewModels;
-
+/// <inheritdoc/>
 public abstract class LzSessionsViewModelAuth<T> : LzSessionsViewModel<T>, ILzSessionsViewModelAuth<T>
     where T : ILzSessionViewModelAuth
 {
-    public LzSessionsViewModelAuth()   
+    public LzSessionsViewModelAuth(ILoggerFactory loggerFactory) : base(loggerFactory)
     {
     }
+
+
     public override T? SessionViewModel { get; set; }
     // public IAuthProcess? AuthProcess { get; set; }
     //[ObservableAsProperty] public bool IsSignedIn { get; }
