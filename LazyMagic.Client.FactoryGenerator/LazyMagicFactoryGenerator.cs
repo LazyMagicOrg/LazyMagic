@@ -130,7 +130,7 @@ public class LazyMagicFactoryGenerator : ISourceGenerator
                     var nonInjectedParametersText = SyntaxFactory.SeparatedList(nonInjectedParameters).ToFullString();
 
                     // Grab the arguments list (which includes all the parameters)
-                    var arguments = constructor?.ParameterList.Parameters.Select(p => SyntaxFactory.Argument(SyntaxFactory.IdentifierName(p.Identifier))).ToList();
+                    var arguments = constructor?.ParameterList.Parameters.Select(p => SyntaxFactory.Argument(SyntaxFactory.IdentifierName(p.Identifier)));
                     var argumentsText = SyntaxFactory.SeparatedList(arguments).ToFullString();
 
                     var sourceBuilder = new StringBuilder();

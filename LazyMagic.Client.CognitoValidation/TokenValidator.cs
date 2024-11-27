@@ -41,13 +41,11 @@ public class TokenValidator : ITokenValidator
             var jwt = handler.ReadJwtToken(token);
 
             _tokenParams.IssuerSigningKeyResolver = (s, securityToken, identifier, parameters) =>
-            {
-                var now = DateTime.UtcNow;
-                var validKeys = _jwks.Keys.Where(key => key.KeyId == identifier).ToList();
-                if (validKeys.Count > 1)
-                    throw new InvalidOperationException("Found more than one JWKS entry for Id");
-                return (IEnumerable<SecurityKey>)validKeys;
-            };
+               _jwks.Keys.Where(key => key.KeyId == identifier).ToArray() switch
+               {
+                   var keys when keys.Length > 1 => throw new InvalidOperationException("Found more than one JWKS entry for Id"),
+                   var keys => keys
+               };
 
             var user = handler.ValidateToken(token, _tokenParams, out var validatedToken);
             return validatedToken != null;

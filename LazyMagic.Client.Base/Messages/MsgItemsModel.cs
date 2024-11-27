@@ -92,11 +92,11 @@ namespace LazyMagic.Client.Base
                 Items.Add(messageDoc.Key, msgItemModel);
             }
 
-            List<string> orderedDocListKeys =
+            var orderedDocListKeys =
                 MessageSet
                 .MessageDocs
                 .Reverse()
-                .Select(x => x.Key).ToList();
+                .Select(x => x.Key);
 
             ItemsOrderedByPrecedents.Clear();
             foreach (var docKey in orderedDocListKeys)
