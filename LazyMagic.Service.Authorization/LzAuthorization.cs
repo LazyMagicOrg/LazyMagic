@@ -6,31 +6,17 @@ namespace LazyMagic.Service.Authorization;
 /// LoadPermissionsAsync() - initializes defaultPerm, adminPerm, methodPermissions
 /// 
 /// The virtual method GetCallerInfoAsync() is called with each endpoint call to allow 
-/// you to implement various strategies for updating user permissions. GetCallerInfoAsync()
-/// calls various helper methods. Here is the outline of that process:
-/// Endpoint() 
-///   callerInfo = GetCallerInfoAsync(request)
-///     tenantKey = GetTenantKeyAsync(request)
-///     table = GetTenantTableAsync(tenantKey)
-///     (lzUserId, userName) = GetUserInfo(request)
-///     List<string> permissions = GetUserPermissionsAsync(lzUserId, userName, tenantKey)
-///     return new CallerInfo(lzUserId, userName, table, permissions)
-///   hasPermission = HasPermissionAsync(methodName, callerInfo.permissions) 
+/// you to implement various strategies for updating user permissions and getting 
+/// the tenant config information and default Tenant, default DB, and default Assets.
 ///   
-/// Once we have the CallerInfo object, we pass it along to repository methods. The 
-/// table property in the CallerInfo object is used to determine which DynamoDB table 
-/// the repository will access. Note that some endpoints may make multiple repository 
-/// calls using different tables or just a table different from the default tenant table. 
-/// In those cases, override the endpoint method to update the table property before 
-/// you make the repository call.
+/// Once we have the CallerInfo object, we pass it along to repository methods.
+/// Note: If you are  using DynamoDB for your database and the LazyMagic.Repository.DynamoDB
+/// libary, then the DefaultDB is a DynamoDB table name.
 /// </summary>
 public abstract class LzAuthorization : ILzAuthorization
 {
-    protected List<string> defaultPerm = new();
-    protected List<string> adminPerm = new();
     protected bool authenticate = true;
     protected Dictionary<string, List<string>> methodPermissions = new();
-    protected string dynamoDbTable = string.Empty;
     protected bool permissionsLoaded;
 
     /// <summary>
@@ -57,8 +43,8 @@ public abstract class LzAuthorization : ILzAuthorization
     }
     /// <summary>
     /// This method is called by the generated Controller implementation. 
-    /// - Setting the dynamo table the app uses. We do this here in case we 
-    ///   need to switch among different dynamo table by "tenancy".
+    /// - Setting the dynamo defaultTable the app uses. We do this here in case we 
+    ///   need to switch among different dynamo defaultTable by "tenancy".
     /// - Getting the AWS UserId 
     /// - Checking Permissions 
     /// </summary>
@@ -68,75 +54,86 @@ public abstract class LzAuthorization : ILzAuthorization
     {
         try
         {
-            // TentantKey Header 
-            string tenantKey = await GetTenantKeyAsync(request);
-
-            // TenantKey Header - Used to get tenant table
-            string table = await GetTenantTableAsync(tenantKey);
-
-            string tenantConfigBucket = await GetTenantConfigBucketAsync(request, tenantKey);
-
-            string sessionId = GetSessionId(request);
-
-            // Authorization Header  - used to get user identity
+            // Grab the non-tenancy request information
             (string lzUserId, string userName) = GetUserInfo(request);
+            var headers = GetLzHeaders(request);
+            string sessionId = GetSessionId(request);
+            var callerInfo = new CallerInfo
+            {
+                LzUserId = lzUserId,
+                UserName = userName,
+                Headers = headers,
+                SessionId = sessionId,
+                // Tenant Config -- properties set by AddConfigAsync
+                // Permissions = permissions - property set by GetUserPermissionsAsync
+            };
 
-            // Get Permissions 
-            var permissions = await GetUserPermissionsAsync(lzUserId, userName, table);
+            // Add the tenant config properties. This can be passed in the
+            // request headers or loaded from a persistent store based
+            // on the request header host.
+            await AddConfigAsync(request, callerInfo);
+
+            var permissions = await GetUserPermissionsAsync(lzUserId, userName, callerInfo.DefaultTenant!);
 
             // Check if user has permission for endpoint 
             if (!await HasPermissionAsync(endpointName, permissions))
                 throw new Exception($"User {userName} does not have permission to access method {endpointName}");
 
-            // User info 
-            return new CallerInfo()
-            {
-                LzUserId = lzUserId,
-                UserName = userName,
-                Table = table,
-                TenantConfigBucket = tenantConfigBucket,
-                Permissions = permissions,
-                Tenancy = tenantKey ,
-                SessionId = sessionId   
-            };
+            callerInfo.Permissions = permissions;
+
+            return callerInfo;
         }
         catch (Exception)
         {
             throw new Exception("Could not get caller info.");
         }
     }
-    public virtual async Task<string> GetTenantKeyAsync(HttpRequest request)
-    {
-        await Task.Delay(0);
 
-        // First look for TenantKey header
-        StringValues value;
-        if (request.Headers.TryGetValue("tenantKey", out value))
-            return value!;
-        return "";
+    protected virtual Dictionary<string, string> GetLzHeaders(HttpRequest request)
+    {
+        // Adds deployment platform specific headers to the CallerInfo.Headers dictionary.
+        // Example: lz-aws-* headers for AWS deployments. The values of these headers 
+        // are required by deployment platform specific code in the repository layer.
+        // These headers are usually added by the Container,  a reverse proxy like a
+        // CloudFront function, or in the dev WebApi request pipeline.
+        return request.Headers
+            .Where(header => header.Key.StartsWith("lz-", StringComparison.OrdinalIgnoreCase) && !header.Key.StartsWith("lz-config"))
+            .ToDictionary(
+                header => header.Key,
+                header => header.Value.ToString()
+            );
     }
 
-    public virtual async Task<string> GetTenantConfigBucketAsync(HttpRequest request, string tnenatKey)
-    {
-        await Task.Delay(0);
 
-        // First look for TenantKey header
-        StringValues value;
-        if (request.Headers.TryGetValue("TenantConfigBucket", out value))
-        {
-            var newValue = value.ToString();
-            if (newValue.Contains("{tenantKey}"))
-                newValue = newValue.Replace("{tenantKey}", tnenatKey);
-            return newValue!;
-        }
-
-        return "";
-    }
-    public virtual async Task<string> GetTenantTableAsync(string tenantKey)
+    protected virtual Task AddConfigAsync(HttpRequest request, ICallerInfo callerInfo)
     {
-        await Task.Delay(0);
-        // Override this method to return the table for a tenantKey if its not the same as the tenantKey
-        return tenantKey; 
+        // By default we assume the request contains an lz-config header with the tenancy information.
+        // You can override this method to implement a different strategy for getting the tenancy information.
+        // For example, you could use the request host to look up the tenancy information in a persistent store.
+        // We use the lz-config header as a default because the AWS CloudFront function already pulled the 
+        // config information from the AWS CF KVS and added it as the value for the lz-config header.
+        // The local WebApi request pipeline does the same.
+        var configJson = request.Headers["lz-config"];
+        var tenantId = request.Headers["lz-tenantid"]; // usually the host: tenant.tld or subtenant.tenant.tld 
+        var tenancyConfig = new TenancyConfig(configJson!, tenantId!);
+
+        // CallerInfo contains tenancy information potentially useful to the repository layer. For instance,
+        // the DefaultDB is the DynamoDB table name for the default tenant.
+        callerInfo.TenantId = tenancyConfig.Id;
+        callerInfo.System = tenancyConfig.System;
+        callerInfo.Tenant = tenancyConfig.Tenant;
+        callerInfo.Subtenant = tenancyConfig.Subtenant;
+        callerInfo.SystemDB = tenancyConfig.SystemDB;
+        callerInfo.TenantDB = tenancyConfig.TenantDB;
+        callerInfo.SubtenantDB = tenancyConfig.SubtenantDB;
+        callerInfo.SystemAssets = tenancyConfig.SystemAssets;
+        callerInfo.TenantAssets = tenancyConfig.TenantAssets;
+        callerInfo.SubtenantAssets = tenancyConfig.SubtenantAssets;
+        callerInfo.DefaultTenant = tenancyConfig.DefaultTenant;
+        callerInfo.DefaultDB = tenancyConfig.DefaultDB;
+        callerInfo.DefaultAssets = tenancyConfig.DefaultAssets;
+
+        return Task.CompletedTask;
     }
 
     // Extract SessionId information
@@ -155,15 +152,15 @@ public abstract class LzAuthorization : ILzAuthorization
             return ("", "");
 
         var foundAuthHeader = request.Headers.TryGetValue("Authorization", out Microsoft.Extensions.Primitives.StringValues authHeader);
-        // The original ApiGateway does not pass the Authorization header through to the 
-        // Lambda. Our LzHttpClient adds it's own header, LzIdentity, so we have the 
-        // information we need.
+        // When the Authorization header doesn't contain an identity token, we look for the lz-config-identity header.
+        // You can add a lz-config-identity header in the client code, in a reverse proxy, or in the container depending 
+        // on your deployment platform strategy.
         if (!foundAuthHeader || authHeader[0]!.ToString().StartsWith("AWS4-HMAC-SHA256 Credential="))
-            foundAuthHeader = request.Headers.TryGetValue("LzIdentity", out authHeader);
+            foundAuthHeader = request.Headers.TryGetValue("lz-config-identity", out authHeader);
         if (foundAuthHeader)
             return GetUserInfo(authHeader);
 
-        throw new Exception("No Authorization or LzIdentity header");
+        throw new Exception("No Authorization or lz-config-identity header");
     }
     public virtual (string lzUserId, string userName) GetUserInfo(string? header)
     {
@@ -179,11 +176,11 @@ public abstract class LzAuthorization : ILzAuthorization
                 var userName = userNameClaim?.Value ?? string.Empty;
                 return(lzUserId, userName);
             }
-            throw new Exception("Could not read token in Authorization or LzIdentity header.");
+            throw new Exception("Could not read token in Authorization or lz-config-identity header.");
         }
-        throw new Exception("No Authorization or LzIdentity header");
+        throw new Exception("No Authorization or lz-config-identity header");
     }
-    protected virtual async Task<List<string>> GetUserPermissionsAsync(string lzUserId, string userName, string table)
+    protected virtual async Task<List<string>> GetUserPermissionsAsync(string lzUserId, string userName, string tenancy)
     {
         await Task.Delay(0);
         return new List<string>();

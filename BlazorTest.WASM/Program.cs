@@ -13,11 +13,11 @@ public class Program
         builder.RootComponents.Add<HeadOutlet>("head::after");
 
         // We use the launchSettings.json profile ASPNETCORE_ENVIRONMENT environment variable
-        // to determine the host addresses for the API host and Tenancy host.
+        // to determine the host addresses for the API host and Tenant host.
         //
         // Examples:
         // Production: "ASPNETCORE_ENVIRONMENT": "Production" 
-        //  The API and Tenancy host are the same and are the base address of the cloudfront distribution
+        //  The API and Tenant host are the same and are the base address of the cloudfront distribution
         //  the app is loaded from.
         //
         // Debug against LocalHost API:

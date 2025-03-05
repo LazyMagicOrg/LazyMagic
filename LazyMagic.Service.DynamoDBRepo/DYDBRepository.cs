@@ -1,357 +1,221 @@
-﻿namespace LazyMagic.Service.DynamoDBRepo;
+﻿using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics;
+using Newtonsoft.Json.Linq;
+using Amazon.DynamoDBv2.DocumentModel;
+using ThirdParty.Json.LitJson;
+using Amazon.DynamoDBv2.Model;
+
+namespace LazyMagic.Service.DynamoDBRepo;
+
+public enum TableLevel 
+{ 
+    System,     // Use SystemDB passed in CallerInfo
+    Tenant,     // Use TenantDB passed in CallerInfo
+    Subtenant,  // Use SubtenantDB passed in CallerInfo
+    Default,    // Use DefaultDB passed in CallerInfo
+    Local       // Use tablename (usually set in constructor)
+}
+
 
 /// <summary>
 /// Map CRUDL operations onto DynamoDBv2.Model namespace operations (low level access)
 /// DynamoDB offers a variety of access libraries. 
 /// This class uses the "Low Level" interfaces available in the DynamoDBv2.Model namespace.
 /// https://docs.aws.amazon.com/sdkfornet/v3/apidocs/items/DynamoDBv2/NDynamoDBv2Model.html
+/// This library provides Create, Read, Update, Delete, List, and List method implementations 
+/// to handle the basic CRUDL operations on a DynamoDB table.
+/// 
+/// The basic idea is that we use an Envelope record containing those fields that are 
+/// common to all record types, and which include a Data attribute containing the entity 
+/// type as a JSON string.
+/// 
+/// Create: new Envelope(data) -> SealEnvelope() -> putItem
+/// Read: new Envelope(readItem()) -> OpenEnvelope() -> return 
+/// Update: data -> attributes -> record (we use optimistic locking)
+/// Delete: record delete
+/// List: foreach item: record -> attributes -> data
+/// 
+/// 
 /// </summary>
 /// <typeparam name="TEnv"></typeparam>
 /// <typeparam name="T"></typeparam>
-public abstract
-    class DYDBRepository<TEnv, T> : IDYDBRepository<TEnv, T> where TEnv : class, IDataEnvelope<T>, new()
+public abstract class DYDBRepository<T> : IDYDBRepository<T> 
           where T : class, IItem, new()
 {
     public DYDBRepository(IAmazonDynamoDB client)
     {
         this.client = client;
-        PK = $"{typeof(T).Name}:";
+        EntityType = $"{typeof(T).Name}:";
         ConstructorExtensions();
     }
 
     protected virtual void ConstructorExtensions() { } 
 
     #region Fields
-    protected string tablename;
-    protected bool alwaysUseLocalTablenameProperty = false;
+    protected string tablename; // Set this in constructor and set tableLevel to Local to use it
+    protected TableLevel tableLevel = TableLevel.Default; // Default to use DefaultDB in CallerInfo
+    protected bool debug = false; // Set to true to see debug output in logs
     protected IAmazonDynamoDB client;
-    protected Dictionary<string, (TEnv envelope, long lastReadTick)> cache = new();
     #endregion
 
     #region Properties 
-
     private bool _UpdateReturnOkResults = true;
-    public bool UpdateReturnsOkResult
+    protected bool UpdateReturnsOkResult
     {
         get { return _UpdateReturnOkResults; }
         set { _UpdateReturnOkResults = value; }
     }
-    public bool AlwaysCache { get; set; } = false;
-    private long cacheTime = 0;
-    public long CacheTimeSeconds
-    {
-        get { return cacheTime / 10000000; } // 10 million ticks in a second, 600 million ticks in a minute
-        set { cacheTime = value * 10000000; }
-    }
-
-    public long MaxItems { get; set; }
     /// <summary>
     /// Time To Live in Seconds. Set to 0 to disable. 
     /// Default is 0.
     /// Override GetTTL() for custom behavior.
     /// </summary>
-    public long TTL { get; set; } = 0;
-    public bool UseIsDeleted { get; set; }
-    public bool UseSoftDelete { get; set; }
-    public string PK { get; set; }
-    public bool UseNotifications { get; set; }
-    public string NotificationsTablename { get; set; } = "";
+    protected long TTL { get; set; } = 0;
+    protected bool UseIsDeleted { get; set; }
+    protected bool UseSoftDelete { get; set; }
+    protected string EntityType { get; set; }
+    protected bool UseNotifications { get; set; }
+    protected string NotificationsTablename { get; set; } = "";
+    protected string NotificationsSqsQueue { get; set; } = "";
     #endregion
-    
-    protected virtual long GetTTL()
-    {
-        if (TTL == 0)
-            return 0;
-        // We don't use createdAt in case we are doing time windows for testing. Instead, we always  
-        // use the current time + 48 hours for TTL. 
-        return (long)DateTime.UtcNow.Subtract(DateTime.UnixEpoch).TotalSeconds + TTL;
-    }
-    /// <summary>
-    /// Topics to insert place in optional Topics attribute. 
-    /// Override in derived class to suite your messaging requirements.
-    /// </summary>
-    /// <returns>Json String</returns>
-    public virtual string SetTopics() => $"[\"{typeof(T).Name}:\"]";
-    /// <summary>
-    /// Make sure cache has less than MaxItems 
-    /// MaxItems == 0 means infinite cache
-    /// </summary>
-    /// <returns></returns>
-    protected void PruneCache(string table = null)
-    {
-        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
-            table = tablename;
 
-        if (MaxItems == 0) return;
-        if (cache.Count > MaxItems)
-        {
-            var numToFlush = cache.Count - MaxItems;
-            // Simple flush the oldest strategy
-            var cacheOrderByUpdateTick = cache.Values.OrderBy(item => item.lastReadTick);
-            int i = 0;
-            foreach (var (envelope, lastReadTick) in cacheOrderByUpdateTick)
-            {
-                if (i > numToFlush) return;
-                cache.Remove($"{envelope.PK}{envelope.SK}");
-            }
-        }
-    }
-    public async Task FlushCache(string table = null)
-    {
-        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
-            table = tablename;
+    #region Public Methods
 
-        await Task.Delay(0);
-        cache = new Dictionary<string, (TEnv, long)>();
-    }
-    public virtual async Task<ActionResult<TEnv>> CreateEAsync(ICallerInfo callerInfo, T data, bool? useCache = null)
+    public virtual async Task<ActionResult<T>> CreateAsync(ICallerInfo callerInfo, T data)
     {
+        if (debug) Console.WriteLine("CreateAsync() called");
         callerInfo ??= new CallerInfo();
-        var table = callerInfo.Table;
-
-        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
-            table = tablename;
-
-        bool useCache2 = (useCache != null) ? (bool)useCache : AlwaysCache;
+        var table = GetTableName(callerInfo);
         try
         {
             var now = DateTime.UtcNow.Ticks;
-            TEnv envelope = new()
-            {
-                EntityInstance = data,
-                CreateUtcTick = now,
-                UpdateUtcTick = now
-            };
+            var dbrecord = new Dictionary<string, AttributeValue>(); // create an empty record
+            var jobjectData = JObject.FromObject(data); // Create JObject from data
 
-            envelope.SealEnvelope();
-
-            // Wait until just before write to serialize EntityInstance (captures updates to UtcTick fields just assigned)
-            var jsonData = JsonConvert.SerializeObject(envelope.EntityInstance);
-            envelope.DbRecord.Add("Data", new AttributeValue() { S = jsonData });
-
-            AddOptionalAttributes(callerInfo, envelope); // Adds Topics when specified 
-            AddOptionalTTLAttribute(callerInfo, envelope); // Adds TTL attribute when GetTTL() is not 0
-            var topics = AddOptionalTopicsAttribute(callerInfo, envelope); // Adds Topics attribute when GetTopics() is not empty
+            // You can override each of the Assign attribute methods to customize the attributes
+            AssignEntityAttributes(callerInfo, jobjectData, dbrecord, now); // Assigns attributes from JObject data
+            AssignOptionalAttrubutes(callerInfo, jobjectData, dbrecord, now); // Adds optional attributes
+            AssignTTLAttribute(callerInfo, jobjectData, dbrecord, now); // Adds TTL attribute when GetTTL() is not 0
+            AssignTopicsAttribute(callerInfo, jobjectData, dbrecord, now); // Adds Topics attribute
+            AssignJsonDataAttribute(callerInfo, jobjectData, dbrecord, now); // Adds Data attribute containing JSON data
+            AssignCreateUtcTickAttribute(callerInfo, jobjectData, dbrecord, now); // Adds CreateUtcTickAttribute attribute
+            AssignUpdateUtcTickAttribute(callerInfo, jobjectData, dbrecord, now); // Adds UpdateUtcTickAttribute attribute
 
             var request = new PutItemRequest()
             {
                 TableName = table,
-                Item = envelope.DbRecord,
-                ConditionExpression = "attribute_not_exists(PK)" // Technique to avoid replacing an existing record. PK refers to PartionKey + SortKey
+                Item = dbrecord,
+                ConditionExpression = "attribute_not_exists(PK)" // Technique to avoid replacing an existing record. EntityType refers to PartionKey + SortKey
             };
 
+            if (debug) Console.WriteLine($"CreateEAsync() PutItemAsync called");
             await client.PutItemAsync(request);
 
-            if (useCache2)
-            {
-                cache[$"{table}:{envelope.PK}{envelope.SK}"] = (envelope, DateTime.UtcNow.Ticks);
-                PruneCache();
-            }
-            
-            if(UseNotifications)
-                await WriteNotificationAsync(callerInfo, envelope.TypeName, jsonData, topics, envelope.UpdateUtcTick, "Create");
+            if (UseNotifications)
+                await WriteNotificationAsync(callerInfo, dbrecord, "Create");
 
-            return envelope;
+            return jobjectData.ToObject<T>();
         }
-        catch (ConditionalCheckFailedException) { return new ConflictResult(); }
-        catch (AmazonDynamoDBException) { return new StatusCodeResult(400); }
-        catch (AmazonServiceException) { return new StatusCodeResult(500); }
-        catch { return new StatusCodeResult(500); }
+        catch (ConditionalCheckFailedException ex)
+        {
+            if (debug) Console.WriteLine($"CreateEAsync() ConditionalCheckFailedException. {ex.Message}");
+            return new ConflictResult();
+        }
+        catch (AmazonDynamoDBException ex)
+        {
+            if (debug) Console.WriteLine($"CreateEAsync() AmazonDynamoDBException. {ex.Message}");
+            return new StatusCodeResult(400);
+        }
+        catch (AmazonServiceException ex)
+        {
+            if (debug) Console.WriteLine($"CreateEAsync() AmazonServiceException. {ex.Message}");
+            return new StatusCodeResult(500);
+        }
+        catch (Exception ex)
+        {
+            if (debug) Console.WriteLine($"CreateEAsync() catch all. {ex.Message}");
+            return new StatusCodeResult(500);
+        }
     }
-    public virtual Task WriteNotificationAsync(ICallerInfo callerInfo, string dataType, string data, string topics, long updatedUtcTick, string action)
+    public virtual async Task<ActionResult<T>> ReadAsync(ICallerInfo callerInfo, string id)
     {
-        throw new NotImplementedException();
-    }
-    public virtual Task WriteDeleteNotificationAsync(ICallerInfo callerInfo, string dataType, string sk, string topics, long updatedUtcTick)
-    {
-        throw new NotImplementedException();
-    }
-    public virtual async Task<ActionResult<T>> CreateAsync(ICallerInfo callerInfo, T data, bool? useCache = null)
-    {
+        if (debug) Console.WriteLine("ReadAsync() called");
         callerInfo ??= new CallerInfo();
-        var result = await CreateEAsync(callerInfo, data, useCache);
-        if (result.Result is not null)
-            return result.Result;
-        return result.Value.EntityInstance;
-    }
-    public virtual async Task<ActionResult<T>> ReadAsync(ICallerInfo callerInfo, string id, bool? useCache = null)
-        => await ReadAsync(callerInfo, this.PK, $"{id}:", useCache);
-    public virtual async Task<ActionResult<T>> ReadAsync(ICallerInfo callerInfo, string pK, string sK, bool? useCache = null)
-    {
-        callerInfo ??= new CallerInfo();
-        var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
-            table = tablename;
-
+        var table = GetTableName(callerInfo);
+        //=> await ReadAsync(callerInfo, this.EntityType, $"{id}:");
+        var sK = $"{id}:";
         try
         {
-            var response = await ReadEAsync(callerInfo, pK, sK, useCache: useCache);
-            if (response.Value == null)
-                return response.Result;
-
-            return response.Value.EntityInstance;
-        }
-
-        catch (AmazonDynamoDBException) { return new StatusCodeResult(500); }
-        catch (AmazonServiceException) { return new StatusCodeResult(503); }
-        catch { return new StatusCodeResult(406); }
-    }
-    public virtual async Task<ActionResult<T>> ReadSkAsync(ICallerInfo callerInfo, string indexName, string id, bool? useCache = null)
-        => await ReadSkAsync(callerInfo, this.PK, indexName, $"{id}:", useCache);
-    public virtual async Task<ActionResult<T>> ReadSkAsync(ICallerInfo callerInfo, string pK, string indexName, string sK, bool? useCache = null)
-    {
-        callerInfo ??= new CallerInfo();
-        var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
-            table = tablename;
-
-        try
-        {
-            var response = await ReadSkEAsync(callerInfo, pK, indexName, sK, useCache: useCache);
-            if (response.Value == null)
-                return response.Result;
-
-            return response.Value.EntityInstance;
-        }
-
-        catch (AmazonDynamoDBException) { return new StatusCodeResult(500); }
-        catch (AmazonServiceException) { return new StatusCodeResult(503); }
-        catch { return new StatusCodeResult(406); }
-    }
-    public virtual async Task<ActionResult<TEnv>> ReadEAsync(string table, string id, bool? useCache = null)
-        => await ReadEAsync(new CallerInfo() { Table = table }, id, useCache);
-    public virtual async Task<ActionResult<TEnv>> ReadEAsync(ICallerInfo callerInfo, string id, bool? useCache = null)
-        => await ReadEAsync(callerInfo, this.PK, $"{id}:", useCache);
-    public virtual async Task<ActionResult<TEnv>> ReadEAsync(string table, string pK, string sK, bool? useCache = null)
-        => await ReadEAsync(new CallerInfo() { Table = table }, pK, sK, useCache);
-    public virtual async Task<ActionResult<TEnv>> ReadEAsync(ICallerInfo callerInfo, string pK, string sK, bool? useCache = null)
-    {
-        callerInfo ??= new CallerInfo();
-        var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
-            table = tablename;
-
-        bool useCache2 = (useCache != null) ? (bool)useCache : AlwaysCache;
-        try
-        {
-            var key = $"{table}:{pK}{sK}";
-            if ((useCache2) && cache.ContainsKey(key))
-            {
-                TEnv cachedEnvelope;
-                long lastReadTicks;
-                (cachedEnvelope, lastReadTicks) = cache[key];
-                PruneCache(table);
-                if (DateTime.UtcNow.Ticks - lastReadTicks < cacheTime)
-                    return cachedEnvelope;
-            }
-
+            var key = $"{table}:{EntityType}{sK}";
             var request = new GetItemRequest()
             {
                 TableName = table,
                 Key = new Dictionary<string, AttributeValue>()
                 {
-                    {"PK", new AttributeValue {S = pK}},
+                    {"PK", new AttributeValue {S = EntityType}},
                     {"SK", new AttributeValue {S = sK } }
                 }
             };
+            if (debug) Console.WriteLine($"ReadEAsync() GetItemAsync called");
             var response = await client.GetItemAsync(request);
-
-            var item = new TEnv() { DbRecord = response.Item };
-            if (useCache2)
-            {
-                cache[key] = (item, DateTime.UtcNow.Ticks);
-                PruneCache();
-            }
-
-            return item;
+            var data = response.Item["Data"].S; 
+            return DeserializeJsonData(data);
         }
-        catch (AmazonDynamoDBException) { return new StatusCodeResult(500); }
-        catch (AmazonServiceException) { return new StatusCodeResult(503); }
-        catch { return new StatusCodeResult(406); }
+
+        catch (AmazonDynamoDBException ex)
+        {
+            if (debug) Console.WriteLine($"ReadAsync() AmazonDynamoDBException. {ex.Message}");
+            return new StatusCodeResult(500);
+        }
+        catch (AmazonServiceException ex)
+        {
+            if (debug) Console.WriteLine($"ReadAsync() AmazonServiceException. {ex.Message}");
+            return new StatusCodeResult(503);
+        }
+        catch (Exception ex)
+        {
+            if (debug) Console.WriteLine($"ReadAsync() catch all. {ex.Message}");
+            return new StatusCodeResult(406);
+        }
     }
-    public virtual async Task<ActionResult<TEnv>> ReadSkEAsync(ICallerInfo callerInfo, string indexName, string id, bool? useCache = null)
-        => await ReadSkEAsync(callerInfo, this.PK, indexName, $"{id}:", useCache);
-    public virtual async Task<ActionResult<TEnv>> ReadSkEAsync(ICallerInfo callerInfo, string pK, string indexName, string sK, bool? useCache = null)
+    public virtual Task<ActionResult<T>> UpdateCreateAsync(ICallerInfo callerInfo, T data)
     {
-        callerInfo ??= new CallerInfo();
-
-        var objResult = await ListAsync(callerInfo, indexName, sK);
-        var statusCode = objResult.StatusCode;
-        if (statusCode < 200 || statusCode > 299)
-            return new StatusCodeResult((int)statusCode);
-
-        var list = objResult.Value as List<TEnv>;
-        if (list.Count == 0 || list.Count > 1)
-            return new StatusCodeResult(404);
-
-        return list[0];
+        if (debug) Console.WriteLine("UpdateCreateAsync() called but not implemented");
+        throw new NotImplementedException();
     }
-
-    /// <summary>
-    /// Add optional attributes to envelope prior to create or update. 
-    /// This routine currently handles the optional attributes TTL and Topics.
-    /// </summary>
-    /// <param name="envelope"></param>
-    public virtual bool AddOptionalTTLAttribute(ICallerInfo callerInfo, TEnv envelope)
+    public virtual async Task<ActionResult<T>> UpdateAsync(ICallerInfo callerInfo, T data, bool forceUpdate = false)
     {
-        // Add TTL attribute when GetTTL() is not 0
-        var ttl = GetTTL();
-        if (ttl == 0)
-            return false;
-        envelope.DbRecord.Add("TTL", new AttributeValue() { N = ttl.ToString() });
-        return true;
-    }
-    public virtual string AddOptionalTopicsAttribute(ICallerInfo callerInfo, TEnv envelope)
-    {
-        // Add Topics attribute when GetTopics() is not empty 
-        var topics = SetTopics();
-        if (string.IsNullOrEmpty(topics))
-            return string.Empty;
-        envelope.DbRecord.Add("Topics", new AttributeValue() { S = topics });
-        return topics;
-    }
-    public virtual void AddOptionalAttributes(ICallerInfo callerInfo, TEnv envelope)
-    {
-        return;
-    }   
-
-    public virtual async Task<ActionResult<TEnv>> UpdateEAsync(ICallerInfo callerInfo, T data, bool forceUpdate = false)
-    {
-        callerInfo ??= new CallerInfo();
-        var table = callerInfo.Table;
-
-        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
-            table = tablename;
-
+        if (debug) Console.WriteLine("UpdateAsync() called");
         if (data.Equals(null))
+        {
+            if (debug) Console.WriteLine("UpdateEAsync() data is null");
             return new StatusCodeResult(400);
-
+        }
+        callerInfo ??= new CallerInfo();
+        var table = GetTableName(callerInfo);
         try
         {
-            TEnv envelope = new() { EntityInstance = data };
-            var OldUpdateUtcTick = envelope.UpdateUtcTick;
             var now = DateTime.UtcNow.Ticks;
-            envelope.UpdateUtcTick = now; // The UpdateUtcTick Set calls SetUpdateUtcTick where you can update your entity data record 
-            if(envelope.CreateUtcTick == 0)
-                envelope.CreateUtcTick = now;   
+            var dbrecord = new Dictionary<string, AttributeValue>(); // create an empty record
+            var jobjectData = JObject.FromObject(data); // Create JObject from data
 
-            envelope.SealEnvelope();
+            // You can override each of the Assign attribute methods to customize the attributes
+            AssignEntityAttributes(callerInfo, jobjectData, dbrecord, now); // Assigns attributes from JObject data
+            var OldUpdateUtcTick = dbrecord["UpdateUtcTick"].N;
+            AssignOptionalAttrubutes(callerInfo, jobjectData, dbrecord, now); // Adds optional attributes
+            AssignTTLAttribute(callerInfo, jobjectData, dbrecord, now); // Adds TTL attribute when GetTTL() is not 0
+            AssignTopicsAttribute(callerInfo, jobjectData, dbrecord, now); // Adds Topics attribute
+            AssignJsonDataAttribute(callerInfo, jobjectData, dbrecord, now); // Adds Data attribute containing JSON data
+            AssignCreateUtcTickAttribute(callerInfo, jobjectData, dbrecord, now); // Adds CreateUtcTickAttribute attribute
+            AssignUpdateUtcTickAttribute(callerInfo, jobjectData, dbrecord, now); // Adds UpdateUtcTickAttribute attribute
 
-            // Waiting until just before write to serialize EntityInstance (captures updates to UtcTick fields)
-            var jsonData = JsonConvert.SerializeObject(envelope.EntityInstance);
-            envelope.DbRecord.Add("Data", new AttributeValue() { S = jsonData });
-
-            AddOptionalAttributes(callerInfo, envelope); // Adds any user specified attributes
-            AddOptionalTTLAttribute(callerInfo, envelope); // Adds TTL attribute when GetTTL() is not 0
-            var topics = AddOptionalTopicsAttribute(callerInfo, envelope); // Adds Topics attribute when GetTopics() is defined
-
-            if(forceUpdate)
+            if (forceUpdate)
             {
-                // Write data to database - use conditional put to avoid overwriting newer data
+                // Write data to database - do not use conditional put to avoid overwriting newer data
                 var request = new PutItemRequest()
                 {
                     TableName = table,
-                    Item = envelope.DbRecord
+                    Item = dbrecord
                 };
                 await client.PutItemAsync(request);
             }
@@ -361,7 +225,7 @@ public abstract
                 var request2 = new PutItemRequest()
                 {
                     TableName = table,
-                    Item = envelope.DbRecord,
+                    Item = dbrecord,
                     ConditionExpression = "UpdateUtcTick = :OldUpdateUtcTick",
                     ExpressionAttributeValues = new Dictionary<string, AttributeValue>
                 {
@@ -372,104 +236,185 @@ public abstract
                 await client.PutItemAsync(request2);
             }
 
-            var key = $"{table}:{envelope.PK}{envelope.SK}";
-            if (cache.ContainsKey(key)) cache[key] = (envelope, DateTime.UtcNow.Ticks);
-            PruneCache();
-
             if (UseNotifications)
-                await WriteNotificationAsync(callerInfo, envelope.TypeName, jsonData, topics, now, "Update");
+                await WriteNotificationAsync(callerInfo, dbrecord, "Update");
 
-            return (UpdateReturnsOkResult)
-                ? new OkObjectResult(envelope.EntityInstance)
-                : envelope;
+            return jobjectData.ToObject<T>();
         }
-        catch (ConditionalCheckFailedException) { return new ConflictResult(); } // STatusCode 409
-        catch (AmazonDynamoDBException) { return new StatusCodeResult(500); }
-        catch (AmazonServiceException) { return new StatusCodeResult(503); }
-        catch { return new StatusCodeResult(500); }
+        catch (ConditionalCheckFailedException ex)
+        {
+            if (debug) Console.WriteLine($"UpdateEAsync() ConditionalCheckFailedException. {ex.Message}");
+            return new ConflictResult();
+        } // STatusCode 409
+        catch (AmazonDynamoDBException ex)
+        {
+            if (debug) Console.WriteLine($"UpdateEAsync() AmazonDynamoDBException. {ex.Message}");
+            return new StatusCodeResult(500);
+        }
+        catch (AmazonServiceException ex)
+        {
+            if (debug) Console.WriteLine($"UpdateEAsync() AmazonServiceException. {ex.Message}");
+            return new StatusCodeResult(503);
+        }
+        catch (Exception ex)
+        {
+            if (debug) Console.WriteLine($"UpdateEAsync() catch all. {ex.Message}");
+            return new StatusCodeResult(500);
+        }
+
     }
-    public virtual async Task<ActionResult<T>> UpdateAddAsync(ICallerInfo callerInfo, T data)
+    public virtual async Task<StatusCodeResult> DeleteAsync(ICallerInfo callerInfo, string id)
     {
+        var sK = $"{id}:";  
+        if (debug) Console.WriteLine("DeleteAsync() called");
         callerInfo ??= new CallerInfo();
-        var result = await UpdateEAsync(callerInfo, data, forceUpdate: true);
-        if (result.Result is not null)
-            return result.Result;
-        return result.Value.EntityInstance;
-    }
-    public virtual async Task<ActionResult<T>> UpdateAsync(ICallerInfo callerInfo, T data)
-    {
-        callerInfo ??= new CallerInfo();
-        var result = await UpdateEAsync(callerInfo, data);
-        if (result.Result is not null)
-            return result.Result; 
-        return result.Value.EntityInstance;
-    }
-    public virtual async Task<StatusCodeResult> DeleteAsync(ICallerInfo callerInfo, string id) => await DeleteAsync(callerInfo, this.PK, $"{id}:");
-    public virtual async Task<StatusCodeResult> DeleteAsync(ICallerInfo callerInfo, string pK, string sK = null)
-    {
-        callerInfo ??= new CallerInfo();
-        var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
-            table = tablename;
+        var table = GetTableName(callerInfo);
+
         try
         {
-            if (string.IsNullOrEmpty(pK))
+            if (string.IsNullOrEmpty(EntityType))
                 return new StatusCodeResult(406); // bad key
-
-            if (!UseSoftDelete)
-            {
-                var request = new DeleteItemRequest()
-                {
-                    TableName = table,
-                    Key = new Dictionary<string, AttributeValue>()
-                    {
-                        {"PK", new AttributeValue {S= pK} },
-                        {"SK", new AttributeValue {S = sK} }
-                    }
-                };
-                await client.DeleteItemAsync(request);
-            }
 
             if (UseSoftDelete || UseNotifications)
             {
-                var readResult = await ReadEAsync(callerInfo, pK, sK);
-                var envelope = readResult.Value;
-                if (envelope is null)
-                    return new StatusCodeResult(200);
-                if (UseSoftDelete)
+                // Read existing record
+                try
                 {
-                    envelope.IsDeleted = true;
-                    envelope.UseTTL = true; // DynamoDB will delete records after TTL reached. Envelope class sets TTL when UseTTL is true.
-                    var updateResult = await UpdateEAsync(callerInfo, envelope.EntityInstance);
-                    if (updateResult.Result is not null)
-                        return (StatusCodeResult)updateResult.Result; // return error code
-                }
-                if (UseNotifications)
+                    var key = $"{table}:{EntityType}{sK}";
+                    var request = new GetItemRequest()
+                    {
+                        TableName = table,
+                        Key = new Dictionary<string, AttributeValue>()
                 {
-                    var topics = SetTopics();
-                    await WriteDeleteNotificationAsync(callerInfo, envelope.TypeName, sK, topics, DateTime.UtcNow.Ticks);
+                    {"PK", new AttributeValue {S = EntityType}},
+                    {"SK", new AttributeValue {S = sK } }
                 }
-            }
+                    };
+                    if (debug) Console.WriteLine($"ReadEAsync() GetItemAsync called");
+                    var response = await client.GetItemAsync(request); // doesn't throw error if item doesn't exist
+                    var item = response.Item;
+                    if (UseSoftDelete && item != null)
+                    {
+                        item["IsDeleted"].BOOL = true;
+                        item["UseTTL"].BOOL = true; // DynamoDB will delete records after TTL reached. Envelope class sets TTL when UseTTL is true. 
+                        var request2 = new PutItemRequest()
+                        {
+                            TableName = table,
+                            Item = item,
+                            ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+                            {
+                            }
+                        };
 
-            var key = $"{table}:{pK}{sK}";
-            if (cache.ContainsKey(key)) cache.Remove(key);
-            PruneCache();
+                        await client.PutItemAsync(request2);
+                    }
+                    if (UseNotifications)
+                    {
+
+                        await WriteNotificationAsync(callerInfo, item, "Delete");
+                    }
+                    if(UseSoftDelete)
+                        return new StatusCodeResult(200);
+                }
+                catch (AmazonDynamoDBException ex)
+                {
+                    if (debug) Console.WriteLine($"ReadAsync() AmazonDynamoDBException. {ex.Message}");
+                    return new StatusCodeResult(500);
+                }
+                catch (AmazonServiceException ex)
+                {
+                    if (debug) Console.WriteLine($"ReadAsync() AmazonServiceException. {ex.Message}");
+                    return new StatusCodeResult(503);
+                }
+                catch (Exception ex)
+                {
+                    if (debug) Console.WriteLine($"ReadAsync() catch all. {ex.Message}");
+                    return new StatusCodeResult(406);
+                }
+            } 
+            
+            var request3 = new DeleteItemRequest()
+            {
+                TableName = table,
+                Key = new Dictionary<string, AttributeValue>()
+            {
+                {"PK", new AttributeValue {S= EntityType} },
+                {"SK", new AttributeValue {S = sK} }
+            }
+            };
+            await client.DeleteItemAsync(request3); // doesn't throw error if item doesn't exist
 
             return new StatusCodeResult(200);
         }
-        catch (AmazonDynamoDBException) { return new StatusCodeResult(500); }
-        catch (AmazonServiceException) { return new StatusCodeResult(503); }
-        catch { return new StatusCodeResult(406); }
+        catch (AmazonDynamoDBException ex)
+        {
+            if (debug) Console.WriteLine($"DeleteAsync() AmazonDynamoDBException. {ex.Message}");
+            return new StatusCodeResult(500);
+        }
+        catch (AmazonServiceException ex)
+        {
+            if (debug) Console.WriteLine($"DeleteAsync() AmazonServiceException. {ex.Message}");
+            return new StatusCodeResult(503);
+        }
+        catch (Exception ex)
+        {
+            if (debug) Console.WriteLine($"DeleteAsync() catch all. {ex.Message}");
+            return new StatusCodeResult(406);
+        }
     }
-    public virtual async Task<(ObjectResult objResult, long responseSize)> ListEAndSizeAsync(QueryRequest queryRequest, bool? useCache = null, int limit = 0)
+    public virtual async Task<ObjectResult> ListAsync(ICallerInfo callerInfo, int limit = 0)
     {
+        var queryRequest = QueryEquals(EntityType, callerInfo: callerInfo);
+        return await ListAndSizeAsync(queryRequest, limit);
+    }
+    public virtual async Task<ObjectResult> ListAsync(ICallerInfo callerInfo, string indexName, string indexValue, int limit=0)
+    {
+        var queryRequest = QueryEquals(EntityType, indexName, indexValue, callerInfo: callerInfo);
+        return await ListAndSizeAsync(queryRequest, limit);
+    }
+    public virtual async Task<ObjectResult> ListBeginsWithAsync(ICallerInfo callerInfo, string indexName, string indexValue, int limit=0)
+    {
+        var queryRequest = QueryBeginsWith(EntityType, indexName, indexValue, callerInfo: callerInfo);
+        return await ListAndSizeAsync(queryRequest, limit);
+    }
+    public virtual async Task<ObjectResult> ListLessThanAsync(ICallerInfo callerInfo, string indexName, string indexValue, int limit=0)
+    {
+        var queryRequest = QueryLessThan(EntityType, indexName, indexValue, callerInfo: callerInfo);
+        return await ListAndSizeAsync(queryRequest, limit);
+    }
+    public virtual async Task<ObjectResult> ListLessThanOrEqualAsync(ICallerInfo callerInfo, string indexName, string indexValue, int limit=0)
+    {
+        var queryRequest = QueryLessThanOrEqual(EntityType, indexName, indexValue, callerInfo: callerInfo);
+        return await ListAndSizeAsync(queryRequest, limit);
+    }
+    public virtual async Task<ObjectResult> ListGreaterThanAsync(ICallerInfo callerInfo, string indexName, string indexValue, int limit=0)
+    {
+        var queryRequest = QueryGreaterThan(EntityType, indexName, indexValue, callerInfo: callerInfo);
+        return await ListAndSizeAsync(queryRequest);
+    }
+    public virtual async Task<ObjectResult> ListGreaterThanOrEqualAsync(ICallerInfo callerInfo, string indexName, string indexValue, int limit=0)
+    {
+        var queryRequest = QueryGreaterThanOrEqual(EntityType, indexName, indexValue, callerInfo: callerInfo);
+        return await ListAndSizeAsync(queryRequest, limit);
+    }
+    public virtual async Task<ObjectResult> ListBetweenAsync(ICallerInfo callerInfo, string indexName, string indexValue1, string indexValue2, int limit=0)
+    {
+        var queryRequest = QueryRange(EntityType, indexName, indexValue1, indexValue2, callerInfo: callerInfo);
+        return await ListAndSizeAsync(queryRequest, limit);
+    }
+
+    #endregion
+
+    #region Protected Methods
+    protected virtual async Task<ObjectResult> ListAndSizeAsync(QueryRequest queryRequest, int limit = 0)
+    {
+        if(debug) Console.WriteLine("ListEAndSizeAsync() called");
         var table = queryRequest.TableName;
-        bool useCache2 = (useCache != null) ? (bool)useCache : AlwaysCache;
         Dictionary<string, AttributeValue> lastEvaluatedKey = null;
         const int maxResponseSize = 5248000; // 5MB
         try
         {
-            var list = new List<TEnv>();
+            var list = new List<T>();
             var responseSize = 0;
             do
             {
@@ -481,33 +426,36 @@ public abstract
                 var response = await client.QueryAsync(queryRequest);
                 foreach (Dictionary<string, AttributeValue> item in response?.Items)
                 {
-                    var envelope = new TEnv() { DbRecord = item };
-                    responseSize += envelope.JsonSize;
+                    var jsonData = item["Data"].S;
+                    responseSize += jsonData.Length;
                     if (responseSize > maxResponseSize)
                         break;
 
-                    list.Add(envelope);
-                    var key = $"{table}:{envelope.PK}{envelope.SK}";
-                    if (useCache2 || cache.ContainsKey(key))
-                        cache[key] = (envelope, DateTime.UtcNow.Ticks);
+                    list.Add(DeserializeJsonData(jsonData));
                 }
             } while (responseSize <= maxResponseSize && lastEvaluatedKey != null && list.Count < limit);
             var statusCode = lastEvaluatedKey == null ? 200 : 206;
-            PruneCache();
 
-            var objResult = new ObjectResult(list) { StatusCode = statusCode };
-            return (objResult, responseSize);
+            return new ObjectResult(list) { StatusCode = statusCode };
         }
-        catch (AmazonDynamoDBException) { return (new ObjectResult(null) { StatusCode = 500 }, 0); }
-        catch (AmazonServiceException) { return (new ObjectResult(null) { StatusCode = 503 }, 0); }
-        catch { return (new ObjectResult(null) { StatusCode = 500 }, 0); }
+        catch (AmazonDynamoDBException ex) 
+        { 
+            if(debug) Console.WriteLine($"ListEAndSizeAsync() AmazonDynamoDBException. {ex.Message}");
+            return new ObjectResult(null) { StatusCode = 500 }; 
+        }
+        catch (AmazonServiceException ex) 
+        {
+            if (debug) Console.WriteLine($"ListEAndSizeAsync() AmazonServiceException. {ex.Message}");
+            return new ObjectResult(null) { StatusCode = 503 }; 
+        }
+        catch (Exception ex)
+        {
+            if (debug) Console.WriteLine($"ListEAndSizeAsync() catch all. {ex.Message}");
+            return new ObjectResult(null) { StatusCode = 500 }; 
+        }
     }
-    public virtual async Task<ObjectResult> ListEAsync(QueryRequest queryRequest, bool? useCache = null, int limit = 0)
-    {
-        var (actionResult, _) = await ListEAndSizeAsync(queryRequest, useCache, limit);
-        return actionResult;
-    }
-    /// <summary>
+
+   /// <summary>
     /// ListAndSizeAsync returns up to "roughly" 5MB of data to stay under the 
     /// 6Mb limit imposed on API Gateway Response bodies.
     /// 
@@ -532,79 +480,7 @@ public abstract
     /// <param name="queryRequest"></param>
     /// <param name="useCache"></param>
     /// <returns>Task&lt;(ActionResult&lt;ICollection<T>> actionResult,long responseSize)&gt;</returns>
-    public virtual async Task<(ObjectResult objResult, long responseSize)> ListAndSizeAsync(QueryRequest queryRequest, bool? useCache = null, int limit = 0)
-    {
-        try
-        {
-            var list = new List<T>();
-            var (actionResult, size) = await ListEAndSizeAsync(queryRequest, useCache, limit);
 
-            var statusCode = actionResult.StatusCode;
-            if (statusCode < 200 || statusCode > 299)
-                return (new ObjectResult(null) { StatusCode = statusCode }, size);
-            var envList = actionResult.Value as List<TEnv>;
-            foreach (var envelope in envList)
-                list.Add(envelope.EntityInstance);
-            var objResult = new ObjectResult(list) { StatusCode = statusCode };
-            return (objResult, size);
-        }
-        catch (AmazonDynamoDBException) { return (new ObjectResult(null) { StatusCode = 500 }, 0); }
-        catch (AmazonServiceException) { return (new ObjectResult(null) { StatusCode = 503 }, 0); }
-        catch { return (new ObjectResult(null) { StatusCode = 500 }, 0); }
-    }
-    public virtual async Task<ObjectResult> ListAsync(QueryRequest queryRequest, bool? useCache = null, int limit = 0)
-    {
-        var (actionResult, _) = await ListAndSizeAsync(queryRequest, useCache, limit);
-        return actionResult;
-    }
-    public virtual async Task<ObjectResult> ListAsync(ICallerInfo callerInfo)
-    {
-        var queryRequest = QueryEquals(PK, callerInfo: callerInfo);
-        var (objResult, _) = await ListAndSizeAsync(queryRequest);
-        return objResult;
-    }
-    public virtual async Task<ObjectResult> ListAsync(ICallerInfo callerInfo, string indexName, string indexValue)
-    {
-        var queryRequest = QueryEquals(PK, indexName, indexValue, callerInfo: callerInfo);
-        var (objResult, _) = await ListAndSizeAsync(queryRequest);
-        return objResult;
-    }
-    public virtual async Task<ObjectResult> ListBeginsWithAsync(ICallerInfo callerInfo, string indexName, string indexValue)
-    {
-        var queryRequest = QueryBeginsWith(PK, indexName, indexValue, callerInfo: callerInfo);
-        var (objResult, _) = await ListAndSizeAsync(queryRequest);
-        return objResult;
-    }
-    public virtual async Task<ObjectResult> ListLessThanAsync(ICallerInfo callerInfo, string indexName, string indexValue)
-    {
-        var queryRequest = QueryLessThan(PK, indexName, indexValue, callerInfo: callerInfo);
-        var (objResult, _) = await ListAndSizeAsync(queryRequest);
-        return objResult;
-    }
-    public virtual async Task<ObjectResult> ListLessThanOrEqualAsync(ICallerInfo callerInfo, string indexName, string indexValue)
-    {
-        var queryRequest = QueryLessThanOrEqual(PK, indexName, indexValue, callerInfo: callerInfo);
-        var (objResult, _) = await ListAndSizeAsync(queryRequest);
-        return objResult;
-    }
-    public virtual async Task<ObjectResult> ListGreaterThanAsync(ICallerInfo callerInfo, string indexName, string indexValue)
-    {
-        var queryRequest = QueryGreaterThan(PK, indexName, indexValue, callerInfo: callerInfo);
-        var (objResult, _) = await ListAndSizeAsync(queryRequest);
-        return objResult;
-    }
-    public virtual async Task<ObjectResult> ListGreaterThanOrEqualAsync(ICallerInfo callerInfo, string indexName, string indexValue)
-    {
-        var queryRequest = QueryGreaterThanOrEqual(PK, indexName, indexValue, callerInfo: callerInfo);
-        var (objResult, _) = await ListAndSizeAsync(queryRequest);
-        return objResult;
-    }
-    public virtual async Task<ObjectResult> ListBetweenAsync(ICallerInfo callerInfo, string indexName, string indexValue1, string indexValue2)
-    {
-        var queryRequest = QueryRange(PK, indexName, indexValue1, indexValue2, callerInfo: callerInfo);
-        var (objResult, _) = await ListAndSizeAsync(queryRequest);
-        return objResult;
-    }
     protected Dictionary<string, string> GetExpressionAttributeNames(Dictionary<string, string> value)
     {
         if (value != null)
@@ -622,13 +498,10 @@ public abstract
         value ??= "#Data, TypeName, #Status, UpdateUtcTick, CreateUtcTick, #General";
         return value;
     }
-
-    public virtual QueryRequest QueryEquals(string pK, Dictionary<string, string> expressionAttributeNames = null, string projectionExpression = null, ICallerInfo callerInfo = null)
+    protected virtual QueryRequest QueryEquals(string pK, Dictionary<string, string> expressionAttributeNames = null, string projectionExpression = null, ICallerInfo callerInfo = null)
     {
         callerInfo ??= new CallerInfo();
-        var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
-            table = tablename;
+        var table = GetTableName(callerInfo);
 
         expressionAttributeNames = GetExpressionAttributeNames(expressionAttributeNames);
         projectionExpression = GetProjectionExpression(projectionExpression);
@@ -654,12 +527,10 @@ public abstract
         return query;
 
     }
-    public virtual QueryRequest QueryEquals(string pK, string keyField, string key, Dictionary<string, string> expressionAttributeNames = null, string projectionExpression = null, ICallerInfo callerInfo = null)
+    protected virtual QueryRequest QueryEquals(string pK, string keyField, string key, Dictionary<string, string> expressionAttributeNames = null, string projectionExpression = null, ICallerInfo callerInfo = null)
     {
         callerInfo ??= new CallerInfo();
-        var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
-            table = tablename;
+        var table = GetTableName(callerInfo);
 
         expressionAttributeNames = GetExpressionAttributeNames(expressionAttributeNames);
         projectionExpression = GetProjectionExpression(projectionExpression);
@@ -686,12 +557,10 @@ public abstract
         }
         return query;
     }
-    public virtual QueryRequest QueryBeginsWith(string pK, string keyField, string key, Dictionary<string, string> expressionAttributeNames = null, string projectionExpression = null, ICallerInfo callerInfo = null)
+    protected virtual QueryRequest QueryBeginsWith(string pK, string keyField, string key, Dictionary<string, string> expressionAttributeNames = null, string projectionExpression = null, ICallerInfo callerInfo = null)
     {
         callerInfo ??= new CallerInfo();
-        var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
-            table = tablename;
+        var table = GetTableName(callerInfo);
 
         expressionAttributeNames = GetExpressionAttributeNames(expressionAttributeNames);
         projectionExpression = GetProjectionExpression(projectionExpression);
@@ -718,12 +587,10 @@ public abstract
         }
         return query;
     }
-    public virtual QueryRequest QueryLessThan(string pK, string keyField, string key, Dictionary<string, string> expressionAttributeNames = null, string projectionExpression = null, ICallerInfo callerInfo = null)
+    protected virtual QueryRequest QueryLessThan(string pK, string keyField, string key, Dictionary<string, string> expressionAttributeNames = null, string projectionExpression = null, ICallerInfo callerInfo = null)
     {
         callerInfo ??= new CallerInfo();
-        var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
-            table = tablename;
+        var table = GetTableName(callerInfo);
 
         expressionAttributeNames = GetExpressionAttributeNames(expressionAttributeNames);
         projectionExpression = GetProjectionExpression(projectionExpression);
@@ -750,12 +617,10 @@ public abstract
         }
         return query;
     }
-    public virtual QueryRequest QueryLessThanOrEqual(string pK, string keyField, string key, Dictionary<string, string> expressionAttributeNames = null, string projectionExpression = null, ICallerInfo callerInfo = null)
+    protected virtual QueryRequest QueryLessThanOrEqual(string pK, string keyField, string key, Dictionary<string, string> expressionAttributeNames = null, string projectionExpression = null, ICallerInfo callerInfo = null)
     {
         callerInfo ??= new CallerInfo();
-        var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
-            table = tablename;
+        var table = GetTableName(callerInfo);
 
         expressionAttributeNames = GetExpressionAttributeNames(expressionAttributeNames);
         projectionExpression = GetProjectionExpression(projectionExpression);
@@ -782,12 +647,10 @@ public abstract
         }
         return query;
     }
-    public virtual QueryRequest QueryGreaterThan(string pK, string keyField, string key, Dictionary<string, string> expressionAttributeNames = null, string projectionExpression = null, ICallerInfo callerInfo = null)
+    protected virtual QueryRequest QueryGreaterThan(string pK, string keyField, string key, Dictionary<string, string> expressionAttributeNames = null, string projectionExpression = null, ICallerInfo callerInfo = null)
     {
         callerInfo ??= new CallerInfo();
-        var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
-            table = tablename;
+        var table = GetTableName(callerInfo);
 
         expressionAttributeNames = GetExpressionAttributeNames(expressionAttributeNames);
         projectionExpression = GetProjectionExpression(projectionExpression);
@@ -814,15 +677,14 @@ public abstract
         }
         return query;
     }
-    public virtual QueryRequest QueryGreaterThanOrEqual(string pK, string keyField, string key, Dictionary<string, string> expressionAttributeNames = null, string projectionExpression = null, ICallerInfo callerInfo = null)
+    protected virtual QueryRequest QueryGreaterThanOrEqual(string pK, string keyField, string key, Dictionary<string, string> expressionAttributeNames = null, string projectionExpression = null, ICallerInfo callerInfo = null)
     {
         callerInfo ??= new CallerInfo();
-        var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
-            table = tablename;
+        var table = GetTableName(callerInfo);
 
         expressionAttributeNames = GetExpressionAttributeNames(expressionAttributeNames);
         projectionExpression = GetProjectionExpression(projectionExpression);
+
 
         var indexName = (string.IsNullOrEmpty(keyField) || keyField.Equals("SK")) ? null : $"PK-{keyField}-Index";
 
@@ -846,12 +708,10 @@ public abstract
         }
         return query;
     }
-    public virtual QueryRequest QueryBeginsWith(string pK, Dictionary<string, string> expressionAttributeNames = null, string projectionExpression = null, ICallerInfo callerInfo = null)
+    protected virtual QueryRequest QueryBeginsWith(string pK, Dictionary<string, string> expressionAttributeNames = null, string projectionExpression = null, ICallerInfo callerInfo = null)
     {
         callerInfo ??= new CallerInfo();
-        var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
-            table = tablename;
+        var table = GetTableName(callerInfo);
 
         expressionAttributeNames = GetExpressionAttributeNames(expressionAttributeNames);
         projectionExpression = GetProjectionExpression(projectionExpression);
@@ -874,8 +734,7 @@ public abstract
         }
         return query;
     }
-
-    public virtual QueryRequest QueryRange(
+    protected virtual QueryRequest QueryRange(
         string pK,
         string keyField,
         string keyStart,
@@ -883,9 +742,9 @@ public abstract
         Dictionary<string, string> expressionAttributeNames = null,
         string projectionExpression = null,
         string table = null)
-        => QueryRange(pK, keyField, keyStart, keyEnd, expressionAttributeNames, projectionExpression, new CallerInfo() { Table = table });
+        => QueryRange(pK, keyField, keyStart, keyEnd, expressionAttributeNames, projectionExpression, new CallerInfo() { DefaultDB = table });
 
-    public virtual QueryRequest QueryRange(
+    protected virtual QueryRequest QueryRange(
         string pK,
         string keyField,
         string keyStart,
@@ -895,9 +754,7 @@ public abstract
         ICallerInfo callerInfo = null)
     {
         callerInfo ??= new CallerInfo();
-        var table = callerInfo.Table;
-        if (string.IsNullOrEmpty(table) || alwaysUseLocalTablenameProperty)
-            table = tablename;
+        var table = GetTableName(callerInfo);
 
         expressionAttributeNames = GetExpressionAttributeNames(expressionAttributeNames);
         projectionExpression = GetProjectionExpression(projectionExpression);
@@ -941,4 +798,123 @@ public abstract
             return statusCodeResult.StatusCode;
         return 200;
     }
+    protected virtual string GetTableName(ICallerInfo callerInfo)
+    {
+        var table = "";
+        switch (tableLevel)
+        {
+            case TableLevel.System:
+                table = callerInfo.SystemDB;
+                break;
+            case TableLevel.Tenant:
+                table = callerInfo.TenantDB;
+                break;
+            case TableLevel.Subtenant:
+                table = callerInfo.SubtenantDB;
+                break;
+            case TableLevel.Default:
+                table = callerInfo.DefaultDB;
+                break;
+            case TableLevel.Local:
+                table = tablename;
+                break;
+            default:
+                table = callerInfo.DefaultDB;
+                break;
+        }
+        if (debug) Console.WriteLine($"GetTableName() table: {table}");
+        return table;
+    }
+    protected virtual void AssignEntityAttributes(ICallerInfo callerInfo, JObject jobjectData, Dictionary<string,AttributeValue> dbrecord, long now )
+    {
+        if (debug) Console.WriteLine("AddEntityAttributes() called");
+        dbrecord.Add("PK", new AttributeValue() { S = EntityType });
+        if(jobjectData["Id"] != null)
+            dbrecord.Add("SK", new AttributeValue() { S = $"{jobjectData["Id"]}" });
+        dbrecord.Add("SessionId", new AttributeValue() { S = callerInfo.SessionId });
+        return;
+    }
+    protected virtual void AssignOptionalAttrubutes(ICallerInfo callerInfo, JObject jobjectData, Dictionary<string, AttributeValue> dbrecord, long now)
+    {
+        if (debug) Console.WriteLine("AddOptionalAttributes() called");
+        return;
+    }
+    protected virtual void AssignTTLAttribute(ICallerInfo callerInfo, JObject jobjectData, Dictionary<string, AttributeValue> dbrecord, long now)
+    {
+        if (debug) Console.WriteLine("AddTTLAttribute() called");
+        if(TTL == 0) return;
+        dbrecord.Add("TTL", new AttributeValue() { N = TTL.ToString() });
+        return;
+    }
+    protected virtual void AssignTopicsAttribute(ICallerInfo callerInfo, JObject jobjectData, Dictionary<string, AttributeValue> dbrecord, long now)
+    {
+        if (debug) Console.WriteLine("AddTopicsAttribute() called");
+        var topics = $"[\"{typeof(T).Name}:\"]";
+        dbrecord.Add("Topics", new AttributeValue() { S = topics });
+        return;
+    }
+    protected virtual void AssignJsonDataAttribute(ICallerInfo callerInfo, JObject jobjectData, Dictionary<string, AttributeValue> dbrecord, long now)
+    {
+        if (debug) Console.WriteLine("AddJsonDataAttribute() called");
+        var jsonData = JsonConvert.SerializeObject(jobjectData);
+        dbrecord.Add("Data", new AttributeValue() { S = jsonData });
+        return;
+    }
+    /// <summary>
+    /// If your entity data doesn't have a CreateUtcTick property, you can override this method
+    /// to assign the CreateUtcTick value from a different property.  
+    /// </summary>
+    /// <param name="callerInfo"></param>
+    /// <param name="jobjectData"></param>
+    /// <param name="dbrecord"></param>
+    /// <param name="now"></param>
+    protected virtual void AssignCreateUtcTickAttribute(ICallerInfo callerInfo, JObject jobjectData, Dictionary<string, AttributeValue> dbrecord, long now)
+    {
+        if (debug) Console.WriteLine("AddCreateTickAttributeAttribute() called");
+        long createUtcTick = 0;
+        if (jobjectData["CreateUtcTick"] != null) // the type contains a CreateUtcTick property, it may be zero
+        {
+            createUtcTick = (long)jobjectData["CreateUtcTick"];
+            if (createUtcTick == 0) createUtcTick = now;
+        }
+        dbrecord.Add("CreateUtcTick", new AttributeValue() { N = createUtcTick.ToString() });
+        return;
+    }
+    /// <summary>
+    /// If your entity data doesn't have an UpdateUtcTick property, you can override this method
+    /// to assign the UpdateUtcTick value from a different property.
+    /// </summary>
+    /// <param name="callerInfo"></param>
+    /// <param name="jobjectData"></param>
+    /// <param name="dbrecord"></param>
+    /// <param name="now"></param>
+    protected virtual void AssignUpdateUtcTickAttribute(ICallerInfo callerInfo, JObject jobjectData, Dictionary<string, AttributeValue> dbrecord, long now)
+    {
+        if (debug) Console.WriteLine("AddUpdateTickAttributeAttribute() called");
+        dbrecord.Add("UpdateUtcTick", new AttributeValue() { N = now.ToString() });
+        // Update the object data with the new UpdateUtcTick if it contains one.
+        // If your object stores this data in another property, you will need to voerride this method.
+        // and assign the class property there.
+        if (jobjectData["UpdateUtcTick"] != null) jobjectData["UpdateUtcTick"] = now;
+        return;
+    }
+    /// <summary>
+    /// Overrid this method to handle in-line data transformations from 
+    /// older type definitions to new ones.
+    /// You can perform persitent updates for records by doing a read followed
+    /// by a write.
+    /// </summary>
+    /// <param name="jsonData"></param>
+    /// <returns></returns>
+    protected virtual T DeserializeJsonData(string jsonData)
+    {
+        if (debug) Console.WriteLine("DeserializeData() called");
+        return JsonConvert.DeserializeObject<T>(jsonData);
+    }
+    protected virtual Task WriteNotificationAsync(ICallerInfo callerInfo, Dictionary<string, AttributeValue> dbrecord, string action)
+    {
+        if (debug) Console.WriteLine("WriteNotificationAsync() called but not implemented");
+        throw new NotImplementedException();
+    }
+    #endregion 
 }

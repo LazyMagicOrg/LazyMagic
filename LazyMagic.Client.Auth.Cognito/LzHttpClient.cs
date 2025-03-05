@@ -20,26 +20,20 @@ public class LzHttpClient : NotifyBase, ILzHttpClient
     private readonly ILogger _logger;
     public LzHttpClient(
         ILoggerFactory loggerFactory,
-        int securityLevel, // 0 = no security, 1 = JWT, 2 = AWS Signature V4
-        string tenantKey, // necessary for local debugging, CloudFront replaces this header value in the tenancy cache function
         IAuthProvider? authProvider, // Auth service. ex: AuthProviderCognito
         ILzHost lzHost, // Runtime environment. IsMAUI, IsWASM, URL etc.
         string? sessionId = null
         )
     {
         _logger = loggerFactory.CreateLogger<LzHttpClient>();   
-        this.securityLevel = securityLevel;
-        this.authProvider = authProvider;
+        this.authProvider = (IAuthProviderCognito)authProvider!;
         this.lzHost= lzHost;
-        this.tenantKey = tenantKey;
         this.sessionId = sessionId ?? "";
     }
-    protected int securityLevel = 0;
-    protected IAuthProvider? authProvider;
+    protected IAuthProviderCognito? authProvider;
     protected ILzHost lzHost;
     protected HttpClient? httpClient;
     protected bool isServiceAvailable = false;
-    protected string? tenantKey;
     protected string? sessionId; 
 
     public async Task<HttpResponseMessage> SendAsync(
@@ -48,11 +42,16 @@ public class LzHttpClient : NotifyBase, ILzHttpClient
         CancellationToken cancellationToken,
         [CallerMemberName] string? callerMemberName = null!)
     {
+        var securityLevel = 0;
+        if(authProvider != null)
+        {
+            securityLevel = authProvider.SecurityLevel;
+        }   
+
         var baseUrl = lzHost.UseLocalhostApi ? lzHost.LocalApiUrl : lzHost.RemoteApiUrl;
         if(!baseUrl.EndsWith("/"))
             baseUrl += "/"; // baseUrl must end with a / or contcat with relative path may fail
 
-        requestMessage.Headers.Add("tenantKey", tenantKey);
         requestMessage.Headers.Add("SessionId", sessionId);
 
         // Create HttpClient if it doesn't exist
@@ -95,16 +94,21 @@ public class LzHttpClient : NotifyBase, ILzHttpClient
                 case 1: // Use JWT Token signing process
                     try
                     {
-                        if(authProvider is null)
-                        {
-                            _logger.LogDebug("authProvider is null");
-                            return new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest);
-                        }   
                         string? token = "";
                         try
                         {
                             token = await authProvider!.GetIdentityToken();
                             requestMessage.Headers.Add("Authorization", token);
+
+                            // When running against localhost, we need to add the region and userpool id
+                            // because these are not being added by virtue of the API Gateway proxy transformation
+                            // that would happen if we were calling the API Gateway.
+                            if (lzHost.UseLocalhostApi)
+                            {
+                                requestMessage.Headers.Add("lz-cognito-region", authProvider.CognitoRegion);
+                                requestMessage.Headers.Add("lz-cognito-userpool-id", authProvider.CognitoUserPoolId);
+                            }
+
                         }
                         catch
                         {
@@ -144,7 +148,7 @@ public class LzHttpClient : NotifyBase, ILzHttpClient
                         _logger.LogDebug($"Error: {e.Message}");
                     }
                     break;
-                    throw new Exception($"Security Level {securityLevel} not supported.");
+                    throw new Exception($"Security Level {authProvider.SecurityLevel} not supported.");
             }
         }
         catch (Exception ex)
@@ -168,6 +172,7 @@ public class LzHttpClient : NotifyBase, ILzHttpClient
     }
     public void Dispose()
     {
+        if(httpClient != null)
             httpClient.Dispose();
     }
 

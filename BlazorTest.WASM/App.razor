@@ -39,7 +39,7 @@
                 var staticAssets = new BlazorStaticAssets(LoggerFactory, new HttpClient());
                 Messages.SetStaticAssets(staticAssets);
 
-                await ClientConfig.ReadAuthConfigAsync(Host.RemoteApiUrl + "config");
+                await ClientConfig.InitializeAsync(Host.RemoteApiUrl);
 
                 // The following extension methods add to the Mesaages.MessageFiles list
                 Messages

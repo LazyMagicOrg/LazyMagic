@@ -16,11 +16,11 @@ public class Program
         builder.RootComponents.Add<HeadOutlet>("head::after");
 
         // We use the launchSettings.json profile ASPNETCORE_ENVIRONMENT environment variable
-        // to determine the host addresses for the API host and Tenancy host.
+        // to determine the host addresses for the API host and Tenant host.
         //
         // Examples:
         // Production: "ASPNETCORE_ENVIRONMENT": "Production" 
-        //  The API and Tenancy host are the same and are the base address of the cloudfront distribution
+        //  The API and Tenant host are the same and are the base address of the cloudfront distribution
         //  the app is loaded from.
         //
         // Debug against LocalHost API:
@@ -49,14 +49,20 @@ public class Program
 
 
         builder.Services
+        .AddSingleton(sp => new HttpClient { BaseAddress = new Uri((string)_appConfig!["assetsUrl"]!) })
+        .AddSingleton<IStaticAssets>(sp => new BlazorStaticAssets(
+            sp.GetRequiredService<ILoggerFactory>(),
+            new HttpClient { BaseAddress = new Uri((string)_appConfig!["assetsUrl"]!) }))
         .AddSingleton<ILzMessages, LzMessages>()
         .AddSingleton<ILzClientConfig, LzClientConfig>()
-        .AddSingleton(sp => new HttpClient { BaseAddress = new Uri((string)_appConfig!["assetsUrl"]!) })
         .AddSingleton<BlazorInternetConnectivity>()
+
         .AddSingleton<IBlazorInternetConnectivity>(sp => sp.GetRequiredService<BlazorInternetConnectivity>())
         .AddSingleton<IInternetConnectivitySvc>(sp => sp.GetRequiredService<BlazorInternetConnectivity>())
         .AddSingleton<ILzHost>(sp => new LzHost(
-            androidAppUrl: (string)_appConfig!["androidAppUrl"]!, // android app url 
+            appPath: (string)_appConfig!["appPath"]!, // app path
+            appUrl: (string)_appConfig!["appUrl"]!, // app url  
+            androidAppUrl: "", // android app url not used in WASM
             remoteApiUrl: (string)_appConfig!["remoteApiUrl"]!,  // api url
             localApiUrl: (string)_appConfig!["localApiUrl"]!, // local api url
             assetsUrl: (string)_appConfig!["assetsUrl"]!, // tenancy assets url

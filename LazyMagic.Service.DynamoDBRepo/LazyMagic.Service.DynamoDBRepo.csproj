@@ -16,6 +16,6 @@
 		<PackageReference Include="Newtonsoft.Json" />		
 	</ItemGroup>
 	<ItemGroup>
-		<ProjectReference Include="..\LazyMagic.Shared\LazyMagic.Shared.csproj" />
+		<ProjectReference Include="..\LazyMagic.Service.Shared\LazyMagic.Service.Shared.csproj" />
 	</ItemGroup>	
 </Project>

@@ -9,20 +9,14 @@ using Microsoft.Extensions.Logging;
 
 public partial class LzHttpClientSigV4 : LzHttpClient, ILzHttpClient   
 {
-    private readonly Microsoft.Extensions.Logging.ILogger _logger;
     public LzHttpClientSigV4(
         ILoggerFactory loggerFactory,
-        string awsRegion, // AWS region for the API 
-        int securityLevel, // 0 = no security, 1 = JWT, 2 = AWS Signature V4    
-        string tenantKey, // necessary for local debugging, CloudFront replaces this header value in the tenancy cache function
         IAuthProvider authProvider, // Auth service. ex: AuthProviderCognito
-        ILzHost lzHost // Runtime environment. IsMAUI, IsWASM, URL etc.
-        ) : base(loggerFactory, securityLevel, tenantKey, authProvider, lzHost)
+        ILzHost lzHost, // Runtime environment. IsMAUI, IsWASM, URL etc.
+        string? sessionId = null    
+        ) : base(loggerFactory,authProvider, lzHost, sessionId)
     {
-        _logger = loggerFactory.CreateLogger<LzHttpClientSigV4>();  
-        this.awsRegion = awsRegion;    
     }
-    private string awsRegion;
     public override async Task<HttpResponseMessage> SendV4SigAsync(
         HttpClient httpclient,
         HttpRequestMessage requestMessage,
@@ -31,15 +25,15 @@ public partial class LzHttpClientSigV4 : LzHttpClient, ILzHttpClient
         string callerMemberName) 
     {
 
-        // Note: For this ApiGateway we need to add a copy of the JWT header 
-        // to make it available to the Lambda. This type of ApiGateway will not
-        // pass the authorization header through to the Lambda.
+        // Note: For this ApiGateway, our Authorization header does not
+        // contain the caller identity. We add a copy of the JWT Identity
+        // token so the API can use it to perform authorization checks.
         var token = await authProvider!.GetIdentityToken();
-        requestMessage.Headers.Add("LzIdentity", token);
+        requestMessage.Headers.Add("lz-config-identity", token);
 
         var iCreds = await authProvider.GetCredsAsync();
         var awsCreds = new ImmutableCredentials(iCreds!.AccessKey, iCreds.SecretKey, iCreds.Token);
-        
+        var awsRegion = authProvider.CognitoRegion;   
 
         // Note. Using named parameters to satisfy version >= 3.x.x  signature of 
         // AwsSignatureVersion4 SendAsync method.
@@ -47,7 +41,7 @@ public partial class LzHttpClientSigV4 : LzHttpClient, ILzHttpClient
         request: requestMessage,
         completionOption: httpCompletionOption,
         cancellationToken: cancellationToken,
-        regionName: awsRegion,
+        regionName: awsRegion!,
         serviceName: "execute-api",
         credentials: awsCreds);
         return response!;

@@ -23,7 +23,21 @@ public class LzClientConfig : ILzClientConfig
 
     public bool ConfigureError { get; set; }
     public bool Configured { get; set; }
-    public string ConfigError { get; set; } = "";   
+    public string ConfigError { get; set; } = "";
+
+
+    public virtual async Task InitializeAsync(string hostUrl)
+    {
+        var host = (new Uri(hostUrl)).Host;
+        var hostParts = host.Split('.');
+
+        await ReadAuthConfigAsync(hostUrl + "config");
+        await ReadTenancyConfigAsync(hostUrl + "system/base/AdminApp/config.json");
+        await ReadTenancyConfigAsync(hostUrl + "tenancy/base/System/config.json");
+        if(hostParts.Length > 2)
+            await ReadTenancyConfigAsync(hostUrl + "subtenancy/base/System/config.json");
+        await FinalizeTenancyConfigAsync();
+    }
 
     /// <summary>
     /// You may call ReadTenancyConfigAsync multiple times with different paths. Config content 
@@ -31,7 +45,7 @@ public class LzClientConfig : ILzClientConfig
     /// </summary>
     /// <param name="tenancyConfigPath"></param>
     /// <returns></returns>
-    public virtual async Task ReadTenancyConfigAsync(string tenancyConfigPath)
+    protected virtual async Task ReadTenancyConfigAsync(string tenancyConfigPath)
     {
         ConfigError = "";   
         try
@@ -58,7 +72,7 @@ public class LzClientConfig : ILzClientConfig
     /// <param name="authConfigPath"></param>
     /// <param name="userPoolName"></param>
     /// <returns></returns>
-    public virtual async Task ReadAuthConfigAsync(string authConfigPath)
+    protected virtual async Task ReadAuthConfigAsync(string authConfigPath)
     {
         ConfigError = "";
         try
@@ -99,6 +113,12 @@ public class LzClientConfig : ILzClientConfig
             ConfigError = msg;
             Console.WriteLine(msg);
         }
+    }
+
+    protected virtual Task FinalizeTenancyConfigAsync()
+    {
+        TenantKey = TenancyConfig["tenantKey"]?.ToString() ?? "";  
+        return Task.CompletedTask;  
     }
 
 }

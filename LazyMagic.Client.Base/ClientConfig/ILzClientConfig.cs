@@ -11,6 +11,5 @@ public interface ILzClientConfig
     string Type { get; set; }
     string Region { get; set; }
 
-    Task ReadAuthConfigAsync(string configFilePath);
-    Task ReadTenancyConfigAsync(string configFilePath);
+    Task InitializeAsync(string hostUrl);
 }

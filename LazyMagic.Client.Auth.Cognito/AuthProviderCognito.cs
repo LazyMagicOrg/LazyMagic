@@ -1,6 +1,7 @@
 
 
 using Amazon.CognitoIdentityProvider.Model;
+using Amazon.Runtime;
 using Amazon.Runtime.Internal.Util;
 
 /// <summary> 
@@ -79,6 +80,7 @@ public class AuthProviderCognito : IAuthProviderCognito
     protected string? clientId;
     protected string? userPoolId;
     protected string? identityPoolId;
+    protected int securityLevel;    
     protected RegionEndpoint? regionEndpoint;
     protected AmazonCognitoIdentityProviderClient? providerClient;
     protected CognitoUserPool? userPool;
@@ -89,6 +91,12 @@ public class AuthProviderCognito : IAuthProviderCognito
     public string? IpIdentity { get; set; } // Identity Pool Identity.
     public string? UpIdentity { get; set; } // User Pool Identity. ie: JWT "sub" claim
     public CognitoAWSCredentials? Credentials { get; private set; }
+    public string? CognitoUserPoolId { get { return userPoolId; } }
+    public string? CognitoClientId { get { return clientId; } }
+    public string? CognitoIdentityPoolId { get { return identityPoolId; } }
+    public string? CognitoRegion { get { return regionEndpoint?.SystemName; } }
+    public int SecurityLevel { get { return securityLevel; } }  
+
 
     // CognitoUser is part of Amazon.Extensions.CognitoAuthentication -- see the following resources
     // https://docs.aws.amazon.com/sdk-for-net/v3/developer-guide/cognito-authentication-extension.html -- very limited docs
@@ -270,6 +278,9 @@ public class AuthProviderCognito : IAuthProviderCognito
         userPoolId = (string?)authConfig["userPoolId"] ?? throw new Exception("Cognito AuthConfig.userPoolId is null");
 
         identityPoolId = (string?)authConfig["identityPoolId"];
+
+        var securityLevelStr = (string?)authConfig?["userPoolSecurityLevel"] ?? throw new Exception("Cognito AuthConfig.securityLevel is null");
+        securityLevel = int.Parse(securityLevelStr);
 
         try
         {
@@ -570,6 +581,22 @@ public class AuthProviderCognito : IAuthProviderCognito
         {
             switch (CurrentAuthProcess)
             {
+
+                case AuthProcessEnum.SigningIn:
+                    if(CurrentChallenge != AuthChallengeEnum.NewPassword)
+                        return AuthEventEnum.Alert_VerifyFailed;
+                    authFlowResponse = await CognitoUser!.RespondToNewPasswordRequiredAsync(
+                        new RespondToNewPasswordRequiredRequest()
+                        {
+                            SessionID = authFlowResponse!.SessionID,
+                            NewPassword = newPassword
+                        }
+                        ).ConfigureAwait(false);
+
+                    this.newPassword = newPassword;
+                    AuthChallengeList.Remove(AuthChallengeEnum.NewPassword);
+                    return await NextChallenge();
+
                 case AuthProcessEnum.SigningUp:
                     authFlowResponse = await CognitoUser!.RespondToNewPasswordRequiredAsync(
                         new RespondToNewPasswordRequiredRequest()
@@ -927,7 +954,7 @@ public class AuthProviderCognito : IAuthProviderCognito
                         {
                             if (!AuthChallengeList.Contains(AuthChallengeEnum.NewPassword))
                                 AuthChallengeList.Add(AuthChallengeEnum.NewPassword);
-                            authFlowResponse = null;
+                            // authFlowResponse = null;
                             return AuthEventEnum.AuthChallenge;
                         }
 

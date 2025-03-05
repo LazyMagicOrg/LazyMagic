@@ -6,48 +6,51 @@
     <PackageVersion Include="Amazon.Lambda.Core" Version="2.5.0" />
     <PackageVersion Include="Amazon.Lambda.Serialization.Json" Version="2.2.4" />
     <PackageVersion Include="Amazon.Lambda.Serialization.SystemTextJson" Version="2.4.4" />
-    <PackageVersion Include="AwsSignatureVersion4" Version="4.0.6" />
+    <PackageVersion Include="AwsSignatureVersion4" Version="5.0.1" />
     <PackageVersion Include="AWSSDK.CloudFormation" Version="3.7.401.6" />
-    <PackageVersion Include="AWSSDK.ApiGatewayManagementApi" Version="3.7.400.59" />
-    <PackageVersion Include="AWSSDK.DynamoDBv2" Version="3.7.404" />
-    <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.301" />
+    <PackageVersion Include="AWSSDK.CloudFront" Version="3.7.404.41" />
+    <PackageVersion Include="AWSSDK.CloudFrontKeyValueStore" Version="3.7.400.106" />
+    <PackageVersion Include="AWSSDK.ApiGatewayManagementApi" Version="3.7.400.106" />
+    <PackageVersion Include="AWSSDK.DynamoDBv2" Version="3.7.405.33" />
+    <PackageVersion Include="AWSSDK.Extensions.CrtIntegration" Version="3.7.400" />
+    <PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.400" />
     <PackageVersion Include="AWSSDK.SecurityToken" Version="3.7.401.8" />
     <PackageVersion Include="Blazorise" Version="1.7.0" />
-    <PackageVersion Include="Blazorise.Animate" Version="1.7.0" />
-    <PackageVersion Include="Blazorise.Bootstrap5" Version="1.7.0" />
-    <PackageVersion Include="Blazorise.Components" Version="1.7.0" />
-    <PackageVersion Include="Blazorise.Icons.FontAwesome" Version="1.7.0" />
-    <PackageVersion Include="Blazorise.LoadingIndicator" Version="1.7.0" />
+    <PackageVersion Include="Blazorise.Animate" Version="1.7.5" />
+    <PackageVersion Include="Blazorise.Bootstrap5" Version="1.7.5" />
+    <PackageVersion Include="Blazorise.Components" Version="1.7.5" />
+    <PackageVersion Include="Blazorise.Icons.FontAwesome" Version="1.7.5" />
+    <PackageVersion Include="Blazorise.LoadingIndicator" Version="1.7.5" />
     <PackageVersion Include="CommandLineParser" Version="2.9.1" />
-    <PackageVersion Include="coverlet.collector" Version="6.0.2" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.4" />
     <PackageVersion Include="DeepCloner" Version="0.10.4" />
-    <PackageVersion Include="DynamicData" Version="9.0.4" />
+    <PackageVersion Include="DynamicData" Version="9.1.2" />
     <PackageVersion Include="FluentValidation" Version="11.11.0" />
     <PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
     <PackageVersion Include="JsonSubTypes" Version="2.0.1" />
-    <PackageVersion Include="MailKit" Version="4.8.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Components.Forms" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.CodeAnalysis" Version="4.11.0" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.11.0" />
+    <PackageVersion Include="MailKit" Version="4.10.0" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.Forms" Version="9.0.2" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="9.0.2" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.2" />
+    <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="9.0.2" />
+    <PackageVersion Include="Microsoft.CodeAnalysis" Version="4.13.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.13.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.13.0" />
     <PackageVersion Include="Microsoft.Maui.Controls" Version="9.0.12" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.0" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
-    <PackageVersion Include="MudBlazor" Version="7.8.0" />
-    <PackageVersion Include="MSTest.TestAdapter" Version="3.6.4" />
-    <PackageVersion Include="MSTest.TestFramework" Version="3.6.4" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="9.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="9.0.2" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="9.0.2" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.13.0" />
+    <PackageVersion Include="MudBlazor" Version="8.3.0" />
+    <PackageVersion Include="MSTest.TestAdapter" Version="3.8.2" />
+    <PackageVersion Include="MSTest.TestFramework" Version="3.8.2" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageVersion Include="ReactiveUI" Version="20.1.63" />
-    <PackageVersion Include="ReactiveUI.Blazor" Version="20.1.1" />
+    <PackageVersion Include="ReactiveUI.Blazor" Version="20.1.63" />
     <PackageVersion Include="ReactiveUI.Fody" Version="19.5.41" />
     <PackageVersion Include="System.ComponentModel.Annotations" Version="5.0.0" />
-    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.3.0" />
-    <PackageVersion Include="YamlDotNet" Version="16.2.1" />
+    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.6.0" />
+    <PackageVersion Include="YamlDotNet" Version="16.3.0" />
   </ItemGroup>
 </Project>

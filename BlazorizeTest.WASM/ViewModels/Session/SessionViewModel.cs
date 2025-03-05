@@ -13,7 +13,7 @@ public class SessionViewModel : LzSessionViewModelAuth, ISessionViewModel, ILzTr
         )
         : base(loggerFactory,  authProcess, clientConfig, internetConnectivity, messages)
     {
-        authProcess.SetAuthenticator(clientConfig.AuthConfigs["api"]);
+        authProcess.SetAuthenticator(clientConfig.AuthConfigs["TenantAuth"]);
 
     }
 }

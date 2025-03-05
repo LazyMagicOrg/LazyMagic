@@ -35,7 +35,8 @@ public abstract class LzItemViewModel<TDTO, TModel>
         CanDelete = true;
         IsLoaded = false;
         IsDirty = false;
-       
+        IsBusy = false;
+
 
         this.WhenAnyValue(x => x.State, (x) => x == LzItemViewModelState.New)
             .ToPropertyEx(this, x => x.IsNew);
@@ -90,6 +91,7 @@ public abstract class LzItemViewModel<TDTO, TModel>
     [ObservableAsProperty] public bool IsCurrent { get; }
     [ObservableAsProperty] public bool IsDeleted { get; }
     [Reactive] public bool IsDirty { get; set; }
+    [Reactive] public bool IsBusy { get; set; } 
     public ILzParentViewModel? ParentViewModel { get; set; } 
 
 
@@ -139,7 +141,7 @@ public abstract class LzItemViewModel<TDTO, TModel>
     /// <returns></returns>
     public virtual async Task<(bool, string)> CreateAsync()
     {
-
+        IsBusy = true;
         try
         {
             if (!CanCreate)
@@ -179,6 +181,10 @@ public abstract class LzItemViewModel<TDTO, TModel>
         {
             return (false, Log(MethodBase.GetCurrentMethod()!, ex.Message));
         }
+        finally
+        {
+            IsBusy = false;
+        }
     }
     /// <summary>
     /// Update the current item in storage.
@@ -186,6 +192,7 @@ public abstract class LzItemViewModel<TDTO, TModel>
     /// <returns></returns>
     public virtual async Task<(bool, string)> UpdateAsync()
     {
+        IsBusy = true;
         try
         {
             if (!CanUpdate)
@@ -218,6 +225,10 @@ public abstract class LzItemViewModel<TDTO, TModel>
         {
             return (false, Log(MethodBase.GetCurrentMethod()!, ex.Message));
         }
+        finally
+        {
+            IsBusy = false;
+        }
     }
     /// <summary>
     /// Creates or Updates the current item in storage.
@@ -247,6 +258,7 @@ public abstract class LzItemViewModel<TDTO, TModel>
     /// <returns></returns>
     public virtual async Task<(bool, string)> DeleteAsync(string? id = null)
     {
+        IsBusy = true;  
         try
         {
             if (!CanDelete)
@@ -277,6 +289,10 @@ public abstract class LzItemViewModel<TDTO, TModel>
         catch (Exception ex)
         {
             return (false, Log(MethodBase.GetCurrentMethod()!, ex.Message));
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
     /// <summary>
@@ -330,6 +346,7 @@ public abstract class LzItemViewModel<TDTO, TModel>
     /// <returns></returns>
     public virtual async Task<(bool, string)> ReadAsync(string? id = null)
     {
+        IsBusy = true;  
         var userMsg = "Can't load " + _EntityName;
         try
         {
@@ -357,6 +374,10 @@ public abstract class LzItemViewModel<TDTO, TModel>
         catch (Exception ex)
         {
             return (false, Log(userMsg + " " + MethodBase.GetCurrentMethod()!, ex.Message));
+        }
+        finally
+        {
+            IsBusy = false;
         }
     }
     /// <summary>
@@ -389,7 +410,11 @@ public abstract class LzItemViewModel<TDTO, TModel>
 
         Data ??= new();
         var json = JsonConvert.SerializeObject(item);
-        JsonConvert.PopulateObject(json, Data);
+        var settings = new JsonSerializerSettings
+        {
+            ObjectCreationHandling = ObjectCreationHandling.Replace
+        };
+        JsonConvert.PopulateObject(json, Data, settings);
         IsDirty = false;
         this.RaisePropertyChanged(nameof(Data));
     }
@@ -432,7 +457,12 @@ public abstract class LzItemViewModel<TDTO, TModel>
         // DeepCloneTo(Data) is not possible because it overwrites any
         // event subscriptions.
         Data ??= new();
-        JsonConvert.PopulateObject(_DataCopyJson, Data);
+        var settings = new JsonSerializerSettings
+        {
+            ObjectCreationHandling = ObjectCreationHandling.Replace
+        };
+
+        JsonConvert.PopulateObject(_DataCopyJson, Data, settings);
     }
     /// <summary>
     /// We use PopulateObject to update the Data object to 
@@ -445,42 +475,4 @@ public abstract class LzItemViewModel<TDTO, TModel>
         IsDirty = false;
         this.RaisePropertyChanged(nameof(Data));
     }
-
-    //// Model Storage API Methods
-    //// Since the Data property points to the single instance of the model, these 
-    //// methods are essentially no-ops. They are here to provide a consistent processing
-    //// pattern for all storage APIs and allow the introduction of side effects
-    //// associated with each action. For instance, you might want to perform 
-    //// referential integrity checks in the Create and Update methods if you are 
-    //// not using Fluent Validation or some other validation library. 
-    //protected virtual async Task<TModel> ModelCreateAsync(TModel body)
-    //{
-    //    // Perform any referential integrity checks here.
-    //    await Task.Delay(0);
-    //    return body;
-    //}
-    //protected async Task<TModel> ModelReadAsync(string id)
-    //{
-    //    await Task.Delay(0);
-    //    return Data!;
-    //}
-    //protected async Task<TModel> ModelUpdateAsync(TModel body)
-    //{
-    //    if(_DTO is not null)
-    //        ((TDTO)Data!).DeepCloneTo(_DTO);
-    //    // Perform any referential integrity checks here
-    //    await Task.Delay(0);
-    //    return Data!;
-    //}
-    //protected async Task<TModel> ModelUpdateIdAsync(string id, TModel body)
-    //{
-    //    // Perform any referential integrity checks here
-    //    await Task.Delay(0);
-    //    return Data!;
-    //}
-    //protected async Task ModelDeleteAsync(string id)
-    //{
-    //    // Perform any referential integrity checks here
-    //    await Task.Delay(0);
-    //}
 }
