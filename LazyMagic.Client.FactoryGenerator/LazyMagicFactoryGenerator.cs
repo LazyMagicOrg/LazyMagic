@@ -1,59 +1,4 @@
 ﻿namespace LazyMagic.Client.FactoryGenerator;
-
-//Example: 
-
-// Source Class
-// Factory annotation specifies the class needs a DI factory 
-// FactoryInject annotation specifies the parameter needs to be injected by the DI factory
-
-//[Factory]
-//public class YadaViewModel : LzItemViewModelNotificationsBase<Yada, YadaModel>
-//{
-//    public YadaViewModel(
-//        [FactoryInject] IAuthProcess authProcess,
-//        ISessionViewModel sessionViewModel,
-//        ILzParentViewModel parentViewModel,
-//        Yada Yada,
-//        bool? isLoaded = null
-//        ) : base(Yada, isLoaded)
-//    {
-//        ...
-//    }
-//	...
-//}
-
-
-// Generated Class - implements standard DI factory pattern
-//public interface IYadaViewModelFactory
-//{
-//    YadaViewModel Create(
-//        ISessionViewModel sessionViewModel,
-//        ILzParentViewModel parentViewModel,
-//        Yada item,
-//        bool? isLoaded = null);
-//}
-//public class YadaViewModelFactory : IYadaViewModelFactory, ILzTransient
-//{
-//    public YadaViewModelFactory(IAuthProcess authProcess)
-//    {
-//        this.authProcess = authProcess;
-//    }
-
-//    private IAuthProcess authProcess;
-
-//    public YadaViewModel Create(ISessionViewModel sessionViewModel, ILzParentViewModel parentViewModel, Yada item, bool? isLoaded = null)
-//    {
-//        return new YadaViewModel(
-//            authProcess,
-//            sessionViewModel,
-//            parentViewModel,
-//            item,
-//            isLoaded);
-//    }
-//}
-
-
-
 [Generator]
 public class LazyMagicFactoryGenerator : IIncrementalGenerator
 {
@@ -68,10 +13,10 @@ public class LazyMagicFactoryGenerator : IIncrementalGenerator
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         // Get all class declarations with the Factory attribute
-        IncrementalValuesProvider<(ClassDeclarationSyntax classNode, SemanticModel semanticModel)> classDeclarations = 
+        var classDeclarations =
             context.SyntaxProvider
                 .CreateSyntaxProvider(
-                    predicate: static (s, _) => s is ClassDeclarationSyntax,
+                    predicate: static (s, _) => IsSyntaxTargetForGeneration(s),
                     transform: (ctx, _) =>
                     {
                         var classNode = (ClassDeclarationSyntax)ctx.Node;
@@ -81,21 +26,50 @@ public class LazyMagicFactoryGenerator : IIncrementalGenerator
                         {
                             return (classNode, semanticModel);
                         }
-                        return default;
+                        return (null, null);
                     })
-                .Where(tuple => tuple.classNode != null);
+                .Where(tuple => tuple.Item1 != null);
+
+        // Group class declarations by namespace
+        var groupedByNamespace = classDeclarations
+            .Collect()
+            .Select((classNodes, _) =>
+            {
+                return classNodes
+                    .GroupBy(tuple => GetNamespace(tuple.Item2, tuple.Item1))
+                    .ToImmutableArray();
+            });
 
         // Register the source output
-        context.RegisterSourceOutput(classDeclarations, 
-            (spc, tuple) => GenerateFactory(spc, tuple.classNode, tuple.semanticModel));
+        context.RegisterSourceOutput(groupedByNamespace,
+            (spc, groupedClasses) =>
+            {
+                foreach (var group in groupedClasses)
+                {
+                    var namespaceName = group.Key;
+                    var classes = group.Select(tuple => tuple.Item1).ToList();
+                    GenerateRegistrationsClass(spc, namespaceName, classes);
+                }
+            });
+
+        // Register the source output for individual factory classes
+        context.RegisterSourceOutput(classDeclarations,
+            (spc, tuple) => GenerateFactory(spc, tuple.Item1, tuple.Item2));
     }
 
-    private void GenerateFactory(SourceProductionContext context, 
-        ClassDeclarationSyntax classNode, 
+    private static bool IsSyntaxTargetForGeneration(SyntaxNode node)
+    {
+        return node is ClassDeclarationSyntax { AttributeLists.Count: > 0 };
+    }
+
+    private void GenerateFactory(SourceProductionContext context,
+        ClassDeclarationSyntax classNode,
         SemanticModel model)
     {
         try
         {
+            context.ReportDiagnostic(Diagnostic.Create(_messageRule, Location.None, $"Generating factory for {classNode.Identifier.Text}"));
+
             var className = classNode.Identifier.Text;
             var namespaceName = GetNamespace(model, classNode);
 
@@ -134,7 +108,7 @@ public class LazyMagicFactoryGenerator : IIncrementalGenerator
             var nonInjectedParametersText = SyntaxFactory.SeparatedList(nonInjectedParameters).ToFullString();
 
             // Grab the arguments list (which includes all the parameters)
-            var arguments = constructor?.ParameterList.Parameters.Select(p => 
+            var arguments = constructor?.ParameterList.Parameters.Select(p =>
                 SyntaxFactory.Argument(SyntaxFactory.IdentifierName(p.Identifier)));
             var argumentsText = SyntaxFactory.SeparatedList(arguments).ToFullString();
 
@@ -164,10 +138,7 @@ namespace {namespaceName}
             SyntaxTree tree = CSharpSyntaxTree.ParseText(sourceBuilder.ToString());
             SyntaxNode root = tree.GetRoot();
             SyntaxNode formattedRoot = root.NormalizeWhitespace();
-            context.AddSource($"I{className}Factory.cs", SourceText.From(formattedRoot.ToString(), Encoding.UTF8));
-
-            // Generate registration class
-            GenerateRegistrationsClass(context, namespaceName, new List<string> { className });
+            context.AddSource($"I{className}Factory.g.cs", SourceText.From(formattedRoot.ToString(), Encoding.UTF8));
         }
         catch (Exception ex)
         {
@@ -176,9 +147,9 @@ namespace {namespaceName}
         }
     }
 
-    private void GenerateRegistrationsClass(SourceProductionContext context, 
-        string namespaceName, 
-        List<string> classes)
+    private void GenerateRegistrationsClass(SourceProductionContext context,
+        string namespaceName,
+        List<ClassDeclarationSyntax> classes)
     {
         var sourceBuilder = new StringBuilder();
         sourceBuilder.AppendLine(@$"
@@ -193,8 +164,11 @@ public static class RegisterFactories
     public static void Register(IServiceCollection services)
     {{");
 
-        foreach (var c in classes)
-            sourceBuilder.AppendLine($"        services.TryAddTransient<I{c}Factory,{c}Factory>();");
+        foreach (var classNode in classes)
+        {
+            var className = classNode.Identifier.Text;
+            sourceBuilder.AppendLine($"        services.TryAddTransient<I{className}Factory,{className}Factory>();");
+        }
 
         sourceBuilder.AppendLine($@"
     }}
@@ -204,7 +178,7 @@ public static class RegisterFactories
         SyntaxNode root = tree.GetRoot();
         SyntaxNode formattedRoot = root.NormalizeWhitespace();
         var source = SourceText.From(formattedRoot.ToString(), Encoding.UTF8);
-        context.AddSource($"{namespaceName}/RegisterFactories.cs", source);
+        context.AddSource($"{namespaceName}.RegisterFactories.g.cs", source);
     }
 
     private List<ParameterSyntax> RemoveFactoryInjectAttributeFromParameters(List<ParameterSyntax>? parameterList, SemanticModel model)
@@ -218,7 +192,7 @@ public static class RegisterFactories
     {
         // Get the symbol for the parameter
         if (model.GetDeclaredSymbol(parameter) is IParameterSymbol paramSymbol &&
-            paramSymbol.GetAttributes().Any(a => a.AttributeClass!.Name == nameof(FactoryInjectAttribute) || 
+            paramSymbol.GetAttributes().Any(a => a.AttributeClass!.Name == nameof(FactoryInjectAttribute) ||
                                                a.AttributeClass!.Name == nameof(FactoryInjectAttribute) + "Attribute"))
         {
             // Remove the FactoryInjectAttribute at the syntax level
@@ -234,7 +208,7 @@ public static class RegisterFactories
         return parameter;
     }
 
-    private string GetNamespace(SemanticModel model, ClassDeclarationSyntax classNode)
+    private static string GetNamespace(SemanticModel model, ClassDeclarationSyntax classNode)
     {
         var symbol = model.GetDeclaredSymbol(classNode);
         if (symbol == null)
