@@ -16,6 +16,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
 	  <ProjectReference Include="..\LazyMagic.Client.Auth\LazyMagic.Client.Auth.csproj" />
 	  <ProjectReference Include="..\LazyMagic.Blazor\LazyMagic.Blazor.csproj" />
 	</ItemGroup>

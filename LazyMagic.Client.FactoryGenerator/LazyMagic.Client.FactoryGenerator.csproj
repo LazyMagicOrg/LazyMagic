@@ -7,14 +7,13 @@
 		<Description>Generates Factory Classes for classes annotated with [Factory]</Description>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-		<!-- Note we are including build output so that the annotations are available. If you don't 
-		     the namespace will not be available in the consuming project. -->
+		<!-- Include build output so that the annotations are available in the consuming project -->
 		<IncludeBuildOutput>true</IncludeBuildOutput>
 	</PropertyGroup>
-	
+
 	<ItemGroup>
 		<PackageReference Include="Microsoft.CodeAnalysis.CSharp" PrivateAssets="all" />
-		<PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" PrivateAssets="all" />
+		<!--<PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" PrivateAssets="all" />-->
 	</ItemGroup>
 	<ItemGroup>
 		<None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" />

@@ -1,49 +1,60 @@
 ﻿namespace LazyMagic.Client.TreeViewModel;
 
 [Generator]
-public class LazyMagicTreeViewModelSourceGenerator : ISourceGenerator
+public class LazyMagicTreeViewModelSourceGenerator : IIncrementalGenerator
 {
-    public void Initialize(GeneratorInitializationContext context) { }
-
-    public void Execute(GeneratorExecutionContext context)
+    public void Initialize(IncrementalGeneratorInitializationContext context)
     {
+        // Register the syntax provider to get class declarations with TreeNodeAttribute
+        var classDeclarations = context.SyntaxProvider
+            .CreateSyntaxProvider(
+                predicate: (s, _) => s is ClassDeclarationSyntax,
+                transform: (ctx, _) =>
+                {
+                    var classNode = (ClassDeclarationSyntax)ctx.Node;
+                    var model = ctx.SemanticModel;
+                    if (model.GetDeclaredSymbol(classNode) is INamedTypeSymbol symbol &&
+                        symbol.GetAttributes().Any(a => a.AttributeClass?.Name == nameof(TreeNodeAttribute)))
+                    {
+                        return (classNode, model);
+                    }
+                    return default;
+                })
+            .Where(x => x.classNode != null);
 
-        foreach (var syntaxTree in context.Compilation.SyntaxTrees)
-        {
-            var model = context.Compilation.GetSemanticModel(syntaxTree);
-            var classesWithTreeNodeAttribute = syntaxTree.GetRoot()
-                .DescendantNodes()
-                .OfType<ClassDeclarationSyntax>()
-                .Where(x => model.GetDeclaredSymbol(x)!.GetAttributes().Any(a => a.AttributeClass!.Name == nameof(TreeNodeAttribute)));
+        // Register the output
+        context.RegisterSourceOutput(classDeclarations,
+            (spc, source) => Execute(source.classNode!, source.model!, spc));
+    }
 
-            foreach (var classNode in classesWithTreeNodeAttribute)
-            {
-                var sourceBuilder = new StringBuilder();
-                var ViewModelsPropetyExists = PropertyExists(classNode, model, "ViewModels");
-                var className = classNode.Identifier.Text;
-                var namespaceName = GetNamespace(context, model, classNode);
+    private void Execute(ClassDeclarationSyntax classNode, SemanticModel model, SourceProductionContext context)
+    {
+        var sourceBuilder = new StringBuilder();
+        var ViewModelsPropetyExists = PropertyExists(classNode, model, "ViewModels");
+        var className = classNode.Identifier.Text;
+        var namespaceName = GetNamespace(model, classNode);
 
-                var treeNodeNamePropertyName = classNode.DescendantNodes()
-                    .OfType<PropertyDeclarationSyntax>()
-                    .Where(x => model.GetDeclaredSymbol(x)!.GetAttributes().Any(a => a.AttributeClass!.Name == nameof(TreeNodeNameAttribute)))
-                    .FirstOrDefault()?.Identifier.Text; 
+        var treeNodeNamePropertyName = classNode.DescendantNodes()
+            .OfType<PropertyDeclarationSyntax>()
+            .Where(x => model.GetDeclaredSymbol(x)!.GetAttributes().Any(a => a.AttributeClass!.Name == nameof(TreeNodeNameAttribute)))
+            .FirstOrDefault()?.Identifier.Text;
 
-                var treeNodeParallellMaxAttribute = classNode.DescendantNodes()
-                    .OfType<PropertyDeclarationSyntax>()
-                    .Where(x => model.GetDeclaredSymbol(x)!.GetAttributes().Any(a => a.AttributeClass!.Name == nameof(TreeNodeParallellMaxAttribute)))
-                    .FirstOrDefault()?.Identifier.Text;
+        var treeNodeParallellMaxAttribute = classNode.DescendantNodes()
+            .OfType<PropertyDeclarationSyntax>()
+            .Where(x => model.GetDeclaredSymbol(x)!.GetAttributes().Any(a => a.AttributeClass!.Name == nameof(TreeNodeParallellMaxAttribute)))
+            .FirstOrDefault()?.Identifier.Text;
 
-                var treeNodeIsFolderAttribute = classNode.DescendantNodes()
-                    .OfType<PropertyDeclarationSyntax>()
-                    .Where(x => model.GetDeclaredSymbol(x)!.GetAttributes().Any(a => a.AttributeClass!.Name == nameof(TreeNodeIsFolderAttribute)))
-                    .FirstOrDefault()?.Identifier.Text;
+        var treeNodeIsFolderAttribute = classNode.DescendantNodes()
+            .OfType<PropertyDeclarationSyntax>()
+            .Where(x => model.GetDeclaredSymbol(x)!.GetAttributes().Any(a => a.AttributeClass!.Name == nameof(TreeNodeIsFolderAttribute)))
+            .FirstOrDefault()?.Identifier.Text;
 
-				var treeNodePageAttribute = classNode.DescendantNodes()
-					.OfType<PropertyDeclarationSyntax>()
-					.Where(x => model.GetDeclaredSymbol(x)!.GetAttributes().Any(a => a.AttributeClass!.Name == nameof(TreeNodePageAttribute)))
-					.FirstOrDefault()?.Identifier.Text;
+        var treeNodePageAttribute = classNode.DescendantNodes()
+            .OfType<PropertyDeclarationSyntax>()
+            .Where(x => model.GetDeclaredSymbol(x)!.GetAttributes().Any(a => a.AttributeClass!.Name == nameof(TreeNodePageAttribute)))
+            .FirstOrDefault()?.Identifier.Text;
 
-				sourceBuilder.Append(@$"
+        sourceBuilder.Append(@$"
 using System.Linq;
 using LazyMagic.Client.TreeViewModel;
 namespace {namespaceName}
@@ -54,32 +65,32 @@ namespace {namespaceName}
         {{
             var nodeList = new List<ILzTreeNode>();
 ");
-                if (ViewModelsPropetyExists)
-                    sourceBuilder.Append(@$"
+        if (ViewModelsPropetyExists)
+            sourceBuilder.Append(@$"
             nodeList.AddRange(ViewModels.Values.Cast<ILzTreeNode>());");
 
-                var propertiesWithTreeNodeChildAttribute = classNode.DescendantNodes()
-                    .OfType<PropertyDeclarationSyntax>()
-                    .Where(x => model.GetDeclaredSymbol(x)!.GetAttributes().Any(a => a.AttributeClass!.Name == nameof(TreeNodeChildAttribute)));
+        var propertiesWithTreeNodeChildAttribute = classNode.DescendantNodes()
+            .OfType<PropertyDeclarationSyntax>()
+            .Where(x => model.GetDeclaredSymbol(x)!.GetAttributes().Any(a => a.AttributeClass!.Name == nameof(TreeNodeChildAttribute)));
 
-                foreach (var propNode in propertiesWithTreeNodeChildAttribute)
-                {
-                    var propName = propNode.Identifier.Text;
-                    sourceBuilder.Append(@$"
+        foreach (var propNode in propertiesWithTreeNodeChildAttribute)
+        {
+            var propName = propNode.Identifier.Text;
+            sourceBuilder.Append(@$"
             nodeList.Add({propName}! as ILzTreeNode);");
-                }
-                var hasChildren = propertiesWithTreeNodeChildAttribute.Count() > 0; // || ViewModelsPropetyExists;
-                if (hasChildren)
-                {
-                    if (treeNodeParallellMaxAttribute is not null)
-                        sourceBuilder.Append($@"
+        }
+        var hasChildren = propertiesWithTreeNodeChildAttribute.Count() > 0;
+        if (hasChildren)
+        {
+            if (treeNodeParallellMaxAttribute is not null)
+                sourceBuilder.Append($@"
             var semaphore = new SemaphoreSlim({treeNodeParallellMaxAttribute}); // limit parallel execution 
 ");
-                    else
-                        sourceBuilder.Append($@"
+            else
+                sourceBuilder.Append($@"
             var semaphore = new SemaphoreSlim(100); // limit parallel execution 
 ");
-                    sourceBuilder.Append($@"
+            sourceBuilder.Append($@"
             var tasks = nodeList.Select(async x =>
             {{
                 await semaphore.WaitAsync();
@@ -94,46 +105,45 @@ namespace {namespaceName}
             }}).ToList();
             var childrenList = (await Task.WhenAll(tasks)).ToList();
 ");
-                }
-                else
-                    sourceBuilder.Append(@"
+        }
+        else
+            sourceBuilder.Append(@"
             await Task.Delay(0);
 ");
-                sourceBuilder.Append(@"
+        sourceBuilder.Append(@"
             var node = new LzTreeNodeViewModel(
                 viewModel: this,
                 viewModelType: this.GetType(),");
-                if (treeNodeNamePropertyName is not null)
-                    sourceBuilder.Append($@"
+        if (treeNodeNamePropertyName is not null)
+            sourceBuilder.Append($@"
                 text: {treeNodeNamePropertyName},");
-                else
-                    sourceBuilder.Append($@"
+        else
+            sourceBuilder.Append($@"
                 text: ""{className}"",");
-                if (treeNodeIsFolderAttribute is not null)
-                    sourceBuilder.Append($@"
+        if (treeNodeIsFolderAttribute is not null)
+            sourceBuilder.Append($@"
                 isFolder: {treeNodeIsFolderAttribute},");
-                else
-                    sourceBuilder.Append($@"
+        else
+            sourceBuilder.Append($@"
                 isFolder: false,");
-                if (treeNodePageAttribute is not null)
-					sourceBuilder.Append($@"
+        if (treeNodePageAttribute is not null)
+            sourceBuilder.Append($@"
                 page: {treeNodePageAttribute}");
-				else
-					sourceBuilder.Append($@"
+        else
+            sourceBuilder.Append($@"
                 page: """"");
-				if (hasChildren)
-                    sourceBuilder.Append($@",
+        if (hasChildren)
+            sourceBuilder.Append($@",
                 children: childrenList");
-                sourceBuilder.Append(@"
+        sourceBuilder.Append(@"
                 );
             return node;
         }
     }
 }");
-                context.AddSource($"{className}.g.cs", SourceText.From(sourceBuilder.ToString(), Encoding.UTF8));
-            }
-        }
+        context.AddSource($"{className}.g.cs", SourceText.From(sourceBuilder.ToString(), Encoding.UTF8));
     }
+
     private bool PropertyExists(ClassDeclarationSyntax classNode, SemanticModel model, string propertyName)
     {
         var classSymbol = model.GetDeclaredSymbol(classNode) as INamedTypeSymbol;
@@ -151,7 +161,7 @@ namespace {namespaceName}
             baseType = baseType.BaseType;
         }
 
-        return false;  // The property was not found on the derived class or any of its base classes.
+        return false;
     }
 
     private bool HasProperty(INamedTypeSymbol typeSymbol, string propertyName)
@@ -159,22 +169,11 @@ namespace {namespaceName}
         return typeSymbol.GetMembers(propertyName).Any(m => m.Kind == SymbolKind.Property);
     }
 
-
-    private string GetNamespace(GeneratorExecutionContext context, SemanticModel model, ClassDeclarationSyntax classNode)
+    private string GetNamespace(SemanticModel model, ClassDeclarationSyntax classNode)
     {
         var namespaceName = string.Empty;
-
-
         var classSymbol = model.GetDeclaredSymbol(classNode) as INamedTypeSymbol;
-
-        if (classSymbol != null)
-            namespaceName = classSymbol.ContainingNamespace.ToString();
-        else
-        {
-            var diagnostic = Diagnostic.Create(_messageRule, Location.None, "Namespace not found.");
-            context.ReportDiagnostic(diagnostic);
-        }
-        return namespaceName;   
+        return classSymbol?.ContainingNamespace.ToString() ?? string.Empty;
     }
 
     private static readonly DiagnosticDescriptor _messageRule = new DiagnosticDescriptor(
@@ -184,5 +183,4 @@ namespace {namespaceName}
         category: "SourceGenerator",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
-
 }

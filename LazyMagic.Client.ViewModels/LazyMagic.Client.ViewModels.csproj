@@ -18,7 +18,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<!--<FrameworkReference Include="Microsoft.AspNetCore.App" />-->
 		<PackageReference Include="DeepCloner" />
 		<PackageReference Include="DynamicData" />
 	

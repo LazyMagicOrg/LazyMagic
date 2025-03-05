@@ -22,10 +22,11 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Logging" />
 		<PackageReference Include="ReactiveUI.Blazor" />
+		<PackageReference Include="Microsoft.JSInterop" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\LazyMagic.Client.Base\LazyMagic.Client.Base.csproj" />
+		<ProjectReference Include="..\LazyMagic.Client.Base\LazyMagic.Client.Base.csproj" />
 	</ItemGroup>
 
 </Project>

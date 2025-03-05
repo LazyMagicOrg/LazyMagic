@@ -1,7 +1,4 @@
-﻿
-using System.Reflection;
-
-namespace LazyMagic.Client.DIHelper;
+﻿namespace LazyMagic.Client.DIHelper;
 // Register services having specified Interfaces
 // Example:
 // namespace MyNamespace;
@@ -10,58 +7,47 @@ namespace LazyMagic.Client.DIHelper;
 // }
 
 [Generator]
-public class DIHelper : ISourceGenerator
+public class DIHelper : IIncrementalGenerator
 {
     static string[] InterfaceTargets = { "ILzTransient", "ILzSingleton", "ILzScoped" };
-    public void Initialize(GeneratorInitializationContext context) { }
 
-    public void Execute(GeneratorExecutionContext context)
+    public void Initialize(IncrementalGeneratorInitializationContext context)
     {
-        
-        Log(context, "DIHelper.Execute");
-        var namespaceName = context.Compilation.AssemblyName!; 
-        Log(context, $"AssemblyName: {namespaceName}");
-        List<(string, string, string)> interfaces = new(); // scope, interface, class
-        try
-        {
-            foreach (var syntaxTree in context.Compilation.SyntaxTrees)
-            {
-                var model = context.Compilation.GetSemanticModel(syntaxTree);
-                    
-                // The following query to get derived classes is fragile. However, the alternative use of semantic 
-                // analysis to find derived classes proved difficult to implement and seems to be overkill for this
-                // use case.
-                var derivedClasses = syntaxTree.GetRoot()
-                    .DescendantNodes()
-                    .OfType<ClassDeclarationSyntax>()
-                    .Where(cds => cds.BaseList?.Types.Any(b => b.Type is IdentifierNameSyntax ins && InterfaceTargets.Contains( ins.Identifier.Text)) == true);
+        // Register the syntax provider to get class declarations
+        var classDeclarations = context.SyntaxProvider
+            .CreateSyntaxProvider(
+                predicate: (node, _) => node is ClassDeclarationSyntax cds && 
+                    cds.BaseList?.Types.Any(b => b.Type is IdentifierNameSyntax ins && 
+                    InterfaceTargets.Contains(ins.Identifier.Text)) == true,
+                transform: (context, token) =>
+                {
+                    var classNode = (ClassDeclarationSyntax)context.Node;
+                    var scope = GetScope(classNode);
+                    return (
+                        Scope: scope,
+                        Interface: "I" + classNode.Identifier.Text,
+                        ClassName: classNode.Identifier.Text
+                    );
+                });
 
-                //Log(context, $"derivedClasses: {derivedClasses.Count()}");
-                
-                if (derivedClasses != null && derivedClasses.Count() > 0)
-                    foreach (var derivedClass in derivedClasses)
-                        interfaces.Add((
-                            GetScope(derivedClass),
-                            "I" + derivedClass.Identifier.Text, 
-                            derivedClass.Identifier.Text));
+        // Combine with compilation
+        var combined = context.CompilationProvider.Combine(classDeclarations.Collect());
 
-
-            }
-            if(interfaces.Count > 0)
-            {
-                var source = GenerateClassModelSource(namespaceName, interfaces);
-                Log(context, $"source: {source}");
-                context.AddSource($"DIHelper.g.cs", source);
-
-            }
-
-
-        } catch (Exception ex)
-        {
-            var diagnostic = Diagnostic.Create(_messageRule, Location.None, ex.Message + "01");
-            context.ReportDiagnostic(diagnostic);
-        }   
+        // Register the source output
+        context.RegisterSourceOutput(combined,
+            (spc, source) => Execute(source.Left, source.Right, spc));
     }
+
+    private static void Execute(Compilation compilation, ImmutableArray<(string Scope, string Interface, string ClassName)> classes, SourceProductionContext context)
+    {
+        if (classes.IsEmpty)
+            return;
+
+        var namespaceName = compilation.AssemblyName!;
+        var source = GenerateClassModelSource(namespaceName, classes.ToList());
+        context.AddSource($"DIHelper.g.cs", source);
+    }
+
     private static string GetScope(ClassDeclarationSyntax classNode)
     {
         foreach(var iface in classNode.BaseList?.Types!)
@@ -74,9 +60,9 @@ public class DIHelper : ISourceGenerator
                 }
         throw new Exception("No scope found");
     }
-    private static SourceText GenerateClassModelSource(string namespaceName, List<(string scope, string interfaceName, string className)> intefaces)
+
+    private static SourceText GenerateClassModelSource(string namespaceName, List<(string scope, string interfaceName, string className)> interfaces)
     {
-        //Log(context, $"GenerateClassModelSource: {namespaceName} {modelType}");
         var sourceBuilder = new StringBuilder();
         sourceBuilder.AppendLine(@$"
 // <auto-generated />
@@ -87,7 +73,7 @@ public static class DIHelper
     {{
 ");
 
-        foreach(var iface in intefaces)
+        foreach(var iface in interfaces)
             sourceBuilder.AppendLine($"        services.TryAdd{iface.scope}<{iface.interfaceName},{iface.className}>();");
 
         sourceBuilder.AppendLine($@"
@@ -106,7 +92,8 @@ public static class DIHelper
         category: "SourceGenerator",
         defaultSeverity: DiagnosticSeverity.Warning,
         isEnabledByDefault: true);
-    private static void Log(GeneratorExecutionContext context, string? message)
+
+    private static void Log(SourceProductionContext context, string? message)
     {
         if (message == null) return;
         string[] lines = message.Split(new[] { '\n' }, StringSplitOptions.None);

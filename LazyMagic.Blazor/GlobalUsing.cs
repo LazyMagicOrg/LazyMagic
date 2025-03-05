@@ -1,4 +1,5 @@
 ﻿global using LazyMagic.Client.Base;
+global using Microsoft.AspNetCore.Components;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;
 global using Microsoft.JSInterop;
