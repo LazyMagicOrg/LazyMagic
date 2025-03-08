@@ -1,5 +1,5 @@
 ﻿namespace BlazorizeTest.ViewModels;
-
+using LazyMagic.Client.FactoryGenerator; // do not put in global using. Causes runtime error.
 [Factory]
 public class SessionViewModel : LzSessionViewModelAuth, ISessionViewModel, ILzTransient
 {
@@ -13,6 +13,7 @@ public class SessionViewModel : LzSessionViewModelAuth, ISessionViewModel, ILzTr
         )
         : base(loggerFactory,  authProcess, clientConfig, internetConnectivity, messages)
     {
+
         authProcess.SetAuthenticator(clientConfig.AuthConfigs["TenantAuth"]);
 
     }

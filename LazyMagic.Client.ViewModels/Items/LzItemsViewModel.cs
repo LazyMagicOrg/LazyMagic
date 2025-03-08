@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-
-namespace LazyMagic.Client.ViewModels;
+﻿namespace LazyMagic.Client.ViewModels;
 
 public abstract class LzItemsViewModel<TVM, TDTO, TModel> : LzViewModel,
     ILzItemsViewModel<TVM, TDTO, TModel> where TDTO : class, new()

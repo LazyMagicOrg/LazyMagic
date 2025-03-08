@@ -2,9 +2,6 @@
 using LazyMagic.Client.Base;
 using LazyMagic.Shared;  
 using Amazon.Runtime;
-using AwsSignatureVersion4;
-using Microsoft.IdentityModel.Tokens;
-using Amazon.Runtime.Internal.Util;
 using Microsoft.Extensions.Logging;
 
 public partial class LzHttpClientSigV4 : LzHttpClient, ILzHttpClient   

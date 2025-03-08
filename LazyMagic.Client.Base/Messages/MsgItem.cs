@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace LazyMagic.Client.Base;
+﻿namespace LazyMagic.Client.Base;
 
 /// <summary>
 /// MsgItem contains all the information necessary to 

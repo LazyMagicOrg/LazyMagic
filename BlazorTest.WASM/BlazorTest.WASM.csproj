@@ -7,6 +7,9 @@
 		<RootNamespace>BlazorTest</RootNamespace>
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 		<Nowarn>NU1504;NU1507</Nowarn>
+		<PublishTrimmed>true</PublishTrimmed>
+		<TrimmerLog>trimmer.log</TrimmerLog>
+
 	</PropertyGroup>
 
 	<ItemGroup>

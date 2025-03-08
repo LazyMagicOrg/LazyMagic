@@ -1,6 +1,4 @@
-﻿
-
-namespace LazyMagic.Client.ViewModels;
+﻿namespace LazyMagic.Client.ViewModels;
 
 /// <summary>
 /// ItemViewModelBase<T,TEdit>

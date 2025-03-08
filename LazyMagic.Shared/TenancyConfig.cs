@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Dynamic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json;  
-
-namespace LazyMagic.Shared;
+﻿namespace LazyMagic.Shared;
 /// <summary>
 /// The TenancyConfig class represents the tenancy configuration for a tenant.
 /// The TenancyConfigPacked class represents the same information in a 

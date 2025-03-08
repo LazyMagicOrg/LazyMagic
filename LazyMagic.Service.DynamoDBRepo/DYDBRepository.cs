@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using Amazon.DynamoDBv2.DocumentModel;
 using ThirdParty.Json.LitJson;
 using Amazon.DynamoDBv2.Model;
+using Newtonsoft.Json.Serialization;
 
 namespace LazyMagic.Service.DynamoDBRepo;
 
@@ -47,6 +48,14 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         this.client = client;
         EntityType = $"{typeof(T).Name}:";
         ConstructorExtensions();
+
+        serializer = JsonSerializer.Create(new JsonSerializerSettings
+        {
+            ContractResolver = new DefaultContractResolver
+            {
+                NamingStrategy = new CamelCaseNamingStrategy()
+            }
+        });
     }
 
     protected virtual void ConstructorExtensions() { } 
@@ -56,6 +65,7 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
     protected TableLevel tableLevel = TableLevel.Default; // Default to use DefaultDB in CallerInfo
     protected bool debug = false; // Set to true to see debug output in logs
     protected IAmazonDynamoDB client;
+    protected JsonSerializer serializer;
     #endregion
 
     #region Properties 
@@ -64,6 +74,7 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
     {
         get { return _UpdateReturnOkResults; }
         set { _UpdateReturnOkResults = value; }
+
     }
     /// <summary>
     /// Time To Live in Seconds. Set to 0 to disable. 
@@ -90,16 +101,17 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         {
             var now = DateTime.UtcNow.Ticks;
             var dbrecord = new Dictionary<string, AttributeValue>(); // create an empty record
-            var jobjectData = JObject.FromObject(data); // Create JObject from data
+            var jobjectData = JObject.FromObject(data, serializer); // Create JObject from data
 
             // You can override each of the Assign attribute methods to customize the attributes
             AssignEntityAttributes(callerInfo, jobjectData, dbrecord, now); // Assigns attributes from JObject data
-            AssignOptionalAttrubutes(callerInfo, jobjectData, dbrecord, now); // Adds optional attributes
+            AssignCreateUtcTickAttribute(callerInfo, jobjectData, dbrecord, now); // Adds CreateUtcTickAttribute attribute
+            AssignOptionalAttributes(callerInfo, jobjectData, dbrecord, now); // Adds optional attributes
             AssignTTLAttribute(callerInfo, jobjectData, dbrecord, now); // Adds TTL attribute when GetTTL() is not 0
             AssignTopicsAttribute(callerInfo, jobjectData, dbrecord, now); // Adds Topics attribute
-            AssignJsonDataAttribute(callerInfo, jobjectData, dbrecord, now); // Adds Data attribute containing JSON data
-            AssignCreateUtcTickAttribute(callerInfo, jobjectData, dbrecord, now); // Adds CreateUtcTickAttribute attribute
             AssignUpdateUtcTickAttribute(callerInfo, jobjectData, dbrecord, now); // Adds UpdateUtcTickAttribute attribute
+            AssignDataAttribute(callerInfo, jobjectData, dbrecord, now); // Adds Data attribute containing JSON data
+            var json = jobjectData.ToString();
 
             var request = new PutItemRequest()
             {
@@ -119,12 +131,12 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         catch (ConditionalCheckFailedException ex)
         {
             if (debug) Console.WriteLine($"CreateEAsync() ConditionalCheckFailedException. {ex.Message}");
-            return new ConflictResult();
+            return new BadRequestResult();
         }
         catch (AmazonDynamoDBException ex)
         {
             if (debug) Console.WriteLine($"CreateEAsync() AmazonDynamoDBException. {ex.Message}");
-            return new StatusCodeResult(400);
+            return new BadRequestResult();
         }
         catch (AmazonServiceException ex)
         {
@@ -175,7 +187,7 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         catch (Exception ex)
         {
             if (debug) Console.WriteLine($"ReadAsync() catch all. {ex.Message}");
-            return new StatusCodeResult(406);
+            return new NotFoundResult();
         }
     }
     public virtual Task<ActionResult<T>> UpdateCreateAsync(ICallerInfo callerInfo, T data)
@@ -189,7 +201,7 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         if (data.Equals(null))
         {
             if (debug) Console.WriteLine("UpdateEAsync() data is null");
-            return new StatusCodeResult(400);
+            return new BadRequestResult();
         }
         callerInfo ??= new CallerInfo();
         var table = GetTableName(callerInfo);
@@ -197,18 +209,18 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         {
             var now = DateTime.UtcNow.Ticks;
             var dbrecord = new Dictionary<string, AttributeValue>(); // create an empty record
-            var jobjectData = JObject.FromObject(data); // Create JObject from data
+            var jobjectData = JObject.FromObject(data, serializer); // Create JObject from data
 
             // You can override each of the Assign attribute methods to customize the attributes
             AssignEntityAttributes(callerInfo, jobjectData, dbrecord, now); // Assigns attributes from JObject data
-            var OldUpdateUtcTick = dbrecord["UpdateUtcTick"].N;
-            AssignOptionalAttrubutes(callerInfo, jobjectData, dbrecord, now); // Adds optional attributes
+            AssignCreateUtcTickAttribute(callerInfo, jobjectData, dbrecord, now); // Adds CreateUtcTickAttribute attribute
+            var OldUpdateUtcTick = GetUpdateUtcTick(jobjectData); // Get the previous UpdateUtcTick from the incomming data
+            AssignOptionalAttributes(callerInfo, jobjectData, dbrecord, now); // Adds optional attributes
             AssignTTLAttribute(callerInfo, jobjectData, dbrecord, now); // Adds TTL attribute when GetTTL() is not 0
             AssignTopicsAttribute(callerInfo, jobjectData, dbrecord, now); // Adds Topics attribute
-            AssignJsonDataAttribute(callerInfo, jobjectData, dbrecord, now); // Adds Data attribute containing JSON data
-            AssignCreateUtcTickAttribute(callerInfo, jobjectData, dbrecord, now); // Adds CreateUtcTickAttribute attribute
             AssignUpdateUtcTickAttribute(callerInfo, jobjectData, dbrecord, now); // Adds UpdateUtcTickAttribute attribute
-
+            AssignDataAttribute(callerInfo, jobjectData, dbrecord, now); // Adds Data attribute containing JSON data
+            //forceUpdate = true;
             if (forceUpdate)
             {
                 // Write data to database - do not use conditional put to avoid overwriting newer data
@@ -228,9 +240,9 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
                     Item = dbrecord,
                     ConditionExpression = "UpdateUtcTick = :OldUpdateUtcTick",
                     ExpressionAttributeValues = new Dictionary<string, AttributeValue>
-                {
-                    {":OldUpdateUtcTick", new AttributeValue() {N = OldUpdateUtcTick.ToString()} }
-                }
+                    {
+                        {":OldUpdateUtcTick", new AttributeValue() {N = OldUpdateUtcTick.ToString()} }
+                    }
                 };
 
                 await client.PutItemAsync(request2);
@@ -265,15 +277,15 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
     }
     public virtual async Task<StatusCodeResult> DeleteAsync(ICallerInfo callerInfo, string id)
     {
-        var sK = $"{id}:";  
         if (debug) Console.WriteLine("DeleteAsync() called");
         callerInfo ??= new CallerInfo();
         var table = GetTableName(callerInfo);
+        var sK = $"{id}:";
 
         try
         {
             if (string.IsNullOrEmpty(EntityType))
-                return new StatusCodeResult(406); // bad key
+                return new BadRequestResult();
 
             if (UseSoftDelete || UseNotifications)
             {
@@ -285,14 +297,16 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
                     {
                         TableName = table,
                         Key = new Dictionary<string, AttributeValue>()
-                {
-                    {"PK", new AttributeValue {S = EntityType}},
-                    {"SK", new AttributeValue {S = sK } }
-                }
+                        {
+                            {"PK", new AttributeValue {S = EntityType}},
+                            {"SK", new AttributeValue {S = sK } }
+                        }
                     };
                     if (debug) Console.WriteLine($"ReadEAsync() GetItemAsync called");
                     var response = await client.GetItemAsync(request); // doesn't throw error if item doesn't exist
                     var item = response.Item;
+                    if (item == null)
+                        return new NotFoundResult();
                     if (UseSoftDelete && item != null)
                     {
                         item["IsDeleted"].BOOL = true;
@@ -310,11 +324,11 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
                     }
                     if (UseNotifications)
                     {
-
                         await WriteNotificationAsync(callerInfo, item, "Delete");
                     }
+                    
                     if(UseSoftDelete)
-                        return new StatusCodeResult(200);
+                        return new OkResult();
                 }
                 catch (AmazonDynamoDBException ex)
                 {
@@ -329,7 +343,7 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
                 catch (Exception ex)
                 {
                     if (debug) Console.WriteLine($"ReadAsync() catch all. {ex.Message}");
-                    return new StatusCodeResult(406);
+                    return new NotFoundResult();
                 }
             } 
             
@@ -337,14 +351,13 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
             {
                 TableName = table,
                 Key = new Dictionary<string, AttributeValue>()
-            {
-                {"PK", new AttributeValue {S= EntityType} },
-                {"SK", new AttributeValue {S = sK} }
-            }
+                {
+                    {"PK", new AttributeValue {S= EntityType} },
+                    {"SK", new AttributeValue {S = sK} }
+                }
             };
-            await client.DeleteItemAsync(request3); // doesn't throw error if item doesn't exist
-
-            return new StatusCodeResult(200);
+            var deleteResponse = await client.DeleteItemAsync(request3);
+            return new OkResult();
         }
         catch (AmazonDynamoDBException ex)
         {
@@ -359,7 +372,7 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         catch (Exception ex)
         {
             if (debug) Console.WriteLine($"DeleteAsync() catch all. {ex.Message}");
-            return new StatusCodeResult(406);
+            return new NotFoundResult();
         }
     }
     public virtual async Task<ObjectResult> ListAsync(ICallerInfo callerInfo, int limit = 0)
@@ -600,7 +613,7 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         var query = new QueryRequest()
         {
             TableName = table,
-            KeyConditionExpression = $"PK = :PKval and SK < :SKval",
+            KeyConditionExpression = $"PK = :PKval and {keyField} < :SKval",
             IndexName = indexName,
             ExpressionAttributeValues = new Dictionary<string, AttributeValue>
             {
@@ -630,7 +643,7 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         var query = new QueryRequest()
         {
             TableName = table,
-            KeyConditionExpression = $"PK = :PKval and SK <= :SKval",
+            KeyConditionExpression = $"PK = :PKval and {keyField} <= :SKval",
             IndexName = indexName,
             ExpressionAttributeValues = new Dictionary<string, AttributeValue>
             {
@@ -660,7 +673,7 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         var query = new QueryRequest()
         {
             TableName = table,
-            KeyConditionExpression = $"PK = :PKval and SK > :SKval",
+            KeyConditionExpression = $"PK = :PKval and {keyField} > :SKval",
             IndexName = indexName,
             ExpressionAttributeValues = new Dictionary<string, AttributeValue>
             {
@@ -691,7 +704,7 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         var query = new QueryRequest()
         {
             TableName = table,
-            KeyConditionExpression = $"PK = :PKval and SK >= :SKval",
+            KeyConditionExpression = $"PK = :PKval and {keyField} >= :SKval",
             IndexName = indexName,
             ExpressionAttributeValues = new Dictionary<string, AttributeValue>
             {
@@ -792,12 +805,9 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         }
         return true;
     }
-    protected int GetStatusCode(IActionResult actionResult)
-    {
-        if (actionResult is StatusCodeResult statusCodeResult)
-            return statusCodeResult.StatusCode;
-        return 200;
-    }
+    #endregion
+
+    #region Commonly Overridden Methods
     protected virtual string GetTableName(ICallerInfo callerInfo)
     {
         var table = "";
@@ -829,12 +839,16 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
     {
         if (debug) Console.WriteLine("AddEntityAttributes() called");
         dbrecord.Add("PK", new AttributeValue() { S = EntityType });
-        if(jobjectData["Id"] != null)
-            dbrecord.Add("SK", new AttributeValue() { S = $"{jobjectData["Id"]}" });
+        string id = jobjectData["id"]?.ToString() ?? "";
+        var sk = (string.IsNullOrEmpty(id))
+            ? $"{Guid.NewGuid().ToString()}"
+            : $"{id}";
+        jobjectData["id"] = sk; 
+        dbrecord.Add("SK", new AttributeValue() { S = $"{sk}:" });
         dbrecord.Add("SessionId", new AttributeValue() { S = callerInfo.SessionId });
         return;
     }
-    protected virtual void AssignOptionalAttrubutes(ICallerInfo callerInfo, JObject jobjectData, Dictionary<string, AttributeValue> dbrecord, long now)
+    protected virtual void AssignOptionalAttributes(ICallerInfo callerInfo, JObject jobjectData, Dictionary<string, AttributeValue> dbrecord, long now)
     {
         if (debug) Console.WriteLine("AddOptionalAttributes() called");
         return;
@@ -853,7 +867,7 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         dbrecord.Add("Topics", new AttributeValue() { S = topics });
         return;
     }
-    protected virtual void AssignJsonDataAttribute(ICallerInfo callerInfo, JObject jobjectData, Dictionary<string, AttributeValue> dbrecord, long now)
+    protected virtual void AssignDataAttribute(ICallerInfo callerInfo, JObject jobjectData, Dictionary<string, AttributeValue> dbrecord, long now)
     {
         if (debug) Console.WriteLine("AddJsonDataAttribute() called");
         var jsonData = JsonConvert.SerializeObject(jobjectData);
@@ -872,17 +886,34 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
     {
         if (debug) Console.WriteLine("AddCreateTickAttributeAttribute() called");
         long createUtcTick = 0;
-        if (jobjectData["CreateUtcTick"] != null) // the type contains a CreateUtcTick property, it may be zero
+        if (jobjectData["createUtcTick"] != null) // the type contains a CreateUtcTick property, it may be zero
         {
-            createUtcTick = (long)jobjectData["CreateUtcTick"];
+            createUtcTick = (long)jobjectData["createUtcTick"];
             if (createUtcTick == 0) createUtcTick = now;
+            jobjectData["createUtcTick"] = createUtcTick;
         }
         dbrecord.Add("CreateUtcTick", new AttributeValue() { N = createUtcTick.ToString() });
         return;
     }
     /// <summary>
+    /// Get any existing UpdateUtcTick value from the JObject data.
+    /// We use this for optimistic concurrency control.
+    /// Override this method if your entity data stores the UpdateUtcTick value in a different property.
+    /// </summary>
+    /// <param name="jobjectData"></param>
+    /// <returns></returns>
+    protected long GetUpdateUtcTick(JObject jobjectData)
+    {
+        if (jobjectData["updateUtcTick"] != null)
+            return (long)jobjectData["updateUtcTick"];
+        return 0;
+    }
+
+    /// <summary>
+    /// Assign the UpdateUtcTick attribute to the dbrecord and the same 
+    /// value to the JObject data.
     /// If your entity data doesn't have an UpdateUtcTick property, you can override this method
-    /// to assign the UpdateUtcTick value from a different property.
+    /// to assign the UpdateUtcTick value to a different property.
     /// </summary>
     /// <param name="callerInfo"></param>
     /// <param name="jobjectData"></param>
@@ -893,9 +924,9 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         if (debug) Console.WriteLine("AddUpdateTickAttributeAttribute() called");
         dbrecord.Add("UpdateUtcTick", new AttributeValue() { N = now.ToString() });
         // Update the object data with the new UpdateUtcTick if it contains one.
-        // If your object stores this data in another property, you will need to voerride this method.
+        // If your object stores this data in another property, you will need to override this method.
         // and assign the class property there.
-        if (jobjectData["UpdateUtcTick"] != null) jobjectData["UpdateUtcTick"] = now;
+        jobjectData["updateUtcTick"] = now;
         return;
     }
     /// <summary>

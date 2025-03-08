@@ -1,24 +1,24 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 	<Import Project="$(SolutionDir)CommonPackageHandling.targets" />
 	<PropertyGroup>
-		<TargetFrameworks>net9.0</TargetFrameworks>
-		
+		<TargetFramework>net9.0</TargetFramework>
+
 		<Description>LazyMagic Blazor Auth Component</Description>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
-		
+
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 		<RootNamespace>LazyMagic.Blazor</RootNamespace>
 	</PropertyGroup>
 	<ItemGroup>
-	  <Content Remove="Config\ConfigureLazyMagicBlazorAuthMessages.cs" />
+		<Content Remove="Config\ConfigureLazyMagicBlazorAuthMessages.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
-	  <ProjectReference Include="..\LazyMagic.Client.Auth\LazyMagic.Client.Auth.csproj" />
-	  <ProjectReference Include="..\LazyMagic.Blazor\LazyMagic.Blazor.csproj" />
+		<ProjectReference Include="..\LazyMagic.Client.Auth\LazyMagic.Client.Auth.csproj" />
+		<ProjectReference Include="..\LazyMagic.Blazor\LazyMagic.Blazor.csproj" />
 	</ItemGroup>
 
 </Project>

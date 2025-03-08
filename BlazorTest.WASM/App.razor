@@ -33,7 +33,7 @@
         {
             try
             {
-                await JSRuntime.InvokeVoidAsync("setAssetHostUrl", Host.AssetsUrl);
+                //await JSRuntime.InvokeVoidAsync("setAssetHostUrl", Host.AssetsUrl);
 
                 InternetConnectivity.SetJSRuntime(JSRuntime);
                 var staticAssets = new BlazorStaticAssets(LoggerFactory, new HttpClient());
@@ -41,15 +41,22 @@
 
                 await ClientConfig.InitializeAsync(Host.RemoteApiUrl);
 
-                // The following extension methods add to the Mesaages.MessageFiles list
-                Messages
-                    .AddLazyMagicBlazorMessages()
-                    .AddLazyMagicBlazorAuthMessages()
-                    ;
-                Messages.MessageFiles.AddRange([Host.AssetsUrl + "Tenancy/en-US/SetsApp/Messages.json"]);
+                try
+                {
+                    // The following extension methods add to the Mesaages.MessageFiles list
+                    // Messages
+                    //     .AddLazyMagicBlazorMessages()
+                    //     .AddLazyMagicBlazorAuthMessages()
+                    //     ;
 
-                // Read message files for the current culture and configure for current units
-                await Messages.SetMessageSetAsync("en-US", LzMessageUnits.Imperial);
+                    Messages.MessageFiles.AddRange([Host.AssetsUrl + "Tenancy/en-US/SetsApp/Messages.json"]);
+
+                    // Read message files for the current culture and configure for current units
+                    await Messages.SetMessageSetAsync("en-US", LzMessageUnits.Imperial);
+                } catch (Exception ex)
+                {
+                    Console.WriteLine($"Messages.SetMessageSetAsync failed. {ex.Message} ");
+                }
 
             }
             catch (Exception ex)

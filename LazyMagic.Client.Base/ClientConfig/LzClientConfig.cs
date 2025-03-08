@@ -1,7 +1,4 @@
-﻿using System.Net.Http;
-using System;
-
-namespace LazyMagic.Client.Base;
+﻿namespace LazyMagic.Client.Base;
 
 public class LzClientConfig : ILzClientConfig
 {

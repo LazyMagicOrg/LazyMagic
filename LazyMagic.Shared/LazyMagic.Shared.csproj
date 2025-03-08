@@ -1,16 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<Import Project="$(SolutionDir)CommonPackageHandling.targets" />
 	<PropertyGroup>
-		<TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+		<TargetFramework>net8.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 	</PropertyGroup>
-	<ItemGroup>
-	  <Content Remove="IItem.cs" />
-	  <Content Remove="ITenancyConfig.cs" />
-	  <Content Remove="TenancyConfig.cs" />
-	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Newtonsoft.Json" />
 	</ItemGroup>

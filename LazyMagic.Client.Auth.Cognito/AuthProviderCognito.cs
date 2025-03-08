@@ -1,9 +1,5 @@
 
 
-using Amazon.CognitoIdentityProvider.Model;
-using Amazon.Runtime;
-using Amazon.Runtime.Internal.Util;
-
 /// <summary> 
 /// AWS Authentication and Authorization Strategy
 /// AWS Cognito User Pools are used for Authentication

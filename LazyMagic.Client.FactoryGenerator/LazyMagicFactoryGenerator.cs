@@ -7,7 +7,7 @@ public class LazyMagicFactoryGenerator : IIncrementalGenerator
         title: "Factory Generator Error",
         messageFormat: "{0}",
         category: "Usage",
-        DiagnosticSeverity.Warning,
+        DiagnosticSeverity.Info,
         isEnabledByDefault: true);
 
     public void Initialize(IncrementalGeneratorInitializationContext context)

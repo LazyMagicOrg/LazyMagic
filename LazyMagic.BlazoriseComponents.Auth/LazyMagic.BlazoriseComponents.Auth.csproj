@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 	<Import Project="$(SolutionDir)CommonPackageHandling.targets" />
 	<PropertyGroup>
-		<TargetFrameworks>net9.0</TargetFrameworks>
+		<TargetFramework>net9.0</TargetFramework>
 
 		<Description>LazyMagic Blazorise Auth component</Description>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
@@ -15,6 +15,10 @@
 	  <Content Remove="Config\ConfigureLazyMagicBlazoriseComponentsAuthMessages.cs" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+	</ItemGroup>	
+	
 	<ItemGroup>
 	  <ProjectReference Include="..\LazyMagic.BlazoriseComponents\LazyMagic.BlazoriseComponents.csproj" />
 	  <ProjectReference Include="..\LazyMagic.Client.ViewModels.Auth\LazyMagic.Client.ViewModels.Auth.csproj" />
