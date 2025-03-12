@@ -20,6 +20,7 @@ public interface ILzItemViewModel<TModel>
     public bool IsCurrent { get; }
     public bool IsDeleted { get; }
     public bool IsDirty { get; set; }
+    public bool IsBusy { get; set; }
     public ILzParentViewModel? ParentViewModel { get; set; }
 
     // Public Methods

@@ -2,6 +2,7 @@
 @namespace BlazorizeTest.WASM
 @inject IJSRuntime JSRuntime
 @inject ILzHost Host
+@inject IStaticAssets staticAssets
 @inject HttpClient HttpClient
 @inject ILzClientConfig ClientConfig
 @inject IOSAccess OSAccess
@@ -34,15 +35,14 @@
         {
             try
             {
-                await JSRuntime.InvokeVoidAsync("setAssetHostUrl", Host.AssetsUrl);
 
                 // We initialize the following because the DI container doens't have access
                 // to the JSRuntime until the first render in MAUI.
                 InternetConnectivity.SetJSRuntime(JSRuntime);
-                var staticAssets = new BlazorStaticAssets(LoggerFactory, new HttpClient());
+                //var staticAssets = new BlazorStaticAssets(LoggerFactory, new HttpClient());
                 Messages.SetStaticAssets(staticAssets);
 
-                await ClientConfig.ReadAuthConfigAsync(Host.RemoteApiUrl + "config");
+                await ClientConfig.InitializeAsync(Host.RemoteApiUrl);
 
                 // The following extension methods add to the Mesaages.MessageFiles list
                 Messages

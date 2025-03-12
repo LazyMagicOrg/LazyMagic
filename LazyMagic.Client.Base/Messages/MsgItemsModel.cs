@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Linq.Expressions;
-using System.Linq;
-using ReactiveUI;
-
-namespace LazyMagic.Client.Base
+﻿namespace LazyMagic.Client.Base
 {
     public class MsgItemsModel : NotifyBase
     {

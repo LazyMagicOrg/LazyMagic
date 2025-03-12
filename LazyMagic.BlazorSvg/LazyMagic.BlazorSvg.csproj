@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 	<Import Project="$(SolutionDir)CommonPackageHandling.targets"/>
 	<PropertyGroup>
-		<TargetFrameworks>net9.0</TargetFrameworks>
+		<TargetFramework>net9.0</TargetFramework>
 
 		<Description>LazyMagic Blazor SVG Component</Description>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>

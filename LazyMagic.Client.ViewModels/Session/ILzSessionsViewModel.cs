@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace LazyMagic.Client.ViewModels;
+﻿namespace LazyMagic.Client.ViewModels;
 public interface ILzSessionsViewModel<T>: INotifyPropertyChanged
     where T : ILzSessionViewModel
 {

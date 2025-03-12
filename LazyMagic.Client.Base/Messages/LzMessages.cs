@@ -1,9 +1,4 @@
 ﻿namespace LazyMagic.Client.Base;
-
-using ReactiveUI;
-using System.Reactive;
-using System.Text.RegularExpressions;
-
 public enum LzMessageUnits { Imperial, Metric }
 /// <summary>
 /// LzMessages provide a way to localize text in a Blazor app.

@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-
-namespace LazyMagic.Client.ViewModels;
+﻿namespace LazyMagic.Client.ViewModels;
 
 public abstract class LzViewModel: ReactiveObject, IDisposable
 {

@@ -11,7 +11,7 @@ console.log("Starting to initialize staticContentModule");
 export let assetCaches = {}; // Dictionary of static assets data where key is a tdurl and value is { version: "" }
 
 import settings from './staticContentSettings.js';
-import * as appConfigFile from './appConfig.js'; // appConfig
+import * as appConfigFile from './appDevConfig.js/index.js'; // appConfig
 const appPrefix = appConfigFile.appConfig.appPath;
 
 const TEMP_APP_CACHE_NAME = `temp-${appPrefix}-app-cache`;

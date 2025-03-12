@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<Import Project="$(SolutionDir)CommonPackageHandling.targets" />
+	<PropertyGroup>
+		<TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+		<Description>AwsConfigService library</Description>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+		<Nullable>enable</Nullable>
+		<OutputType>Library</OutputType>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+		<PackageReference Include="AWSSDK.CloudFront" />
+		<PackageReference Include="AWSSDK.CloudFrontKeyValueStore" />
+		<PackageReference Include="AWSSDK.Extensions.CrtIntegration" />
+		<PackageReference Include="YamlDotNet" />
+	</ItemGroup>	
+	
+</Project>

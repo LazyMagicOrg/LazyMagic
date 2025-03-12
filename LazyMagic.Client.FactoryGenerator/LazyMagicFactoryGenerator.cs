@@ -1,140 +1,119 @@
-﻿using System.Diagnostics;
-using System.Runtime.Serialization;
-
-namespace LazyMagic.Client.FactoryGenerator;
-
-//Example: 
-
-// Source Class
-// Factory annotation specifies the class needs a DI factory 
-// FactoryInject annotation specifies the parameter needs to be injected by the DI factory
-
-//[Factory]
-//public class YadaViewModel : LzItemViewModelNotificationsBase<Yada, YadaModel>
-//{
-//    public YadaViewModel(
-//        [FactoryInject] IAuthProcess authProcess,
-//        ISessionViewModel sessionViewModel,
-//        ILzParentViewModel parentViewModel,
-//        Yada Yada,
-//        bool? isLoaded = null
-//        ) : base(Yada, isLoaded)
-//    {
-//        ...
-//    }
-//	...
-//}
-
-
-// Generated Class - implements standard DI factory pattern
-//public interface IYadaViewModelFactory
-//{
-//    YadaViewModel Create(
-//        ISessionViewModel sessionViewModel,
-//        ILzParentViewModel parentViewModel,
-//        Yada item,
-//        bool? isLoaded = null);
-//}
-//public class YadaViewModelFactory : IYadaViewModelFactory, ILzTransient
-//{
-//    public YadaViewModelFactory(IAuthProcess authProcess)
-//    {
-//        this.authProcess = authProcess;
-//    }
-
-//    private IAuthProcess authProcess;
-
-//    public YadaViewModel Create(ISessionViewModel sessionViewModel, ILzParentViewModel parentViewModel, Yada item, bool? isLoaded = null)
-//    {
-//        return new YadaViewModel(
-//            authProcess,
-//            sessionViewModel,
-//            parentViewModel,
-//            item,
-//            isLoaded);
-//    }
-//}
-
-
-
+﻿namespace LazyMagic.Client.FactoryGenerator;
 [Generator]
-public class LazyMagicFactoryGenerator : ISourceGenerator
+public class LazyMagicFactoryGenerator : IIncrementalGenerator
 {
-    public void Initialize(GeneratorInitializationContext context) { }
+    private static readonly DiagnosticDescriptor _messageRule = new DiagnosticDescriptor(
+        id: "LMF0001",
+        title: "Factory Generator Error",
+        messageFormat: "{0}",
+        category: "Usage",
+        DiagnosticSeverity.Info,
+        isEnabledByDefault: true);
 
-    public void Execute(GeneratorExecutionContext context)
+    public void Initialize(IncrementalGeneratorInitializationContext context)
+    {
+        // Get all class declarations with the Factory attribute
+        var classDeclarations =
+            context.SyntaxProvider
+                .CreateSyntaxProvider(
+                    predicate: static (s, _) => IsSyntaxTargetForGeneration(s),
+                    transform: (ctx, _) =>
+                    {
+                        var classNode = (ClassDeclarationSyntax)ctx.Node;
+                        var semanticModel = ctx.SemanticModel;
+                        if (semanticModel.GetDeclaredSymbol(classNode)?.GetAttributes()
+                            .Any(a => a.AttributeClass?.Name == nameof(FactoryAttribute)) == true)
+                        {
+                            return (classNode, semanticModel);
+                        }
+                        return (null, null);
+                    })
+                .Where(tuple => tuple.Item1 != null);
+
+        // Group class declarations by namespace
+        var groupedByNamespace = classDeclarations
+            .Collect()
+            .Select((classNodes, _) =>
+            {
+                return classNodes
+                    .GroupBy(tuple => GetNamespace(tuple.Item2, tuple.Item1))
+                    .ToImmutableArray();
+            });
+
+        // Register the source output
+        context.RegisterSourceOutput(groupedByNamespace,
+            (spc, groupedClasses) =>
+            {
+                foreach (var group in groupedClasses)
+                {
+                    var namespaceName = group.Key;
+                    var classes = group.Select(tuple => tuple.Item1).ToList();
+                    GenerateRegistrationsClass(spc, namespaceName, classes);
+                }
+            });
+
+        // Register the source output for individual factory classes
+        context.RegisterSourceOutput(classDeclarations,
+            (spc, tuple) => GenerateFactory(spc, tuple.Item1, tuple.Item2));
+    }
+
+    private static bool IsSyntaxTargetForGeneration(SyntaxNode node)
+    {
+        return node is ClassDeclarationSyntax { AttributeLists.Count: > 0 };
+    }
+
+    private void GenerateFactory(SourceProductionContext context,
+        ClassDeclarationSyntax classNode,
+        SemanticModel model)
     {
         try
         {
-            // Collect the classes and namespaces so we can create a registration class for generated factories
-            List<string> classes = new(); // class
-            HashSet<string> namespaces = new();
-            Dictionary<string, List<string>> registrations = new();
+            context.ReportDiagnostic(Diagnostic.Create(_messageRule, Location.None, $"Generating factory for {classNode.Identifier.Text}"));
 
-            foreach (var syntaxTree in context.Compilation.SyntaxTrees)
+            var className = classNode.Identifier.Text;
+            var namespaceName = GetNamespace(model, classNode);
+
+            var constructor = classNode.DescendantNodes().OfType<ConstructorDeclarationSyntax>().FirstOrDefault();
+
+            // Grab the parameters that have the FactoryInjectAttribute and prune the attribute from them
+            var injectedParameters = constructor?.ParameterList.Parameters
+                .Where(param => model.GetDeclaredSymbol(param) is IParameterSymbol paramSymbol &&
+                               paramSymbol.GetAttributes().Any(a => a.AttributeClass!.Name == nameof(FactoryInjectAttribute)))
+                .ToList();
+            injectedParameters = RemoveFactoryInjectAttributeFromParameters(injectedParameters, model);
+            var injectedParametersText = SyntaxFactory.SeparatedList(injectedParameters).ToFullString();
+
+            // Generate private variables for the injected parameters
+            var privateVariables = "";
+            foreach (var param in injectedParameters)
             {
-                // Find the classes that have the Factory attribute
-                var model = context.Compilation.GetSemanticModel(syntaxTree);
-                var classesWithFactoryAttribute = syntaxTree.GetRoot()
-                    .DescendantNodes()
-                    .OfType<ClassDeclarationSyntax>()
-                    .Where(x => model.GetDeclaredSymbol(x)!.GetAttributes().Any(a => a.AttributeClass!.Name == nameof(FactoryAttribute)));
+                var paramType = param.Type!.ToString();
+                var paramName = param.Identifier.ToString();
+                privateVariables += $"\t\tprivate {paramType} {paramName};\n";
+            }
 
-                // Generate the factory class for each class that has the Factory attribute
-                foreach (var classNode in classesWithFactoryAttribute)
-                {
+            // Generate the constructor argument assignments
+            var constructorAssignments = "";
+            foreach (var param in injectedParameters)
+            {
+                var paramName = param.Identifier.ToString();
+                constructorAssignments += $"\t\tthis.{paramName} = {paramName};\n";
+            }
 
-                    var className = classNode.Identifier.Text;
-                    classes.Add(className);
-                    var namespaceName = GetNamespace(context, model, classNode);
-                    namespaces.Add(namespaceName);
+            // Grab the parameters that are not injected
+            var nonInjectedParameters = constructor?.ParameterList.Parameters
+                .Where(param => model.GetDeclaredSymbol(param) is IParameterSymbol paramSymbol &&
+                               !paramSymbol.GetAttributes().Any(a => a.AttributeClass!.Name == nameof(FactoryInjectAttribute)))
+                .ToList();
+            var nonInjectedParametersText = SyntaxFactory.SeparatedList(nonInjectedParameters).ToFullString();
 
-                    if (registrations.TryGetValue(namespaceName, out var existingClasses ))
-                        existingClasses.Add(className);
-                    else
-                        registrations.Add(namespaceName, new List<string> { className });
+            // Grab the arguments list (which includes all the parameters)
+            var arguments = constructor?.ParameterList.Parameters.Select(p =>
+                SyntaxFactory.Argument(SyntaxFactory.IdentifierName(p.Identifier)));
+            var argumentsText = SyntaxFactory.SeparatedList(arguments).ToFullString();
 
-                    var constructor = classNode.DescendantNodes().OfType<ConstructorDeclarationSyntax>().FirstOrDefault();
-                    var constructorText = constructor?.ToFullString();
-
-                    // Grab the parameters that have the FactoryInjectAttribute and prune the attribute from them
-                    var injectedParameters = constructor?.ParameterList.Parameters
-                     .Where(param => model.GetDeclaredSymbol(param) is IParameterSymbol paramSymbol &&
-                                     paramSymbol.GetAttributes().Any(a => a.AttributeClass!.Name == nameof(FactoryInjectAttribute)))
-                     .ToList();
-                    injectedParameters = RemoveFactoryInjectAttributeFromParameters(injectedParameters, model);
-                    var injectedParametersText = SyntaxFactory.SeparatedList(injectedParameters).ToFullString();
-
-                    // Generate private variables for the injected parameters
-                    var privateVariables = "";
-                    foreach(var param in injectedParameters)
-                    {
-                        var paramType = param.Type!.ToString();
-                        var paramName = param.Identifier.ToString();
-                        privateVariables += $"\t\tprivate {paramType} {paramName};\n";
-                    }
-
-                    // Generate the constructor argument assignments
-                    var constructorAssignments = "";
-                    foreach (var param in injectedParameters)
-                    {
-                        var paramName = param.Identifier.ToString();
-                        constructorAssignments += $"\t\tthis.{paramName} = {paramName};\n";
-                    }
-
-                    // Grad the parameters that are not injected
-                    var nonInjectedParameters = constructor?.ParameterList.Parameters
-                        .Where(param => model.GetDeclaredSymbol(param) is IParameterSymbol paramSymbol &&
-                                                               !paramSymbol.GetAttributes().Any(a => a.AttributeClass!.Name == nameof(FactoryInjectAttribute)))
-                        .ToList();
-                    var nonInjectedParametersText = SyntaxFactory.SeparatedList(nonInjectedParameters).ToFullString();
-
-                    // Grab the arguments list (which includes all the parameters)
-                    var arguments = constructor?.ParameterList.Parameters.Select(p => SyntaxFactory.Argument(SyntaxFactory.IdentifierName(p.Identifier)));
-                    var argumentsText = SyntaxFactory.SeparatedList(arguments).ToFullString();
-
-                    var sourceBuilder = new StringBuilder();
-                    sourceBuilder.Append(@$"
+            var sourceBuilder = new StringBuilder();
+            sourceBuilder.Append(@$"
 using System.Linq;
 namespace {namespaceName}
 {{
@@ -144,7 +123,6 @@ namespace {namespaceName}
     }} 
     public class {className}Factory : I{className}Factory
     {{
-
         public {className}Factory({injectedParametersText}) 
         {{ 
 {constructorAssignments}
@@ -154,72 +132,55 @@ namespace {namespaceName}
         {{
             return new {className}({argumentsText});
         }}
-
-    }}
-}}
-");
-                    // Log(context, $"source: {sourceBuilder.ToString()}");
-                    SyntaxTree tree = CSharpSyntaxTree.ParseText(sourceBuilder.ToString());
-                    SyntaxNode root = tree.GetRoot();
-                    SyntaxNode formattedRoot = root.NormalizeWhitespace();
-                    context.AddSource($"I{className}Factory.cs", SourceText.From(formattedRoot.ToString(), Encoding.UTF8));
-
-                }
-
-            }
-
-            GenerateRegistrationsClass(context, registrations);
-
-        }
-        catch (Exception ex)
-        {
-            var diagnostic = Diagnostic.Create(_messageRule, Location.None, ex.Message + "01");
-            context.ReportDiagnostic(diagnostic);
-        }   
-    }
-
-    private void GenerateRegistrationsClass(GeneratorExecutionContext context, Dictionary<string, List<string>> registraitons)
-    {
-        foreach (var reg in registraitons)
-        {
-            var namespaceName = reg.Key;
-            var classes = reg.Value;
-
-            var sourceBuilder = new StringBuilder();
-            sourceBuilder.AppendLine(@$"
-// <auto-generated />
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-");
-
-            sourceBuilder.AppendLine(@$"
-namespace {namespaceName};
-");
-
-            //        foreach (var c in classes)
-            //            sourceBuilder.AppendLine(@$"
-            // public partial interface I{c}Factory {{}}
-            //");
-
-            sourceBuilder.AppendLine(@$"
-public static class RegisterFactories
-{{
-    public static void Register(IServiceCollection services)
-    {{
-");
-
-            foreach (var c in classes)
-                sourceBuilder.AppendLine($"        services.TryAddTransient<I{c}Factory,{c}Factory>();");
-
-            sourceBuilder.AppendLine($@"
     }}
 }}");
+
             SyntaxTree tree = CSharpSyntaxTree.ParseText(sourceBuilder.ToString());
             SyntaxNode root = tree.GetRoot();
             SyntaxNode formattedRoot = root.NormalizeWhitespace();
-            var source = SourceText.From(formattedRoot.ToString(), Encoding.UTF8);
-            context.AddSource($"{namespaceName}/RegisterFactories.cs", source);
+            context.AddSource($"I{className}Factory.g.cs", SourceText.From(formattedRoot.ToString(), Encoding.UTF8));
         }
+        catch (Exception ex)
+        {
+            var diagnostic = Diagnostic.Create(_messageRule, Location.None, ex.Message);
+            context.ReportDiagnostic(diagnostic);
+        }
+    }
+
+    private void GenerateRegistrationsClass(SourceProductionContext context,
+        string namespaceName,
+        List<ClassDeclarationSyntax> classes)
+    {
+        var namespaceNameNoDot = namespaceName.Replace(".", "");
+
+        var sourceBuilder = new StringBuilder();
+        sourceBuilder.AppendLine(@$"
+// <auto-generated />
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+
+namespace {namespaceName};
+
+public static class {namespaceNameNoDot}RegisterFactories
+{{
+    public static void {namespaceNameNoDot}Register(IServiceCollection services)
+    {{");
+
+        foreach (var classNode in classes)
+        {
+            var className = classNode.Identifier.Text;
+            sourceBuilder.AppendLine($"        services.TryAddTransient<I{className}Factory,{className}Factory>();");
+        }
+
+        sourceBuilder.AppendLine($@"
+    }}
+}}");
+
+        SyntaxTree tree = CSharpSyntaxTree.ParseText(sourceBuilder.ToString());
+        SyntaxNode root = tree.GetRoot();
+        SyntaxNode formattedRoot = root.NormalizeWhitespace();
+        var source = SourceText.From(formattedRoot.ToString(), Encoding.UTF8);
+        context.AddSource($"{namespaceName}.RegisterFactories.g.cs", source);
     }
 
     private List<ParameterSyntax> RemoveFactoryInjectAttributeFromParameters(List<ParameterSyntax>? parameterList, SemanticModel model)
@@ -233,7 +194,8 @@ public static class RegisterFactories
     {
         // Get the symbol for the parameter
         if (model.GetDeclaredSymbol(parameter) is IParameterSymbol paramSymbol &&
-            paramSymbol.GetAttributes().Any(a => a.AttributeClass!.Name == nameof(FactoryInjectAttribute) || a.AttributeClass!.Name == nameof(FactoryInjectAttribute) + "Attribute"))
+            paramSymbol.GetAttributes().Any(a => a.AttributeClass!.Name == nameof(FactoryInjectAttribute) ||
+                                               a.AttributeClass!.Name == nameof(FactoryInjectAttribute) + "Attribute"))
         {
             // Remove the FactoryInjectAttribute at the syntax level
             var modifiedAttributeLists = parameter.AttributeLists.Select(
@@ -248,140 +210,16 @@ public static class RegisterFactories
         return parameter;
     }
 
-    private ParameterListSyntax CreateParameterList(List<(string Type, string Name)> parameters)
+    private static string GetNamespace(SemanticModel model, ClassDeclarationSyntax classNode)
     {
-        var syntaxParameters = new SeparatedSyntaxList<ParameterSyntax>();
+        var symbol = model.GetDeclaredSymbol(classNode);
+        if (symbol == null)
+            return string.Empty;
 
-        foreach (var param in parameters)
-        {
-            var parameter = SyntaxFactory.Parameter(SyntaxFactory.Identifier(param.Name))
-                                          .WithType(SyntaxFactory.ParseTypeName(param.Type));
-            syntaxParameters = syntaxParameters.Add(parameter);
-        }
+        var namespaceName = symbol.ContainingNamespace.ToDisplayString();
 
-        return SyntaxFactory.ParameterList(syntaxParameters);
-    }
-
-
-    private void Log(GeneratorExecutionContext context, string? message)
-    {
-        if (message == null) return;
-        string[] lines = message.Split(new[] { '\n' }, StringSplitOptions.None); 
-        foreach(var line in lines)
-        {
-            var diagnostic = Diagnostic.Create(_messageRule, Location.None, line);
-            context.ReportDiagnostic(diagnostic);
-        }
-    }
-    private  MethodDeclarationSyntax GenerateCreateMethod(GeneratorExecutionContext context, SemanticModel model, ConstructorDeclarationSyntax constructor)
-    {
-        // 1. Get the class name from the constructor's parent node.
-        var className = ((ClassDeclarationSyntax)constructor.Parent).Identifier;
-
-
-        // 2. Get the parameters from the constructor.
-        var parameters = constructor.ParameterList.Parameters;
-        var prunedParameters = RemoveFactoryInjectAttributeFromParameters(parameters.ToList(), model);
-        parameters = SyntaxFactory.SeparatedList(prunedParameters);
-        foreach(var param in parameters)
-        {
-            var parameterText = param.ToFullString();
-            //Log(context, parameterText);
-        }
-
-        // 3. Generate the Create method.
-        // Construct the argument list from the parameters
-        var arguments = parameters.Select(p => SyntaxFactory.Argument(SyntaxFactory.IdentifierName(p.Identifier)));
-        ArgumentListSyntax argumentList = SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(arguments));
-
-        // Create the method body using the arguments to call the class constructor.
-        ObjectCreationExpressionSyntax creationExpression = SyntaxFactory.ObjectCreationExpression(
-            SyntaxFactory.IdentifierName(className),
-            argumentList,
-            null);
-
-        ReturnStatementSyntax returnStatement = SyntaxFactory.ReturnStatement(creationExpression);
-
-        // 4. The Create method will return an instance of the class.
-        MethodDeclarationSyntax createMethod = SyntaxFactory.MethodDeclaration(SyntaxFactory.IdentifierName(className), "Create")
-            .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword), SyntaxFactory.Token(SyntaxKind.StaticKeyword))
-            .WithParameterList(SyntaxFactory.ParameterList(parameters))
-            .WithBody(SyntaxFactory.Block(returnStatement));
-
-        return createMethod;
-    }
-
-
-    //private MethodDeclarationSyntax GenerateCreateMethod(ConstructorDeclarationSyntax constructor, ParameterListSyntax parameters)
-    //{
-    //    var className = ((ClassDeclarationSyntax)constructor.Parent).Identifier;
-
-
-    //    // Update the ObjectCreationExpression to use the merged parameters
-    //    var creationExpression = SyntaxFactory.ObjectCreationExpression(
-    //        SyntaxFactory.IdentifierName(className),
-    //        SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(parameters),
-    //        null);
-
-    //    var returnStatement = SyntaxFactory.ReturnStatement(creationExpression);
-
-    //    var createMethod = SyntaxFactory.MethodDeclaration(SyntaxFactory.IdentifierName(className), "Create")
-    //        .AddModifiers(SyntaxFactory.Token(SyntaxKind.PublicKeyword), SyntaxFactory.Token(SyntaxKind.StaticKeyword))
-    //        .WithParameterList(SyntaxFactory.ParameterList(SyntaxFactory.SeparatedList(mergedParameters)))
-    //        .WithBody(SyntaxFactory.Block(returnStatement));
-
-    //    return createMethod;
-    //}
-    private bool PropertyExists(ClassDeclarationSyntax classNode, SemanticModel model, string propertyName)
-    {
-        var classSymbol = model.GetDeclaredSymbol(classNode) as INamedTypeSymbol;
-        if (classSymbol == null) return false;
-
-        if (HasProperty(classSymbol, propertyName))
-            return true;
-
-        var baseType = classSymbol.BaseType;
-        while (baseType != null)
-        {
-            if (HasProperty(baseType, propertyName))
-                return true;
-
-            baseType = baseType.BaseType;
-        }
-
-        return false;  // The property was not found on the derived class or any of its base classes.
-    }
-
-    private bool HasProperty(INamedTypeSymbol typeSymbol, string propertyName)
-    {
-        return typeSymbol.GetMembers(propertyName).Any(m => m.Kind == SymbolKind.Property);
-    }
-
-
-    private string GetNamespace(GeneratorExecutionContext context, SemanticModel model, ClassDeclarationSyntax classNode)
-    {
-        var namespaceName = string.Empty;
-
-
-        var classSymbol = model.GetDeclaredSymbol(classNode) as INamedTypeSymbol;
-
-        if (classSymbol != null)
-            namespaceName = classSymbol.ContainingNamespace.ToString();
-        else
-        {
-            var diagnostic = Diagnostic.Create(_messageRule, Location.None, "Namespace not found.");
-            context.ReportDiagnostic(diagnostic);
-        }
         return namespaceName;
     }
-
-    private static readonly DiagnosticDescriptor _messageRule = new DiagnosticDescriptor(
-        id: "LZSG0002",
-        title: "LazyMagic.Client.FactoryGenerator Source Generator Message",
-        messageFormat: "{0}",
-        category: "SourceGenerator",
-        defaultSeverity: DiagnosticSeverity.Warning,
-        isEnabledByDefault: true);
 
     private string LowerFirstChar(string name) => name.Substring(0, 1).ToLower() + name.Substring(1);
 }

@@ -1,0 +1,27 @@
+﻿@namespace BlazorTest
+@inherits LzLayoutComponentBaseInjectViewModel<ISessionsViewModel>
+@*
+    This component instantiates the ISessionsViewModel singleton.
+    However, Maui Hybrid and WASM apps do not setup the DI context exactly the same way.
+    In MAUI, it is necessary to pass the JSRuntime into classes that are not UI components.
+    This is done in the Init.razor page. Once this is done, the SessionsViewModel.IsInitialized
+    property is set to true.
+
+    Any child components, like NavMenu below, must be aware of the SessionsViewModel
+    initialization lifecycle and operate property before and after initialization.
+
+*@
+<div class="page">
+
+    @if (ViewModel!.IsInitialized)
+    {
+        <div class="sidebar">
+            <NavMenu ViewModel="@ViewModel" />
+        </div>
+    }
+    <main>
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>

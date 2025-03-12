@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Reactive.Linq;
-using System.Text;
-using ReactiveUI;
-
+﻿
 namespace LazyMagic.Client.Base;
 
 /// <summary>
