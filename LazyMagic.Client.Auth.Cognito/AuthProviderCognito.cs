@@ -108,7 +108,7 @@ public class AuthProviderCognito : IAuthProviderCognito
     protected IPhoneFormat? phoneFormat;
     //protected IStacksConfig stacksConfig;
 
-    private bool allowAdminCreateUserOnly;
+    private bool signupAllowed;
 
     private string? login; // set by VerifyLogin
     private string? newLogin; // set by VerifyNewLogin
@@ -179,7 +179,7 @@ public class AuthProviderCognito : IAuthProviderCognito
     public bool HasChallenge { get { return AuthChallengeList.Count > 0; } }
     public bool CanSignOut => IsSignedIn && CurrentAuthProcess == AuthProcessEnum.None;
     public bool CanSignIn => !IsSignedIn && CurrentAuthProcess == AuthProcessEnum.None;
-    public bool CanSignUp => !allowAdminCreateUserOnly && !IsSignedIn && CurrentAuthProcess == AuthProcessEnum.None;
+    public bool CanSignUp => signupAllowed && !IsSignedIn && CurrentAuthProcess == AuthProcessEnum.None;
     public bool CanResetPassword => !IsSignedIn && CurrentAuthProcess == AuthProcessEnum.None;
     public bool CanUpdateLogin => false; // not supported in AWS Cognito
     public bool CanUpdateEmail => IsSignedIn && CurrentAuthProcess == AuthProcessEnum.None;
@@ -296,7 +296,7 @@ public class AuthProviderCognito : IAuthProviderCognito
     }
 
     /// <summary>
-    /// allowAdminCreateUserOnly can't be queried from AWS without 
+    /// signupAllowed can't be queried from AWS without 
     /// credentials.
     //  We allow the client to set it here so it's value  can be
     //  used in the auth state machine. Of course this value 
@@ -305,7 +305,7 @@ public class AuthProviderCognito : IAuthProviderCognito
     /// <param name="isAllowed"></param>
     public void SetSignUpAllowed(bool isAllowed)
     {
-        allowAdminCreateUserOnly = !isAllowed;
+        signupAllowed = isAllowed;
     }
 
     #region Challenge Flow Methods -- affect AuthChallengeList or IsAuthorized

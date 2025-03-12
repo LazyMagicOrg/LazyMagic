@@ -75,7 +75,7 @@ public class Program
         .AddSingleton<ISessionsViewModel, SessionsViewModel>()
         .AddBlazorise(options => { options.Immediate = true; })
         .AddBootstrap5Providers();
-        RegisterFactories.Register(builder.Services);
+        BlazorizeTestViewModelsRegisterFactories.BlazorizeTestViewModelsRegister(builder.Services);
 
         var host = builder.Build();
         // Wait for the page to fully load to finish up the Blazor app configuration

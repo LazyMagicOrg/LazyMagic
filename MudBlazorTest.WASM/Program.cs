@@ -64,8 +64,8 @@ public class Program
         .AddSingleton<IOSAccess, BlazorOSAccess>()
         .AddLazyMagicAuthCognito()
         .AddSingleton<ISessionsViewModel, SessionsViewModel>();
-            
-        RegisterFactories.Register(builder.Services);
+
+        BlazorTestViewModelsRegisterFactories.BlazorTestViewModelsRegister(builder.Services);
 
         builder.Logging.SetMinimumLevel(LogLevel.Information);
 
