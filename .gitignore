@@ -361,3 +361,8 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# We need the git clone process to create the Packages folder
+# so we keep the .gitkeep file. Note that everyhting else in 
+# the folder will be ignored.
+!**/[Pp]ackages/.gitkeep
