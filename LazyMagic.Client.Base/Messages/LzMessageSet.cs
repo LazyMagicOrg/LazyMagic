@@ -129,6 +129,8 @@ public class LzMessageSet : NotifyBase
                 {
                     var doc = JsonConvert.DeserializeObject<MessageDoc>(json)!;
                     MessageDocs[filePath] = doc;
+                    // todo: remove
+                    //Console.WriteLine($"Loaded messages file: {filePath}, Messages.Count: {doc.Messages.Count}");
                 }
             }
             catch (Exception ex)
@@ -140,6 +142,7 @@ public class LzMessageSet : NotifyBase
     }
     public void UpdateMsgs(LzMessageUnits? unitsArg = null, string? key = null)
     {
+        Console.WriteLine($"UpdateMsgs: Culture:{Culture}, unitsArg: {unitsArg.ToString()}, key:{key}");
         foreach (LzMessageUnits units in Enum.GetValues(typeof(LzMessageUnits)))
         {
             if (unitsArg != null && unitsArg != units)
@@ -155,6 +158,7 @@ public class LzMessageSet : NotifyBase
                     throw new Exception("SetOSAccess must be called before SetMessageSetAsync.");
                 foreach (var filePath in _messageFiles) // preserve the precidence order of the files
                 {
+                    //Console.WriteLine($"UpdateMsgs: filePath: {filePath}"); 
                     UpdateMsgsFromMessageDocs(msgs, key, filePath); // first set from docs
                     UpdateMsgsFromMsgItemsModels(msgs, key, filePath); // then override if in MsgItems
 
@@ -165,7 +169,13 @@ public class LzMessageSet : NotifyBase
             {
                 Console.WriteLine($"Error setting message set: {ex.Message}");
             }
+            // todo: remove
+            //foreach(var msg in msgs)
+            //    Console.WriteLine($"Message: {msg.Key} = {msg.Value}");
+
         }
+        // todo: remove
+        // Console.WriteLine($"Updated messages");
     }
     private void UpdateMsgsFromMsgItemsModels(Dictionary<string, string> msgs, string? key, string filePath)
     {
@@ -198,7 +208,13 @@ public class LzMessageSet : NotifyBase
             else
             {
                 foreach (var msg in doc.Messages)
+                {
                     msgs[msg.Key] = GetMessage(key!, filePath, msg.Value.Msg);
+                    if (msg.Key == "snaps_intro")
+                    {
+                        Console.WriteLine($"snaps_intro: {msgs[msg.Key]}, {msg.Value.Msg}");
+                    }
+                }
             }
         }
     }

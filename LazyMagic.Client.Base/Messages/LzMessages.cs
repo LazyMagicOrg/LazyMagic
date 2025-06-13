@@ -1,5 +1,6 @@
 ﻿namespace LazyMagic.Client.Base;
 public enum LzMessageUnits { Imperial, Metric }
+public enum LzMessageUnit { feet, squarefeet, inch, squareinch , meter, squaremeter, centimeter, squarecentimeter }
 /// <summary>
 /// LzMessages provide a way to localize text in a Blazor app.
 /// In addition to localization, messages can be tailored to a tenancy. 

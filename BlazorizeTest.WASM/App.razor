@@ -49,7 +49,7 @@
                     .AddLazyMagicBlazorMessages()
                     .AddLazyMagicBlazoriseComponentsAuthMessages()
                     ;
-                Messages.MessageFiles.AddRange([Host.AssetsUrl + "Tenancy/en-US/SetsApp/Messages.json"]);
+                Messages.MessageFiles.AddRange([Host.AssetsUrl + "subtenancy/en-US/SetsApp/Messages.json"]);
 
                 // Read message files for the current culture and configure for current units
                 await Messages.SetMessageSetAsync("en-US", LzMessageUnits.Imperial);
