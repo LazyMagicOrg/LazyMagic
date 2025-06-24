@@ -49,9 +49,7 @@ public class Program
         .AddSingleton<ILzMessages, LzMessages>()
         .AddSingleton<ILzClientConfig, LzClientConfig>()
         .AddSingleton(sp => new HttpClient { BaseAddress = new Uri((string)_appConfig!["assetsUrl"]!) })
-        .AddSingleton<BlazorInternetConnectivity>()
-        .AddSingleton<IBlazorInternetConnectivity>(sp => sp.GetRequiredService<BlazorInternetConnectivity>())
-        .AddSingleton<IInternetConnectivitySvc>(sp => sp.GetRequiredService<BlazorInternetConnectivity>())
+        .AddSingleton<IConnectivityService, ConnectivityService>()
         .AddSingleton<ILzHost>(sp => new LzHost(
             androidAppUrl: (string)_appConfig!["androidAppUrl"]!, // android app url 
             remoteApiUrl: (string)_appConfig!["remoteApiUrl"]!,  // api url

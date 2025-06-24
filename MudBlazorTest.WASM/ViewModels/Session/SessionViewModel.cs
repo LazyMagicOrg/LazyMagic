@@ -7,7 +7,7 @@ public class SessionViewModel : LzSessionViewModelAuth, ISessionViewModel, ILzTr
 {
     public SessionViewModel(
         [FactoryInject] ILoggerFactory loggerFactory, // singleton  
-        [FactoryInject] IInternetConnectivitySvc internetConnectivity, // singleton
+        [FactoryInject] IConnectivityService internetConnectivity, // singleton
         [FactoryInject] ILzClientConfig clientConfig, // singleton
         [FactoryInject] ILzMessages messages, // singleton
         [FactoryInject] IAuthProcess authProcess, // transient
@@ -15,7 +15,7 @@ public class SessionViewModel : LzSessionViewModelAuth, ISessionViewModel, ILzTr
         )
         : base(loggerFactory, authProcess, clientConfig, internetConnectivity, messages)
     {
-        authProcess.SetAuthenticator(clientConfig.AuthConfigs["api"]);
+        authProcess.SetAuthenticator(clientConfig.AuthConfigs["TenantAuth"]);
 
     }
 }

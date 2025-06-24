@@ -1,5 +1,4 @@
 using Microsoft.JSInterop;
-using System.Diagnostics;
 
 namespace BlazorTest.WASM;
 
@@ -24,7 +23,6 @@ public class Program
         //  "ASPNETCORE_ENVIRONMENT": "Localhost"
         //  useLocalhostApi will be true else false
 
-
         var hostEnvironment = builder.HostEnvironment;
         var apiUrl = string.Empty;
         var assetsUrl = string.Empty;
@@ -44,31 +42,27 @@ public class Program
                 break;
         }
 
-
         builder.Services
-        .AddSingleton<ILzMessages, LzMessages>()
-        .AddSingleton<ILzClientConfig, LzClientConfig>()
-        .AddSingleton(sp => new HttpClient { BaseAddress = new Uri((string)_appConfig!["assetsUrl"]!) })
-        .AddSingleton<BlazorInternetConnectivity>()
-        .AddSingleton<IBlazorInternetConnectivity>(sp => sp.GetRequiredService<BlazorInternetConnectivity>())
-        .AddSingleton<IInternetConnectivitySvc>(sp => sp.GetRequiredService<BlazorInternetConnectivity>())
-        .AddSingleton<ILzHost>(sp => new LzHost(
-            androidAppUrl: (string)_appConfig!["androidAppUrl"]!, // android app url 
-            remoteApiUrl: (string)_appConfig!["remoteApiUrl"]!,  // api url
-            localApiUrl: (string)_appConfig!["localApiUrl"]!, // local api url
-            assetsUrl: (string)_appConfig!["assetsUrl"]!, // tenancy assets url
-            isMAUI: false, // sets isWASM to true
-            isAndroid: false,
-            isLocal: isLocal,
-            useLocalhostApi: useLocalhostApi))
-        .AddSingleton<IOSAccess, BlazorOSAccess>()
-        .AddLazyMagicAuthCognito()
-        .AddSingleton<ISessionsViewModel, SessionsViewModel>();
+            .AddSingleton<ILzMessages, LzMessages>()
+            .AddSingleton<ILzClientConfig, LzClientConfig>()
+            .AddSingleton(sp => new HttpClient { BaseAddress = new Uri((string)_appConfig!["assetsUrl"]!) })
+            .AddSingleton<IConnectivityService, ConnectivityService>()
+            .AddSingleton<ILzHost>(sp => new LzHost(
+                androidAppUrl: (string)_appConfig!["androidAppUrl"]!, // android app url 
+                remoteApiUrl: (string)_appConfig!["remoteApiUrl"]!,  // api url
+                localApiUrl: (string)_appConfig!["localApiUrl"]!, // local api url
+                assetsUrl: (string)_appConfig!["assetsUrl"]!, // tenancy assets url
+                isMAUI: false, // sets isWASM to true
+                isAndroid: false,
+                isLocal: isLocal,
+                useLocalhostApi: useLocalhostApi))
+            .AddSingleton<IOSAccess, BlazorOSAccess>()
+            .AddLazyMagicAuthCognito()
+            .AddSingleton<ISessionsViewModel, SessionsViewModel>();
             
         BlazorTestViewModelsRegisterFactories.BlazorTestViewModelsRegister(builder.Services);
 
         builder.Logging.SetMinimumLevel(LogLevel.Information);
-
 
         var host = builder.Build();
         // Wait for the page to fully load to finish up the Blazor app configuration

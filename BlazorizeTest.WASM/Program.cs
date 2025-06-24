@@ -55,10 +55,7 @@ public class Program
             new HttpClient { BaseAddress = new Uri((string)_appConfig!["assetsUrl"]!) }))
         .AddSingleton<ILzMessages, LzMessages>()
         .AddSingleton<ILzClientConfig, LzClientConfig>()
-        .AddSingleton<BlazorInternetConnectivity>()
-
-        .AddSingleton<IBlazorInternetConnectivity>(sp => sp.GetRequiredService<BlazorInternetConnectivity>())
-        .AddSingleton<IInternetConnectivitySvc>(sp => sp.GetRequiredService<BlazorInternetConnectivity>())
+        .AddSingleton<IConnectivityService, ConnectivityService>()
         .AddSingleton<ILzHost>(sp => new LzHost(
             appPath: (string)_appConfig!["appPath"]!, // app path
             appUrl: (string)_appConfig!["appUrl"]!, // app url  

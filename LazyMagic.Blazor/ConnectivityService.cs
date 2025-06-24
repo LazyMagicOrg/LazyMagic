@@ -1,38 +1,37 @@
 namespace LazyMagic.Blazor;
 
-public interface IConnectivityService
+public interface IConnectivityService : IInternetConnectivitySvc, IAsyncDisposable
 {
-    event Action<bool>? ConnectivityChanged;
-    bool IsOnline { get; }
-    Task<bool> CheckConnectivityAsync();
-    Task<bool> ShouldMakeNetworkRequestAsync();
-    Task InitializeAsync();
-    ValueTask DisposeAsync();
+    Task InitializeAsync(IJSRuntime jsRuntime);
 }
-
-public class ConnectivityService : IConnectivityService, IAsyncDisposable
+public class ConnectivityService : NotifyBase, IConnectivityService
 {
-    private readonly IJSRuntime _jsRuntime;
+    private IJSRuntime? _jsRuntime;
     private DotNetObjectReference<ConnectivityService>? _objRef;
     private bool _isOnline = true;
     private bool _isInitialized = false;
 
-    public ConnectivityService(IJSRuntime jsRuntime)
+    public ConnectivityService()
     {
-        _jsRuntime = jsRuntime;
+        _objRef = DotNetObjectReference.Create(this);
     }
-
-    public event Action<bool>? ConnectivityChanged;
-    
-    public bool IsOnline => _isOnline;
-
-    public async Task InitializeAsync()
+    public bool IsOnline
+    {
+        get => _isOnline;
+        protected set => SetProperty(ref _isOnline, value);
+    }
+    public async Task InitializeAsync(IJSRuntime jsRuntime)
     {
         if (_isInitialized) return;
 
+        if(jsRuntime == null)
+        {
+            throw new InvalidOperationException("JSRuntime must be set before calling InitializeAsync.");
+        }
+        _jsRuntime = jsRuntime;
         try
         {
-            _objRef = DotNetObjectReference.Create(this);
+            await _jsRuntime.InvokeVoidAsync("import", "./_content/LazyMagic.Blazor/connectivityManager.js");
             await _jsRuntime.InvokeVoidAsync("initializeConnectivity", _objRef);
             _isInitialized = true;
         }
@@ -41,13 +40,15 @@ public class ConnectivityService : IConnectivityService, IAsyncDisposable
             Console.WriteLine($"Failed to initialize connectivity service: {ex.Message}");
         }
     }
-
-    public async Task<bool> CheckConnectivityAsync()
+    public async Task<bool> CheckInternetConnectivityAsync()
     {
+        if (!_isInitialized)
+        {
+            throw new InvalidOperationException("JSRuntime must be set before calling InitializeAsync.");
+        }
         try
         {
-            if (!_isInitialized) await InitializeAsync();
-            return await _jsRuntime.InvokeAsync<bool>("getConnectivityStatus");
+            return await _jsRuntime!.InvokeAsync<bool>("getConnectivityStatus");
         }
         catch (Exception ex)
         {
@@ -55,13 +56,15 @@ public class ConnectivityService : IConnectivityService, IAsyncDisposable
             return false;
         }
     }
-
     public async Task<bool> ShouldMakeNetworkRequestAsync()
     {
+        if (!_isInitialized)
+        {
+            throw new InvalidOperationException("JSRuntime must be set before calling InitializeAsync.");
+        }
         try
         {
-            if (!_isInitialized) await InitializeAsync();
-            return await _jsRuntime.InvokeAsync<bool>("shouldMakeNetworkRequest");
+            return await _jsRuntime!.InvokeAsync<bool>("shouldMakeNetworkRequest");
         }
         catch (Exception ex)
         {
@@ -69,25 +72,26 @@ public class ConnectivityService : IConnectivityService, IAsyncDisposable
             return false;
         }
     }
-
     [JSInvokable]
     public async Task OnConnectivityChanged(bool isOnline)
     {
-        var wasOnline = _isOnline;
-        _isOnline = isOnline;
-        
-        if (wasOnline != isOnline)
-        {
-            Console.WriteLine($"Connectivity changed: {(isOnline ? "Online" : "Offline")}");
-            ConnectivityChanged?.Invoke(isOnline);
-        }
-        
+        IsOnline = isOnline;
         await Task.CompletedTask;
     }
+    public async void Dispose()
+    {
 
+        if (_isInitialized && _jsRuntime != null)
+        {
+            await _jsRuntime.InvokeVoidAsync("disposeConnectivity");
+        }
+        _objRef?.Dispose();
+        _objRef = null;
+        GC.SuppressFinalize(this);
+    }
     public async ValueTask DisposeAsync()
     {
-        if (_isInitialized)
+        if (_isInitialized && _jsRuntime != null)
         {
             try
             {
@@ -98,7 +102,6 @@ public class ConnectivityService : IConnectivityService, IAsyncDisposable
                 Console.WriteLine($"Error disposing connectivity service: {ex.Message}");
             }
         }
-
         _objRef?.Dispose();
         _objRef = null;
         _isInitialized = false;

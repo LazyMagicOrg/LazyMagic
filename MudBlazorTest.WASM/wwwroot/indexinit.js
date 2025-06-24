@@ -27,8 +27,8 @@ window.checkIfLoaded = function () {
 if (window.location.origin.includes("localhost")) {
     /*** APP LOADED FROM THE LOCALHOST ***/
     console.debug("Running from local development host");
-    const { appDevConfig } = await import('./_content/BlazorUI/appDevConfig.js');
-    const { appConfig } = await import('./_content/BlazorUI/appConfig.js');
+    const { appDevConfig } = await import('./appDevConfig.js');
+    const { appConfig } = await import('./appConfig.js');
 
     window.appConfig = {
         appPath: appConfig.appPath,
@@ -39,7 +39,7 @@ if (window.location.origin.includes("localhost")) {
         assetsUrl: appDevConfig.assetsUrl,
         wsUrl: appDevConfig.wsUrl
     };
-    const { uIFetchLoadStaticAssets } = await import('./_content/BlazorUI/UIFetch.js');
+    const { uIFetchLoadStaticAssets } = await import('./UIFetch.js');
 
     window.isLoaded = true; // This lets the app know it can proceed with the Blazor app startup
 

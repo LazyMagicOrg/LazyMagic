@@ -4,7 +4,7 @@
 @inject HttpClient HttpClient
 @inject ILzClientConfig ClientConfig
 @inject IOSAccess OSAccess
-@inject IBlazorInternetConnectivity InternetConnectivity
+@inject IConnectivityService ConnectivityService
 @inject ILzMessages Messages
 @inject ILoggerFactory LoggerFactory
 
@@ -34,7 +34,7 @@
             {
                 //await JSRuntime.InvokeVoidAsync("setAssetHostUrl", Host.AssetsUrl);
 
-                InternetConnectivity.SetJSRuntime(JSRuntime);
+                await ConnectivityService.InitializeAsync(JSRuntime);
                 var staticAssets = new BlazorStaticAssets(LoggerFactory, new HttpClient());
                 Messages.SetStaticAssets(staticAssets);
 
