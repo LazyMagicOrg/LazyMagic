@@ -19,6 +19,7 @@
 		<PackageVersion Include="AWSSDK.SecurityToken" Version="3.7.401.55" />
 		<PackageVersion Include="AWSSDK.SSO" Version="3.7.400.106" />
 		<PackageVersion Include="AWSSDK.SSOOIDC" Version="3.7.400.107" />
+		<PackageVersion Include="BlazorPro.BlazorSize" Version="9.0.0" />
 		<PackageVersion Include="Blazorise" Version="1.7.0" />
 		<PackageVersion Include="Blazorise.Animate" Version="1.7.5" />
 		<PackageVersion Include="Blazorise.Bootstrap5" Version="1.7.5" />

@@ -71,7 +71,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LazyMagic.MudBlazor.Compone
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LazyMagic.Client.ModelGenerator", "LazyMagic.Client.ModelGenerator\LazyMagic.Client.ModelGenerator.csproj", "{87824360-4F14-49EE-96A7-95712F862D3D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorizeTest.WASM", "BlazorizeTest.WASM\BlazorizeTest.WASM.csproj", "{C7F351B3-FEE6-444E-9608-43E798BACB92}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazoriseTest.WASM", "BlazorizeTest.WASM\BlazoriseTest.WASM.csproj", "{C7F351B3-FEE6-444E-9608-43E798BACB92}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LazyMagic.AuthTest", "LazyMagic.AuthTest\LazyMagic.AuthTest.csproj", "{A284BC18-5D40-4DFF-A286-0C461A02DC54}"
 EndProject

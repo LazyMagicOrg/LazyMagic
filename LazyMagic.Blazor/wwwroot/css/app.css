@@ -1,4 +1,17 @@
+/*@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');*/
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
 html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
@@ -17,7 +30,7 @@ a, .btn-link {
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 .content {
@@ -66,38 +79,110 @@ a, .btn-link {
     }
 
 .loading-progress {
-    position: relative;
-    display: block;
-    width: 8rem;
-    height: 8rem;
-    margin: 20vh auto 1rem auto;
+    z-index: 9999;
+    position: relative; /* Add this to create positioning context */
+    background-color: transparent;
+    pointer-events: none;
 }
+
+    .loading-progress svg {
+        width: 100%;
+        height: 100%;
+        transform: rotate(-90deg);
+    }
 
     .loading-progress circle {
         fill: none;
         stroke: #e0e0e0;
-        stroke-width: 0.6rem;
-        transform-origin: 50% 50%;
-        transform: rotate(-90deg);
+        stroke-width: 0.4rem;
     }
 
         .loading-progress circle:last-child {
             stroke: #1b6ec2;
-            stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
-            transition: stroke-dasharray 0.05s ease-in-out;
+            stroke-width: 0.4rem;
+            stroke-dasharray: 0 251.2;
+            animation: draw-circle 3s linear forwards;
+            transform-origin: 50% 50%;
         }
+
+@keyframes draw-circle {
+    to {
+        stroke-dasharray: 201 251.2;
+    }
+}
 
 .loading-progress-text {
     position: absolute;
-    text-align: center;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     font-weight: bold;
-    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
+    color: #1a1a1a;
+    text-align: center;
 }
-
     .loading-progress-text:after {
-        content: var(--blazor-load-percentage-text, "Loading");
+        content: "0%";
+        animation: count-up 3s linear forwards;
     }
 
-code {
-    color: #c02d76;
+@keyframes count-up {
+    0% { content: "0%"; }
+    5% { content: "5%"; }
+    10% { content: "10%"; }
+    15% { content: "15%"; }
+    20% { content: "20%";}
+    25% { content: "25%"; }
+    30% { content: "30%"; }
+    35% { content: "35%"; }
+    40% { content: "40%"; }
+    45% { content: "45%"; }
+    50% { content: "50%"; }
+    55% { content: "55%"; }
+    60% { content: "60%"; }
+    65% { content: "65%"; }
+    70% { content: "70%"; }
+    75% { content: "75%"; }
+    80% { content: "80%"; }
+    85% { content: "85%"; }
+    90% { content: "90%"; }
+    95% { content: "95%"; }
+    100% { content: "100%"; }
+}
+.loading-message-text {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    top: calc(100% + 1rem);
+    color: #1b6ec2;
+}
+
+.action-tile-divider {
+}
+
+.event-it-image {
+    object-fit: contain;
+    width: 80%;
+    z-index: 2;
+}
+
+.event-it-tile {
+}
+
+.event-it-tap-menu {
+}
+
+.nav-link {
+    padding: 0.5rem 0.5rem;
+}
+
+.static-content-message {
+    color: burlywood
+}
+
+.static-content-is-dirty {
+    color: red
+}
+
+.static-content-is-current {
+    color: blue
 }

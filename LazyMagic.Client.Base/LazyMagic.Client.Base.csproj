@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<Import Project="$(SolutionDir)CommonPackageHandling.targets" />
 	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 
 		<Description>LazyMagic Base</Description>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
@@ -23,6 +23,9 @@
 		<PackageReference Include="ReactiveUI" />
 		<PackageReference Include="ReactiveUI.Fody" />
 		<PackageReference Include="Microsoft.Extensions.Logging" />
+	</ItemGroup>
+	<ItemGroup>
+	  <ProjectReference Include="..\LazyMagic.Shared\LazyMagic.Shared.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -21,13 +21,14 @@
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
 		<PackageReference Include="Microsoft.Extensions.Logging" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Configuration" />		
-		
 		<PackageReference Include="ReactiveUI.Fody" />
-	
 		<PackageReference Include="ReactiveUI" />
-		<PackageReference Include="MudBlazor" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<PackageReference Include="MudBlazor" />
+	</ItemGroup>
+	
 	<ItemGroup>
 		<ProjectReference Include="..\LazyMagic.Client.FactoryGenerator\LazyMagic.Client.FactoryGenerator.csproj" PrivateAssets="all" OutputItemType="Analyzer" />
 		<ProjectReference Include="..\LazyMagic.Client.Auth.Cognito\LazyMagic.Client.Auth.Cognito.csproj" />

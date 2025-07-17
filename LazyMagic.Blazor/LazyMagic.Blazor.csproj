@@ -10,14 +10,20 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 	</PropertyGroup>
+	
 	<ItemGroup>
 	  <Content Remove="BlazorStaticAssets.cs" />
+	  <Content Remove="BrowserFingerprintService.cs" />
 	  <Content Remove="Components\Msg.cs" />
+	  <Content Remove="Config\ConfigureLazyMagicBlazor.cs" />
 	  <Content Remove="ConnectivityService.cs" />
+	  <Content Remove="Models\BrowserFingerprint.cs" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<SupportedPlatform Include="browser" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+		<PackageReference Include="BlazorPro.BlazorSize" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -25,10 +31,6 @@
 		<PackageReference Include="ReactiveUI.Blazor" />
 		<PackageReference Include="Microsoft.JSInterop" />
 	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" />
-	</ItemGroup>	
 	
 	<ItemGroup>
 		<ProjectReference Include="..\LazyMagic.Client.Base\LazyMagic.Client.Base.csproj" />

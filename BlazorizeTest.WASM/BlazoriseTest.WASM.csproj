@@ -18,6 +18,9 @@
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
 		<PackageReference Include="ReactiveUI.Fody" />
 		<PackageReference Include="ReactiveUI" />
+	</ItemGroup>
+	
+	<ItemGroup>
 		<PackageReference Include="Blazorise.Animate" />
 		<PackageReference Include="Blazorise.Components" />
 		<PackageReference Include="Blazorise.Icons.FontAwesome" />

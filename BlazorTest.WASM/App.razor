@@ -9,53 +9,72 @@
 @inject ILzMessages Messages
 @inject ILoggerFactory LoggerFactory
 
-@if (ClientConfig.Configured)
-{
-    <Router AppAssembly="@typeof(App).Assembly">
-        <Found Context="routeData">
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        @if(ClientConfig.Configured)
+        {
             <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
             <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-        </Found>
-        <NotFound>
-            <PageTitle>Not found</PageTitle>
-            <LayoutView Layout="@typeof(MainLayout)">
-                <p role="alert">Sorry, there's nothing at this address.</p>
-            </LayoutView>
-        </NotFound>
-    </Router>
-}
+        }
+        else
+        {
+            <div style="width: 9rem; height: 9rem; margin-left: 1rem; margin-top: 1rem;">
+                <LzAppLoading AnimationDurationSeconds="1.0"
+                              LoadingMessage="Loading your venue." />
+            </div>
+        }
+    </Found>
+    <NotFound>
+        <PageTitle>Not found</PageTitle>
+        <LayoutView Layout="@typeof(MainLayout)">
+            <p role="alert">Sorry, there's nothing at this address.</p>
+        </LayoutView>
+    </NotFound>
+</Router>
+
 @code {
-    private bool isConfigured = false;
 
     protected override async Task OnInitializedAsync()
     {
-        if (!ClientConfig.Configured)
-        {
-            try
-            {
-                await ConnectivityService.InitializeAsync(JSRuntime);
-                var staticAssets = new BlazorStaticAssets(LoggerFactory, new HttpClient());
-                Messages.SetStaticAssets(staticAssets);
-
-                await ClientConfig.InitializeAsync(Host.RemoteApiUrl);
-
-                try
-                {
-                    Messages.MessageFiles.AddRange([Host.AssetsUrl + "subtenancy/en-US/SetsApp/Messages.json"]);
-
-                    // Read message files for the current culture and configure for current units
-                    await Messages.SetMessageSetAsync("en-US", LzMessageUnits.Imperial);
-                } catch (Exception ex)
-                {
-                    Console.WriteLine($"Messages.SetMessageSetAsync failed. {ex.Message} ");
-                }
-
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-        }
         await base.OnInitializedAsync();
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            if (!ClientConfig.Configured)
+            {
+                try
+                {
+                    await ConnectivityService.InitializeAsync(JSRuntime);
+                    var staticAssets = new BlazorStaticAssets(LoggerFactory, new HttpClient());
+                    Messages.SetStaticAssets(staticAssets);
+                    await ClientConfig.InitializeAsync(Host.RemoteApiUrl);
+
+                    try
+                    {
+
+                        Messages.MessageFiles.AddRange([Host.AssetsUrl + "subtenancy/en-US/SetsApp/Messages.json"]);
+
+                        // Read message files for the current culture and configure for current units
+                        await Messages.SetMessageSetAsync("en-US", LzMessageUnits.Imperial);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine($"Messages.SetMessageSetAsync failed. {ex.Message} ");
+
+                    }
+                    Console.WriteLine($"Messages initialized. IsConfigured: {ClientConfig.Configured}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                }
+            }
+        }
+        NavigationManager.NavigateTo("/");
+        await base.OnAfterRenderAsync(firstRender);
+    }   
+
 }

@@ -49,13 +49,11 @@ public class Program
 
 
         builder.Services
+        .AddLazyMagicBlazor()
         .AddSingleton(sp => new HttpClient { BaseAddress = new Uri((string)_appConfig!["assetsUrl"]!) })
         .AddSingleton<IStaticAssets>(sp => new BlazorStaticAssets(
             sp.GetRequiredService<ILoggerFactory>(),
             new HttpClient { BaseAddress = new Uri((string)_appConfig!["assetsUrl"]!) }))
-        .AddSingleton<ILzMessages, LzMessages>()
-        .AddSingleton<ILzClientConfig, LzClientConfig>()
-        .AddSingleton<IConnectivityService, ConnectivityService>()
         .AddSingleton<ILzHost>(sp => new LzHost(
             appPath: (string)_appConfig!["appPath"]!, // app path
             appUrl: (string)_appConfig!["appUrl"]!, // app url  
@@ -67,7 +65,6 @@ public class Program
             isAndroid: false,
             isLocal: isLocal,
             useLocalhostApi: useLocalhostApi))
-        .AddSingleton<IOSAccess, BlazorOSAccess>()
         .AddLazyMagicAuthCognito()
         .AddSingleton<ISessionsViewModel, SessionsViewModel>()
         .AddBlazorise(options => { options.Immediate = true; })

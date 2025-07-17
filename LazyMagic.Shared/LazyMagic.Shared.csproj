@@ -7,6 +7,9 @@
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 	</PropertyGroup>
 	<ItemGroup>
+	  <Content Remove="BrowserFingerprint.cs" />
+	</ItemGroup>
+	<ItemGroup>
 		<PackageReference Include="Newtonsoft.Json" />
 	</ItemGroup>
 </Project>

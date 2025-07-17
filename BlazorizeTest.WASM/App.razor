@@ -10,24 +10,39 @@
 @inject ILzMessages Messages
 @inject ILoggerFactory LoggerFactory
 
-@if(ClientConfig.Configured) {
-    <Blazorise.ThemeProvider Theme="@theme">
-        <Router AppAssembly="@typeof(App).Assembly">
-            <Found Context="routeData">
-                <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-                <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-            </Found>
-            <NotFound>
-                <PageTitle>Not found</PageTitle>
-                <LayoutView Layout="@typeof(MainLayout)">
-                    <p role="alert">Sorry, there's nothing at this address.</p>
-                </LayoutView>
-            </NotFound>
-        </Router>
-    </Blazorise.ThemeProvider>
-}
+<MediaQueryList>
+    <WindowResize @ref="@windowResize" HeaderHeight="@headerHeight" MaxWidth="@maxWidth">
+        <Blazorise.ThemeProvider Theme="@theme">
+            <Router AppAssembly="@typeof(App).Assembly">
+                <Found Context="routeData">
+                    @if (ClientConfig.Configured)
+                    {
+                        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+                        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+                    }
+                    else
+                    {
+                        <div style="width: 9rem; height: 9rem; margin-left: 1rem; margin-top: 1rem;">
+                            <LzAppLoading AnimationDurationSeconds="1.0"
+                                          LoadingMessage="Loading your venue." />
+                        </div>
+                    }
+                </Found>
+                <NotFound>
+                    <PageTitle>Not found</PageTitle>
+                    <LayoutView Layout="@typeof(MainLayout)">
+                        <p role="alert">Sorry, there's nothing at this address.</p>
+                    </LayoutView>
+                </NotFound>
+            </Router>
+        </Blazorise.ThemeProvider>
+    </WindowResize>
+</MediaQueryList>
 
 @code {
+    private int headerHeight = 32;
+    private int maxWidth = 1000;
+    WindowResize? windowResize;
 
     protected override async Task OnInitializedAsync()
     {
@@ -67,35 +82,35 @@
 
     private Theme theme = new()
         {
-            // BarOptions = new()
-            // {
-            //     HorizontalHeight = "72px"
-            // },
-            // ColorOptions = new()
-            // {
-            //     Primary = "#0288D1",
-            //     Secondary = "#A65529",
-            //     Success = "#23C02E",
-            //     Info = "#9BD8FE",
-            //     Warning = "#F8B86C",
-            //     Danger = "#F95741",
-            //     Light = "#F0F0F0",
-            //     Dark = "#535353",
-            // },
-            // BackgroundOptions = new()
-            // {
-            //     Primary = "#0288D1",
-            //     Secondary = "#A65529",
-            //     Success = "#23C02E",
-            //     Info = "#9BD8FE",
-            //     Warning = "#F8B86C",
-            //     Danger = "#F95741",
-            //     Light = "#F0F0F0",
-            //     Dark = "#535353",
-            // },
-            // InputOptions = new()
-            // {
-            //     CheckColor = "#0288D1",
-            // }
+            BarOptions = new()
+            {
+                HorizontalHeight = "72px"
+            },
+            ColorOptions = new()
+            {
+                Primary = "#0288D1",
+                Secondary = "#A65529",
+                Success = "#23C02E",
+                Info = "#9BD8FE",
+                Warning = "#F8B86C",
+                Danger = "#F95741",
+                Light = "#F0F0F0",
+                Dark = "#535353",
+            },
+            BackgroundOptions = new()
+            {
+                Primary = "#0288D1",
+                Secondary = "#A65529",
+                Success = "#23C02E",
+                Info = "#9BD8FE",
+                Warning = "#F8B86C",
+                Danger = "#F95741",
+                Light = "#F0F0F0",
+                Dark = "#535353",
+            },
+            InputOptions = new()
+            {
+                CheckColor = "#0288D1",
+            }
         };
 }

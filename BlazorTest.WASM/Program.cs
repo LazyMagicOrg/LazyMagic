@@ -43,10 +43,12 @@ public class Program
         }
 
         builder.Services
-            .AddSingleton<ILzMessages, LzMessages>()
-            .AddSingleton<ILzClientConfig, LzClientConfig>()
+            .AddLazyMagicAuth()
+            .AddLazyMagicBlazorAuth()
             .AddSingleton(sp => new HttpClient { BaseAddress = new Uri((string)_appConfig!["assetsUrl"]!) })
-            .AddSingleton<IConnectivityService, ConnectivityService>()
+            .AddSingleton<IStaticAssets>(sp => new BlazorStaticAssets(
+                sp.GetRequiredService<ILoggerFactory>(),
+                new HttpClient { BaseAddress = new Uri((string)_appConfig!["assetsUrl"]!) }))
             .AddSingleton<ILzHost>(sp => new LzHost(
                 androidAppUrl: (string)_appConfig!["androidAppUrl"]!, // android app url 
                 remoteApiUrl: (string)_appConfig!["remoteApiUrl"]!,  // api url
@@ -56,7 +58,6 @@ public class Program
                 isAndroid: false,
                 isLocal: isLocal,
                 useLocalhostApi: useLocalhostApi))
-            .AddSingleton<IOSAccess, BlazorOSAccess>()
             .AddLazyMagicAuthCognito()
             .AddSingleton<ISessionsViewModel, SessionsViewModel>();
             

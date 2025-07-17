@@ -12,6 +12,7 @@
 		<RootNamespace>LazyMagic.Blazor</RootNamespace>
 	</PropertyGroup>
 	<ItemGroup>
+		<Content Remove="Config\AddLazyMagivBlazorAuth.cs" />
 		<Content Remove="Config\ConfigureLazyMagicBlazorAuthMessages.cs" />
 	</ItemGroup>
 
