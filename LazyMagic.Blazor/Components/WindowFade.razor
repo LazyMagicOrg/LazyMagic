@@ -6,10 +6,6 @@
     @ChildContent
 </div>
 
-@{
-    Console.WriteLine($"WindowFade: Rendering - isLoaded={isLoaded}, classes=fade-in {(isLoaded ? "loaded" : "")}");
-}
-
 <style>
     .fade-in {
         opacity: 0;
@@ -41,7 +37,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Console.WriteLine($"WindowFade: OnInitializedAsync - WindowSize: {WindowSize?.Width}x{WindowSize?.Height}, isLoaded: {isLoaded}");
+        // Console.WriteLine($"WindowFade: OnInitializedAsync - WindowSize: {WindowSize?.Width}x{WindowSize?.Height}, isLoaded: {isLoaded}");
         if (WindowSize == null)
         {
             throw new InvalidOperationException("WindowSize must be provided as a CascadingParameter.");
@@ -77,14 +73,14 @@
         if (previousWindowSize != null && 
             (previousWindowSize.Width != WindowSize?.Width || previousWindowSize.Height != WindowSize?.Height))
         {
-            Console.WriteLine($"WindowFade: OnParametersSetAsync - WindowSize changed from {previousWindowSize.Width}x{previousWindowSize.Height} to {WindowSize?.Width}x{WindowSize?.Height}");
+            // Console.WriteLine($"WindowFade: OnParametersSetAsync - WindowSize changed from {previousWindowSize.Width}x{previousWindowSize.Height} to {WindowSize?.Width}x{WindowSize?.Height}");
             isLoaded = false;
             isTransitioning = true;
             previousWindowSize = WindowSize;
             
             // Force a re-render to apply the opacity change
             StateHasChanged();
-            Console.WriteLine($"WindowFade: Called StateHasChanged(), isLoaded={isLoaded}");
+            // Console.WriteLine($"WindowFade: Called StateHasChanged(), isLoaded={isLoaded}");
             
             // Also force opacity to 0 via JavaScript to ensure it's applied immediately
             await JS.InvokeVoidAsync("eval", $@"
@@ -101,7 +97,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        Console.WriteLine($"WindowFade: OnAfterRenderAsync - firstRender={firstRender}, isLoaded={isLoaded}, isTransitioning={isTransitioning}");
+        // Console.WriteLine($"WindowFade: OnAfterRenderAsync - firstRender={firstRender}, isLoaded={isLoaded}, isTransitioning={isTransitioning}");
         
         if (firstRender)
         {
@@ -113,7 +109,7 @@
         else if (!isLoaded && !isTransitioning && !transitionInProgress)
         {
             // Content should be visible but isn't - this can happen on navigation
-            Console.WriteLine("WindowFade: Content should be visible but isn't loaded - fixing");
+            // Console.WriteLine("WindowFade: Content should be visible but isn't loaded - fixing");
             await Task.Delay(50);
             isLoaded = true;
             await InvokeAsync(StateHasChanged);
@@ -121,7 +117,7 @@
         else if (isTransitioning && !isLoaded && !transitionInProgress)
         {
             transitionInProgress = true;
-            Console.WriteLine($"WindowFade: Starting transition delay of {FadeDuration}ms");
+            // Console.WriteLine($"WindowFade: Starting transition delay of {FadeDuration}ms");
             // We're in a fade-out state, wait longer before fading in
             await Task.Delay(FadeDuration); // Wait for the full fade-out duration
             
@@ -140,7 +136,7 @@
             isLoaded = true;
             isTransitioning = false;
             transitionInProgress = false;
-            Console.WriteLine($"WindowFade: Transition complete, setting isLoaded=true");
+            // Console.WriteLine($"WindowFade: Transition complete, setting isLoaded=true");
             await InvokeAsync(StateHasChanged);
         }
         
