@@ -1,6 +1,7 @@
 @namespace LazyMagic.Blazor
 @inject IJSRuntime JS
 @implements IDisposable
+@implements IAsyncDisposable
 
 <div class="fade-in @(isLoaded ? "loaded" : "")" id="@containerId" style="--fade-duration: @(FadeDuration)ms;">
     @ChildContent
@@ -29,47 +30,78 @@
 
     private bool isLoaded = false;
     private string containerId = $"fade-{Guid.NewGuid():N}";
+    private IJSObjectReference? jsModule;
+    private DotNetObjectReference<WindowFade>? dotNetRef;
+    private bool isDisposed = false;
 
     protected override async Task OnInitializedAsync()
     {
-        // Set up immediate resize hiding before Blazor processes the resize
-        await JS.InvokeVoidAsync("eval", $@"
-            let lastSize = {{ width: window.innerWidth, height: window.innerHeight }};
-            window.addEventListener('resize', () => {{
-                const currentSize = {{ width: window.innerWidth, height: window.innerHeight }};
-                if (currentSize.width !== lastSize.width || currentSize.height !== lastSize.height) {{
-                    const el = document.getElementById('{containerId}');
-                    if (el) {{
-                        el.style.opacity = '0';
-                        el.style.transition = 'none';
-                        el.classList.remove('loaded');
-                        el.classList.add('resizing');
-                        
-                        // Trigger fade-in after delay
-                        setTimeout(() => {{
-                            const el = document.getElementById('{containerId}');
-                            if (el && el.classList.contains('resizing')) {{
-                                el.style.transition = 'opacity {FadeDuration}ms ease-in';
-                                el.style.opacity = '1';
-                                el.classList.add('loaded');
-                                el.classList.remove('resizing');
+        dotNetRef = DotNetObjectReference.Create(this);
+        
+        // Create a more manageable JavaScript module approach
+        jsModule = await JS.InvokeAsync<IJSObjectReference>("eval", $@"
+            (() => {{
+                const containerId = '{containerId}';
+                const fadeDuration = {FadeDuration};
+                let lastSize = {{ width: window.innerWidth, height: window.innerHeight }};
+                let resizeTimeout = null;
+                let isDisposed = false;
+                
+                const resizeHandler = () => {{
+                    if (isDisposed) return;
+                    
+                    const currentSize = {{ width: window.innerWidth, height: window.innerHeight }};
+                    if (currentSize.width !== lastSize.width || currentSize.height !== lastSize.height) {{
+                        const el = document.getElementById(containerId);
+                        if (el) {{
+                            el.style.opacity = '0';
+                            el.style.transition = 'none';
+                            el.classList.remove('loaded');
+                            el.classList.add('resizing');
+                            
+                            // Clear any existing timeout
+                            if (resizeTimeout) {{
+                                clearTimeout(resizeTimeout);
                             }}
-                        }}, {FadeDuration});
+                            
+                            // Trigger fade-in after delay
+                            resizeTimeout = setTimeout(() => {{
+                                if (isDisposed) return;
+                                const el = document.getElementById(containerId);
+                                if (el && el.classList.contains('resizing')) {{
+                                    el.style.transition = 'opacity ' + fadeDuration + 'ms ease-in';
+                                    el.style.opacity = '1';
+                                    el.classList.add('loaded');
+                                    el.classList.remove('resizing');
+                                }}
+                                resizeTimeout = null;
+                            }}, fadeDuration);
+                        }}
+                        lastSize = currentSize;
                     }}
-                    lastSize = currentSize;
-                }} else {{
-                    // console.log('WindowFade: Browser resize event but size unchanged');
-                }}
-            }}, true); // Use capture phase to run before other handlers
+                }};
+                
+                window.addEventListener('resize', resizeHandler, true);
+                
+                return {{
+                    dispose: () => {{
+                        isDisposed = true;
+                        window.removeEventListener('resize', resizeHandler, true);
+                        if (resizeTimeout) {{
+                            clearTimeout(resizeTimeout);
+                            resizeTimeout = null;
+                        }}
+                    }}
+                }};
+            }})()
         ");
         
         await base.OnInitializedAsync();
     }
 
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        if (firstRender && !isDisposed)
         {
             await Task.Delay(50); // Initial delay before showing content
             isLoaded = true;
@@ -79,8 +111,31 @@
         await base.OnAfterRenderAsync(firstRender);
     }
 
+    public async ValueTask DisposeAsync()
+    {
+        if (!isDisposed)
+        {
+            isDisposed = true;
+            
+            if (jsModule != null)
+            {
+                try
+                {
+                    await jsModule.InvokeVoidAsync("dispose");
+                    await jsModule.DisposeAsync();
+                }
+                catch (JSDisconnectedException)
+                {
+                    // JS runtime is already disconnected, ignore
+                }
+            }
+            
+            dotNetRef?.Dispose();
+        }
+    }
+
     public void Dispose()
     {
-        // No cleanup needed since we don't directly subscribe to events
+        _ = DisposeAsync();
     }
 }
