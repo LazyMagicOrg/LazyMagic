@@ -54,7 +54,7 @@
 
     private async void WindowResized(object? sender, BrowserWindowSize window)
     {
-        Console.WriteLine($"Window resized to {window.Width}x{window.Height}");
+        // Console.WriteLine($"Window resized to {window.Width}x{window.Height}");
 
         var newWidth = (MaxWidth > 0) ? Math.Min(window.Width, MaxWidth) : window.Width;
 

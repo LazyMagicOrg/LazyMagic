@@ -9,7 +9,7 @@
 <style>
     .fade-in {
         opacity: 0;
-        transition: opacity var(--fade-duration, 1000ms) ease-in;
+        transition: opacity var(--fade-duration) ease-in;
     }
 
     .fade-in.loaded {
@@ -44,7 +44,6 @@
                         el.style.transition = 'none';
                         el.classList.remove('loaded');
                         el.classList.add('resizing');
-                        console.log('WindowFade: Browser resize - actually resized from ' + lastSize.width + 'x' + lastSize.height + ' to ' + currentSize.width + 'x' + currentSize.height);
                         
                         // Trigger fade-in after delay
                         setTimeout(() => {{
@@ -54,13 +53,12 @@
                                 el.style.opacity = '1';
                                 el.classList.add('loaded');
                                 el.classList.remove('resizing');
-                                console.log('WindowFade: Fade-in after resize');
                             }}
                         }}, {FadeDuration});
                     }}
                     lastSize = currentSize;
                 }} else {{
-                    console.log('WindowFade: Browser resize event but size unchanged');
+                    // console.log('WindowFade: Browser resize event but size unchanged');
                 }}
             }}, true); // Use capture phase to run before other handlers
         ");
