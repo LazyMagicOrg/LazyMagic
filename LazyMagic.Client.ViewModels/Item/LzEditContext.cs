@@ -90,7 +90,6 @@ public class LzEditContext<T1,T2>
     public void OnFieldChanged(object? sender, FieldChangedEventArgs args)
     {
         var valid = EditContext.Validate();
-        Console.WriteLine($"isvalid: {valid}");
         CanUpdate = EditContext.IsModified() && EditContext.Validate() && !IsNew;
         CanCreate = EditContext.IsModified() && EditContext.Validate() && IsNew;
         foreach(var msg in EditContext.GetValidationMessages())

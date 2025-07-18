@@ -1,0 +1,154 @@
+@namespace LazyMagic.Blazor
+@inject IJSRuntime JS
+@implements IDisposable
+
+<div class="fade-in @(isLoaded ? "loaded" : "") @(isTransitioning ? "resizing" : "")" id="@containerId" style="--fade-duration: @(FadeDuration)ms;">
+    @ChildContent
+</div>
+
+@{
+    Console.WriteLine($"WindowFade: Rendering - isLoaded={isLoaded}, classes=fade-in {(isLoaded ? "loaded" : "")}");
+}
+
+<style>
+    .fade-in {
+        opacity: 0;
+        transition: opacity var(--fade-duration, 1000ms) ease-in;
+    }
+
+    .fade-in.loaded {
+        opacity: 1;
+    }
+    
+    /* Hide content during resize to prevent flash of resized content */
+    .fade-in.resizing {
+        opacity: 0 !important;
+        transition: none !important;
+    }
+</style>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public int FadeDuration { get; set; } = 250; // milliseconds
+    [CascadingParameter(Name="WindowSize")] public WindowSize? WindowSize { get; set; }
+
+    private bool isLoaded = false;  
+    private bool isTransitioning = false;
+    private bool transitionInProgress = false;
+    private WindowSize? previousWindowSize;
+    private string containerId = $"fade-{Guid.NewGuid():N}";
+    private string windowsizeKey => $"{WindowSize?.Width}-{WindowSize?.Height}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        Console.WriteLine($"WindowFade: OnInitializedAsync - WindowSize: {WindowSize?.Width}x{WindowSize?.Height}, isLoaded: {isLoaded}");
+        if (WindowSize == null)
+        {
+            throw new InvalidOperationException("WindowSize must be provided as a CascadingParameter.");
+        }
+        
+        // Set up immediate resize hiding before Blazor processes the resize
+        await JS.InvokeVoidAsync("eval", $@"
+            let lastSize = {{ width: window.innerWidth, height: window.innerHeight }};
+            window.addEventListener('resize', () => {{
+                const currentSize = {{ width: window.innerWidth, height: window.innerHeight }};
+                if (currentSize.width !== lastSize.width || currentSize.height !== lastSize.height) {{
+                    const el = document.getElementById('{containerId}');
+                    if (el) {{
+                        el.style.opacity = '0';
+                        el.style.transition = 'none';
+                        el.classList.remove('loaded');
+                        el.classList.add('resizing');
+                        console.log('WindowFade: Browser resize - actually resized from ' + lastSize.width + 'x' + lastSize.height + ' to ' + currentSize.width + 'x' + currentSize.height);
+                    }}
+                    lastSize = currentSize;
+                }} else {{
+                    console.log('WindowFade: Browser resize event but size unchanged');
+                }}
+            }}, true); // Use capture phase to run before other handlers
+        ");
+        
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // Check if WindowSize actually changed
+        if (previousWindowSize != null && 
+            (previousWindowSize.Width != WindowSize?.Width || previousWindowSize.Height != WindowSize?.Height))
+        {
+            Console.WriteLine($"WindowFade: OnParametersSetAsync - WindowSize changed from {previousWindowSize.Width}x{previousWindowSize.Height} to {WindowSize?.Width}x{WindowSize?.Height}");
+            isLoaded = false;
+            isTransitioning = true;
+            previousWindowSize = WindowSize;
+            
+            // Force a re-render to apply the opacity change
+            StateHasChanged();
+            Console.WriteLine($"WindowFade: Called StateHasChanged(), isLoaded={isLoaded}");
+            
+            // Also force opacity to 0 via JavaScript to ensure it's applied immediately
+            await JS.InvokeVoidAsync("eval", $@"
+                const el = document.getElementById('{containerId}');
+                if (el) {{
+                    el.style.opacity = '0';
+                    el.classList.remove('loaded');
+                    console.log('WindowFade: Forced opacity to 0 via JS');
+                }}
+            ");
+        }
+        await base.OnParametersSetAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        Console.WriteLine($"WindowFade: OnAfterRenderAsync - firstRender={firstRender}, isLoaded={isLoaded}, isTransitioning={isTransitioning}");
+        
+        if (firstRender)
+        {
+            previousWindowSize = WindowSize;
+            await Task.Delay(50); // Initial delay before showing content
+            isLoaded = true;
+            await InvokeAsync(StateHasChanged);
+        }
+        else if (!isLoaded && !isTransitioning && !transitionInProgress)
+        {
+            // Content should be visible but isn't - this can happen on navigation
+            Console.WriteLine("WindowFade: Content should be visible but isn't loaded - fixing");
+            await Task.Delay(50);
+            isLoaded = true;
+            await InvokeAsync(StateHasChanged);
+        }
+        else if (isTransitioning && !isLoaded && !transitionInProgress)
+        {
+            transitionInProgress = true;
+            Console.WriteLine($"WindowFade: Starting transition delay of {FadeDuration}ms");
+            // We're in a fade-out state, wait longer before fading in
+            await Task.Delay(FadeDuration); // Wait for the full fade-out duration
+            
+            // Force fade-in via JavaScript
+            await JS.InvokeVoidAsync("eval", $@"
+                const el = document.getElementById('{containerId}');
+                if (el) {{
+                    el.style.transition = 'opacity {FadeDuration}ms ease-in';
+                    el.style.opacity = '1';
+                    el.classList.add('loaded');
+                    el.classList.remove('resizing');
+                    console.log('WindowFade: Forced opacity to 1 via JS');
+                }}
+            ");
+            
+            isLoaded = true;
+            isTransitioning = false;
+            transitionInProgress = false;
+            Console.WriteLine($"WindowFade: Transition complete, setting isLoaded=true");
+            await InvokeAsync(StateHasChanged);
+        }
+        
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    public void Dispose()
+    {
+        // No cleanup needed since we don't directly subscribe to events
+    }
+}

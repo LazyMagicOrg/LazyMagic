@@ -3,33 +3,17 @@
 @inject IJSRuntime JS
 @implements IDisposable
 
-<div class="fade-in @(isLoaded ? "loaded" : "")" id="@containerId" style="--fade-duration: @(FadeDuration)ms;">
-    <CascadingValue Value="@WindowSize" Name="WindowSize">
-        @ChildContent
-    </CascadingValue>
-</div>
-
-<style>
-    .fade-in {
-        opacity: 0;
-        transition: opacity var(--fade-duration, 1000ms) ease-in;
-    }
-
-    .fade-in.loaded {
-        opacity: 1;
-    }
-</style>
+<CascadingValue Value="@WindowSize" Name="WindowSize">
+    @ChildContent
+</CascadingValue>
 
 @code {
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public WindowSize WindowSize { get; set; } = new();
     [Parameter] public int HeaderHeight { get; set; } = 0;
     [Parameter] public int MaxWidth { get; set; } = 0;
-    [Parameter] public int FadeDuration { get; set; } = 250; // milliseconds
 
     private bool isLoaded = false;
-    private string containerId = $"container-{Guid.NewGuid():N}";
-    private bool isResizing = false;
 
     protected override void OnParametersSet()
     {
@@ -39,25 +23,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Install resize interceptor BEFORE subscribing to ResizeListener
-        await JS.InvokeVoidAsync("eval", $@"
-            window.blazorResizeInterceptor = window.blazorResizeInterceptor || {{}};
-            window.blazorResizeInterceptor['{containerId}'] = () => {{
-                const container = document.getElementById('{containerId}');
-                if (container) {{
-                    container.style.opacity = '0';
-                    container.style.transition = 'none';
-                }}
-            }};
-
-            // Hook into resize event at capture phase (runs before bubbling)
-            window.addEventListener('resize', () => {{
-                if (window.blazorResizeInterceptor['{containerId}']) {{
-                    window.blazorResizeInterceptor['{containerId}']();
-                }}
-            }}, true);
-        ");
-
         var window = await ResizeListener.GetBrowserWindowSize();
         WindowSize = new()
         {
@@ -79,33 +44,12 @@
             isLoaded = true;
             await InvokeAsync(StateHasChanged);
         }
-        else if (isResizing)
-        {
-            isResizing = false;
-            // Re-enable transitions and fade in with configured duration
-            await JS.InvokeVoidAsync("eval", $@"
-                const container = document.getElementById('{containerId}');
-                if (container) {{
-                    container.style.transition = '';
-                    setTimeout(() => {{
-                        container.classList.add('loaded');
-                        container.style.opacity = '1';
-                    }}, 50);
-                }}
-            ");
-        }
-
         await base.OnAfterRenderAsync(firstRender);
     }
 
     public void Dispose()
     {
         ResizeListener.OnResized -= WindowResized;
-        // Cleanup JS interceptor
-        _ = JS.InvokeVoidAsync("eval", $@"
-            delete window.blazorResizeInterceptor['{containerId}'];
-            window.removeEventListener('resize', window.blazorResizeInterceptor['{containerId}'], true);
-        ");
     }
 
     private async void WindowResized(object? sender, BrowserWindowSize window)
@@ -128,7 +72,6 @@
                 HeaderHeight = HeaderHeight
             };
 
-            isResizing = true;
             await InvokeAsync(StateHasChanged);
         }
     }

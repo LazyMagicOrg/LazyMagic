@@ -1,0 +1,74 @@
+@namespace BlazorizeTest.WASM.Components
+@implements IDisposable
+
+@if (showCamera)
+{
+    <Camera Style="@Style"
+            @ref="_camera"
+            MirrorImage="@MirrorImage"
+            CameraInitialized="@OnCameraInitializedInternal" />
+}
+else
+{
+    <div style="@Style; background-color: #f0f0f0; border: 1px solid #ccc; display: flex; align-items: center; justify-content: center;">
+        <p>Loading camera...</p>
+    </div>
+}
+
+@code {
+    [Parameter] public string Style { get; set; } = "";
+    [Parameter] public bool MirrorImage { get; set; } = false;
+    [Parameter] public EventCallback CameraInitialized { get; set; }
+
+    private LazyMagic.BlazoriseComponents.Camera? _camera;
+    private bool showCamera = false;
+    private Timer? initTimer;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            // Delay camera initialization to prevent interference with parent fade
+            initTimer = new Timer(async _ => await InitializeCamera(), null, 100, Timeout.Infinite);
+        }
+    }
+
+    private async Task InitializeCamera()
+    {
+        showCamera = true;
+        await InvokeAsync(StateHasChanged);
+        initTimer?.Dispose();
+    }
+
+    private async Task OnCameraInitializedInternal()
+    {
+        if (CameraInitialized.HasDelegate)
+        {
+            await CameraInitialized.InvokeAsync();
+        }
+    }
+
+    public void Dispose()
+    {
+        initTimer?.Dispose();
+    }
+
+    // Expose Camera methods if needed
+    public async ValueTask<string> TakePicture()
+    {
+        if (_camera != null)
+        {
+            return await _camera.TakePicture();
+        }
+        return "";
+    }
+
+    public async ValueTask<(int Width, int Height)> GetWidthAndHeight()
+    {
+        if (_camera != null)
+        {
+            return await _camera.GetWidthAndHeight();
+        }
+        return (0, 0);
+    }
+}
