@@ -1,7 +1,11 @@
 using System.Text.Json.Serialization;
 
-namespace LazyMagic.Blazor; 
+namespace LazyMagic.Blazor;
 
+/// <summary>
+/// This module wraps the browserFigngerprint.js JavaScript module.
+/// It is used to gather various browser and device information.
+/// </summary>
 public class BrowserFingerprintService : LzBaseJSModule
 {
     // ModuleFileName is the path to the JS file that will be loaded by the Blazor app.

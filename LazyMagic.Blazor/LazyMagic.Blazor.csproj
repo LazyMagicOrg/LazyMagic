@@ -17,6 +17,7 @@
 	  <Content Remove="Components\Msg.cs" />
 	  <Content Remove="Config\ConfigureLazyMagicBlazor.cs" />
 	  <Content Remove="ConnectivityService.cs" />
+	  <Content Remove="LzJsUtilities.cs" />
 	  <Content Remove="Models\BrowserFingerprint.cs" />
 	</ItemGroup>
 
