@@ -20,6 +20,10 @@
 	  <Content Remove="LzJsUtilities.cs" />
 	  <Content Remove="Models\BrowserFingerprint.cs" />
 	</ItemGroup>
+	
+	<ItemGroup>
+	  <None Include="wwwroot\lzserviceworker.js" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<SupportedPlatform Include="browser" />

@@ -3,8 +3,8 @@
 // which will register all the necessary event listeners in this context
 
 // Impot the app configuration and settings
-import { appConfig } from './_content/MudBlazorTest.WASM/appConfig.js';
-import { settings } from './_content/MudBlazorTest.WASM/staticContentSettings.js';
+import { appConfig } from './_content/BlazorUI/appConfig.js';
+import { settings } from './_content/BlazorUI/staticContentSettings.js';
 
 // Now import the service worker and caching support code
 import * as staticContentModule from './_content/LazyMagic.Blazor/staticContentModule.js'; // Note namespace use

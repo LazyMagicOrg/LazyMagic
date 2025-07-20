@@ -1,7 +1,7 @@
 ﻿export const appDevConfig = {
-    androidAppUrl: "",
-    remoteApiUrl: "https://admin.lazymagicdev.click/",
+    androidAppUrl: "/uptown/",
+    remoteApiUrl: "https://uptown.lazymagicdev.click/",
     localApiUrl: "https://localhost:7048/",
-    assetsUrl: "https://admin.lazymagicdev.click/",
+    assetsUrl: "https://uptown.lazymagicdev.click/",
     wsUrl: "wss://admin.lazymagicdev.click/"
 }

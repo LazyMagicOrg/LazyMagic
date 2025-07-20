@@ -1,5 +1,3 @@
-// This file should be placed at: BlazorUI/wwwroot/js/blazorLoading.js
-
 // Isolated functions for the BlazorLoading component
 export function setBlazorLoadingPercentage(percentage) {
     const circle = document.querySelector('.lz-blazor-loading-progress circle:last-child');

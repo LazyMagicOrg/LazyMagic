@@ -4,30 +4,19 @@
 		<TargetFramework>net9.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<RootNamespace>BlazorTest</RootNamespace>
+		<RootNamespace>BlazoriseTest</RootNamespace>
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-		<Nowarn>NU1507</Nowarn>	
-	</PropertyGroup>
+		<Nowarn>NU1504;NU1507</Nowarn>
+		<PublishTrimmed>true</PublishTrimmed>
+		<TrimmerLog>trimmer.log</TrimmerLog>
 
-	<ItemGroup>
-	  <_ContentIncludedByDefault Remove="wwwroot\indexinit.js" />
-	</ItemGroup>
+	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
-		<PackageReference Include="ReactiveUI.Fody" />
-		<PackageReference Include="ReactiveUI" />
 	</ItemGroup>
 	
-	<ItemGroup>
-		<PackageReference Include="Blazorise.Animate" />
-		<PackageReference Include="Blazorise.Components" />
-		<PackageReference Include="Blazorise.Icons.FontAwesome" />
-		<PackageReference Include="Blazorise.LoadingIndicator" />
-		<!--<PackageReference Include="LazyMagic.Client.FactoryGenerator" PrivateAssets="all"/>-->
-	</ItemGroup>
-
 	<ItemGroup>
 		<ProjectReference Include="..\LazyMagic.BlazoriseComponents.Auth\LazyMagic.BlazoriseComponents.Auth.csproj" />
 		<ProjectReference Include="..\LazyMagic.Client.FactoryGenerator\LazyMagic.Client.FactoryGenerator.csproj" PrivateAssets="all" OutputItemType="Analyzer" />
@@ -35,4 +24,11 @@
 		<ProjectReference Include="..\LazyMagic.Client.ViewModels.Auth\LazyMagic.Client.ViewModels.Auth.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<PackageReference Include="Blazorise.Animate" />
+		<PackageReference Include="Blazorise.Components" />
+		<PackageReference Include="Blazorise.Icons.FontAwesome" />
+		<PackageReference Include="Blazorise.LoadingIndicator" />
+	</ItemGroup>	
+	
 </Project>

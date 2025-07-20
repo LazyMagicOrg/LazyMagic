@@ -1,5 +1,4 @@
-﻿
-@inject NavigationManager NavigationManager
+﻿@inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject ILzHost Host
 @inject HttpClient HttpClient
@@ -11,9 +10,9 @@
 
 <MediaQueryList>
     <WindowResize @ref="@windowResize" HeaderHeight="@headerHeight" MaxWidth="@maxWidth">
-        <Router AppAssembly="@typeof(App).Assembly">
+        <Router AppAssembly="@typeof(Main).Assembly">
             <Found Context="routeData">
-                @if(ClientConfig.Configured)
+                @if (ClientConfig.Configured)
                 {
                     <WindowFade FadeDuration="250">
                         <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
@@ -24,7 +23,7 @@
                 {
                     <div style="width: 9rem; height: 9rem; margin-left: 1rem; margin-top: 1rem;">
                         <LzAppLoading AnimationDurationSeconds="1.0"
-                                      LoadingMessage="Loading your venue." />
+                                        LoadingMessage="Loading your venue." />
                     </div>
                 }
             </Found>
@@ -44,44 +43,35 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await base.OnInitializedAsync();
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
+        if (!ClientConfig.Configured)
         {
-            if (!ClientConfig.Configured)
+            try
             {
+                await ConnectivityService.InitializeAsync(JSRuntime);
+                var staticAssets = new BlazorStaticAssets(LoggerFactory, new HttpClient());
+                Messages.SetStaticAssets(staticAssets);
+                await ClientConfig.InitializeAsync(Host.RemoteApiUrl);
+
                 try
                 {
-                    await ConnectivityService.InitializeAsync(JSRuntime);
-                    var staticAssets = new BlazorStaticAssets(LoggerFactory, new HttpClient());
-                    Messages.SetStaticAssets(staticAssets);
-                    await ClientConfig.InitializeAsync(Host.RemoteApiUrl);
 
-                    try
-                    {
+                    Messages.MessageFiles.AddRange([Host.AssetsUrl + "subtenancy/en-US/SetsApp/Messages.json"]);
 
-                        Messages.MessageFiles.AddRange([Host.AssetsUrl + "subtenancy/en-US/SetsApp/Messages.json"]);
-
-                        // Read message files for the current culture and configure for current units
-                        await Messages.SetMessageSetAsync("en-US", LzMessageUnits.Imperial);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Messages.SetMessageSetAsync failed. {ex.Message} ");
-
-                    }
+                    // Read message files for the current culture and configure for current units
+                    await Messages.SetMessageSetAsync("en-US", LzMessageUnits.Imperial);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    Console.WriteLine($"Messages.SetMessageSetAsync failed. {ex.Message} ");
+
                 }
+                Console.WriteLine($"Messages initialized. IsConfigured: {ClientConfig.Configured}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
         }
-        NavigationManager.NavigateTo("/");
-        await base.OnAfterRenderAsync(firstRender);
-    }   
-
+        await base.OnInitializedAsync();
+    }
 }

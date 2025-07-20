@@ -13,7 +13,7 @@
 <MediaQueryList>
     <WindowResize @ref="@windowResize" HeaderHeight="@headerHeight" MaxWidth="@maxWidth">
             <Blazorise.ThemeProvider Theme="@theme">
-                <Router AppAssembly="@typeof(App).Assembly">
+                <Router AppAssembly="@typeof(Main).Assembly">
                     <Found Context="routeData">
                         @if (ClientConfig.Configured)
                         {
