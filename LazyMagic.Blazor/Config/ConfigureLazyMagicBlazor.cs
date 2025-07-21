@@ -12,6 +12,7 @@ public static class ConfigureLazyMagicBlazor
         services.TryAddScoped<ClipboardService>();
         services.TryAddScoped<IResizeListener, ResizeListener>();
         services.TryAddSingleton<BrowserFingerprintService>();
+        services.TryAddSingleton<ILzJsUtilities, LzJsUtilities>();
         services
             .AddMediaQueryService()
             .AddResizeListener();

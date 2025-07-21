@@ -2,6 +2,7 @@
 
 namespace LazyMagic.Blazor;
 
+
 public class LzJsUtilities : LzBaseJSModule, ILzJsUtilities
 {
     private DotNetObjectReference<LzJsUtilities> viewerInstance;
@@ -62,6 +63,59 @@ public class LzJsUtilities : LzBaseJSModule, ILzJsUtilities
         => await InvokeSafeAsync<string>("localStorageGetItem", key);
     public async ValueTask RemoveItem(string key)
         => await InvokeSafeVoidAsync("localStorageRemoveItem", key);
+
+
+    // Cookie Management Methods
+    public virtual async ValueTask SetCookie(string name, string value, CookieOptions options = null)
+    {
+        if (options == null)
+        {
+            await InvokeSafeVoidAsync("setCookie", name, value);
+        }
+        else
+        {
+            await InvokeSafeVoidAsync("setCookie", name, value, options);
+        }
+    }
+
+    public virtual async ValueTask<string> GetCookie(string name)
+        => await InvokeSafeAsync<string>("getCookie", name);
+
+    public virtual async ValueTask DeleteCookie(string name, CookieOptions options = null)
+    {
+        if (options == null)
+        {
+            await InvokeSafeVoidAsync("deleteCookie", name);
+        }
+        else
+        {
+            await InvokeSafeVoidAsync("deleteCookie", name, options);
+        }
+    }
+
+    public virtual async ValueTask<bool> CookieExists(string name)
+        => await InvokeSafeAsync<bool>("cookieExists", name);
+
+    public virtual async ValueTask<Dictionary<string, string>> GetAllCookies()
+        => await InvokeSafeAsync<Dictionary<string, string>>("getAllCookies");
+
+    public virtual async ValueTask ClearAllCookies()
+        => await InvokeSafeVoidAsync("clearAllCookies");
+
+    public virtual async ValueTask SetJSONCookie<T>(string name, T obj, CookieOptions options = null)
+    {
+        if (options == null)
+        {
+            await InvokeSafeVoidAsync("setJSONCookie", name, obj);
+        }
+        else
+        {
+            await InvokeSafeVoidAsync("setJSONCookie", name, obj, options);
+        }
+    }
+
+    public virtual async ValueTask<T> GetJSONCookie<T>(string name)
+        => await InvokeSafeAsync<T>("getJSONCookie", name);
 
     // Callbacks. ie. [JSInvokable]
     [JSInvokable]

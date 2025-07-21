@@ -198,3 +198,150 @@ export async function localStorageRemoveItem(key) {
         console.error("Can't remove key:" + key);
     }
 }
+
+// Cookie Storage Management Functions
+
+/**
+ * Set a cookie with name, value, and optional parameters
+ * @param {string} name - Cookie name
+ * @param {string} value - Cookie value
+ * @param {Object} options - Optional parameters (days, path, domain, secure, sameSite)
+ */
+export function setCookie(name, value, options = {}) {
+    let cookie = `${encodeURIComponent(name)}=${encodeURIComponent(value)}`;
+
+    // Set expiration
+    if (options.days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (options.days * 24 * 60 * 60 * 1000));
+        cookie += `; expires=${date.toUTCString()}`;
+    }
+
+    // Set path (default to root)
+    cookie += `; path=${options.path || '/'}`;
+
+    // Set domain if specified
+    if (options.domain) {
+        cookie += `; domain=${options.domain}`;
+    }
+
+    // Set secure flag if specified
+    if (options.secure) {
+        cookie += '; secure';
+    }
+
+    // Set SameSite attribute if specified
+    if (options.sameSite) {
+        cookie += `; samesite=${options.sameSite}`;
+    }
+
+    document.cookie = cookie;
+}
+
+/**
+ * Get a cookie value by name
+ * @param {string} name - Cookie name
+ * @returns {string|null} Cookie value or null if not found
+ */
+export function getCookie(name) {
+    const nameEQ = encodeURIComponent(name) + '=';
+    const cookies = document.cookie.split(';');
+
+    for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.indexOf(nameEQ) === 0) {
+            return decodeURIComponent(cookie.substring(nameEQ.length));
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Delete a cookie by name
+ * @param {string} name - Cookie name
+ * @param {Object} options - Optional parameters (path, domain)
+ */
+export function deleteCookie(name, options = {}) {
+    setCookie(name, '', {
+        days: -1,
+        path: options.path || '/',
+        domain: options.domain
+    });
+}
+
+/**
+ * Check if a cookie exists
+ * @param {string} name - Cookie name
+ * @returns {boolean} True if cookie exists, false otherwise
+ */
+export function cookieExists(name) {
+    return getCookie(name) !== null;
+}
+
+/**
+ * Get all cookies as an object
+ * @returns {Object} Object with cookie names as keys and values as values
+ */
+export function getAllCookies() {
+    const cookies = {};
+    const cookieArray = document.cookie.split(';');
+
+    for (let cookie of cookieArray) {
+        cookie = cookie.trim();
+        if (cookie) {
+            const [name, value] = cookie.split('=');
+            cookies[decodeURIComponent(name)] = decodeURIComponent(value || '');
+        }
+    }
+
+    return cookies;
+}
+
+/**
+ * Clear all cookies (for current path and domain)
+ * Note: This only clears cookies accessible from the current context
+ */
+export function clearAllCookies() {
+    const cookies = getAllCookies();
+
+    for (const name in cookies) {
+        deleteCookie(name);
+    }
+}
+
+/**
+ * Set a JSON object as a cookie
+ * @param {string} name - Cookie name
+ * @param {Object} obj - JavaScript object to store
+ * @param {Object} options - Optional parameters for cookie
+ */
+export function setJSONCookie(name, obj, options = {}) {
+    try {
+        const jsonString = JSON.stringify(obj);
+        setCookie(name, jsonString, options);
+    } catch (e) {
+        console.error('Failed to set JSON cookie:', e);
+    }
+}
+
+/**
+ * Get and parse a JSON cookie
+ * @param {string} name - Cookie name
+ * @returns {Object|null} Parsed object or null if not found/invalid
+ */
+export function getJSONCookie(name) {
+    const value = getCookie(name);
+
+    if (!value) return null;
+
+    try {
+        return JSON.parse(value);
+    } catch (e) {
+        console.error('Failed to parse JSON cookie:', e);
+        return null;
+    }
+}
+
+// Usage in another module:
+// import { setCookie, getCookie, deleteCookie } from './cookieStorage.js';

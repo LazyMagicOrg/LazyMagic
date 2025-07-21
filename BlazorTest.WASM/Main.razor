@@ -8,6 +8,7 @@
 @inject IConnectivityService ConnectivityService
 @inject ILzMessages Messages
 @inject ILoggerFactory LoggerFactory
+@inject ILzJsUtilities LzJsUtilities
 
 <MediaQueryList>
     <WindowResize @ref="@windowResize" HeaderHeight="@headerHeight" MaxWidth="@maxWidth">
@@ -55,10 +56,34 @@
             {
                 try
                 {
+                    LzJsUtilities.SetJSRuntime(JSRuntime);    
+                    await LzJsUtilities.Initialize();
                     await ConnectivityService.InitializeAsync(JSRuntime);
                     var staticAssets = new BlazorStaticAssets(LoggerFactory, new HttpClient());
                     Messages.SetStaticAssets(staticAssets);
                     await ClientConfig.InitializeAsync(Host.RemoteApiUrl);
+
+                    try
+                    {
+                        var cookie = await LzJsUtilities.GetCookie("testcookie"); 
+                        if(cookie == "testcookie")
+                        {
+                            Console.WriteLine("testcookie found.");
+                        }
+                        else
+                        if(cookie != "testcookie")
+                            {
+                            Console.WriteLine("testcookie not found. creating testcookie.");
+                                await LzJsUtilities.SetCookie("testcookie", "testcookie", new CookieOptions { Days = 1 });
+                            }
+                        
+
+                        
+                    } catch (Exception ex)
+                    {
+                        Console.WriteLine($"Cookie test failed. {ex.Message} ");
+                    }
+
 
                     try
                     {
