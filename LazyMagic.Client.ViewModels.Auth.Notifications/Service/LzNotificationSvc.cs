@@ -38,7 +38,7 @@ public abstract class LzNotificationSvc : LzViewModel, ILzNotificationSvc, IDisp
         ILzClientConfig clientConfig,
         ILzHost lzHost,
         IAuthProcess authProces,
-        Base.IConnectivityService internetConnectivity,
+        IConnectivityService internetConnectivity,
         string? sessionId = null) : base(loggerFactory) 
     {
         this.clientConfig = clientConfig;
@@ -59,7 +59,7 @@ public abstract class LzNotificationSvc : LzViewModel, ILzNotificationSvc, IDisp
 
     protected ILzClientConfig clientConfig;
     public IAuthProcess AuthProcess { get; init; }
-    public Base.IConnectivityService InternetConnectivitySvc { get; init; }
+    public IConnectivityService InternetConnectivitySvc { get; init; }
     protected string? wsBaseUri; 
     protected Timer? timer;
     protected ClientWebSocket? ws;

@@ -20,7 +20,7 @@
 		<PackageVersion Include="AWSSDK.SSO" Version="3.7.400.106" />
 		<PackageVersion Include="AWSSDK.SSOOIDC" Version="3.7.400.107" />
 		<PackageVersion Include="BlazorPro.BlazorSize" Version="9.0.0" />
-		<PackageVersion Include="Blazorise" Version="1.7.0" />
+		<PackageVersion Include="Blazorise" Version="1.7.5" />
 		<PackageVersion Include="Blazorise.Animate" Version="1.7.5" />
 		<PackageVersion Include="Blazorise.Bootstrap5" Version="1.7.5" />
 		<PackageVersion Include="Blazorise.Components" Version="1.7.5" />
@@ -60,6 +60,7 @@
 		<PackageVersion Include="ReactiveUI.Fody" Version="19.5.41" />
 		<PackageVersion Include="System.ComponentModel.Annotations" Version="5.0.0" />
 		<PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.6.0" />
+		<PackageVersion Include="TG.Blazor.IndexedDB" Version="1.5.0-preview" />
 		<PackageVersion Include="xunit" Version="2.4.2" />
 		<PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
 		<PackageVersion Include="YamlDotNet" Version="16.3.0" />

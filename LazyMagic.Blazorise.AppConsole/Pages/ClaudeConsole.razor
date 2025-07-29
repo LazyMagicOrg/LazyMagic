@@ -1,0 +1,49 @@
+@page "/claude-console"
+@namespace LazyMagic.Blazorise.Console
+@inject IConsoleLogService LogService
+@inject LzConsoleInterop ConsoleInterop
+
+<PageTitle>Claude Console</PageTitle>
+
+<h3>Claude Console Log Viewer</h3>
+
+<Panel>
+    <PanelHeader>
+        Console Logs
+    </PanelHeader>
+    <PanelBody>
+
+        <div class="d-flex mb-2 gap-2">
+            <Button Color="Color.Primary" Clicked="@LoadLogs">Refresh Logs</Button>
+            <Button Color="Color.Danger" Clicked="@ClearLogs">Clear Logs</Button>
+        </div>
+
+        <DataGrid TItem="ConsoleLogEntry" Data="@logEntries" ShowCaptions="true" Striped="true" Hoverable="true" Responsive="true">
+            <DataGridColumn TItem="ConsoleLogEntry" Field="@nameof(ConsoleLogEntry.Timestamp)" Caption="Timestamp" />
+            <DataGridColumn TItem="ConsoleLogEntry" Field="@nameof(ConsoleLogEntry.Type)" Caption="Type" />
+            <DataGridColumn TItem="ConsoleLogEntry" Field="@nameof(ConsoleLogEntry.Message)" Caption="Message" />
+        </DataGrid>
+
+    </PanelBody>
+</Panel>
+
+@code {
+    private List<ConsoleLogEntry> logEntries = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ConsoleInterop.InitAsync();
+        await LoadLogs();
+    }
+
+    private async Task LoadLogs()
+    {
+        logEntries = await LogService.GetLogsAsync();
+    }
+
+    private async Task ClearLogs()
+    {
+        await LogService.ClearLogsAsync();
+        await LoadLogs();
+    }
+}

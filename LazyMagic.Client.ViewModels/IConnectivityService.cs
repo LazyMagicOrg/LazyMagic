@@ -1,6 +1,6 @@
 ﻿namespace LazyMagic.Client.ViewModels;
 
-public interface IConnectivityService : IAsyncDisposable
+public interface IConnectivityService : IAsyncDisposable, INotifyPropertyChanged
 {
     bool IsOnline { get; } 
     Task<bool> CheckInternetConnectivityAsync();

@@ -11,10 +11,12 @@ public static class ConfigureLazyMagicBlazor
         services.TryAddSingleton<IOSAccess, BlazorOSAccess>();
         services.TryAddSingleton<ILzMessages, LzMessages>();
         services.TryAddSingleton<ILzClientConfig, LzClientConfig>();
-        services.TryAddScoped<ClipboardService>();
-        services.TryAddScoped<IResizeListener, ResizeListener>();
+        services.TryAddSingleton<ILzJsUtilities, LzJsUtilities>();  
+        services.TryAddSingleton<ClipboardService>();
+        services.TryAddSingleton<IResizeListener, ResizeListener>();
         services.TryAddSingleton<BrowserFingerprintService>();
         services.TryAddSingleton<ILzJsUtilities, LzJsUtilities>();
+        services.TryAddSingleton<BrowserFingerprintService>();
 
         if(!services.IsServiceRegistered<IMediaQueryService>())  services.AddMediaQueryService();
         if(!services.IsServiceRegistered<IResizeListener>()) services.AddResizeListener();

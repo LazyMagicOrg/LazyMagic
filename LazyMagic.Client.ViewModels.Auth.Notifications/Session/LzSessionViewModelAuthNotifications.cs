@@ -22,7 +22,7 @@ public abstract class LzSessionViewModelAuthNotifications
         ILoggerFactory loggerFactory,
         IAuthProcess authProcess,
         ILzClientConfig clientConfig,
-        Base.IConnectivityService internetConnectivity,
+        IConnectivityService internetConnectivity,
     	ILzMessages messages
         ) : base(loggerFactory, authProcess, clientConfig, internetConnectivity, messages)
 	{
