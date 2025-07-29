@@ -37,6 +37,10 @@ public class AuthProcess : NotifyBase, IAuthProcess
     #endregion 
 
     #region Properties
+    public string SessionId 
+    {   get => _authProvider.SessionId; 
+        set => _authProvider.SessionId = value;
+    }
     public bool IsChatty { get; set; } = true; // emit events?
     public bool ClearAllFields { get; set; } = false; // Affects behavior of ClearAsync and ClearSenstitiveFields
     public bool AssignFieldOnCheck { get; set; } = true;
@@ -48,8 +52,12 @@ public class AuthProcess : NotifyBase, IAuthProcess
     public bool AuthInitialized { get; set; }    
     public AuthChallengeEnum CurrentChallenge => _authProvider.CurrentChallenge;
     public AuthProcessEnum CurrentAuthProcess => _authProvider.CurrentAuthProcess;
-
     
+    public int SecurityLevel 
+    { 
+        get => _authProvider.SecurityLevel; 
+        set => _authProvider.SecurityLevel = value; 
+    }
 
     private string _login = string.Empty;
     public string Login
@@ -854,6 +862,31 @@ public class AuthProcess : NotifyBase, IAuthProcess
     public async Task<string?> GetIdentityToken()
     {
         return await _authProvider.GetIdentityToken();
+    }
+    
+    public async Task<string?> GetRefreshToken()
+    {
+        return await _authProvider.GetRefreshToken();
+    }
+
+    public async Task SetCredsAsync(Creds? creds)
+    {
+        await _authProvider.SetCredsAsync(creds);
+    }
+
+    public async Task SetIdentityToken(string? token)
+    {
+        await _authProvider.SetIdentityToken(token);
+    }
+
+    public async Task SetAccessToken(string? token)
+    {
+        await _authProvider.SetAccessToken(token);
+    }
+
+    public async Task SetRefreshToken(string? token)
+    {
+        await _authProvider.SetRefreshToken(token);
     }
 
     // Wrap an execution in a IsBusy

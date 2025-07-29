@@ -8,7 +8,7 @@ public abstract class LzSessionsViewModel<T> : LzViewModel, ILzSessionsViewModel
     [Reactive] public bool IsInitialized { get; protected set; }
     [ObservableAsProperty] public bool IsOnline { get; }
     protected readonly CompositeDisposable sessionDisposables = new();
-    //public virtual async Task InitAsync(IOSAccess osAccess, ILzClientConfig clientConfig, IInternetConnectivitySvc internetConnectivitySvc)
+    //public virtual async Task InitAsync(IOSAccess osAccess, ILzClientConfig clientConfig, IConnectivityService internetConnectivitySvc)
 
     public LzSessionsViewModel(ILoggerFactory loggerFactory) : base(loggerFactory)
     {

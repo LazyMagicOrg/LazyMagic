@@ -14,6 +14,10 @@ public interface ILzHost
     bool IsAndroid { get; set; }    
     bool IsLocal { get; set;  }   
     bool UseLocalhostApi { get; set; }
+    
+    // Cognito configuration
+    string? CognitoRegion { get; set; }
+    string? CognitoUserPoolId { get; set; }
 
     string GetApiUrl(string path);
     string GetAssetsUrl(string path);    
@@ -44,6 +48,8 @@ public class LzHost : ILzHost
     /// <param name="isAndroid">Is an Andriod app. Set by Program.cs or MauiProgram.cs</param>
     /// <param name="isLocal">Is running local. Set by Program.cs or MauiProgram.cs</param>
     /// <param name="useLocalhostApi">use localhost service API. Set by Program.cs or MauiProgram.cs</param>
+    /// <param name="cognitoRegion">AWS Cognito region for authentication</param>
+    /// <param name="cognitoUserPoolId">AWS Cognito User Pool ID for authentication</param>
     public LzHost(
         string? appPath = null,
         string? appUrl = null,
@@ -55,7 +61,9 @@ public class LzHost : ILzHost
         bool isMAUI = true, 
         bool isAndroid = false, 
         bool isLocal = false, 
-        bool useLocalhostApi = false
+        bool useLocalhostApi = false,
+        string? cognitoRegion = null,
+        string? cognitoUserPoolId = null
         )
     {
         AppPath = appPath ?? "";
@@ -69,6 +77,8 @@ public class LzHost : ILzHost
         IsAndroid = isAndroid;
         IsLocal = isLocal;
         UseLocalhostApi = useLocalhostApi;
+        CognitoRegion = cognitoRegion;
+        CognitoUserPoolId = cognitoUserPoolId;
     }
 
     public string AppPath { get; set; } = string.Empty;
@@ -83,6 +93,10 @@ public class LzHost : ILzHost
     public bool IsAndroid { get; set; }
     public bool IsLocal { get; set; }   
     public bool UseLocalhostApi { get; set; }
+    
+    // Cognito configuration
+    public string? CognitoRegion { get; set; }
+    public string? CognitoUserPoolId { get; set; }
 
     public string GetApiUrl(string path) => UseLocalhostApi ? LocalApiUrl + path : RemoteApiUrl + path;
     public string GetAssetsUrl(string path) => AssetsUrl + path;

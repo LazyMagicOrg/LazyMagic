@@ -23,6 +23,7 @@ function addLink(attributes) {
 function addHeadScript(url) {
     var script = document.createElement('script');
     script.src = url;
+    script.async = false;
     document.head.appendChild(script);
 }
 
@@ -33,6 +34,7 @@ function addHeadScript(url) {
 function addBodyScript(url) {
     var script = document.createElement('script');
     script.src = url;
+    script.async = false;
     document.body.appendChild(script);
 }
 

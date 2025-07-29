@@ -15,4 +15,5 @@ global using System.Collections.Specialized;
 global using System.Reactive.Linq;
 global using System.Reactive.Disposables;
 global using System.Reflection;
+global using System.Threading.Tasks;
 

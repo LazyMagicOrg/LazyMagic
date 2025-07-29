@@ -1,11 +1,4 @@
-using Blazorise;
-using Blazorise.Bootstrap5;
-using Microsoft.JSInterop;
-using System.Diagnostics;
-using Newtonsoft.Json.Linq;
-
-namespace BlazorizeTest.WASM;
-
+namespace BlazorTest;
 public class Program
 {
     private static JObject? _appConfig;
@@ -49,27 +42,22 @@ public class Program
 
 
         builder.Services
-        .AddLazyMagicBlazor()
-        .AddSingleton(sp => new HttpClient { BaseAddress = new Uri((string)_appConfig!["assetsUrl"]!) })
-        .AddSingleton<IStaticAssets>(sp => new BlazorStaticAssets(
-            sp.GetRequiredService<ILoggerFactory>(),
-            new HttpClient { BaseAddress = new Uri((string)_appConfig!["assetsUrl"]!) }))
-        .AddSingleton<ILzHost>(sp => new LzHost(
-            appPath: (string)_appConfig!["appPath"]!, // app path
-            appUrl: (string)_appConfig!["appUrl"]!, // app url  
-            androidAppUrl: "", // android app url not used in WASM
-            remoteApiUrl: (string)_appConfig!["remoteApiUrl"]!,  // api url
-            localApiUrl: (string)_appConfig!["localApiUrl"]!, // local api url
-            assetsUrl: (string)_appConfig!["assetsUrl"]!, // tenancy assets url
-            isMAUI: false, // sets isWASM to true
-            isAndroid: false,
-            isLocal: isLocal,
-            useLocalhostApi: useLocalhostApi))
-        .AddLazyMagicAuthCognito()
-        .AddSingleton<ISessionsViewModel, SessionsViewModel>()
-        .AddBlazorise(options => { options.Immediate = true; })
-        .AddBootstrap5Providers();
-        BlazorizeTestViewModelsRegisterFactories.BlazorizeTestViewModelsRegister(builder.Services);
+            .AddSingleton(sp => new HttpClient { BaseAddress = new Uri((string)_appConfig!["assetsUrl"]!) })
+            .AddSingleton<IStaticAssets>(sp => new BlazorStaticAssets(
+                sp.GetRequiredService<ILoggerFactory>(),
+                new HttpClient { BaseAddress = new Uri((string)_appConfig!["assetsUrl"]!) }))
+            .AddSingleton<ILzHost>(sp => new LzHost(
+                appPath: (string)_appConfig!["appPath"]!, // app path
+                appUrl: (string)_appConfig!["appUrl"]!, // app url  
+                androidAppUrl: "", // android app url not used in WASM
+                remoteApiUrl: (string)_appConfig!["remoteApiUrl"]!,  // api url
+                localApiUrl: (string)_appConfig!["localApiUrl"]!, // local api url
+                assetsUrl: (string)_appConfig!["assetsUrl"]!, // tenancy assets url
+                isMAUI: false, // sets isWASM to true
+                isAndroid: false,
+                isLocal: isLocal,
+                useLocalhostApi: useLocalhostApi))
+            .AddApp();
 
         var host = builder.Build();
         // Wait for the page to fully load to finish up the Blazor app configuration

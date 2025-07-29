@@ -7,7 +7,7 @@ public abstract class LzItemViewModelAuthNotifications<TDTO, TModel>
     where TDTO : class, new()
     where TModel : class, TDTO, IRegisterObservables, new()
 {
-    public LzItemViewModelAuthNotifications(ILoggerFactory loggerFactory, ILzSessionViewModel sessionViewModel, TDTO? dto = null, TModel? model = null, bool? isLoaded = null) : base(loggerFactory,  sessionViewModel, dto: dto, model: model, isLoaded: isLoaded)
+    public LzItemViewModelAuthNotifications(ILoggerFactory loggerFactory, TDTO? dto = null, TModel? model = null, bool? isLoaded = null) : base(loggerFactory, dto: dto, model: model, isLoaded: isLoaded)
     {
         this.WhenAnyValue(x => x.NotificationsSvc!.Notification!)
             .WhereNotNull()

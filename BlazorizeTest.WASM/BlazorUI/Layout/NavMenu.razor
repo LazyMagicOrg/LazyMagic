@@ -1,0 +1,25 @@
+﻿@*
+    This component displays very little until the ISessionsViewModel is
+    initialized.
+*@
+@namespace BlazorUI
+
+<Bar ThemeContrast="ThemeContrast.Dark" Width="Width.Rem(10)">
+    <BarMenu>
+        <BarStart>
+            <BarItem>
+                <BarLink To="LoginPage">Login</BarLink>
+            </BarItem>
+            <BarItem>
+                <BarLink To="HomePage">Home</BarLink>
+            </BarItem>
+            <BarItem>
+                <BarLink To="CameraPage">Camera</BarLink>
+            </BarItem>
+        </BarStart>
+    </BarMenu>
+</Bar>
+
+@code {
+
+}

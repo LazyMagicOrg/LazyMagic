@@ -2,7 +2,7 @@
 
 public interface ILzSessionViewModel : INotifyPropertyChanged
 {
-    IInternetConnectivitySvc InternetConnectivity { get; set; }
+    IConnectivityService ConnectivityService { get; set; }
     string SessionName { get; set; }
     string SessionId { get; set; }
     bool IsOnline { get; }

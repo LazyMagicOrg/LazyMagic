@@ -6,7 +6,7 @@ public abstract class LzItemsViewModelAuth<TVM, TDTO, TModel> :
     where TModel : class, TDTO, IRegisterObservables, new()
     where TVM : class, ILzItemViewModelAuth<TModel>
 {
-    public LzItemsViewModelAuth(ILoggerFactory loggerFactory, ILzSessionViewModel sessionViewModel) : base(loggerFactory, sessionViewModel)
+    public LzItemsViewModelAuth(ILoggerFactory loggerFactory) : base(loggerFactory)
     {
     }
 }

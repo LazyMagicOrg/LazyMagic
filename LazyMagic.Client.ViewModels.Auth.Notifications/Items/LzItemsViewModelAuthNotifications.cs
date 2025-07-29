@@ -7,10 +7,9 @@ public abstract class LzItemsViewModelAuthNotifications<TVM, TDTO, TModel> :
     where TVM : class, ILzItemViewModelAuthNotifications<TModel>
 {
     public LzItemsViewModelAuthNotifications(
-        ILoggerFactory loggerFactory,
-        ILzSessionViewModel sessionViewModel
+        ILoggerFactory loggerFactory
         ) 
-        : base(loggerFactory, sessionViewModel)
+        : base(loggerFactory)
     {
         this.WhenAnyValue(x => x.NotificationsSvc!.Notification!)
             .WhereNotNull()

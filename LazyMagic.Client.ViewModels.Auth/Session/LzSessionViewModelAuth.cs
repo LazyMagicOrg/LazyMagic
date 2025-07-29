@@ -9,10 +9,10 @@ public abstract class LzSessionViewModelAuth : LzSessionViewModel, ILzSessionVie
     public LzSessionViewModelAuth(
         ILoggerFactory loggerFactory,
         IAuthProcess authProcess, 
-        ILzClientConfig clientConfig, 
-        IInternetConnectivitySvc internetConnectivity,
+        ILzClientConfig clientConfig,
+        IConnectivityService connectivityService,
         ILzMessages messages
-        ) : base(loggerFactory, internetConnectivity, messages)    
+        ) : base(loggerFactory, connectivityService, messages)    
     {
         AuthProcess = authProcess ?? throw new ArgumentNullException(nameof(authProcess));    
 

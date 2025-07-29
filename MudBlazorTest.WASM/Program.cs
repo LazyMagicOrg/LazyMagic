@@ -1,8 +1,4 @@
-using Microsoft.JSInterop;
-using MudBlazor.Services;
-using System.Diagnostics;
-
-namespace BlazorTest.WASM;
+namespace BlazorTest;
 
 public class Program
 {
@@ -61,11 +57,7 @@ public class Program
                 isAndroid: false,
                 isLocal: isLocal,
                 useLocalhostApi: useLocalhostApi))
-            .AddLazyMagicAuthCognito()
-            .AddMudServices()
-            .AddSingleton<ISessionsViewModel, SessionsViewModel>();
-
-        BlazorTestViewModelsRegisterFactories.BlazorTestViewModelsRegister(builder.Services);
+            .AddApp();
 
         builder.Logging.SetMinimumLevel(LogLevel.Information);
 

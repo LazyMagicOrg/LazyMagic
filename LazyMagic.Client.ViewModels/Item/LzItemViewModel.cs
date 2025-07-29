@@ -23,10 +23,10 @@ public abstract class LzItemViewModel<TDTO, TModel>
     where TModel : class, TDTO, IRegisterObservables, new()
 {
     // Public Properties
-    public LzItemViewModel(ILoggerFactory loggerFactory, ILzSessionViewModel sessionViewModel, TDTO? dto = null, TModel? model = null, bool? isLoaded = null)
+    public LzItemViewModel(ILoggerFactory loggerFactory, TDTO? dto = null, TModel? model = null, bool? isLoaded = null)
         : base(loggerFactory)   
     {
-        LzBaseSessionViewModel = sessionViewModel;    
+
         CanCreate = true;
         CanRead = true;
         CanUpdate = true;
@@ -95,7 +95,6 @@ public abstract class LzItemViewModel<TDTO, TModel>
 
     // protected Properties
     protected TDTO? _DTO { get; init; } 
-    protected ILzSessionViewModel LzBaseSessionViewModel { get; init; }
     protected string _EntityName { get; init; } = string.Empty;
     protected string _DataCopyJson = string.Empty;
     /// <summary>

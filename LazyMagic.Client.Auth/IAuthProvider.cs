@@ -1,7 +1,8 @@
+namespace LazyMagic.Client.Auth;
 /// <summary>
 /// General authentication flow Interface
 /// </summary>
-public interface IAuthProvider
+public interface IAuthProvider : IAuthProviderCreds
 {
     // Properties
     public bool AuthInitialized { get; set; }   
@@ -85,9 +86,8 @@ public interface IAuthProvider
     public bool CheckPhoneFormat(string? phone);
     public bool CheckCodeFormat(string? code);
 
-    public Task<Creds?> GetCredsAsync();
-    public Task<string?> GetIdentityToken();
-    public Task<string?> GetAccessToken();
+    // Credential methods are inherited from IAuthProviderCreds
+    // GetCredsAsync(), GetIdentityToken(), GetAccessToken(), GetRefreshToken()
     public void SetAuthenticator(JObject authenticator);
     public void SetSignUpAllowed(bool isAllowed);
 

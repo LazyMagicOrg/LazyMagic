@@ -27,7 +27,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LazyMagic.Client.ViewModels", "LazyMagic.Client.ViewModels\LazyMagic.Client.ViewModels.csproj", "{12677965-F4C1-452A-A5A1-D635F11B9C98}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LazyMagic.BlazoriseComponents", "LazyMagic.BlazoriseComponents\LazyMagic.BlazoriseComponents.csproj", "{08E9655D-1121-4EB4-87CB-3CBEF8EBA65A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LazyMagic.Blazorise", "LazyMagic.Blazorise\LazyMagic.Blazorise.csproj", "{08E9655D-1121-4EB4-87CB-3CBEF8EBA65A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LazyMagic.Client.FactoryGenerator", "LazyMagic.Client.FactoryGenerator\LazyMagic.Client.FactoryGenerator.csproj", "{EB08194A-6AAE-4341-B57E-BBCA84389B70}"
 EndProject
@@ -49,7 +49,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Blazor", "Blazor", "{193E00
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LazyMagic.Blazor.Auth", "LazyMagic.Blazor.Auth\LazyMagic.Blazor.Auth.csproj", "{45CC295F-D3FE-4C31-B6CD-4C8604F5FEC6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LazyMagic.BlazoriseComponents.Auth", "LazyMagic.BlazoriseComponents.Auth\LazyMagic.BlazoriseComponents.Auth.csproj", "{17A5A48A-AC1A-414B-9DED-7AE515C2DC6F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LazyMagic.Blazorise.Auth", "LazyMagic.Blazorise.Auth\LazyMagic.Blazorise.Auth.csproj", "{17A5A48A-AC1A-414B-9DED-7AE515C2DC6F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LazyMagic.Client.Auth.Cognito", "LazyMagic.Client.Auth.Cognito\LazyMagic.Client.Auth.Cognito.csproj", "{C9FC7D69-E2F3-422F-8322-9D15EE455DB1}"
 EndProject
@@ -63,11 +63,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LazyMagic.Client.Auth.Cogni
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LazyMagic.Client.Analyziers", "LazyMagic.Client.Analyziers\LazyMagic.Client.Analyziers.csproj", "{F4324EF1-BAB6-47A5-89CF-2C4C2434E932}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LazyMagic.MudBlazorComponents.Auth", "LazyMagic.MudBlazorComponents.Auth\LazyMagic.MudBlazorComponents.Auth.csproj", "{73A061BE-FC2B-4AE4-A246-D13FAFA391A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LazyMagic.MudBlazor.Auth", "LazyMagic.MudBlazor.Auth\LazyMagic.MudBlazor.Auth.csproj", "{73A061BE-FC2B-4AE4-A246-D13FAFA391A6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MudBlazor", "MudBlazor", "{5F09E10C-7D9E-44BC-B0E5-C48D58F2AACA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LazyMagic.MudBlazor.Components", "LazyMagic.MudBlazor.Components\LazyMagic.MudBlazor.Components.csproj", "{4ED7247F-FA0A-41E6-BCC6-98ED006C146A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LazyMagic.MudBlazor", "LazyMagic.MudBlazor\LazyMagic.MudBlazor.csproj", "{4ED7247F-FA0A-41E6-BCC6-98ED006C146A}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LazyMagic.Client.ModelGenerator", "LazyMagic.Client.ModelGenerator\LazyMagic.Client.ModelGenerator.csproj", "{87824360-4F14-49EE-96A7-95712F862D3D}"
 EndProject
@@ -104,6 +104,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MudBlazorTest.WASM", "MudBlazorTest.WASM\MudBlazorTest.WASM.csproj", "{8FA2F148-41F8-F0DC-EBC2-B37ECC33730F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LazyMagic.Service.Test", "LazyMagic.Service.Test\LazyMagic.Service.Test.csproj", "{236CAFD3-BFD5-40D4-8881-B4F570054E12}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorTest.ViewModels", "BlazorTest.ViewModels\BlazorTest.ViewModels.csproj", "{23174AF2-1F7E-4FAF-BBF6-7A1A6140F065}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -523,6 +525,18 @@ Global
 		{236CAFD3-BFD5-40D4-8881-B4F570054E12}.Release|x64.Build.0 = Release|Any CPU
 		{236CAFD3-BFD5-40D4-8881-B4F570054E12}.Release|x86.ActiveCfg = Release|Any CPU
 		{236CAFD3-BFD5-40D4-8881-B4F570054E12}.Release|x86.Build.0 = Release|Any CPU
+		{23174AF2-1F7E-4FAF-BBF6-7A1A6140F065}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{23174AF2-1F7E-4FAF-BBF6-7A1A6140F065}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{23174AF2-1F7E-4FAF-BBF6-7A1A6140F065}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{23174AF2-1F7E-4FAF-BBF6-7A1A6140F065}.Debug|x64.Build.0 = Debug|Any CPU
+		{23174AF2-1F7E-4FAF-BBF6-7A1A6140F065}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{23174AF2-1F7E-4FAF-BBF6-7A1A6140F065}.Debug|x86.Build.0 = Debug|Any CPU
+		{23174AF2-1F7E-4FAF-BBF6-7A1A6140F065}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{23174AF2-1F7E-4FAF-BBF6-7A1A6140F065}.Release|Any CPU.Build.0 = Release|Any CPU
+		{23174AF2-1F7E-4FAF-BBF6-7A1A6140F065}.Release|x64.ActiveCfg = Release|Any CPU
+		{23174AF2-1F7E-4FAF-BBF6-7A1A6140F065}.Release|x64.Build.0 = Release|Any CPU
+		{23174AF2-1F7E-4FAF-BBF6-7A1A6140F065}.Release|x86.ActiveCfg = Release|Any CPU
+		{23174AF2-1F7E-4FAF-BBF6-7A1A6140F065}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -568,6 +582,7 @@ Global
 		{D574107A-E5DB-43E5-A563-64A4727FD4FB} = {8C488BDB-B47B-438B-BD88-5F58BC436D0B}
 		{8FA2F148-41F8-F0DC-EBC2-B37ECC33730F} = {5F09E10C-7D9E-44BC-B0E5-C48D58F2AACA}
 		{236CAFD3-BFD5-40D4-8881-B4F570054E12} = {8C488BDB-B47B-438B-BD88-5F58BC436D0B}
+		{23174AF2-1F7E-4FAF-BBF6-7A1A6140F065} = {193E0079-874E-484A-896A-9AE206019D20}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8F515946-359D-4F5A-8F0C-AF7D8F422303}

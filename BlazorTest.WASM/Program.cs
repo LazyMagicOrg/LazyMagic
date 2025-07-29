@@ -1,6 +1,4 @@
-using Microsoft.JSInterop;
-
-namespace BlazorTest.WASM;
+namespace BlazorTest;
 
 public class Program
 {
@@ -43,8 +41,6 @@ public class Program
         }
 
         builder.Services
-            .AddLazyMagicAuth()
-            .AddLazyMagicBlazorAuth()
             .AddSingleton(sp => new HttpClient { BaseAddress = new Uri((string)_appConfig!["assetsUrl"]!) })
             .AddSingleton<IStaticAssets>(sp => new BlazorStaticAssets(
                 sp.GetRequiredService<ILoggerFactory>(),
@@ -58,10 +54,7 @@ public class Program
                 isAndroid: false,
                 isLocal: isLocal,
                 useLocalhostApi: useLocalhostApi))
-            .AddLazyMagicAuthCognito()
-            .AddSingleton<ISessionsViewModel, SessionsViewModel>();
-            
-        BlazorTestViewModelsRegisterFactories.BlazorTestViewModelsRegister(builder.Services);
+            .AddApp();
 
         builder.Logging.SetMinimumLevel(LogLevel.Information);
 

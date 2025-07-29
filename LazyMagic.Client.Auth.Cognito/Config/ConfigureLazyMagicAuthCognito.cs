@@ -6,14 +6,10 @@ public static class ConfigureLazyMagicAuthCognito
     {
         // TryAdd only succeeds if the service is not already registered
         // It is used here to allow the calling programs to register their own
-        // implementations of these classes.
-        // Note: LzHost must be registered in the WASM Program.cs file so the current 
-        // base url can be captured. MAUI programs are not loaded from a URL so they 
-        // read their API params from a configuration file specific to the client build,
-        // see the RunConfig class.
-        services.TryAddTransient<ILzHttpClient, LzHttpClient>();
+        // implementations of these classes and to avoid multiple registrations.
         services.TryAddTransient<IAuthProvider, AuthProviderCognito>();
-        services.AddLazyMagicAuth();
+        services.AddSingleton<ILzHttpClient, LzHttpClientCognito>();
+        services.AddLazyMagicClientAuth();
         return services;
     }
 

@@ -1,14 +1,14 @@
-﻿
-@namespace BlazorizeTest.WASM
+﻿@namespace BlazorTest
 @inject IJSRuntime JSRuntime
 @inject ILzHost Host
-@inject IStaticAssets staticAssets
 @inject HttpClient HttpClient
+@inject IStaticAssets staticAssets
 @inject ILzClientConfig ClientConfig
 @inject IOSAccess OSAccess
 @inject IConnectivityService ConnectivityService
 @inject ILzMessages Messages
 @inject ILoggerFactory LoggerFactory
+@inject ILzJsUtilities LzJsUtilities
 
 <MediaQueryList>
     <WindowResize @ref="@windowResize" HeaderHeight="@headerHeight" MaxWidth="@maxWidth">
@@ -53,23 +53,36 @@
             try
             {
 
-                // We initialize the following because the DI container doens't have access
-                // to the JSRuntime until the first render in MAUI.
-                await ConnectivityService.InitializeAsync(JSRuntime);
-                //var staticAssets = new BlazorStaticAssets(LoggerFactory, new HttpClient());
+                // Services implemented using Browser features, but referenced in ViewModels require
+                // speical initialization in their implementation. For example these services
+                // may use the JSRuntime, so we can cast the Interface to the concrete implementation
+                // type to give the service access to the JSRuntime as shown below.
+                // An alternative implementation, not using the JSRuntime, would not need this cast
+                // or initialization call.
+                await ((ConnectivityService)ConnectivityService).InitializeAsync(JSRuntime);
+
+                LzJsUtilities.SetJSRuntime(JSRuntime);
+                await LzJsUtilities.Initialize();
+
                 Messages.SetStaticAssets(staticAssets);
 
                 await ClientConfig.InitializeAsync(Host.RemoteApiUrl);
 
-                // The following extension methods add to the Mesaages.MessageFiles list
-                Messages
-                    .AddLazyMagicBlazorMessages()
-                    .AddLazyMagicBlazoriseComponentsAuthMessages()
-                    ;
-                Messages.MessageFiles.AddRange([Host.AssetsUrl + "subtenancy/en-US/SetsApp/Messages.json"]);
+                try
+                {
+                    Messages.MessageFiles.AddRange([
+                        "system/{culture}/System/AuthMessages.json",
+                            "system/{culture}/System/BaseMessages.json",
+                            "subtenancy/en-US/SetsApp/Messages.json"
+                    ]);
 
-                // Read message files for the current culture and configure for current units
-                await Messages.SetMessageSetAsync("en-US", LzMessageUnits.Imperial);
+                    // Read message files for the current culture and configure for current units
+                    await Messages.SetMessageSetAsync("en-US", LzMessageUnits.Imperial);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Messages.SetMessageSetAsync failed. {ex.Message} ");
+                }
 
             }
             catch (Exception ex)
@@ -80,39 +93,51 @@
         await base.OnInitializedAsync();
     }
 
-
-
+    // Create theme with default values. These will be overwritten by the theme.json file
+    // if one is loaded, for the tenancy, in the OnInitializedAsync method.
     private Theme theme = new()
+    {
+        BarOptions = new()
         {
-            BarOptions = new()
-            {
-                HorizontalHeight = "72px"
-            },
-            ColorOptions = new()
-            {
-                Primary = "#0288D1",
-                Secondary = "#A65529",
-                Success = "#23C02E",
-                Info = "#9BD8FE",
-                Warning = "#F8B86C",
-                Danger = "#F95741",
-                Light = "#F0F0F0",
-                Dark = "#535353",
-            },
-            BackgroundOptions = new()
-            {
-                Primary = "#0288D1",
-                Secondary = "#A65529",
-                Success = "#23C02E",
-                Info = "#9BD8FE",
-                Warning = "#F8B86C",
-                Danger = "#F95741",
-                Light = "#F0F0F0",
-                Dark = "#535353",
-            },
-            InputOptions = new()
-            {
-                CheckColor = "#0288D1",
-            }
-        };
+            HorizontalHeight = "72px"
+        },
+        ColorOptions = new()
+        {
+            Primary = "#1a1a1a",    // Grey 10 (nearly black)
+            Secondary = "#ffffff",     // White
+            Success = "#4bbf73",    // Mainly Green
+            Info = "#1f9bcf",       // Mainly Blue
+            Warning = "#d47500",    // Mainly Red (looks kinda orange)
+            Danger = "#f0ad4e",     // Mainly Red (looks kinda gold)
+            Light = "#ffffff",         // White
+            Dark = "#343a40",       // Mainly Blue - pretty close to black
+            Link = "#1a1a1a"
+        },
+        BackgroundOptions = new()
+        {
+            Primary = "#1a1a1a",    // Grey 10 (nearly black)
+            Secondary = "#ffffff",     // White
+            Success = "#4bbf73",    // Mainly Green
+            Info = "#f2da94",       //
+            Warning = "#d47500",    // Mainly Red (looks kinda orange)
+            Danger = "#f0ad4e",     // Mainly Red (looks kinda gold)
+            Light = "#ffffff",         // White
+            Dark = "#343a40",       // Mainly Blue - pretty close to black
+        },
+        TextColorOptions = new()
+        {
+            Primary = "#1a1a1a",
+            Secondary = "#ffffff",
+            Success = "#4bbf73",
+            Info = "#1a1a1a",
+            Warning = "#d47500",
+            Danger = "#f0ad4e",
+            Light = "#ffffff",
+            Dark = "#343a40"
+        },
+        InputOptions = new()
+        {
+            CheckColor = "#0288D1",
+        },
+    };
 }

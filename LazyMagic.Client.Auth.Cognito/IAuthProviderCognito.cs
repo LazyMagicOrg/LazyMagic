@@ -9,7 +9,7 @@ public interface IAuthProviderCognito : IAuthProvider
     public string? CognitoIdentityPoolId { get; }
     public string? CognitoRegion { get; }
     
-    public int SecurityLevel { get; }   
+    // SecurityLevel is now inherited from IAuthProviderCreds via IAuthProvider
 
 }
  

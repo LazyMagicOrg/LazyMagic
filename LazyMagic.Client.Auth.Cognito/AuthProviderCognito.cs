@@ -67,7 +67,7 @@ public class AuthProviderCognito : IAuthProviderCognito
         this.emailFormat = emailFormat;
         this.codeFormat = codeFormat;
         this.phoneFormat = phoneFormat;
-
+        this.SessionId = Guid.NewGuid().ToString(); // generate a new session id
         //if(cognitoConfig != null) 
         //    SetStack(cognitoConfig);
     }
@@ -83,6 +83,11 @@ public class AuthProviderCognito : IAuthProviderCognito
     protected AuthFlowResponse? authFlowResponse; // cleared after interim use
     #endregion Fields
 
+    #region AuthProviderCreds properties
+    public string SessionId { get; set; } // used to track user sessions
+    #endregion
+
+
     #region AWS specific Properties
     public string? IpIdentity { get; set; } // Identity Pool Identity.
     public string? UpIdentity { get; set; } // User Pool Identity. ie: JWT "sub" claim
@@ -91,7 +96,7 @@ public class AuthProviderCognito : IAuthProviderCognito
     public string? CognitoClientId { get { return clientId; } }
     public string? CognitoIdentityPoolId { get { return identityPoolId; } }
     public string? CognitoRegion { get { return regionEndpoint?.SystemName; } }
-    public int SecurityLevel { get { return securityLevel; } }  
+    public int SecurityLevel { get { return securityLevel; } set { securityLevel = value; } }  
 
 
     // CognitoUser is part of Amazon.Extensions.CognitoAuthentication -- see the following resources
@@ -1107,6 +1112,43 @@ public class AuthProviderCognito : IAuthProviderCognito
             return CognitoUser.SessionTokens.IdToken;
         return null;
     }
+
+    public virtual async Task<string?> GetRefreshToken()
+    {
+        if (CognitoUser == null)
+            return null;
+
+        return CognitoUser.SessionTokens.RefreshToken;
+    }
+
+    public virtual async Task SetCredsAsync(Creds? creds)
+    {
+        // For Cognito, credentials are typically derived from tokens
+        // This method is primarily for external auth providers
+        await Task.CompletedTask; // No-op for now
+    }
+
+    public virtual async Task SetIdentityToken(string? token)
+    {
+        // For Cognito, tokens are managed internally by CognitoUser
+        // This method is primarily for external auth providers
+        await Task.CompletedTask; // No-op for now
+    }
+
+    public virtual async Task SetAccessToken(string? token)
+    {
+        // For Cognito, tokens are managed internally by CognitoUser
+        // This method is primarily for external auth providers  
+        await Task.CompletedTask; // No-op for now
+    }
+
+    public virtual async Task SetRefreshToken(string? token)
+    {
+        // For Cognito, tokens are managed internally by CognitoUser
+        // This method is primarily for external auth providers
+        await Task.CompletedTask; // No-op for now
+    }
+
     private async Task<bool> RefreshTokenAsync()
     {
         if (CognitoUser == null)

@@ -16,6 +16,9 @@
 		<EmbeddedResource Remove="ClientConfig\**" />
 		<None Remove="ClientConfig\**" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Content Remove="IConnectivityService.cs" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="DeepCloner" />

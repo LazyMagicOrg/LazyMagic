@@ -7,9 +7,12 @@
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 	</PropertyGroup>
 	<ItemGroup>
-	  <Content Remove="BrowserFingerprint.cs" />
+	  <Content Remove="Creds.cs" />
+	  <Content Remove="IAuthProviderCreds.cs" />
+	  <Content Remove="ILzCurrerntSessionAuthProviderCreds.cs" />
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Newtonsoft.Json" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
 	</ItemGroup>
 </Project>

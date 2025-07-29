@@ -7,11 +7,9 @@ public abstract class LzItemsViewModel<TVM, TDTO, TModel> : LzViewModel,
 {
     // Public Properties
     public LzItemsViewModel(
-        ILoggerFactory loggerFactory,
-        ILzSessionViewModel sessionViewModel
+        ILoggerFactory loggerFactory
         ) : base(loggerFactory)
     {
-        _LzBaseSessionViewModel = sessionViewModel ?? throw new ArgumentNullException(nameof(sessionViewModel));
     }
 
     /// <inheritdoc/>
@@ -55,9 +53,6 @@ public abstract class LzItemsViewModel<TVM, TDTO, TModel> : LzViewModel,
     [Reactive] public long LastLoadTick { get; set; }
     /// <inheritdoc/>
     public IDictionary<string, TDTO>? DTOs { get; set; }
-    // Protected Properties 
-    /// <inheritdoc/>
-    protected ILzSessionViewModel _LzBaseSessionViewModel { get; init; }
     // Storage Access
     /// <inheritdoc/>
     protected Func<string, Task<ICollection<TDTO>>>? _DTOReadListIdAsync { get; init; }

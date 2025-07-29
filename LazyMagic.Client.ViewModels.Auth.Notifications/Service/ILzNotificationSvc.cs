@@ -11,7 +11,7 @@ public interface ILzNotificationSvc
     bool IsActive { get; } 
     bool Debug { get; set; }  
     IAuthProcess AuthProcess { get; init; }
-    IInternetConnectivitySvc InternetConnectivitySvc { get; init; }
+    Base.IConnectivityService InternetConnectivitySvc { get; init; }
     Task ConnectAsync();
     Task DisconnectAsync();
     Task SendAsync(string message);

@@ -1,9 +1,5 @@
 namespace LazyMagic.Blazor;
 
-public interface IConnectivityService : IInternetConnectivitySvc, IAsyncDisposable
-{
-    Task InitializeAsync(IJSRuntime jsRuntime);
-}
 public class ConnectivityService : NotifyBase, IConnectivityService
 {
     private IJSRuntime? _jsRuntime;

@@ -9,7 +9,6 @@
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 	</PropertyGroup>
 	<ItemGroup>
-		<Content Remove="Creds.cs" />
 		<Content Remove="IAuthProvider.cs" />
 	</ItemGroup>
 
