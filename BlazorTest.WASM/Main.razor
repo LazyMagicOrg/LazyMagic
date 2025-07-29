@@ -67,12 +67,7 @@
 
                 try
                 {
-                    Messages.MessageFiles.AddRange([
-                        "system/{culture}/System/AuthMessages.json",
-                            "system/{culture}/System/BaseMessages.json",
-                            "subtenancy/en-US/SetsApp/Messages.json"
-                    ]);
-
+                    Messages.AddLazyMagicBlazorMessages(); // Read the language files
                     // Read message files for the current culture and configure for current units
                     await Messages.SetMessageSetAsync("en-US", LzMessageUnits.Imperial);
                 }

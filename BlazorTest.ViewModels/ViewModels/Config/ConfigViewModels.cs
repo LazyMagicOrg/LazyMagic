@@ -8,7 +8,7 @@ public static class ConfigViewModels
         // sessions, each represented by a SessionViewModel. This is useful for 
         // POS terminal apps where multiple sessions can be active at once. PWAa 
         // and mobile apps are generally single session apps so there will be only
-        // a signle SessionViewModel.
+        // a single SessionViewModel for those app types.
         services.AddSingleton<ISessionsViewModel, SessionsViewModel>();
 
         // The LazyMagic.Client.FactoryGenerator generates Factory classes
