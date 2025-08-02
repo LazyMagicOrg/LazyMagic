@@ -42,8 +42,9 @@ public abstract class LzSessionViewModel : LzViewModel, ILzSessionViewModel
     [Reactive] public LzMessageSetSelector MessageSetSelector { get; set; }
     public Task<bool> CheckInternetConnectivityAsync()
         => ConnectivityService.CheckInternetConnectivityAsync();
+
     public virtual async Task LoadAsync()
-        => await Task.Delay(0); 
+        => await Task.Delay(0);
     public virtual async Task UnloadAsync()
         => await Task.Delay(0);
 
