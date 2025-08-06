@@ -18,6 +18,8 @@ public static class ConfigViewModels
         // each generated ViewModel factory.
         ViewModelsRegisterFactories.ViewModelsRegister(services);
 
+        services.AddLazyMagicClientViewModels(); 
+
         return services;
     }
 }

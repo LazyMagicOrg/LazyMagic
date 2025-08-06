@@ -17,9 +17,13 @@
 		<None Remove="ClientConfig\**" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Content Remove="IConnectivityService.cs" />
+	  <Content Remove="Config\ConfigureLazyMagicClientViewModels.cs" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<ProjectReference Include="..\LazyMagic.Client.FactoryGenerator\LazyMagic.Client.FactoryGenerator.csproj" PrivateAssets="all" OutputItemType="Analyzer" />
+	</ItemGroup>
+	
 	<ItemGroup>
 		<PackageReference Include="DeepCloner" />
 		<PackageReference Include="DynamicData" />

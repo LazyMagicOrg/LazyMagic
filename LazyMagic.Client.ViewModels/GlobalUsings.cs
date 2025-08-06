@@ -2,6 +2,7 @@
 global using FluentValidation;
 global using FluentValidation.Internal;
 global using LazyMagic.Client.Base;
+global using LazyMagic.Client.FactoryGenerator;
 global using LazyMagic.Shared;
 global using Microsoft.AspNetCore.Components.Forms;
 global using Microsoft.Extensions.DependencyInjection;
@@ -15,5 +16,6 @@ global using System.Collections.Specialized;
 global using System.Reactive.Linq;
 global using System.Reactive.Disposables;
 global using System.Reflection;
+global using System.Text.Json.Serialization;
 global using System.Threading.Tasks;
 

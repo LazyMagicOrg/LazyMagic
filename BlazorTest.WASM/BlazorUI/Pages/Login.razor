@@ -17,8 +17,15 @@ else
 
 <LzAuth ViewModel="@ViewModel!.AuthProcess" />
 
+<p>WindowSize: @WindowSize?.Width, @WindowSize?.Height</p>
+
 
 @code {
+    [CascadingParameter(Name = "WindowSize")]
+    public WindowSize? WindowSize { get; set; }
+
+
+
     protected override async Task OnInitializedAsync()
     {
 

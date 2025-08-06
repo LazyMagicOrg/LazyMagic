@@ -81,7 +81,7 @@ public class JSCameraModule : BaseJSModule
     /// <inheritdoc/>
     public override string ModuleFileName
 	{
-		get { return $"./_content/LazyMagic.BlazoriseComponents/blazorise.camera.js"; }
+		get { return $"./_content/LazyMagic.Blazorise/blazorise.camera.js"; }
 	}
 		
 

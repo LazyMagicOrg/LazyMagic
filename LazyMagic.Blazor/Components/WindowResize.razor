@@ -3,36 +3,25 @@
 @inject IJSRuntime JS
 @implements IDisposable
 
-<CascadingValue Value="@WindowSize" Name="WindowSize">
+<CascadingValue Value="@_windowSize" Name="WindowSize">
     @ChildContent
 </CascadingValue>
 
 @code {
     [Parameter] public RenderFragment? ChildContent { get; set; }
-    [Parameter] public WindowSize WindowSize { get; set; } = new();
     [Parameter] public int HeaderHeight { get; set; } = 0;
     [Parameter] public int MaxWidth { get; set; } = 0;
+    [Parameter] public int MinWidth { get; set; } = 0;
 
     private bool isLoaded = false;
-
+    private WindowSize _windowSize = new WindowSize();
     protected override void OnParametersSet()
     {
-        WindowSize.HeaderHeight = HeaderHeight;
+        _windowSize.HeaderHeight = HeaderHeight;
+        _windowSize.MaxWidth = MaxWidth;
+        _windowSize.MinWidth = MinWidth;
+        _windowSize.HeaderHeight = HeaderHeight;
         base.OnParametersSet();
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        var window = await ResizeListener.GetBrowserWindowSize();
-        WindowSize = new()
-        {
-            Width = (MaxWidth > 0) ? Math.Min(window.Width, MaxWidth) : window.Width,
-            Height = window.Height,
-            MaxWidth = MaxWidth,
-            HeaderHeight = HeaderHeight
-        };
-
-        await base.OnInitializedAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -41,7 +30,6 @@
         {
             ResizeListener.OnResized += WindowResized;
             await Task.Delay(50);
-            isLoaded = true;
             await InvokeAsync(StateHasChanged);
         }
         await base.OnAfterRenderAsync(firstRender);
@@ -54,24 +42,11 @@
 
     private async void WindowResized(object? sender, BrowserWindowSize window)
     {
-        // Console.WriteLine($"Window resized to {window.Width}x{window.Height}");
-
-        var newWidth = (MaxWidth > 0) ? Math.Min(window.Width, MaxWidth) : window.Width;
-
-        if (WindowSize.Width != newWidth || WindowSize.Height != window.Height)
+        if (_windowSize.Width != window.Width || _windowSize.Height != window.Height)
         {
+            _windowSize.BrowserWindowSize = window;
             // JS already hid the content instantly
             isLoaded = false;
-
-            // Update window size
-            WindowSize = new()
-            {
-                Width = newWidth,
-                Height = window.Height,
-                MaxWidth = MaxWidth,
-                HeaderHeight = HeaderHeight
-            };
-
             await InvokeAsync(StateHasChanged);
         }
     }
