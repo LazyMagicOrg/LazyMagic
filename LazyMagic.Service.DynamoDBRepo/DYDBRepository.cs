@@ -1,9 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System.Diagnostics;
-using Newtonsoft.Json.Linq;
-using Amazon.DynamoDBv2.DocumentModel;
-using ThirdParty.Json.LitJson;
-using Amazon.DynamoDBv2.Model;
+﻿using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
 namespace LazyMagic.Service.DynamoDBRepo;
@@ -92,6 +87,52 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
 
     #region Public Methods
 
+    public virtual async Task<ActionResult<bool>> ExistsAsync(ICallerInfo callerInfo, string id)
+    {
+        var request = new GetItemRequest
+        {
+            TableName = GetTableName(callerInfo),
+            Key = new Dictionary<string, AttributeValue>
+            {
+                { "PK", new AttributeValue { S = EntityType } },
+                { "SK", new AttributeValue { S = $"{id}:" } }
+            },
+            ProjectionExpression = "PK", // Only return PK to minimize data transfer
+            ConsistentRead = false // Eventually consistent is fine for existence check
+        };
+        if (debug) Console.WriteLine("ExistsAsync() called");
+        callerInfo ??= new CallerInfo();
+        try
+        {
+            var response = await client.GetItemAsync(request);
+            if (response.Item != null && response.Item.Count > 0)
+            {
+                if (debug) Console.WriteLine("ExistsAsync() item found");
+                return true;
+            }
+            else
+            {
+                if (debug) Console.WriteLine("ExistsAsync() item not found");
+                return false;
+            }
+        }
+        catch (AmazonDynamoDBException ex)
+        {
+            if (debug) Console.WriteLine($"ExistsAsync() AmazonDynamoDBException. {ex.Message}");
+            return new BadRequestResult();
+        }
+        catch (AmazonServiceException ex)
+        {
+            if (debug) Console.WriteLine($"ExistsAsync() AmazonServiceException. {ex.Message}");
+            return new StatusCodeResult(500);
+        }
+        catch (Exception ex)
+        {
+            if (debug) Console.WriteLine($"ExistsAsync() catch all. {ex.Message}");
+            return new StatusCodeResult(500);
+        }
+    }
+
     public virtual async Task<ActionResult<T>> CreateAsync(ICallerInfo callerInfo, T data)
     {
         if (debug) Console.WriteLine("CreateAsync() called");
@@ -131,7 +172,7 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         catch (ConditionalCheckFailedException ex)
         {
             if (debug) Console.WriteLine($"CreateEAsync() ConditionalCheckFailedException. {ex.Message}");
-            return new BadRequestResult();
+            return new ConflictResult();
         }
         catch (AmazonDynamoDBException ex)
         {

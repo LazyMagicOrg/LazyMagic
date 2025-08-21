@@ -10,13 +10,11 @@ public class DocumentRepoFixture : IAsyncLifetime
 {
     public IDocumentRepo<TestItem> Repository { get; private set; } = null!;
     public ICallerInfo CallerInfo { get; private set; } = null!;
-    private readonly bool _useMock;
     private IAmazonDynamoDB? _dynamoDbClient;
     
 
     public DocumentRepoFixture()
     {
-        _useMock = GetType() == typeof(MockDocumentRepoFixture);
     }
 
     public async Task InitializeAsync()
@@ -29,47 +27,37 @@ public class DocumentRepoFixture : IAsyncLifetime
             LzUserId = "test-user-id",
             TenantId = "test-tenant"
         };
-        if (_useMock)
+        var chain = new CredentialProfileStoreChain();
+        if (chain.TryGetAWSCredentials("lzm-dev", out var credentials))
         {
-            Repository = new MockDocumentRepo<TestItem>();
+            Amazon.Runtime.FallbackCredentialsFactory.Reset();
+            Amazon.Runtime.FallbackCredentialsFactory.CredentialsGenerators.Clear();
+            Amazon.Runtime.FallbackCredentialsFactory.CredentialsGenerators.Add(() => credentials);
         }
-        else
+
+        _dynamoDbClient = new AmazonDynamoDBClient();
+        Repository = new TestItemRepo(_dynamoDbClient);
+
+        // Clean up any existing items in DynamoDB
+        var result = await Repository.ListAsync(CallerInfo);
+        if (result.Value is IEnumerable<TestItem> existingItems)
         {
-            var chain = new CredentialProfileStoreChain();
-            if (chain.TryGetAWSCredentials("lzm-dev", out var credentials))
+            foreach (var item in existingItems)
             {
-                Amazon.Runtime.FallbackCredentialsFactory.Reset();
-                Amazon.Runtime.FallbackCredentialsFactory.CredentialsGenerators.Clear();
-                Amazon.Runtime.FallbackCredentialsFactory.CredentialsGenerators.Add(() => credentials);
-            }
-
-            _dynamoDbClient = new AmazonDynamoDBClient();
-            Repository = new TestItemRepo(_dynamoDbClient);
-
-            // Clean up any existing items in DynamoDB
-            var result = await Repository.ListAsync(CallerInfo);
-            if (result.Value is IEnumerable<TestItem> existingItems)
-            {
-                foreach (var item in existingItems)
-                {
-                    await Repository.DeleteAsync(CallerInfo, item.Id);
-                }
+                await Repository.DeleteAsync(CallerInfo, item.Id);
             }
         }
     }
 
     public Task DisposeAsync()
     {
-        if (!_useMock)
+        // Clean up any remaining items
+        var result = Repository.ListAsync(CallerInfo).GetAwaiter().GetResult();
+        if (result.Value is IEnumerable<TestItem> existingItems)
         {
-            // Clean up any remaining items
-            var result = Repository.ListAsync(CallerInfo).GetAwaiter().GetResult();
-            if (result.Value is IEnumerable<TestItem> existingItems)
+            foreach (var item in existingItems)
             {
-                foreach (var item in existingItems)
-                {
-                    Repository.DeleteAsync(CallerInfo, item.Id).GetAwaiter().GetResult();
-                }
+                Repository.DeleteAsync(CallerInfo, item.Id).GetAwaiter().GetResult();
             }
         }
 

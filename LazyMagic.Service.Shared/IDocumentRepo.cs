@@ -3,6 +3,7 @@
 public interface IDocumentRepo<T>
     where T : class, IItem, new()
 {
+    Task<ActionResult<bool>> ExistsAsync(ICallerInfo callerInfo, string id);
     Task<ActionResult<T>> CreateAsync(ICallerInfo callerInfo, T data);
     Task<ActionResult<T>> ReadAsync(ICallerInfo callerInfo, string id);
     Task<ActionResult<T>> UpdateAsync(ICallerInfo callerInfo, T data, bool forceupdate = false);

@@ -5,6 +5,8 @@ global using LazyMagic.Service.Shared;
 global using LazyMagic.Shared;
 global using Microsoft.AspNetCore.Mvc;
 global using Newtonsoft.Json;
+global using Newtonsoft.Json.Linq;
+global using Newtonsoft.Json.Serialization;
 global using System;
 global using System.Collections.Generic;
 global using System.Linq;
