@@ -14,7 +14,8 @@
 	
 	
 	<ItemGroup>
-		<ProjectReference Include="..\LazyMagic.Client.FactoryGenerator\LazyMagic.Client.FactoryGenerator.csproj" PrivateAssets="all"  OutputItemType="Analyzer"/>
+		<!--<ProjectReference Include="..\LazyMagic.Client.FactoryGenerator\LazyMagic.Client.FactoryGenerator.csproj" PrivateAssets="all"  OutputItemType="Analyzer"/>-->
+		<ProjectReference Include="..\LazyMagic.Client.FactoryGenerator\LazyMagic.Client.FactoryGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true"/>
 		<ProjectReference Include="..\LazyMagic.Client.ViewModels.Auth\LazyMagic.Client.ViewModels.Auth.csproj" />
 	</ItemGroup>
 

@@ -40,7 +40,7 @@
 			 LazyMagic.Blazor as a package, it will resolve the LazyMagic.OIDC.Base as version 
 			 1.0.0 if we don't put the current version here. -->
 		<PackageVersion Include="LazyMagic.OIDC.Base" Version="3.0.1" />
-		
+		<PackageVersion Include="LazyMagic.Client.FactoryGenerator" Version="3.0.1" />	
 		<PackageVersion Include="Microsoft.AspNetCore.Components.Forms" Version="9.0.8" />
 		<PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="9.0.8" />
 		<PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.8" />
