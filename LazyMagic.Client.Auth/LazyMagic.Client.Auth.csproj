@@ -10,6 +10,8 @@
 	</PropertyGroup>
 	<ItemGroup>
 		<Content Remove="IAuthProvider.cs" />
+		<Content Remove="IAuthProviderCreds.cs" />
+		<Content Remove="ILzCurrerntSessionAuthProviderCreds.cs" />
 	</ItemGroup>
 
 	<ItemGroup>

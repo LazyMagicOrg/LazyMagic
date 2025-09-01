@@ -1,8 +1,10 @@
 ﻿@namespace BlazorUI
-@inherits LzLayoutComponentBaseInjectViewModel<ISessionsViewModel>
+@inherits LayoutComponentBase
+
 <Layout>
     <LayoutHeader Fixed>
         <Div>Hello</Div>
+        <LoginDisplay />
     </LayoutHeader>
     <Layout Sider>
         <LayoutSider>
@@ -17,11 +19,3 @@
         </Layout>
     </Layout>
 </Layout>
-
-@code {
-    protected override Task OnAfterRenderAsync(bool firstRender)
-    {
-        return base.OnAfterRenderAsync(firstRender);
-    }
-
-}

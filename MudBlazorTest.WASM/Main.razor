@@ -1,87 +1,18 @@
 ﻿@namespace BlazorUI
-@inject NavigationManager NavigationManager
-@inject IJSRuntime JSRuntime
-@inject ILzHost Host
-@inject HttpClient HttpClient
-@inject IStaticAssets staticAssets
-@inject ILzClientConfig ClientConfig
-@inject IOSAccess OSAccess
-@inject IConnectivityService ConnectivityService
-@inject ILzMessages Messages
-@inject ILoggerFactory LoggerFactory
-@inject ILzJsUtilities LzJsUtilities
 
-<MediaQueryList>
-    <WindowResize @ref="@windowResize" HeaderHeight="@headerHeight" MaxWidth="@maxWidth">
-        <Router AppAssembly="@typeof(Main).Assembly">
-            <Found Context="routeData">
-                @if (ClientConfig.Configured)
-                {
-                    <WindowFade FadeDuration="250">
-                        <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
-                        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-                    </WindowFade>
-                }
-                else
-                {
-                    <div style="width: 9rem; height: 9rem; margin-left: 1rem; margin-top: 1rem;">
-                        <LzAppLoading AnimationDurationSeconds="1.0"
-                                        LoadingMessage="Loading your venue." />
-                    </div>
-                }
-            </Found>
-            <NotFound>
-                <PageTitle>Not found</PageTitle>
-                <LayoutView Layout="@typeof(MainLayout)">
-                    <p role="alert">Sorry, there's nothing at this address.</p>
-                </LayoutView>
-            </NotFound>
-        </Router>
-    </WindowResize>
-</MediaQueryList>
-@code {
-    private int headerHeight = 32;
-    private int maxWidth = 1000;
-    WindowResize? windowResize;
-
-    protected override async Task OnInitializedAsync()
-    {
-        if (!ClientConfig.Configured)
-        {
-            try
-            {
-                // Services implemented using Browser features, but referenced in ViewModels require
-                // speical initialization in their implementation. For example these services
-                // may use the JSRuntime, so we can cast the Interface to the concrete implementation
-                // type to give the service access to the JSRuntime as shown below.
-                // An alternative implementation, not using the JSRuntime, would not need this cast
-                // or initialization call.
-                await ((ConnectivityService)ConnectivityService).InitializeAsync(JSRuntime);
-
-
-                LzJsUtilities.SetJSRuntime(JSRuntime);
-                await LzJsUtilities.Initialize();
-
-                Messages.SetStaticAssets(staticAssets);
-
-                await ClientConfig.InitializeAsync(Host.RemoteApiUrl);
-
-                try
-                {
-                    Messages.AddLazyMagicBlazorMessages(); // Read the language files
-                    // Read message files for the current culture and configure for current units
-                    await Messages.SetMessageSetAsync("en-US", LzMessageUnits.Imperial);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Messages.SetMessageSetAsync failed. {ex.Message} ");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-        }
-        await base.OnInitializedAsync();
-    }
-}
+<CascadingAuthenticationState>
+    <Services />
+    <Router AppAssembly="@typeof(Main).Assembly"
+            AdditionalAssemblies="new[] { typeof(MainLayout).Assembly }">
+        <Found Context="routeData">
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>Not found</PageTitle>
+            <LayoutView Layout="@typeof(MainLayout)">
+                <p role="alert">Sorry, there's nothing at this address.</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

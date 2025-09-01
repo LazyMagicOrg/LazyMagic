@@ -1,7 +1,6 @@
 ﻿@namespace BlazorUI
 @page "/HomePage"
-@inherits LzComponentBaseAssignViewModel<ISessionViewModel>
-@inject ISessionsViewModel SessionsViewModel
+@inherits LzComponentBaseInjectViewModel<ISessionViewModel>
 
 <PageTitle>Home</PageTitle>
 
@@ -9,10 +8,3 @@
 
 Welcome to your new app.
 
-@code {
-    protected override async Task OnInitializedAsync()
-    {
-        ViewModel = SessionsViewModel.SessionViewModel;
-        await base.OnInitializedAsync();
-    }
-}

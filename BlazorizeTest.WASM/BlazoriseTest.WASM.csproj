@@ -18,16 +18,15 @@
 	</ItemGroup>
 	
 	<ItemGroup>
-		<ProjectReference Include="..\LazyMagic.Blazorise\LazyMagic.Blazorise.csproj" />
-		<ProjectReference Include="..\LazyMagic.Blazorise.Auth\LazyMagic.Blazorise.Auth.csproj" />
-		<ProjectReference Include="..\LazyMagic.Client.FactoryGenerator\LazyMagic.Client.FactoryGenerator.csproj" PrivateAssets="all" OutputItemType="Analyzer" />
-		<ProjectReference Include="..\LazyMagic.Client.Auth.Cognito\LazyMagic.Client.Auth.Cognito.csproj" />
-		<ProjectReference Include="..\LazyMagic.Client.ViewModels.Auth\LazyMagic.Client.ViewModels.Auth.csproj" />
 		<ProjectReference Include="..\BlazorTest.ViewModels\BlazorTest.ViewModels.csproj" />
+		<ProjectReference Include="..\LazyMagic.Blazorise\LazyMagic.Blazorise.csproj" />
+		<ProjectReference Include="..\LazyMagic.Blazor\LazyMagic.Blazor.csproj" />
+		<ProjectReference Include="..\LazyMagic.Client.FactoryGenerator\LazyMagic.Client.FactoryGenerator.csproj" PrivateAssets="all" OutputItemType="Analyzer" />
+		<ProjectReference Include="..\LazyMagic.OIDC.WASM\LazyMagic.OIDC.WASM.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Blazorise.Animate" />
+				<PackageReference Include="Blazorise.Animate" />
 		<PackageReference Include="Blazorise.Components" />
 		<PackageReference Include="Blazorise.Icons.FontAwesome" />
 		<PackageReference Include="Blazorise.LoadingIndicator" />

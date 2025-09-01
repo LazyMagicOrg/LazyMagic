@@ -3,25 +3,25 @@
 public interface ILzHost
 {
     string AppPath { get; set; }
-    string RemoteApiUrl { get; set; } 
-    string LocalApiUrl { get; set; }    
-    string AssetsUrl { get; set; } 
+    string RemoteApiUrl { get; set; }
+    string LocalApiUrl { get; set; }
+    string AssetsUrl { get; set; }
     string AppUrl { get; set; }
-    string AndroidAppUrl { get; set;}
+    string AndroidAppUrl { get; set; }
     string WsUrl { get; set; }
     bool IsMAUI { get; set; }
     bool IsWASM { get; }
-    bool IsAndroid { get; set; }    
-    bool IsLocal { get; set;  }   
+    bool IsAndroid { get; set; }
+    bool IsLocal { get; set; }
     bool UseLocalhostApi { get; set; }
-    
+
     // Cognito configuration
     string? CognitoRegion { get; set; }
     string? CognitoUserPoolId { get; set; }
 
     string GetApiUrl(string path);
-    string GetAssetsUrl(string path);    
-    
+    string GetAssetsUrl(string path);
+
 }
 
 public class LzHost : ILzHost
@@ -54,13 +54,13 @@ public class LzHost : ILzHost
         string? appPath = null,
         string? appUrl = null,
         string? androidAppUrl = null,
-        string? remoteApiUrl = null, 
-        string? localApiUrl = null, 
-        string? assetsUrl = null, 
-        string? wsUrl = null, 
-        bool isMAUI = true, 
-        bool isAndroid = false, 
-        bool isLocal = false, 
+        string? remoteApiUrl = null,
+        string? localApiUrl = null,
+        string? assetsUrl = null,
+        string? wsUrl = null,
+        bool isMAUI = true,
+        bool isAndroid = false,
+        bool isLocal = false,
         bool useLocalhostApi = false,
         string? cognitoRegion = null,
         string? cognitoUserPoolId = null
@@ -70,7 +70,7 @@ public class LzHost : ILzHost
         RemoteApiUrl = remoteApiUrl ?? "";
         LocalApiUrl = localApiUrl ?? "";
         AssetsUrl = assetsUrl ?? "";
-        AppUrl = appUrl ?? "";  
+        AppUrl = appUrl ?? "";
         AndroidAppUrl = appUrl ?? "";
         WsUrl = wsUrl ?? "";
         IsMAUI = isMAUI;
@@ -85,15 +85,15 @@ public class LzHost : ILzHost
     public string AppUrl { get; set; } = string.Empty;
     public string AndroidAppUrl { get; set; } = string.Empty;
     public string RemoteApiUrl { get; set; } = string.Empty;
-    public string LocalApiUrl { get; set; } = string.Empty; 
+    public string LocalApiUrl { get; set; } = string.Empty;
     public string AssetsUrl { get; set; } = string.Empty;
     public string WsUrl { get; set; } = string.Empty;
     public bool IsMAUI { get; set; }
     public bool IsWASM => !IsMAUI;
     public bool IsAndroid { get; set; }
-    public bool IsLocal { get; set; }   
+    public bool IsLocal { get; set; }
     public bool UseLocalhostApi { get; set; }
-    
+
     // Cognito configuration
     public string? CognitoRegion { get; set; }
     public string? CognitoUserPoolId { get; set; }

@@ -155,7 +155,7 @@ public class LzMessageSet : NotifyBase
             try
             {
                 if (_staticAssets == null)
-                    throw new Exception("SetOSAccess must be called before SetMessageSetAsync.");
+                    throw new Exception("SetStaticAssets must be called before SetMessageSetAsync.");
                 foreach (var filePath in _messageFiles) // preserve the precidence order of the files
                 {
                     //Console.WriteLine($"UpdateMsgs: filePath: {filePath}"); 

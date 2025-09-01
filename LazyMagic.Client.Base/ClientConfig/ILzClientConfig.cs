@@ -1,6 +1,6 @@
 ﻿
 namespace LazyMagic.Client.Base;
-public interface ILzClientConfig
+public interface ILzClientConfig : IOidcConfig
 {
     bool ConfigureError { get; set; }
     bool Configured { get; set; }

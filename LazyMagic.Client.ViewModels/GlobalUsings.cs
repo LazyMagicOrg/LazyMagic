@@ -2,7 +2,6 @@
 global using FluentValidation;
 global using FluentValidation.Internal;
 global using LazyMagic.Client.Base;
-global using LazyMagic.Client.FactoryGenerator;
 global using LazyMagic.Shared;
 global using Microsoft.AspNetCore.Components.Forms;
 global using Microsoft.Extensions.DependencyInjection;

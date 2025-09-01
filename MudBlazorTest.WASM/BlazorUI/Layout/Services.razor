@@ -1,0 +1,49 @@
+﻿@namespace BlazorUI
+@inject IJSRuntime JSRuntime
+@inject ILzHost Host
+@inject IStaticAssets staticAssets
+@inject HttpClient HttpClient
+@inject IOSAccess OSAccess
+@inject ILzMessages Messages
+@inject ILzJsUtilities LzJsUtilities
+@inject NavigationManager NavigationManager
+@inject IConnectivityService ConnectivityService
+@inject BrowserFingerprintService BrowserFingerprintService
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        // Critical initialization that must happen before ViewModels are created
+        Messages.SetStaticAssets(staticAssets);
+        LzJsUtilities.SetJSRuntime(JSRuntime);
+        BrowserFingerprintService.SetJSRuntime(JSRuntime);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Services implemented using Browser features, but referenced in ViewModels require
+        // speical initialization in their implementation. For example these services
+        // may use the JSRuntime, so we can cast the Interface to the concrete implementation
+        // type to give the service access to the JSRuntime as shown below.
+        // An alternative implementation, not using the JSRuntime, would not need this cast
+        // or initialization call.
+        await ((ConnectivityService)ConnectivityService).InitializeAsync(JSRuntime);
+
+        await LzJsUtilities.Initialize();
+
+        try
+        {
+            // Read message files and set the default
+            Messages.AddBlazorUIMessages();
+            Messages.AssetsUrl = Host.AssetsUrl;
+            await Messages.SetMessageSetAsync("en-US", LzMessageUnits.Imperial);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Messages.SetMessageSetAsync failed. {ex.Message} ");
+        }
+
+    }
+
+}

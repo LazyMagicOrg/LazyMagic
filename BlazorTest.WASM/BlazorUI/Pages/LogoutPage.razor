@@ -1,0 +1,44 @@
+@namespace BlazorUI
+@page "/LogoutPage"
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@inject IDynamicConfigurationProvider DynamicConfig
+
+<h3>Logging out...</h3>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // Clear local storage first (this is what makes logout work)
+        try
+        {
+            await JS.InvokeVoidAsync("localStorage.clear");
+            await JS.InvokeVoidAsync("sessionStorage.clear");
+        }
+        catch
+        {
+            // Ignore errors clearing storage
+        }
+        
+        // Use provider-agnostic logout approach
+        var providerType = DynamicConfig.GetProviderType();
+        var postLogoutRedirectUri = Navigation.BaseUri; // Keep the trailing slash
+        
+        Console.WriteLine($"[Logout] Using provider: {providerType}");
+        Console.WriteLine($"[Logout] Post-logout redirect URI: {postLogoutRedirectUri}");
+        
+        // Try to build provider-specific logout URL
+        var logoutUrl = DynamicConfig.BuildLogoutUrl(postLogoutRedirectUri);
+        
+        if (!string.IsNullOrEmpty(logoutUrl))
+        {
+            Console.WriteLine($"[Logout] Redirecting to provider logout: {logoutUrl}");
+            Navigation.NavigateTo(logoutUrl, forceLoad: true);
+        }
+        else
+        {
+            Console.WriteLine($"[Logout] Provider does not support logout URLs, redirecting to home");
+            Navigation.NavigateTo("/", forceLoad: true);
+        }
+    }
+}

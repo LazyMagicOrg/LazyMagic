@@ -1,4 +1,5 @@
-﻿namespace LazyMagic.Client.ViewModels;
+﻿using LazyMagic.Client.FactoryGenerator; // do not put in global using. Causes runtime error.
+namespace LazyMagic.Client.ViewModels;
 
 [Factory]
 public class TenantConfigViewModel : LzViewModel

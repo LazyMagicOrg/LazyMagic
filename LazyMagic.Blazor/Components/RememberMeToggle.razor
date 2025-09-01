@@ -1,0 +1,77 @@
+@namespace BlazorUI
+@inject IRememberMeService RememberMe
+@inject IOIDCService AuthService
+
+@if (isAuthenticated)
+{
+    <div class="form-check form-switch d-inline-flex align-items-center me-3">
+        <input class="form-check-input" type="checkbox" role="switch" id="rememberMeSwitch" 
+               @bind="isRemembered" @bind:after="OnRememberMeChanged">
+        <label class="form-check-label ms-2" for="rememberMeSwitch">
+            Remember Me
+            <i class="bi bi-question-circle-fill text-muted" 
+               title="When enabled, you'll stay logged in across browser sessions. When disabled, you'll be logged out when you close your browser."></i>
+        </label>
+    </div>
+}
+
+@code {
+    private bool isRemembered = false;
+    private bool isInitialized = false;
+    private bool isAuthenticated = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Check authentication status
+            isAuthenticated = await AuthService.IsAuthenticatedAsync();
+            
+            // DON'T call InitializeAuthenticationAsync here - it's already called by AuthenticationInitializer
+            // await RememberMe.InitializeAuthenticationAsync();
+            
+            // Load the current Remember Me setting
+            isRemembered = await RememberMe.GetRememberMeAsync();
+            isInitialized = true;
+            
+            // Subscribe to authentication changes
+            AuthService.AuthenticationStateChanged += OnAuthenticationStateChanged;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"RememberMeToggle initialization error: {ex.Message}");
+            // Continue with default values if initialization fails
+            isRemembered = false;
+            isInitialized = true;
+        }
+    }
+    
+    private async void OnAuthenticationStateChanged(object? sender, OIDCAuthenticationStateChangedEventArgs e)
+    {
+        isAuthenticated = e.NewState.IsAuthenticated;
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    public void Dispose()
+    {
+        if (AuthService != null)
+        {
+            AuthService.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+        }
+    }
+
+    private async Task OnRememberMeChanged()
+    {
+        if (!isInitialized) return;
+        
+        await RememberMe.SetRememberMeAsync(isRemembered);
+        
+        // Show a toast or notification (optional)
+        var message = isRemembered 
+            ? "Remember Me enabled - You'll stay logged in across browser sessions" 
+            : "Remember Me disabled - You'll be logged out when you close your browser";
+        
+        // Log the change
+        Console.WriteLine($"Remember Me changed to: {isRemembered} - {message}");
+    }
+}

@@ -1,6 +1,6 @@
 ﻿namespace ViewModels;
 
-public interface ISessionViewModel : ILzSessionViewModelAuth, INotifyPropertyChanged
+public interface ISessionViewModel : ILzSessionViewModel, INotifyPropertyChanged
 {
 
 }

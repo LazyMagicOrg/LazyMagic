@@ -1,0 +1,40 @@
+@namespace BlazorUI
+@page "/authentication/{action}"
+@using Microsoft.Extensions.Logging
+@inject ILogger<Authentication> Logger
+@inject NavigationManager Navigation
+
+<RemoteAuthenticatorView Action="@Action">
+    <LogInFailed>
+        <div class="alert alert-danger" role="alert">
+            <h4>Login Failed</h4>
+            <p>There was an error trying to log you in.</p>
+            <p>@context</p>
+            <p><a href="/">Return to Home</a></p>
+        </div>
+    </LogInFailed>
+    <LogOutFailed>
+        <div class="alert alert-danger" role="alert">
+            <h4>Logout Failed</h4>
+            <p>There was an error trying to log you out.</p>
+            <p>@context</p>
+            <p><a href="/">Return to Home</a></p>
+        </div>
+    </LogOutFailed>
+    <CompletingLoggingIn>
+        <p>Completing login...</p>
+    </CompletingLoggingIn>
+    <CompletingLogOut>
+        <p>Completing logout...</p>
+    </CompletingLogOut>
+</RemoteAuthenticatorView>
+
+@code {
+    [Parameter] public string? Action { get; set; }
+    
+    protected override void OnInitialized()
+    {
+        Logger.LogInformation($"Authentication action: {Action}");
+        Logger.LogInformation($"Current URI: {Navigation.Uri}");
+    }
+}
