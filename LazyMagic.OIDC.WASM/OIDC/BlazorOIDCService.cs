@@ -195,19 +195,17 @@ public class BlazorOIDCService : IOIDCService, IDisposable
         }
     }
 
-    public async Task LogoutAsync()
+    public Task LogoutAsync()
     {
         try
         {
             OnAuthenticationRequested?.Invoke("logout");
-            
-            // Navigate to the logout endpoint through the AuthPage
-            _navigation.NavigateToLogout("AuthPage/logout");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during logout");
         }
+        return Task.CompletedTask;
     }
 
     public void Dispose()
