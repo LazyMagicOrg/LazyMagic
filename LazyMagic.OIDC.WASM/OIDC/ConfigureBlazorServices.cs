@@ -28,7 +28,7 @@ public static class ConfigureBlazorServices
             options.ProviderOptions.ResponseType = "code";
             
             // Calculate redirect URIs from current browser state
-            options.ProviderOptions.RedirectUri = $"{currentHost.TrimEnd('/')}/authentication/login-callback";
+            options.ProviderOptions.RedirectUri = $"{currentHost.TrimEnd('/')}/AuthPage/login-callback";
             options.ProviderOptions.PostLogoutRedirectUri = currentHost.TrimEnd('/');
             
             // Standard OIDC scopes

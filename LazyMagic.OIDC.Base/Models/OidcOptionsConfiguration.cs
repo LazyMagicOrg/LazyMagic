@@ -71,7 +71,7 @@ public class OidcOptionsConfiguration
         }
         if(!baseAddress.EndsWith('/'))
             baseAddress = baseAddress + '/';    
-        options.RedirectUri = $"{baseAddress}authentication/login-callback";
+        options.RedirectUri = $"{baseAddress}AuthPage/login-callback";
         options.PostLogoutRedirectUri = baseAddress;
         
         options.DefaultScopes.Clear();

@@ -1,7 +1,7 @@
 @namespace BlazorUI
-@page "/authentication/{action}"
+@page "/AuthPage/{action}"
 @using Microsoft.Extensions.Logging
-@inject ILogger<Authentication> Logger
+@inject ILogger<AuthPage> Logger
 @inject NavigationManager Navigation
 
 <RemoteAuthenticatorView Action="@Action">

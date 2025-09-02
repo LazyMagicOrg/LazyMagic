@@ -10,13 +10,13 @@ public static class ConfigureLazyMagicOIDCMAUI
         services.TryAddSingleton<ITokenStorageService, TokenStorageService>();
 
         // Register WebView authentication provider
-        services.TryAddScoped<IWebViewAuthenticationProvider, MauiWebViewAuthenticationProvider>();
+        services.TryAddTransient<IWebViewAuthenticationProvider, MauiWebViewAuthenticationProvider>();
 
         // Register OIDC service (MAUI implementation)
-        services.TryAddScoped<IOIDCService, MauiOIDCService>();
+        services.TryAddSingleton<IOIDCService, MauiOIDCService>();
 
         // Register RememberMe service (MAUI implementation)
-        services.TryAddScoped<IRememberMeService, MauiRememberMeService>();
+        services.TryAddSingleton<IRememberMeService, MauiRememberMeService>();
 
         // Register a service that will load OIDC configuration when first accessed
         services.TryAddSingleton<IOidcConfig>(provider => new LazyOidcConfig());
@@ -24,7 +24,7 @@ public static class ConfigureLazyMagicOIDCMAUI
         // Register dynamic configuration provider (MAUI implementation)  
         services.TryAddSingleton<IDynamicConfigurationProvider, DynamicConfigurationProvider>();
 
-        services.TryAddScoped<AuthenticationStateProvider, LazyMagic.OIDC.MAUI.MauiAuthenticationStateProvider>();
+        services.TryAddSingleton<AuthenticationStateProvider, LazyMagic.OIDC.MAUI.MauiAuthenticationStateProvider>();
 
         services.AddLazyMagicOIDCBase(); // Base OIDC services
 

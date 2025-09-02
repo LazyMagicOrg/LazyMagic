@@ -7,8 +7,8 @@ public static class ConfigureLazyMagicOIDCWASM
     public static IServiceCollection AddLazyMagicOIDCWASM(this IServiceCollection services)
     {
         services.TryAddScoped<IOIDCService, BlazorOIDCService>();
-        services.TryAddScoped<IRememberMeService, BlazorRememberMeService>();
-        services.TryAddScoped<UserProfileViewModel>();
+        services.TryAddSingleton<IRememberMeService, BlazorRememberMeService>();
+        services.TryAddTransient<UserProfileViewModel>();
 
         services.TryAddSingleton<IPostConfigureOptions<RemoteAuthenticationOptions<OidcProviderOptions>>,
                                       DynamicOidcPostConfigureOptions>();
@@ -32,7 +32,7 @@ public static class ConfigureLazyMagicOIDCWASM
         services.TryAddSingleton<IDynamicConfigurationProvider, DynamicConfigurationProvider>();
 
         // Register profile management service
-        services.TryAddScoped<IProfileManagementService, BlazorProfileManagementService>();
+        services.TryAddSingleton<IProfileManagementService, BlazorProfileManagementService>();
 
         services.AddLazyMagicOIDCBase(); // Base OIDC services
 

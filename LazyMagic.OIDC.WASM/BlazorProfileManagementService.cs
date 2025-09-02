@@ -27,7 +27,7 @@ public class BlazorProfileManagementService : IProfileManagementService
             if (!string.IsNullOrEmpty(logoutEndpoint))
             {
                 var cognitoDomain = logoutEndpoint.Replace("/logout", "");
-                var redirectUri = Uri.EscapeDataString($"{_navigation.BaseUri}authentication/login-callback");
+                var redirectUri = Uri.EscapeDataString($"{_navigation.BaseUri}AuthPage/login-callback");
                 var changePasswordUrl = $"{cognitoDomain}/forgotPassword?client_id={clientId}&response_type=code&redirect_uri={redirectUri}";
                 
                 return new ProfileManagementResult
@@ -77,7 +77,7 @@ public class BlazorProfileManagementService : IProfileManagementService
             if (!string.IsNullOrEmpty(logoutEndpoint))
             {
                 var cognitoDomain = logoutEndpoint.Replace("/logout", "");
-                var redirectUri = Uri.EscapeDataString($"{_navigation.BaseUri}authentication/login");
+                var redirectUri = Uri.EscapeDataString($"{_navigation.BaseUri}AuthPage/login");
                 var resetUrl = $"{cognitoDomain}/forgotPassword?client_id={clientId}&response_type=code&redirect_uri={redirectUri}";
                 
                 return new ProfileManagementResult

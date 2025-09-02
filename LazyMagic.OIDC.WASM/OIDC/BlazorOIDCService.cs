@@ -181,7 +181,7 @@ public class BlazorOIDCService : IOIDCService, IDisposable
             _logger.LogInformation("Initiating Blazor WebAssembly login");
             
             // Navigate to the authentication/login endpoint
-            _navigation.NavigateToLogin("authentication/login");
+            _navigation.NavigateToLogin("AuthPage/login");
             
             // Trigger the event in case any subscribers need it
             OnAuthenticationRequested?.Invoke("login");
@@ -200,6 +200,9 @@ public class BlazorOIDCService : IOIDCService, IDisposable
         try
         {
             OnAuthenticationRequested?.Invoke("logout");
+            
+            // Navigate to the logout endpoint through the AuthPage
+            _navigation.NavigateToLogout("AuthPage/logout");
         }
         catch (Exception ex)
         {
