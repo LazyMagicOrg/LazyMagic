@@ -21,7 +21,7 @@ public class BearerTokenHandler : DelegatingHandler, IAuthenticationHandler
 
         // Add bearer token to request
         request.Headers.Authorization =
-            new System.Net.Http.Headers.AuthenticationHeaderValue("Authorization", token);
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
 
         // Continue with request
         return await base.SendAsync(request, cancellationToken);

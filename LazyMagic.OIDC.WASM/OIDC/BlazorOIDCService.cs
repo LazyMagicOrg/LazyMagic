@@ -103,6 +103,24 @@ public class BlazorOIDCService : IOIDCService, IDisposable
         return null;
     }
 
+    public async Task<string?> GetIdentityTokenAsync()
+    {
+        try
+        {
+            var tokenResult = await _tokenProvider.RequestIdentityToken();
+            if (tokenResult.TryGetToken(out var token))
+            {
+                return token.Value;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting identity token");
+        }
+
+        return null;
+    }
+
     public async Task<IEnumerable<Claim>> GetUserClaimsAsync()
     {
         var authState = await _authStateProvider.GetAuthenticationStateAsync();
