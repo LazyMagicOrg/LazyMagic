@@ -1,5 +1,6 @@
 ﻿global using BlazorUI;
 global using LazyMagic.Blazor;
+global using LazyMagic.BlazorSvg;   
 global using LazyMagic.Client.Base;
 global using LazyMagic.OIDC.Base;
 global using LazyMagic.OIDC.WASM;

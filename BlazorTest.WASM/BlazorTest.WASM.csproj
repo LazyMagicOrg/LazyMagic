@@ -19,6 +19,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\BlazorTest.ViewModels\BlazorTest.ViewModels.csproj" />
+		<ProjectReference Include="..\LazyMagic.BlazorSvg\LazyMagic.BlazorSvg.csproj" />
 		<ProjectReference Include="..\LazyMagic.Blazor\LazyMagic.Blazor.csproj" />
 		<ProjectReference Include="..\LazyMagic.OIDC.WASM\LazyMagic.OIDC.WASM.csproj" />
 	</ItemGroup>
