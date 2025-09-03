@@ -1,0 +1,16 @@
+﻿@namespace BlazorUI
+@page "/SVGTest"
+
+<PageTitle>SVGTest</PageTitle>
+
+<h1>SVGTestPage</h1>
+<SvgViewer SvgUrl="Level1.svg"/>
+
+This is for testing SVGs.
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+}

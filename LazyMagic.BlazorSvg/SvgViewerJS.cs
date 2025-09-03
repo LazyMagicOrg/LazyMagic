@@ -63,6 +63,10 @@ namespace LazyMagic.BlazorSvg
         public void OnPathUnselected(string pathId) => PathUnselectedEvent?.Invoke(pathId);
         public event PathUnselectedEventHandler? PathUnselectedEvent;
         public delegate void PathUnselectedEventHandler(string pathId);
+        [JSInvokable]
+        public void OnPathsChanged(List<string> pathIds) => PathsChangedEvent?.Invoke(pathIds);
+        public event PathsChangedEventHandler? PathsChangedEvent;
+        public delegate void PathsChangedEventHandler(List<string> pathIds);
     }
 
 }

@@ -18,6 +18,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\LazyMagic.BlazorSvg\LazyMagic.BlazorSvg.csproj" />
 		<ProjectReference Include="..\LazyMagic.Client.FactoryGenerator\LazyMagic.Client.FactoryGenerator.csproj" PrivateAssets="all" OutputItemType="Analyzer" />
 		<ProjectReference Include="..\LazyMagic.Blazor.Auth\LazyMagic.Blazor.Auth.csproj" />
 		<ProjectReference Include="..\LazyMagic.Client.ViewModels.Auth\LazyMagic.Client.ViewModels.Auth.csproj" />

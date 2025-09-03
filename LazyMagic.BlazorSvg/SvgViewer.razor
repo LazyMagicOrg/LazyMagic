@@ -73,10 +73,18 @@
 
     public void OnPathSelected(string pathId)
     {
+        if (!InitialPaths.Contains(pathId))
+        {
+            InitialPaths.Add(pathId);
+        }
         PathSelected.InvokeAsync(pathId);
     }
-    public void OnPathUnselected(string pathId) => PathUnselected.InvokeAsync(pathId);    
-    
+    public void OnPathUnselected(string pathId)
+    {
+        InitialPaths.Remove(pathId);
+        PathUnselected.InvokeAsync(pathId);
+    }
+
     public async Task SelectPath(string pathId) => await svgViewerJS!.SelectPath(pathId);
     public async Task UnslectPath(string pathId) =>await svgViewerJS!.UnselectPath(pathId);
     public async Task UnselectAllPaths() => await svgViewerJS!.UnselectAllPaths();

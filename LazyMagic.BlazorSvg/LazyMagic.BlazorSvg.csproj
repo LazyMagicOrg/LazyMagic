@@ -1,5 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
-	<Import Project="$(SolutionDir)CommonPackageHandling.targets"/>
+	<Import Project="$(SolutionDir)CommonPackageHandling.targets" />
 	<PropertyGroup>
 		<TargetFramework>net9.0</TargetFramework>
 
