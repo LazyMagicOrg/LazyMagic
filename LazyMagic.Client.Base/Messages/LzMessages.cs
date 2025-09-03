@@ -116,7 +116,7 @@ public class LzMessages : NotifyBase, ILzMessages
     public async Task SetMessageSetAsync(string culture, LzMessageUnits units)
     {
         if (_staticAssets == null)
-            throw new InvalidOperationException("SetOSAccess must be called before SetMessageSetAsync");
+            throw new InvalidOperationException("SetStaticsAssets must be called before SetMessageSetAsync");
        
         if (_MessageSets.TryGetValue(culture, out var existingSet))
         {

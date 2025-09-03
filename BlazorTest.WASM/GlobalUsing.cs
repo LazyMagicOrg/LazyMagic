@@ -1,7 +1,8 @@
 ﻿global using BlazorUI;
-global using LazyMagic.Client.Auth;
-global using LazyMagic.Client.Base;
 global using LazyMagic.Blazor;
+global using LazyMagic.Client.Base;
+global using LazyMagic.OIDC.Base;
+global using LazyMagic.OIDC.WASM;
 global using Microsoft.AspNetCore.Components.Web;
 global using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 global using Microsoft.Extensions.Logging;

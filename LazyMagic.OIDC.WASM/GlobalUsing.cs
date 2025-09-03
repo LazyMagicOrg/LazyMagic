@@ -1,0 +1,13 @@
+﻿global using LazyMagic.OIDC.Base;
+global using LazyMagic.Client.Base;
+global using Microsoft.AspNetCore.Components;
+global using Microsoft.AspNetCore.Components.Authorization;
+global using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+global using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.Extensions.DependencyInjection.Extensions;
+global using Microsoft.Extensions.Logging;
+global using Microsoft.Extensions.Options;
+global using Microsoft.JSInterop;
+global using Newtonsoft.Json.Linq;
+global using System.Security.Claims;

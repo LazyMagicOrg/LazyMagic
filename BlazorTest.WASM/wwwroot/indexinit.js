@@ -27,7 +27,8 @@ if (window.location.origin.includes("localhost")) {
             androidAppUrl: "",
             remoteApiUrl: appConfig.remoteApiUrl,
             localApiUrl: appConfig.localApiUrl,
-            assetsUrl: appConfig.assetsUrl
+            assetsUrl: appConfig.assetsUrl,
+            authConfigName: appConfig.authConfigName,
         };
 
     } catch (error) {
@@ -40,6 +41,8 @@ if (window.location.origin.includes("localhost")) {
     const fullAppPath = new URL(baseHrefElement.href).pathname;
     const pathSegments = fullAppPath.split('/').filter(segment => segment !== '');
     const appPath = pathSegments.length > 0 ? '/' + pathSegments[0] + '/' : '/';
+    // Open the appConfig.js file to get subset of configuration values.
+    const { appConfig } = await import('./appConfig.js');
 
     window.appConfig = {
         appPath: appPath,
@@ -48,7 +51,8 @@ if (window.location.origin.includes("localhost")) {
         remoteApiUrl: window.location.origin + "/",
         localhostApiUrl: "", // We do not set localApiUrl because the app has no access to localhost.
         assetsUrl: window.location.origin + "/",
-        wsUrl: window.location.origin.replace(/^http/, 'ws') + "/"
+        wsUrl: window.location.origin.replace(/^http/, 'ws') + "/",
+        authConfigName: appConfig.authConfigName,
     };
 
     if (navigator.serviceWorker) {

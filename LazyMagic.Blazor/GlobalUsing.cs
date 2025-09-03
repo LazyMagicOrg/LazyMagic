@@ -1,8 +1,11 @@
 ﻿global using BlazorPro.BlazorSize;
 global using LazyMagic.Client.Base;
 global using LazyMagic.Client.ViewModels;
+global using LazyMagic.OIDC.Base;
 global using LazyMagic.Shared;
 global using Microsoft.AspNetCore.Components;
+global using Microsoft.AspNetCore.Components.Authorization;
+global using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.DependencyInjection.Extensions;
 global using Microsoft.Extensions.Logging;
@@ -15,5 +18,4 @@ global using System.Reactive.Linq;
 global using System.Reactive;
 global using System.Reactive.Subjects;
 global using System.Runtime.CompilerServices;
-
-
+global using System.Security.Claims;

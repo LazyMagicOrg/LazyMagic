@@ -4,5 +4,6 @@
     remoteApiUrl: "https://uptown.lazymagicdev.click/",
     localApiUrl: "https://localhost:5001/",
     assetsUrl: "https://uptown.lazymagicdev.click/",
-    useLocalHostApi: false
+    useLocalHostApi: false,
+    authConfigName: "ConsumerAuth"
 }

@@ -111,16 +111,16 @@ public class LzHttpClientCognito : NotifyBase, ILzHttpClient
                             token = await _authProvider!.GetIdentityToken();
                             requestMessage.Headers.Add("Authorization", token);
 
-                            // When running against localhost, we need to add the region and userpool id
-                            // because these are not being added by virtue of the API Gateway proxy transformation
-                            // that would happen if we were calling the API Gateway.
-                            if (_lzHost.UseLocalhostApi)
-                            {
-                                if (!string.IsNullOrEmpty(_lzHost.CognitoRegion))
-                                    requestMessage.Headers.Add("lz-cognito-region", _lzHost.CognitoRegion);
-                                if (!string.IsNullOrEmpty(_lzHost.CognitoUserPoolId))
-                                    requestMessage.Headers.Add("lz-cognito-userpool-id", _lzHost.CognitoUserPoolId);
-                            }
+                            //// When running against localhost, we need to add the region and userpool id
+                            //// because these are not being added by virtue of the API Gateway proxy transformation
+                            //// that would happen if we were calling the API Gateway.
+                            //if (_lzHost.UseLocalhostApi)
+                            //{
+                            //    if (!string.IsNullOrEmpty(_lzHost.CognitoRegion))
+                            //        requestMessage.Headers.Add("lz-cognito-region", _lzHost.CognitoRegion);
+                            //    if (!string.IsNullOrEmpty(_lzHost.CognitoUserPoolId))
+                            //        requestMessage.Headers.Add("lz-cognito-userpool-id", _lzHost.CognitoUserPoolId);
+                            //}
 
                         }
                         catch

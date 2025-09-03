@@ -8,8 +8,6 @@ public static class ConfigBlazorUI
         // so you can register your own implementations of individual services 
         // before calling these AddLazyMagic* methods.
         services.AddLazyMagicBlazorise();// Blazorise Components 
-        services.AddLazyMagicBlazoriseAuth(); // Blazorise Components used by auth 
-
         return services;
     }
 }

@@ -12,12 +12,17 @@
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 	</PropertyGroup>
 	<ItemGroup>
+	  <Compile Remove="DynamicOidcConfigurationService.cs" />
 	  <Compile Remove="ILzMessages.cs" />
+	  <Compile Remove="LzHost.cs" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Content Remove="IStaticAssets.cs" />
-	  <Content Remove="Messages\MsgItemModel.cs" />
-	  <Content Remove="Messages\MsgItemsModel.cs" />
+	  <Content Remove="ClientConfig\IOidcConfig.cs" />
+	  <Content Remove="ClientConfig\OidcConfig.cs" />
+	  <Content Remove="IOidcConfig.cs" />
+	  <Content Remove="IRememberMeService.cs" />
+	  <Content Remove="OidcConfig.cs" />
+	  <Content Remove="OidcOptionsConfiguration.cs" />
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="ReactiveUI" />
@@ -26,6 +31,9 @@
 	</ItemGroup>
 	<ItemGroup>
 	  <ProjectReference Include="..\LazyMagic.Shared\LazyMagic.Shared.csproj" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Folder Include="Models\" />
 	</ItemGroup>
 
 </Project>

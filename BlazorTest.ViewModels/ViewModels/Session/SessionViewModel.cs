@@ -1,18 +1,17 @@
-﻿namespace ViewModels;
+﻿using LazyMagic.Client.FactoryGenerator; // do not put in global using. Causes runtime error.
+namespace ViewModels;
 
 [Factory]
-public class SessionViewModel : LzSessionViewModelAuth, ISessionViewModel, ILzTransient
+public class SessionViewModel : LzSessionViewModel, ISessionViewModel
 {
     public SessionViewModel(
         [FactoryInject] ILoggerFactory loggerFactory, // singleton  
-        [FactoryInject] IAuthProcess authProcess, // transient
         [FactoryInject] ILzClientConfig clientConfig, // singleton
         [FactoryInject] IConnectivityService connectivityService, // singleton
         [FactoryInject] ILzMessages messages // singleton
         )
-        : base(loggerFactory, authProcess, clientConfig, connectivityService, messages)
+        : base(loggerFactory, connectivityService, messages)
     {
-        authProcess.SetAuthenticator(clientConfig.AuthConfigs["TenantAuth"]);
 
     }
 }

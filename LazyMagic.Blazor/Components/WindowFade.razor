@@ -1,5 +1,6 @@
 @namespace LazyMagic.Blazor
 @inject IJSRuntime JS
+@inject NavigationManager Navigation
 @implements IDisposable
 @implements IAsyncDisposable
 
@@ -38,8 +39,10 @@
     {
         dotNetRef = DotNetObjectReference.Create(this);
         
-        // Create a more manageable JavaScript module approach
-        jsModule = await JS.InvokeAsync<IJSObjectReference>("eval", $@"
+        try
+        {
+            // Create a more manageable JavaScript module approach
+            jsModule = await JS.InvokeAsync<IJSObjectReference>("eval", $@"
             (() => {{
                 const containerId = '{containerId}';
                 const fadeDuration = {FadeDuration};
@@ -95,6 +98,17 @@
                 }};
             }})()
         ");
+        }
+        catch (JSException)
+        {
+            // JS initialization failed, component will work without fade effects
+            jsModule = null;
+        }
+        catch (InvalidOperationException)
+        {
+            // JS runtime not available
+            jsModule = null;
+        }
         
         await base.OnInitializedAsync();
     }
@@ -117,25 +131,64 @@
         {
             isDisposed = true;
             
-            if (jsModule != null)
+            // Check if we're navigating away (logout scenario)
+            bool isNavigatingAway = false;
+            try
+            {
+                var currentUri = Navigation?.Uri;
+                isNavigatingAway = currentUri?.Contains("/LogoutPage", StringComparison.OrdinalIgnoreCase) ?? false;
+            }
+            catch
+            {
+                // Navigation might be disposed
+                isNavigatingAway = true;
+            }
+            
+            if (jsModule != null && !isNavigatingAway)
             {
                 try
                 {
-                    await jsModule.InvokeVoidAsync("dispose");
-                    await jsModule.DisposeAsync();
+                    // Only try to dispose JS module if we're not navigating away
+                    await jsModule.InvokeVoidAsync("dispose").ConfigureAwait(false);
+                    await jsModule.DisposeAsync().ConfigureAwait(false);
                 }
                 catch (JSDisconnectedException)
                 {
                     // JS runtime is already disconnected, ignore
                 }
+                catch (ObjectDisposedException)
+                {
+                    // Object already disposed, ignore
+                }
+                catch (JSException)
+                {
+                    // Any JS error during disposal, ignore
+                }
+                catch (InvalidOperationException)
+                {
+                    // JS object already disposed or doesn't exist, ignore
+                }
             }
             
             dotNetRef?.Dispose();
+            jsModule = null;
         }
     }
 
     public void Dispose()
     {
-        _ = DisposeAsync();
+        // Don't use fire-and-forget pattern
+        // Instead, mark as disposed synchronously and let GC handle cleanup
+        if (!isDisposed)
+        {
+            isDisposed = true;
+            
+            // Synchronously dispose what we can
+            dotNetRef?.Dispose();
+            
+            // Mark JS module for disposal but don't await
+            // This prevents the race condition
+            jsModule = null;
+        }
     }
 }
