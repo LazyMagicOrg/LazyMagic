@@ -180,6 +180,10 @@ public class BlazorOIDCService : IOIDCService, IDisposable
         {
             _logger.LogInformation("Initiating Blazor WebAssembly login");
             
+            // Log the current base URI and where we're redirecting to
+            _logger.LogInformation("Base URI: {BaseUri}", _navigation.BaseUri);
+            _logger.LogInformation("Navigating to login endpoint: AuthPage/login");
+            
             // Navigate to the authentication/login endpoint
             _navigation.NavigateToLogin("AuthPage/login");
             

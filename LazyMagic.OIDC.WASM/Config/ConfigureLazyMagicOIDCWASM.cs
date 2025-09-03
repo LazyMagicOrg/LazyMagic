@@ -17,19 +17,19 @@ public static class ConfigureLazyMagicOIDCWASM
         services.TryAddSingleton<IOidcConfig>(provider =>
         {
             var lzHost = provider.GetRequiredService<ILzHost>();
-            var logger = provider.GetService<ILogger<BlazorLazyOidcConfig>>();
-            return new BlazorLazyOidcConfig(
-                lzHost,
-                "config",
-                lzHost.AuthConfigName!,
-                logger);
+            var logger = provider.GetService<ILogger<LazyOidcConfig>>();
+            return new LazyOidcConfig(lzHost, logger);
         });
 
         // Register a configuration service that will hold the dynamic config once loaded
         services.TryAddSingleton<DynamicOidcConfigHolder>();
 
         // Register a service to provide configuration values from dynamic config
-        services.TryAddSingleton<IDynamicConfigurationProvider, DynamicConfigurationProvider>();
+        services.TryAddSingleton<IDynamicConfigurationProvider>(provider =>
+        {
+            var oidcConfig = provider.GetRequiredService<IOidcConfig>();
+            return new DynamicConfigurationProvider(oidcConfig);
+        });
 
         // Register profile management service
         services.TryAddSingleton<IProfileManagementService, BlazorProfileManagementService>();
@@ -50,7 +50,7 @@ public static class ConfigureLazyMagicOIDCWASM
         // Load configuration directly (not in Task.Run) to ensure it completes before app starts
         try
         {
-            if (oidcConfig is BlazorLazyOidcConfig lazyConfig)
+            if (oidcConfig is LazyOidcConfig lazyConfig)
             {
                 Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Getting ILzHost");
                 var lzHost = host.Services.GetRequiredService<ILzHost>();
@@ -63,9 +63,11 @@ public static class ConfigureLazyMagicOIDCWASM
                 var selectedAuth = await lazyConfig.GetSelectedAuthConfigAsync();
                 Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Completed GetSelectedAuthConfigAsync");
 
+                Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Looking for selectedAuth '{selectedAuth}' in available configs: {string.Join(", ", authConfigs.Keys)}");
+                
                 if (authConfigs.TryGetValue(selectedAuth, out var authConfig))
                 {
-                    Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Setting configuration in holder");
+                    Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Found matching config, setting configuration in holder");
                     // Store the configuration in the holder
                     //configHolder.SetConfigurationFromAuthConfig(authConfig, builder.HostEnvironment.BaseAddress);
                     configHolder.SetConfigurationFromAuthConfig(authConfig, lzHost.AppUrl);
@@ -88,6 +90,22 @@ public static class ConfigureLazyMagicOIDCWASM
                     catch
                     {
                         // Post-configuration error - authentication may not work properly
+                    }
+                }
+                else
+                {
+                    Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] ❌ Could not find selectedAuth '{selectedAuth}' in available configs");
+                    
+                    // Try case-insensitive lookup
+                    var matchingKey = authConfigs.Keys.FirstOrDefault(k => k.Equals(selectedAuth, StringComparison.OrdinalIgnoreCase));
+                    if (matchingKey != null)
+                    {
+                        Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Found case-insensitive match: '{matchingKey}'");
+                        configHolder.SetConfigurationFromAuthConfig(authConfigs[matchingKey], lzHost.AppUrl);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] No case-insensitive match found either");
                     }
                 }
             }

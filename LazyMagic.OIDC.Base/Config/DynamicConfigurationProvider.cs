@@ -1,8 +1,8 @@
-namespace LazyMagic.OIDC.MAUI;
+namespace LazyMagic.OIDC.Base;
 
 /// <summary>
-/// MAUI implementation of IDynamicConfigurationProvider
 /// Provides configuration values from dynamically loaded config
+/// Acts as a bridge between the dynamic config and IConfiguration consumers
 /// </summary>
 public class DynamicConfigurationProvider : IDynamicConfigurationProvider
 {
@@ -20,12 +20,12 @@ public class DynamicConfigurationProvider : IDynamicConfigurationProvider
     {
         try
         {
-            Console.WriteLine($"[MauiDynamicConfigurationProvider] 🔍 Getting Cognito domain - SelectedAuthConfig: {_oidcConfig.SelectedAuthConfig}");
-            Console.WriteLine($"[MauiDynamicConfigurationProvider] 📋 Available AuthConfigs: {string.Join(", ", _oidcConfig.AuthConfigs.Keys)}");
+            Console.WriteLine($"[DynamicConfigurationProvider] 🔍 Getting Cognito domain - SelectedAuthConfig: {_oidcConfig.SelectedAuthConfig}");
+            Console.WriteLine($"[DynamicConfigurationProvider] 📋 Available AuthConfigs: {string.Join(", ", _oidcConfig.AuthConfigs.Keys)}");
             
             if (_oidcConfig.AuthConfigs.TryGetValue(_oidcConfig.SelectedAuthConfig, out var authConfig))
             {
-                Console.WriteLine($"[MauiDynamicConfigurationProvider] ✅ Found authConfig for {_oidcConfig.SelectedAuthConfig}");
+                Console.WriteLine($"[DynamicConfigurationProvider] ✅ Found authConfig for {_oidcConfig.SelectedAuthConfig}");
                 
                 // Debug: Show all available fields in authConfig
                 var allFields = new List<string>();
@@ -33,45 +33,45 @@ public class DynamicConfigurationProvider : IDynamicConfigurationProvider
                 {
                     allFields.Add($"{property.Name}={property.Value}");
                 }
-                Console.WriteLine($"[MauiDynamicConfigurationProvider] 📝 All fields in authConfig: {string.Join(", ", allFields)}");
+                Console.WriteLine($"[DynamicConfigurationProvider] 📝 All fields in authConfig: {string.Join(", ", allFields)}");
                 
                 // Try to get cognitoDomain directly from config
                 var cognitoDomain = authConfig["cognitoDomain"]?.ToString();
-                Console.WriteLine($"[MauiDynamicConfigurationProvider] 🔍 Direct cognitoDomain field: '{cognitoDomain}'");
+                Console.WriteLine($"[DynamicConfigurationProvider] 🔍 Direct cognitoDomain field: '{cognitoDomain}'");
                 
                 if (!string.IsNullOrEmpty(cognitoDomain))
                 {
                     var logoutEndpoint = $"{cognitoDomain.TrimEnd('/')}/logout";
-                    Console.WriteLine($"[MauiDynamicConfigurationProvider] ✅ Using direct cognitoDomain logout endpoint: {logoutEndpoint}");
+                    Console.WriteLine($"[DynamicConfigurationProvider] ✅ Using direct cognitoDomain logout endpoint: {logoutEndpoint}");
                     return logoutEndpoint;
                 }
 
                 // Fallback: construct from AWS region and domain if available
                 var awsRegion = authConfig["awsRegion"]?.ToString();
-                var domainPrefix = authConfig["cognitoDomainPrefix"]?.ToString() ?? "magicpets";
+                var domainPrefix = authConfig["cognitoDomainPrefix"]?.ToString();
                 
-                Console.WriteLine($"[MauiDynamicConfigurationProvider] 🔍 Fallback fields - awsRegion: '{awsRegion}', cognitoDomainPrefix: '{domainPrefix}'");
+                Console.WriteLine($"[DynamicConfigurationProvider] 🔍 Fallback fields - awsRegion: '{awsRegion}', cognitoDomainPrefix: '{domainPrefix}'");
                 
                 if (!string.IsNullOrEmpty(awsRegion) && !string.IsNullOrEmpty(domainPrefix))
                 {
                     var constructedLogoutEndpoint = $"https://{domainPrefix}.auth.{awsRegion}.amazoncognito.com/logout";
-                    Console.WriteLine($"[MauiDynamicConfigurationProvider] ✅ Using constructed logout endpoint: {constructedLogoutEndpoint}");
+                    Console.WriteLine($"[DynamicConfigurationProvider] ✅ Using constructed logout endpoint: {constructedLogoutEndpoint}");
                     return constructedLogoutEndpoint;
                 }
                 
-                Console.WriteLine($"[MauiDynamicConfigurationProvider] ❌ No valid domain fields found");
+                Console.WriteLine($"[DynamicConfigurationProvider] ❌ No valid domain fields found");
             }
             else
             {
-                Console.WriteLine($"[MauiDynamicConfigurationProvider] ❌ Could not find authConfig for '{_oidcConfig.SelectedAuthConfig}'");
+                Console.WriteLine($"[DynamicConfigurationProvider] ❌ Could not find authConfig for '{_oidcConfig.SelectedAuthConfig}'");
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[MauiDynamicConfigurationProvider] Error getting Cognito domain: {ex.Message}");
+            Console.WriteLine($"[DynamicConfigurationProvider] Error getting Cognito domain: {ex.Message}");
         }
 
-        Console.WriteLine($"[MauiDynamicConfigurationProvider] ❌ Returning null for Cognito domain");
+        Console.WriteLine($"[DynamicConfigurationProvider] ❌ Returning null for Cognito domain");
         return null;
     }
 
@@ -97,7 +97,7 @@ public class DynamicConfigurationProvider : IDynamicConfigurationProvider
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[MauiDynamicConfigurationProvider] Error getting Client ID: {ex.Message}");
+            Console.WriteLine($"[DynamicConfigurationProvider] Error getting Client ID: {ex.Message}");
         }
 
         return null;
@@ -117,7 +117,7 @@ public class DynamicConfigurationProvider : IDynamicConfigurationProvider
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[MauiDynamicConfigurationProvider] Error getting Authority: {ex.Message}");
+            Console.WriteLine($"[DynamicConfigurationProvider] Error getting Authority: {ex.Message}");
         }
 
         return null;
@@ -134,7 +134,7 @@ public class DynamicConfigurationProvider : IDynamicConfigurationProvider
         
         if (string.IsNullOrEmpty(logoutEndpoint) || string.IsNullOrEmpty(clientId))
         {
-            Console.WriteLine($"[MauiDynamicConfigurationProvider] ❌ Missing logout endpoint or client ID");
+            Console.WriteLine($"[DynamicConfigurationProvider] ❌ Missing logout endpoint or client ID");
             return null;
         }
         
@@ -183,7 +183,7 @@ public class DynamicConfigurationProvider : IDynamicConfigurationProvider
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[MauiDynamicConfigurationProvider] Error getting provider type: {ex.Message}");
+            Console.WriteLine($"[DynamicConfigurationProvider] Error getting provider type: {ex.Message}");
         }
         
         return "oidc"; // Generic OIDC fallback

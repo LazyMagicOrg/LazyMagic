@@ -242,18 +242,20 @@ public class MauiOIDCService : IOIDCService, IDisposable
 
             // Extract AWS Cognito configuration values
             var userPoolId = authConfig["userPoolId"]?.ToString();
-            var userPoolClientId = authConfig["userPoolClientId"]?.ToString();
+            var userPoolClientId = authConfig["userPoolClientId"]?.ToString() ?? authConfig["ClientId"]?.ToString();
             var awsRegion = authConfig["awsRegion"]?.ToString();
             
             // Use the configured Cognito domain for OAuth operations
-            var authority = !string.IsNullOrEmpty(awsRegion) 
-                ? $"https://magicpets.auth.{awsRegion}.amazoncognito.com"
-                : null;
+            var authority = authConfig["HostedUIDomain"]?.ToString() 
+                ?? authConfig["cognitoDomain"]?.ToString()
+                ?? (!string.IsNullOrEmpty(awsRegion) && !string.IsNullOrEmpty(authConfig["cognitoDomainPrefix"]?.ToString())
+                    ? $"https://{authConfig["cognitoDomainPrefix"]}.auth.{awsRegion}.amazoncognito.com"
+                    : null);
             var clientId = userPoolClientId;
             
             if (string.IsNullOrEmpty(authority) || string.IsNullOrEmpty(clientId))
             {
-                _logger.LogWarning("Missing authority or clientId for auth config: {SelectedConfig}", selectedConfig);
+                _logger.LogError("Missing required configuration for auth config '{SelectedConfig}'. Need HostedUIDomain or (cognitoDomainPrefix + awsRegion). Please use new config format.", selectedConfig);
                 return Task.FromResult<string?>(null);
             }
 
@@ -328,18 +330,20 @@ public class MauiOIDCService : IOIDCService, IDisposable
 
             // Extract AWS Cognito configuration values  
             var userPoolId = authConfig["userPoolId"]?.ToString();
-            var userPoolClientId = authConfig["userPoolClientId"]?.ToString();
+            var userPoolClientId = authConfig["userPoolClientId"]?.ToString() ?? authConfig["ClientId"]?.ToString();
             var awsRegion = authConfig["awsRegion"]?.ToString();
             
             // Use the configured Cognito domain for OAuth operations
-            var authority = !string.IsNullOrEmpty(awsRegion) 
-                ? $"https://magicpets.auth.{awsRegion}.amazoncognito.com"
-                : null;
+            var authority = authConfig["HostedUIDomain"]?.ToString() 
+                ?? authConfig["cognitoDomain"]?.ToString()
+                ?? (!string.IsNullOrEmpty(awsRegion) && !string.IsNullOrEmpty(authConfig["cognitoDomainPrefix"]?.ToString())
+                    ? $"https://{authConfig["cognitoDomainPrefix"]}.auth.{awsRegion}.amazoncognito.com"
+                    : null);
             var clientId = userPoolClientId;
             
             if (string.IsNullOrEmpty(authority) || string.IsNullOrEmpty(clientId))
             {
-                _logger.LogError("Missing authority or clientId in configuration");
+                _logger.LogError("Missing required configuration for token exchange. Need HostedUIDomain or (cognitoDomainPrefix + awsRegion). Please use new config format.");
                 return false;
             }
 
@@ -535,17 +539,19 @@ public class MauiOIDCService : IOIDCService, IDisposable
 
             // Extract AWS Cognito configuration values  
             var userPoolId = authConfig["userPoolId"]?.ToString();
-            var userPoolClientId = authConfig["userPoolClientId"]?.ToString();
+            var userPoolClientId = authConfig["userPoolClientId"]?.ToString() ?? authConfig["ClientId"]?.ToString();
             var awsRegion = authConfig["awsRegion"]?.ToString();
             
             // Use the configured Cognito domain for logout
-            var authority = !string.IsNullOrEmpty(awsRegion) 
-                ? $"https://magicpets.auth.{awsRegion}.amazoncognito.com"
-                : null;
+            var authority = authConfig["HostedUIDomain"]?.ToString() 
+                ?? authConfig["cognitoDomain"]?.ToString()
+                ?? (!string.IsNullOrEmpty(awsRegion) && !string.IsNullOrEmpty(authConfig["cognitoDomainPrefix"]?.ToString())
+                    ? $"https://{authConfig["cognitoDomainPrefix"]}.auth.{awsRegion}.amazoncognito.com"
+                    : null);
                 
             if (string.IsNullOrEmpty(authority) || string.IsNullOrEmpty(userPoolClientId))
             {
-                _logger.LogWarning("Missing authority or clientId for server-side logout");
+                _logger.LogWarning("Missing required configuration for logout. Need HostedUIDomain or (cognitoDomainPrefix + awsRegion). Please use new config format.");
                 return;
             }
 

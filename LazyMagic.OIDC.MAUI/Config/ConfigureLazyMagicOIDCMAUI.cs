@@ -19,7 +19,12 @@ public static class ConfigureLazyMagicOIDCMAUI
         services.TryAddSingleton<IRememberMeService, MauiRememberMeService>();
 
         // Register a service that will load OIDC configuration when first accessed
-        services.TryAddSingleton<IOidcConfig>(provider => new LazyOidcConfig());
+        services.TryAddSingleton<IOidcConfig>(provider => 
+        {
+            var lzHost = provider.GetRequiredService<ILzHost>();
+            var logger = provider.GetRequiredService<ILogger<LazyOidcConfig>>();
+            return new LazyOidcConfig(lzHost, logger);
+        });
 
         // Register dynamic configuration provider (MAUI implementation)  
         services.TryAddSingleton<IDynamicConfigurationProvider, DynamicConfigurationProvider>();

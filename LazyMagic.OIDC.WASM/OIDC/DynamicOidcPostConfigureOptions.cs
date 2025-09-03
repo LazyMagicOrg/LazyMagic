@@ -21,25 +21,43 @@ public class DynamicOidcPostConfigureOptions : IPostConfigureOptions<RemoteAuthe
 
     public void PostConfigure(string? name, RemoteAuthenticationOptions<OidcProviderOptions> options)
     {
+        _logger.LogInformation("PostConfigure called with name: {Name}", name ?? "null");
+        
         lock (_configLock)
         {
             if (_hasConfigured)
             {
+                _logger.LogInformation("Configuration already applied, skipping");
                 return;
             }
 
             try
             {
+                _logger.LogInformation("ConfigHolder.IsConfigured: {IsConfigured}", _configHolder.IsConfigured);
+                
                 if (_configHolder.IsConfigured)
                 {
+                    var config = _configHolder.GetConfiguration();
+                    _logger.LogInformation("Applying configuration - Authority: {Authority}, ClientId: {ClientId}", 
+                        config?.Authority, config?.ClientId);
+                    
                     // Apply the dynamic configuration
                     _configHolder.ApplyConfiguration(options);
+                    
+                    // Log the final applied configuration
+                    _logger.LogInformation("Final OIDC options - Authority: {Authority}, ClientId: {ClientId}, RedirectUri: {RedirectUri}", 
+                        options.ProviderOptions.Authority, 
+                        options.ProviderOptions.ClientId,
+                        options.ProviderOptions.RedirectUri);
+                    
                     _logger.LogInformation("Successfully applied dynamic OIDC configuration");
                 }
                 else
                 {
                     // Configuration not loaded yet - this means authentication happened too early
                     _logger.LogWarning("Dynamic OIDC configuration not available during post-configure");
+                    _logger.LogInformation("Current options - Authority: {Authority}, ClientId: {ClientId}", 
+                        options.ProviderOptions.Authority, options.ProviderOptions.ClientId);
                 }
 
                 _hasConfigured = true;
