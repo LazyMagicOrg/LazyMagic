@@ -1,11 +1,18 @@
 ﻿using LazyMagic.Client.FactoryGenerator; // do not put in global using. Causes runtime error.
 namespace LazyMagic.Client.ViewModels;
 
-[Factory]
-public class TenantConfigViewModel : LzViewModel
+
+public interface ITenantConfigViewModel
+{
+    TenantConfig? TenantConfig { get; set; }  // DTO
+    bool IsLoaded { get; set; } 
+    Task ReadAsync(string url);
+}
+
+public class TenantConfigViewModel : LzViewModel, ITenantConfigViewModel
 {
     public TenantConfigViewModel(
-        [FactoryInject] ILoggerFactory loggerFactory,
+        ILoggerFactory loggerFactory,
 		IStaticAssets staticAssets
         ) : base(loggerFactory)
     {

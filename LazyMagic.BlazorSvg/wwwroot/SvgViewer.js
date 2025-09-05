@@ -162,7 +162,7 @@ function handleSelection(event) {
         dotNetObjectReference.invokeMethodAsync("OnPathSelected", id);
     }
     getPaths();
-    dotNetObjectReference.invokeMethodAsync("OnPathsChanged", (... selectedIds));
+    dotNetObjectReference.invokeMethodAsync("OnPathsChanged", Array.from(selectedIds));
 }
 
 /**
