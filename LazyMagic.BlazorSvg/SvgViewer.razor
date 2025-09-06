@@ -118,5 +118,6 @@
     public async Task SelectPath(string pathId) => await svgViewerJS!.SelectPath(pathId);
     public async Task UnslectPath(string pathId) =>await svgViewerJS!.UnselectPath(pathId);
     public async Task UnselectAllPaths() => await svgViewerJS!.UnselectAllPaths();
+    public async Task SelectPaths(List<string> paths) => await svgViewerJS!.SelectPaths(paths);
     // todo - dispose
 }
