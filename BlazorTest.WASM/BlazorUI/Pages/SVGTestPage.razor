@@ -4,13 +4,19 @@
 <PageTitle>SVGTest</PageTitle>
 
 <h1>SVGTestPage</h1>
-<SvgViewer SvgUrl="Level1.svg"/>
-
+<SvgViewer SvgUrl="Level1.svg"
+    PathsChanged="OnPathsChanged"/>
+    <div>@(string.Join(",",currentPaths))</div>
 This is for testing SVGs.
 
 @code {
+    private List<string> currentPaths = new();
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
+    }
+    private void OnPathsChanged(List<string> paths)
+    {
+        currentPaths = paths;
     }
 }

@@ -162,7 +162,9 @@ function handleSelection(event) {
         dotNetObjectReference.invokeMethodAsync("OnPathSelected", id);
     }
     getPaths();
-    dotNetObjectReference.invokeMethodAsync("OnPathsChanged", Array.from(selectedIds));
+    const mySelectedIds = Array.from(selectedIds);
+
+    dotNetObjectReference.invokeMethodAsync("OnPathsChanged", mySelectedIds);
 }
 
 /**
@@ -294,6 +296,13 @@ export function selectPath(pathId) {
     } else {
         highlight();
     }
+    return true;
+}
+export function selectPaths(paths) {
+    paths.forEach((pathId) => {
+        if (pathId !== '')
+            selectPath(pathId);
+    }); 
     return true;
 }
 

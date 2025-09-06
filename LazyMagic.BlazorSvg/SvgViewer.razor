@@ -5,6 +5,7 @@
     [Parameter] public string? SvgUrl { get; set; }
     [Parameter] public EventCallback<string> PathSelected { get; set; }
     [Parameter] public EventCallback<string> PathUnselected { get; set; }
+    [Parameter] public EventCallback<List<string>> PathsChanged { get; set; }
     [Parameter] public List<string> InitialPaths { get; set; } = new() { "" };  
     [Parameter] public string Style { get; set; } = "width: 100%; height: 100%;";
     [Parameter] public int ChangeCount { get; set; } = 0;
@@ -24,6 +25,7 @@
         svgViewerJS ??= new SvgViewerJS(JSRuntime);
         svgViewerJS.PathSelectedEvent += OnPathSelected;
         svgViewerJS.PathUnselectedEvent += OnPathUnselected;
+        svgViewerJS.PathsChangedEvent += OnPathsChanged;
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -52,13 +54,36 @@
             {
                 paths = newPaths;
                 await svgViewerJS!.UnselectAllPaths();
-
-                foreach (var path in InitialPaths)
-                    await svgViewerJS!.SelectPath(path);
+                await svgViewerJS!.SelectPaths(paths.Split(',').ToList());
             }
-            lastChangeCount = ChangeCount;  
+            lastChangeCount = ChangeCount;
             busy = false;
         }
+        // var svgChanged = !SvgUrl!.Equals(lastSvgUrl);
+        // var newPaths = string.Join(",", InitialPaths);
+        // var pathsChanged = newPaths != paths;
+        // var changeCountChanged = ChangeCount != lastChangeCount;
+        // if (!busy && ( svgChanged || pathsChanged || changeCountChanged ))
+        // {
+
+        //     busy = true;
+        //     if (svgChanged)
+        //     {
+        //         lastSvgUrl = SvgUrl;
+        //         await svgViewerJS!.LoadSvgAsync(SvgUrl!);
+        //     }
+        //     if (pathsChanged || changeCountChanged)
+        //     {
+        //         paths = newPaths;
+        //         await svgViewerJS!.UnselectAllPaths();
+
+        //         foreach (var path in newPaths)
+        //             if (!string.IsNullOrEmpty(path))
+        //                 await svgViewerJS!.SelectPath(path);
+        //     }
+        //     lastChangeCount = ChangeCount;  
+        //     busy = false;
+        // }
     }
 
     protected override async Task OnParametersSetAsync()
@@ -73,6 +98,7 @@
 
     public void OnPathSelected(string pathId)
     {
+        return;
         if (!InitialPaths.Contains(pathId))
         {
             InitialPaths.Add(pathId);
@@ -81,10 +107,14 @@
     }
     public void OnPathUnselected(string pathId)
     {
+        return;
         InitialPaths.Remove(pathId);
         PathUnselected.InvokeAsync(pathId);
     }
-
+    public void OnPathsChanged(List<string> paths)
+    {
+        PathsChanged.InvokeAsync(paths);
+    }
     public async Task SelectPath(string pathId) => await svgViewerJS!.SelectPath(pathId);
     public async Task UnslectPath(string pathId) =>await svgViewerJS!.UnselectPath(pathId);
     public async Task UnselectAllPaths() => await svgViewerJS!.UnselectAllPaths();

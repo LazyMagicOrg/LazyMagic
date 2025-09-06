@@ -1,4 +1,5 @@
 using Microsoft.JSInterop;
+using System.IO;
 
 namespace LazyMagic.BlazorSvg
 {
@@ -43,7 +44,13 @@ namespace LazyMagic.BlazorSvg
             var module = await moduleTask.Value;
             var result = await module.InvokeAsync<bool>("selectPath", pathId);
             return result;
-        }   
+        }
+        public async ValueTask<bool> SelectPaths(List<string> paths)
+        {
+            var module = await moduleTask.Value;
+            var result = await module.InvokeAsync<bool>("selectPaths", paths);
+            return result;
+        }
         public async ValueTask<bool> UnselectPath(string pathId)
         {
             var module = await moduleTask.Value;
@@ -67,6 +74,7 @@ namespace LazyMagic.BlazorSvg
         public void OnPathsChanged(List<string> pathIds) => PathsChangedEvent?.Invoke(pathIds);
         public event PathsChangedEventHandler? PathsChangedEvent;
         public delegate void PathsChangedEventHandler(List<string> pathIds);
+
     }
 
 }
