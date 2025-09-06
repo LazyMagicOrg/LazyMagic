@@ -45,8 +45,10 @@ public enum LzMessageUnit { feet, squarefeet, inch, squareinch , meter, squareme
 /// </summary>
 public class LzMessages : NotifyBase, ILzMessages
 {
-    public LzMessages()
+    public LzMessages(ILzHost host, IStaticAssets staticAssets)
     {
+        AssetsUrl = host.AssetsUrl;
+        _staticAssets = staticAssets;
         // Set the defaults for culture and units
         // This doesn't load any message files so the message set is empty.
         MessageSet = new LzMessageSet(this, "en-US", LzMessageUnits.Imperial);
