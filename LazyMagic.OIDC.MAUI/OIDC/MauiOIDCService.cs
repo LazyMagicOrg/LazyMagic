@@ -14,6 +14,7 @@ public class MauiOIDCService : IOIDCService, IDisposable
     private readonly IOidcConfig _oidcConfig;
     private readonly ITokenStorageService _tokenStorage;
     private readonly IWebViewAuthenticationProvider? _webViewProvider;
+    private readonly IDynamicConfigurationProvider _configProvider;
     private OIDCAuthenticationState? _currentState;
     private string? _accessToken;
     private string? _idToken;
@@ -23,12 +24,13 @@ public class MauiOIDCService : IOIDCService, IDisposable
     public event EventHandler<OIDCAuthenticationStateChangedEventArgs>? AuthenticationStateChanged;
     public event Action<string>? OnAuthenticationRequested;
 
-    public MauiOIDCService(ILogger<MauiOIDCService> logger, ILoggerFactory loggerFactory, IOidcConfig oidcConfig, ITokenStorageService tokenStorage, IWebViewAuthenticationProvider? webViewProvider = null)
+    public MauiOIDCService(ILogger<MauiOIDCService> logger, ILoggerFactory loggerFactory, IOidcConfig oidcConfig, ITokenStorageService tokenStorage, IDynamicConfigurationProvider configProvider, IWebViewAuthenticationProvider? webViewProvider = null)
     {
         _logger = logger;
         _loggerFactory = loggerFactory;
         _oidcConfig = oidcConfig;
         _tokenStorage = tokenStorage;
+        _configProvider = configProvider;
         _webViewProvider = webViewProvider;
         
         // Initialize with unauthenticated state
@@ -529,34 +531,26 @@ public class MauiOIDCService : IOIDCService, IDisposable
     {
         try
         {
-            // Get auth configuration to build logout URL
-            var selectedConfig = _oidcConfig.SelectedAuthConfig ?? "ConsumerAuth";
-            if (!_oidcConfig.AuthConfigs.TryGetValue(selectedConfig, out var authConfig))
-            {
-                _logger.LogWarning("No auth configuration found for server-side logout");
-                return;
-            }
-
-            // Extract AWS Cognito configuration values  
-            var userPoolId = authConfig["userPoolId"]?.ToString();
-            var userPoolClientId = authConfig["userPoolClientId"]?.ToString() ?? authConfig["ClientId"]?.ToString();
-            var awsRegion = authConfig["awsRegion"]?.ToString();
+            // Use centralized logout URL builder - no redirect URI for MAUI
+            var logoutUrl = _configProvider.BuildLogoutUrl("");
             
-            // Use the configured Cognito domain for logout
-            var authority = authConfig["HostedUIDomain"]?.ToString() 
-                ?? authConfig["cognitoDomain"]?.ToString()
-                ?? (!string.IsNullOrEmpty(awsRegion) && !string.IsNullOrEmpty(authConfig["cognitoDomainPrefix"]?.ToString())
-                    ? $"https://{authConfig["cognitoDomainPrefix"]}.auth.{awsRegion}.amazoncognito.com"
-                    : null);
-                
-            if (string.IsNullOrEmpty(authority) || string.IsNullOrEmpty(userPoolClientId))
+            if (string.IsNullOrEmpty(logoutUrl))
             {
-                _logger.LogWarning("Missing required configuration for logout. Need HostedUIDomain or (cognitoDomainPrefix + awsRegion). Please use new config format.");
+                _logger.LogWarning("Could not build logout URL - missing configuration");
                 return;
             }
-
-            // Build Cognito logout URL - try without redirect_uri first to avoid configuration requirement
-            var logoutUrl = $"{authority}/logout?client_id={userPoolClientId}";
+            
+            // Remove the post_logout_redirect_uri parameter for MAUI (we don't need it)
+            if (logoutUrl.Contains("logout_uri=") || logoutUrl.Contains("post_logout_redirect_uri="))
+            {
+                var uriBuilder = new UriBuilder(logoutUrl);
+                var query = System.Web.HttpUtility.ParseQueryString(uriBuilder.Query);
+                query.Remove("logout_uri");
+                query.Remove("post_logout_redirect_uri");
+                uriBuilder.Query = query.ToString();
+                logoutUrl = uriBuilder.ToString();
+            }
+            
             _logger.LogInformation("Navigating to Cognito logout URL: {LogoutUrl}", logoutUrl);
             
             // Create the logout page with optional UI injection

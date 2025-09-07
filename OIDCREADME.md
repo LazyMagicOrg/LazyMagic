@@ -61,8 +61,6 @@ LazyMagic.OIDC.WASM/
 | **ClientId** | OAuth client identifier | Both platforms |
 | **HostedUIDomain** | User login interface URL | Authority for OAuth flows |
 | **MetadataUrl** | OIDC discovery document | Token validation |
-| **IssuerUrl** | JWT token issuer | Token verification |
-| **AuthorityDomain** | OIDC provider base | Alternative authority |
 
 ## Platform Implementations
 

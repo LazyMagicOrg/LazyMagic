@@ -108,16 +108,13 @@ catch (Exception ex)
         try
         {
             // Call the OIDC service logout directly
-            // This handles token clearing, WebView session clearing, and server-side logout
+            // This handles token clearing and Cognito logout navigation
             await AuthService.LogoutAsync();
-
-            // After logout completes, navigate to home page
-            Navigation.NavigateTo("/", forceLoad: true);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[LoginDisplay] Error during logout: {ex.Message}");
-            // Still try to navigate home even if logout had issues
+            // Fallback to local navigation if logout fails
             Navigation.NavigateTo("/", forceLoad: true);
         }
     }

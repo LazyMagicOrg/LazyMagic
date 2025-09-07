@@ -20,6 +20,8 @@ public static class ConfigureBlazorServices
         {
             var provider = builder.Services.BuildServiceProvider();
             var lzHost = provider.GetService<ILzHost>();
+            // Note: This will be a placeholder - real URL comes from dynamic config
+            // We can't get the actual current URL here during service setup
             var currentHost = lzHost!.AppUrl;
             
             // Placeholder values - will be overridden by dynamic config

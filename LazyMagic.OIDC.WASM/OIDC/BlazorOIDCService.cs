@@ -11,6 +11,8 @@ public class BlazorOIDCService : IOIDCService, IDisposable
     private readonly IOidcConfig _oidcConfig;
     private readonly NavigationManager _navigation;
     private readonly ILogger<BlazorOIDCService> _logger;
+    private readonly IRememberMeService _rememberMeService;
+    private readonly IDynamicConfigurationProvider _configProvider;
 
     public event EventHandler<OIDCAuthenticationStateChangedEventArgs>? AuthenticationStateChanged;
     public event Action<string>? OnAuthenticationRequested;
@@ -20,13 +22,17 @@ public class BlazorOIDCService : IOIDCService, IDisposable
         IAccessTokenProvider tokenProvider,
         IOidcConfig oidcConfig,
         NavigationManager navigation,
-        ILogger<BlazorOIDCService> logger)
+        ILogger<BlazorOIDCService> logger,
+        IRememberMeService rememberMeService,
+        IDynamicConfigurationProvider configProvider)
     {
         _authStateProvider = authStateProvider;
         _tokenProvider = tokenProvider;
         _oidcConfig = oidcConfig;
         _navigation = navigation;
         _logger = logger;
+        _rememberMeService = rememberMeService;
+        _configProvider = configProvider;
 
         // Subscribe to authentication state changes
         _authStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
@@ -199,17 +205,37 @@ public class BlazorOIDCService : IOIDCService, IDisposable
         }
     }
 
-    public Task LogoutAsync()
+    public async Task LogoutAsync()
     {
         try
         {
-            OnAuthenticationRequested?.Invoke("logout");
+            _logger.LogInformation("Starting logout process");
+            
+            // Clear tokens from storage to prevent immediate re-login
+            await _rememberMeService.ClearTokensAsync();
+            _logger.LogInformation("Tokens cleared from storage");
+            
+            // Build logout URL to clear Cognito session
+            var postLogoutRedirectUri = _navigation.BaseUri;
+            var logoutUrl = _configProvider.BuildLogoutUrl(postLogoutRedirectUri);
+            
+            if (!string.IsNullOrEmpty(logoutUrl))
+            {
+                _logger.LogInformation($"Navigating to Cognito logout: {logoutUrl}");
+                _navigation.NavigateTo(logoutUrl, forceLoad: true);
+            }
+            else
+            {
+                _logger.LogWarning("Could not build logout URL, falling back to local logout");
+                OnAuthenticationRequested?.Invoke("logout");
+            }
+            
+            _logger.LogInformation("Logout navigation triggered");
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during logout");
         }
-        return Task.CompletedTask;
     }
 
     public void Dispose()

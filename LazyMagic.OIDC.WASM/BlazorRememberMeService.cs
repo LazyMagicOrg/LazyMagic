@@ -71,9 +71,30 @@ public class BlazorRememberMeService : IRememberMeService
     {
         try
         {
-            // Clear both storages to ensure complete logout
-            await _jsRuntime.InvokeVoidAsync("localStorage.clear");
-            await _jsRuntime.InvokeVoidAsync("sessionStorage.clear");
+            _logger.LogInformation("Starting to clear OIDC tokens from storage");
+            
+            // Clear only OIDC-related tokens from localStorage
+            var localOidcKeys = await _jsRuntime.InvokeAsync<string[]>("eval", 
+                "Object.keys(localStorage).filter(k => k.startsWith('oidc.') || k.includes('Authentication'))");
+            foreach (var key in localOidcKeys)
+            {
+                await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", key);
+                _logger.LogInformation($"Removed localStorage key: {key}");
+            }
+            
+            // Clear only OIDC-related tokens from sessionStorage
+            var sessionOidcKeys = await _jsRuntime.InvokeAsync<string[]>("eval", 
+                "Object.keys(sessionStorage).filter(k => k.startsWith('oidc.') || k.includes('Authentication'))");
+            foreach (var key in sessionOidcKeys)
+            {
+                await _jsRuntime.InvokeVoidAsync("sessionStorage.removeItem", key);
+                _logger.LogInformation($"Removed sessionStorage key: {key}");
+            }
+            
+            // Also clear the RememberMe preference
+            await _jsRuntime.InvokeVoidAsync("localStorage.removeItem", REMEMBER_ME_KEY);
+            
+            _logger.LogInformation($"Cleared {localOidcKeys.Length} localStorage and {sessionOidcKeys.Length} sessionStorage OIDC tokens");
         }
         catch (Exception ex)
         {

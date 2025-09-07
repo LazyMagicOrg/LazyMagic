@@ -132,7 +132,7 @@ self.addEventListener('fetch', event => {
             // as this will break the PWA. The PWA will not load and the appInfo will say the domain is insecure.
             console.log('Blazor navigation to root detected', url);
             url = new URL(event.request.url);
-            url.pathname = self.appConfig.appPath + "index.html"; // Redirect to the root document
+            url.pathname = self.appConfig.appPath; // Redirect to the root document
             console.debug('Redirecting to:', url.toString());
             request = new Request(url.toString(), {
                 method: 'GET',

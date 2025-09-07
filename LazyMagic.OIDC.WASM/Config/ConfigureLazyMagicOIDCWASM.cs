@@ -28,7 +28,8 @@ public static class ConfigureLazyMagicOIDCWASM
         services.TryAddSingleton<IDynamicConfigurationProvider>(provider =>
         {
             var oidcConfig = provider.GetRequiredService<IOidcConfig>();
-            return new DynamicConfigurationProvider(oidcConfig);
+            var logger = provider.GetRequiredService<ILogger<DynamicConfigurationProvider>>();
+            return new DynamicConfigurationProvider(oidcConfig, logger);
         });
 
         // Register profile management service
@@ -69,8 +70,9 @@ public static class ConfigureLazyMagicOIDCWASM
                 {
                     Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Found matching config, setting configuration in holder");
                     // Store the configuration in the holder
-                    //configHolder.SetConfigurationFromAuthConfig(authConfig, builder.HostEnvironment.BaseAddress);
-                    configHolder.SetConfigurationFromAuthConfig(authConfig, lzHost.AppUrl);
+                    // Get current URL efficiently for redirect URI calculation
+                    var currentUrl = await GetCurrentBaseUrlAsync(host.Services, lzHost.AppUrl);
+                    configHolder.SetConfigurationFromAuthConfig(authConfig, currentUrl);
 
                     // Force OIDC post-configuration to happen NOW instead of waiting for first authentication
                     try
@@ -101,7 +103,10 @@ public static class ConfigureLazyMagicOIDCWASM
                     if (matchingKey != null)
                     {
                         Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Found case-insensitive match: '{matchingKey}'");
-                        configHolder.SetConfigurationFromAuthConfig(authConfigs[matchingKey], lzHost.AppUrl);
+                        
+                        // Get current URL efficiently for redirect URI calculation
+                        var currentUrl = await GetCurrentBaseUrlAsync(host.Services, lzHost.AppUrl);
+                        configHolder.SetConfigurationFromAuthConfig(authConfigs[matchingKey], currentUrl);
                     }
                     else
                     {
@@ -117,6 +122,57 @@ public static class ConfigureLazyMagicOIDCWASM
         }
         
         Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] LoadConfiguration completed");
+    }
+
+    // Cached base URL to avoid repeated JavaScript calls  
+    private static string? _cachedBaseUrl = null;
+    
+    /// <summary>
+    /// Efficiently gets the current base URL including subpath, with caching
+    /// </summary>
+    private static async Task<string> GetCurrentBaseUrlAsync(IServiceProvider services, string fallbackUrl)
+    {
+        // Return cached URL if available
+        if (!string.IsNullOrEmpty(_cachedBaseUrl))
+        {
+            Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Using cached base URL: {_cachedBaseUrl}");
+            return _cachedBaseUrl;
+        }
+        
+        var jsRuntime = services.GetService<IJSRuntime>();
+        if (jsRuntime != null)
+        {
+            try
+            {
+                Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Getting base URL from browser...");
+                
+                // Use a simpler, faster JavaScript call
+                var origin = await jsRuntime.InvokeAsync<string>("eval", "window.location.origin");
+                var pathname = await jsRuntime.InvokeAsync<string>("eval", "window.location.pathname");
+                
+                // For OIDC redirect URIs, we want the base app URL, not the current page path
+                // Skip AuthPage paths since those are temporary OAuth navigation paths
+                string basePath = "";
+                if (!pathname.Contains("/AuthPage") && !pathname.Contains("/authentication"))
+                {
+                    // Only use the path if it's not an auth-related path
+                    basePath = pathname.EndsWith("/") ? pathname.TrimEnd('/') : 
+                               pathname.Contains('/') ? pathname.Substring(0, pathname.LastIndexOf('/')) : "";
+                }
+                
+                _cachedBaseUrl = origin + basePath;
+                Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Resolved and cached base URL: {_cachedBaseUrl}");
+                return _cachedBaseUrl;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Error getting dynamic URL: {ex.Message}");
+            }
+        }
+        
+        Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Using fallback URL: {fallbackUrl}");
+        _cachedBaseUrl = fallbackUrl;
+        return fallbackUrl;
     }
 
 }

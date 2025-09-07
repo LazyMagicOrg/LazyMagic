@@ -7,10 +7,12 @@ namespace LazyMagic.OIDC.Base;
 public class DynamicConfigurationProvider : IDynamicConfigurationProvider
 {
     private readonly IOidcConfig _oidcConfig;
+    private readonly ILogger<DynamicConfigurationProvider> _logger;
 
-    public DynamicConfigurationProvider(IOidcConfig oidcConfig)
+    public DynamicConfigurationProvider(IOidcConfig oidcConfig, ILogger<DynamicConfigurationProvider> logger)
     {
         _oidcConfig = oidcConfig;
+        _logger = logger;
     }
 
     /// <summary>
@@ -20,12 +22,12 @@ public class DynamicConfigurationProvider : IDynamicConfigurationProvider
     {
         try
         {
-            Console.WriteLine($"[DynamicConfigurationProvider] 🔍 Getting Cognito domain - SelectedAuthConfig: {_oidcConfig.SelectedAuthConfig}");
-            Console.WriteLine($"[DynamicConfigurationProvider] 📋 Available AuthConfigs: {string.Join(", ", _oidcConfig.AuthConfigs.Keys)}");
+            _logger.LogInformation("Getting Cognito domain - SelectedAuthConfig: {SelectedAuthConfig}", _oidcConfig.SelectedAuthConfig);
+            _logger.LogInformation("Available AuthConfigs: {AuthConfigs}", string.Join(", ", _oidcConfig.AuthConfigs.Keys));
             
             if (_oidcConfig.AuthConfigs.TryGetValue(_oidcConfig.SelectedAuthConfig, out var authConfig))
             {
-                Console.WriteLine($"[DynamicConfigurationProvider] ✅ Found authConfig for {_oidcConfig.SelectedAuthConfig}");
+                _logger.LogInformation("Found authConfig for {SelectedAuthConfig}", _oidcConfig.SelectedAuthConfig);
                 
                 // Debug: Show all available fields in authConfig
                 var allFields = new List<string>();
@@ -33,16 +35,27 @@ public class DynamicConfigurationProvider : IDynamicConfigurationProvider
                 {
                     allFields.Add($"{property.Name}={property.Value}");
                 }
-                Console.WriteLine($"[DynamicConfigurationProvider] 📝 All fields in authConfig: {string.Join(", ", allFields)}");
+                _logger.LogInformation("All fields in authConfig: {Fields}", string.Join(", ", allFields));
                 
-                // Try to get cognitoDomain directly from config
+                // Try to get HostedUIDomain first (new config format)
+                var hostedUIDomain = authConfig["HostedUIDomain"]?.ToString();
+                _logger.LogInformation("HostedUIDomain field: '{HostedUIDomain}'", hostedUIDomain);
+                
+                if (!string.IsNullOrEmpty(hostedUIDomain))
+                {
+                    var logoutEndpoint = $"{hostedUIDomain.TrimEnd('/')}/logout";
+                    _logger.LogInformation("Using HostedUIDomain logout endpoint: {LogoutEndpoint}", logoutEndpoint);
+                    return logoutEndpoint;
+                }
+
+                // Fallback: Try to get cognitoDomain directly from config (old format)
                 var cognitoDomain = authConfig["cognitoDomain"]?.ToString();
-                Console.WriteLine($"[DynamicConfigurationProvider] 🔍 Direct cognitoDomain field: '{cognitoDomain}'");
+                _logger.LogInformation("Direct cognitoDomain field: '{CognitoDomain}'", cognitoDomain);
                 
                 if (!string.IsNullOrEmpty(cognitoDomain))
                 {
                     var logoutEndpoint = $"{cognitoDomain.TrimEnd('/')}/logout";
-                    Console.WriteLine($"[DynamicConfigurationProvider] ✅ Using direct cognitoDomain logout endpoint: {logoutEndpoint}");
+                    _logger.LogInformation("Using direct cognitoDomain logout endpoint: {LogoutEndpoint}", logoutEndpoint);
                     return logoutEndpoint;
                 }
 
@@ -50,28 +63,28 @@ public class DynamicConfigurationProvider : IDynamicConfigurationProvider
                 var awsRegion = authConfig["awsRegion"]?.ToString();
                 var domainPrefix = authConfig["cognitoDomainPrefix"]?.ToString();
                 
-                Console.WriteLine($"[DynamicConfigurationProvider] 🔍 Fallback fields - awsRegion: '{awsRegion}', cognitoDomainPrefix: '{domainPrefix}'");
+                _logger.LogInformation("Fallback fields - awsRegion: '{AwsRegion}', cognitoDomainPrefix: '{DomainPrefix}'", awsRegion, domainPrefix);
                 
                 if (!string.IsNullOrEmpty(awsRegion) && !string.IsNullOrEmpty(domainPrefix))
                 {
                     var constructedLogoutEndpoint = $"https://{domainPrefix}.auth.{awsRegion}.amazoncognito.com/logout";
-                    Console.WriteLine($"[DynamicConfigurationProvider] ✅ Using constructed logout endpoint: {constructedLogoutEndpoint}");
+                    _logger.LogInformation("Using constructed logout endpoint: {ConstructedLogoutEndpoint}", constructedLogoutEndpoint);
                     return constructedLogoutEndpoint;
                 }
                 
-                Console.WriteLine($"[DynamicConfigurationProvider] ❌ No valid domain fields found");
+                _logger.LogWarning("No valid domain fields found");
             }
             else
             {
-                Console.WriteLine($"[DynamicConfigurationProvider] ❌ Could not find authConfig for '{_oidcConfig.SelectedAuthConfig}'");
+                _logger.LogWarning("Could not find authConfig for '{SelectedAuthConfig}'", _oidcConfig.SelectedAuthConfig);
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[DynamicConfigurationProvider] Error getting Cognito domain: {ex.Message}");
+            _logger.LogError(ex, "Error getting Cognito domain");
         }
 
-        Console.WriteLine($"[DynamicConfigurationProvider] ❌ Returning null for Cognito domain");
+        _logger.LogWarning("Returning null for Cognito domain");
         return null;
     }
 
@@ -82,22 +95,49 @@ public class DynamicConfigurationProvider : IDynamicConfigurationProvider
     {
         try
         {
+            _logger.LogInformation("Getting ClientId for SelectedAuthConfig: {SelectedAuthConfig}", _oidcConfig.SelectedAuthConfig);
+            
             if (_oidcConfig.AuthConfigs.TryGetValue(_oidcConfig.SelectedAuthConfig, out var authConfig))
             {
-                // Try userPoolClientId first (AWS Cognito format)
-                var clientId = authConfig["userPoolClientId"]?.ToString();
+                _logger.LogInformation("Found authConfig for {SelectedAuthConfig}", _oidcConfig.SelectedAuthConfig);
+                
+                // Try ClientId first (new config format)
+                var clientId = authConfig["ClientId"]?.ToString();
+                _logger.LogInformation("Checking ClientId: '{ClientId}'", clientId);
                 if (!string.IsNullOrEmpty(clientId))
                 {
+                    _logger.LogInformation("Using ClientId: {ClientId}", clientId);
+                    return clientId;
+                }
+
+                // Try userPoolClientId (old AWS Cognito format)
+                clientId = authConfig["userPoolClientId"]?.ToString();
+                _logger.LogInformation("Checking userPoolClientId: '{UserPoolClientId}'", clientId);
+                if (!string.IsNullOrEmpty(clientId))
+                {
+                    _logger.LogInformation("Using userPoolClientId: {UserPoolClientId}", clientId);
                     return clientId;
                 }
 
                 // Fallback to generic clientId
-                return authConfig["clientId"]?.ToString();
+                clientId = authConfig["clientId"]?.ToString();
+                _logger.LogInformation("Checking clientId: '{GenericClientId}'", clientId);
+                if (!string.IsNullOrEmpty(clientId))
+                {
+                    _logger.LogInformation("Using clientId: {GenericClientId}", clientId);
+                    return clientId;
+                }
+                
+                _logger.LogWarning("No ClientId found in any format");
+            }
+            else
+            {
+                _logger.LogWarning("Could not find authConfig for '{SelectedAuthConfig}'", _oidcConfig.SelectedAuthConfig);
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[DynamicConfigurationProvider] Error getting Client ID: {ex.Message}");
+            _logger.LogError(ex, "Error getting Client ID");
         }
 
         return null;
@@ -117,7 +157,7 @@ public class DynamicConfigurationProvider : IDynamicConfigurationProvider
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[DynamicConfigurationProvider] Error getting Authority: {ex.Message}");
+            _logger.LogError(ex, "Error getting Authority");
         }
 
         return null;
@@ -128,17 +168,21 @@ public class DynamicConfigurationProvider : IDynamicConfigurationProvider
     /// </summary>
     public string? BuildLogoutUrl(string postLogoutRedirectUri)
     {
+        _logger.LogInformation("Building logout URL for redirect URI: {PostLogoutRedirectUri}", postLogoutRedirectUri);
+        
         var providerType = GetProviderType();
         var logoutEndpoint = GetLogoutEndpoint();
         var clientId = GetClientId();
         
+        _logger.LogInformation("Logout URL components - Provider: '{ProviderType}', Endpoint: '{LogoutEndpoint}', ClientId: '{ClientId}'", providerType, logoutEndpoint, clientId);
+        
         if (string.IsNullOrEmpty(logoutEndpoint) || string.IsNullOrEmpty(clientId))
         {
-            Console.WriteLine($"[DynamicConfigurationProvider] ❌ Missing logout endpoint or client ID");
+            _logger.LogWarning("Missing logout endpoint or client ID - Endpoint: '{LogoutEndpoint}', ClientId: '{ClientId}'", logoutEndpoint, clientId);
             return null;
         }
         
-        return providerType?.ToLower() switch
+        var logoutUrl = providerType?.ToLower() switch
         {
             "cognito" => $"{logoutEndpoint}?client_id={clientId}&logout_uri={Uri.EscapeDataString(postLogoutRedirectUri)}",
             "auth0" => $"{logoutEndpoint.TrimEnd('/')}/v2/logout?client_id={clientId}&returnTo={Uri.EscapeDataString(postLogoutRedirectUri)}",
@@ -146,6 +190,9 @@ public class DynamicConfigurationProvider : IDynamicConfigurationProvider
             "azuread" => $"{logoutEndpoint}?post_logout_redirect_uri={Uri.EscapeDataString(postLogoutRedirectUri)}",
             _ => $"{logoutEndpoint}?post_logout_redirect_uri={Uri.EscapeDataString(postLogoutRedirectUri)}" // Generic OIDC
         };
+        
+        _logger.LogInformation("Built logout URL: {LogoutUrl}", logoutUrl);
+        return logoutUrl;
     }
     
     /// <summary>
@@ -174,7 +221,21 @@ public class DynamicConfigurationProvider : IDynamicConfigurationProvider
                     if (authority.Contains("microsoftonline.com")) return "azuread";
                 }
                 
-                // Check for Cognito-specific fields
+                // Check for Cognito-specific fields (new format)
+                var hostedUIDomain = authConfig["HostedUIDomain"]?.ToString();
+                var metadataUrl = authConfig["MetadataUrl"]?.ToString();
+                
+                if (!string.IsNullOrEmpty(hostedUIDomain) && hostedUIDomain.Contains("amazoncognito.com"))
+                {
+                    return "cognito";
+                }
+                
+                if (!string.IsNullOrEmpty(metadataUrl) && metadataUrl.Contains("cognito-idp"))
+                {
+                    return "cognito";
+                }
+                
+                // Check for Cognito-specific fields (old format)
                 if (authConfig["cognitoDomain"] != null || authConfig["userPoolClientId"] != null)
                 {
                     return "cognito";
@@ -183,7 +244,7 @@ public class DynamicConfigurationProvider : IDynamicConfigurationProvider
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[DynamicConfigurationProvider] Error getting provider type: {ex.Message}");
+            _logger.LogError(ex, "Error getting provider type");
         }
         
         return "oidc"; // Generic OIDC fallback
