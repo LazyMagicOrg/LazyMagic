@@ -8,7 +8,6 @@
     [Parameter] public EventCallback<List<string>> PathsChanged { get; set; }
     [Parameter] public List<string> InitialPaths { get; set; } = new() { "" };  
     [Parameter] public string Style { get; set; } = "width: 100%; height: 100%;";
-    [Parameter] public int ChangeCount { get; set; } = 0;
 
     private string style = "";
     private SvgViewerJS? svgViewerJS;
@@ -20,7 +19,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-
         await base.OnInitializedAsync();
         svgViewerJS ??= new SvgViewerJS(JSRuntime);
         svgViewerJS.PathSelectedEvent += OnPathSelected;
@@ -35,55 +33,21 @@
             busy = true;
             await svgViewerJS!.InitAsync();
             busy = false;
-
         }
         var svgChanged = !SvgUrl!.Equals(lastSvgUrl);
-        var newPaths = string.Join(",", InitialPaths);
-        var pathsChanged = newPaths != paths;
-        var changeCountChanged = ChangeCount != lastChangeCount;
-        if (!busy && ( svgChanged || pathsChanged || changeCountChanged ))
+        if (!busy && ( svgChanged ))
         {
-
             busy = true;
-            if (svgChanged)
-            {
-                lastSvgUrl = SvgUrl;
-                await svgViewerJS!.LoadSvgAsync(SvgUrl!);
-            }
-            if (pathsChanged || changeCountChanged)
-            {
-                paths = newPaths;
-                await svgViewerJS!.UnselectAllPaths();
-                await svgViewerJS!.SelectPaths(paths.Split(',').ToList());
-            }
-            lastChangeCount = ChangeCount;
+            lastSvgUrl = SvgUrl;
+            await svgViewerJS!.LoadSvgAsync(SvgUrl!);
             busy = false;
         }
-        // var svgChanged = !SvgUrl!.Equals(lastSvgUrl);
-        // var newPaths = string.Join(",", InitialPaths);
-        // var pathsChanged = newPaths != paths;
-        // var changeCountChanged = ChangeCount != lastChangeCount;
-        // if (!busy && ( svgChanged || pathsChanged || changeCountChanged ))
-        // {
-
-        //     busy = true;
-        //     if (svgChanged)
-        //     {
-        //         lastSvgUrl = SvgUrl;
-        //         await svgViewerJS!.LoadSvgAsync(SvgUrl!);
-        //     }
-        //     if (pathsChanged || changeCountChanged)
-        //     {
-        //         paths = newPaths;
-        //         await svgViewerJS!.UnselectAllPaths();
-
-        //         foreach (var path in newPaths)
-        //             if (!string.IsNullOrEmpty(path))
-        //                 await svgViewerJS!.SelectPath(path);
-        //     }
-        //     lastChangeCount = ChangeCount;  
-        //     busy = false;
-        // }
+        if(firstRender)
+        {
+            busy = true;
+            await svgViewerJS!.SelectPaths(InitialPaths);
+            busy = false;
+        }
     }
 
     protected override async Task OnParametersSetAsync()
