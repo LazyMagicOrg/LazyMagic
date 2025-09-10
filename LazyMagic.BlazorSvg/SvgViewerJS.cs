@@ -13,6 +13,7 @@ namespace LazyMagic.BlazorSvg
     {
         private readonly Lazy<Task<IJSObjectReference>> moduleTask;
         private DotNetObjectReference<SvgViewerJS> dotNetObjectReference;
+        private string? containerId;
 
         public SvgViewerJS(IJSRuntime jsRuntime)
         {
@@ -20,47 +21,60 @@ namespace LazyMagic.BlazorSvg
                 "import", "./_content/LazyMagic.BlazorSvg/SvgViewer.js").AsTask());
             dotNetObjectReference = DotNetObjectReference.Create(this);
         }
-        public async ValueTask InitAsync()
+        
+        public async ValueTask<string> InitAsync(string containerId)
         {
+            this.containerId = containerId;
             var module = await moduleTask.Value;
-            await module.InvokeVoidAsync("initAsync", dotNetObjectReference);
+            var instanceId = await module.InvokeAsync<string>("initAsync", containerId, dotNetObjectReference);
+            return instanceId;
         }
         public async ValueTask DisposeAsync()
         {
-            if (moduleTask.IsValueCreated)
+            if (moduleTask.IsValueCreated && containerId != null)
             {
                 var module = await moduleTask.Value;
+                await module.InvokeVoidAsync("disposeInstance", containerId);
                 await module.DisposeAsync();
             }
         }
-        public async ValueTask<string> LoadSvgAsync(string svgUrl)
+        
+        public async ValueTask LoadSvgAsync(string svgUrl)
         {
+            if (containerId == null) throw new InvalidOperationException("InitAsync must be called first");
             var module = await moduleTask.Value;
-            var result = await module.InvokeAsync<string>("loadSvgAsync",svgUrl);
-            return "";
+            await module.InvokeVoidAsync("loadSvgAsync", containerId, svgUrl);
         }
+        
         public async ValueTask<bool> SelectPath(string pathId)
         {
+            if (containerId == null) throw new InvalidOperationException("InitAsync must be called first");
             var module = await moduleTask.Value;
-            var result = await module.InvokeAsync<bool>("selectPath", pathId);
+            var result = await module.InvokeAsync<bool>("selectPath", containerId, pathId);
             return result;
         }
+        
         public async ValueTask<bool> SelectPaths(List<string> paths)
         {
+            if (containerId == null) throw new InvalidOperationException("InitAsync must be called first");
             var module = await moduleTask.Value;
-            var result = await module.InvokeAsync<bool>("selectPaths", paths);
+            var result = await module.InvokeAsync<bool>("selectPaths", containerId, paths);
             return result;
         }
+        
         public async ValueTask<bool> UnselectPath(string pathId)
         {
+            if (containerId == null) throw new InvalidOperationException("InitAsync must be called first");
             var module = await moduleTask.Value;
-            var result = await module.InvokeAsync<bool>("unselectPath", pathId);
+            var result = await module.InvokeAsync<bool>("unselectPath", containerId, pathId);
             return result;
         }
+        
         public async Task UnselectAllPaths()
         {
+            if (containerId == null) throw new InvalidOperationException("InitAsync must be called first");
             var module = await moduleTask.Value;
-            await module.InvokeVoidAsync("unselectAllPaths");
+            await module.InvokeVoidAsync("unselectAllPaths", containerId);
         }
         [JSInvokable]
         public void OnPathSelected(string pathId) => PathSelectedEvent?.Invoke(pathId);

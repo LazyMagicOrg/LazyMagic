@@ -1,94 +1,362 @@
-﻿let dotNetObjectReference;
-let s;
-let fillColor = "#f00";
-let boundingBoxRect;
-let isUpdating = false;
-let boundingBoxPathIds = new Set();
-let selectedIds;
-let selectedPaths;
-
-// --- Dynamic LAYERS (Inkscape) ---
-let layers = {};           // { <label>: SnapElement }
-let activeLayerKey = null; // current label (lowercase, no spaces/specials as you noted)
-
-// Active scope = current layer group (or whole paper if none detected)
-function scope() {
-    return (activeLayerKey && layers[activeLayerKey]) ? layers[activeLayerKey] : s;
-}
-
-// Find nearest ancestor that is an Inkscape layer; return its label/id key
-function findLayerKeyFromNode(node) {
-    let el = node;
-    while (el && el.nodeType === 1) {
-        const gm = el.getAttribute('inkscape:groupmode');
-        if (gm === 'layer') {
-            // Prefer inkscape:label, fall back to id
-            const label = el.getAttribute('inkscape:label');
-            const id = el.getAttribute('id');
-            const key = (label || id || '').trim();
-            return key || null;
-        }
-        el = el.parentNode;
+// SvgViewer class to handle multiple instances
+class SvgViewerInstance {
+    constructor(containerId, dotNetObjectReference) {
+        this.containerId = containerId;
+        this.dotNetObjectReference = dotNetObjectReference;
+        this.s = null;
+        this.fillColor = "#f00";
+        this.boundingBoxRect = null;
+        this.isUpdating = false;
+        this.boundingBoxPathIds = new Set();
+        this.selectedIds = null;
+        this.selectedPaths = null;
+        this.layers = {};
+        this.activeLayerKey = null;
     }
-    return null;
+
+    // Active scope = current layer group (or whole paper if none detected)
+    scope() {
+        return (this.activeLayerKey && this.layers[this.activeLayerKey]) ? this.layers[this.activeLayerKey] : this.s;
+    }
+
+    // Find nearest ancestor that is an Inkscape layer; return its label/id key
+    findLayerKeyFromNode(node) {
+        let el = node;
+        while (el && el.nodeType === 1) {
+            const gm = el.getAttribute('inkscape:groupmode');
+            if (gm === 'layer') {
+                const label = el.getAttribute('inkscape:label');
+                const id = el.getAttribute('id');
+                const key = (label || id || '').trim();
+                return key || null;
+            }
+            el = el.parentNode;
+        }
+        return null;
+    }
+
+    // TRUE if a node is inside the active layer (or no layers detected)
+    isInActiveLayer(domNode) {
+        if (!this.activeLayerKey || !this.layers[this.activeLayerKey]) return true;
+        return this.findLayerKeyFromNode(domNode) === this.activeLayerKey;
+    }
+
+    // Discover layers by Inkscape attributes
+    bootstrapLayers() {
+        this.layers = {};
+        const nodes = this.s.selectAll('g[inkscape\\:groupmode="layer"]');
+        nodes.forEach(g => {
+            const label = g.attr('inkscape:label') || g.attr('id');
+            if (!label) return;
+            const key = String(label).trim();
+            if (key && !this.layers[key]) this.layers[key] = g;
+        });
+    }
+
+    // Activate a layer by key (label/id). Clears selection to avoid cross-layer mixes.
+    activateLayer(name) {
+        if (!this.s) return false;
+        if (!this.layers[name]) return false;
+
+        this.unselectAllPaths();
+        this.activeLayerKey = name;
+
+        // Visual cue: dim non-active layers
+        Object.entries(this.layers).forEach(([k, g]) => {
+            g.attr({ opacity: k === this.activeLayerKey ? 1 : 0.6 });
+        });
+
+        return true;
+    }
+
+    async loadSvgAsync(svgContent) {
+        if (typeof Snap === 'undefined') {
+            throw new Error('Snap.svg is not loaded. Please call initAsync first.');
+        }
+        
+        if (this.s) {
+            this.s.selectAll("path").forEach((path) => {
+                path.node.removeEventListener("click", this.handleSelection.bind(this));
+            });
+            this.boundingBoxRect = null;
+            this.boundingBoxPathIds.clear();
+        }
+
+        let svgElement = document.querySelector(`#${this.containerId}`);
+        if (!svgElement) {
+            throw new Error(`SVG element with ID "${this.containerId}" not found.`);
+        }
+
+        const response = await fetch(svgContent);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const svgText = await response.text();
+        
+        const fragment = Snap.parse(svgText);
+        if (fragment) {
+            this.s = Snap(`#${this.containerId}`);
+            this.s.append(fragment);
+            
+            // Make SVG responsive
+            const svgEl = this.s.select("svg");
+            if (svgEl) {
+                svgEl.attr({
+                    width: "100%",
+                    height: "100%",
+                    preserveAspectRatio: "xMidYMid meet"
+                });
+            }
+
+            // Initialize per-path data + click handler
+            this.s.selectAll("path").forEach((path) => {
+                path.node.addEventListener("click", this.handleSelection.bind(this));
+                path.data("isSelected", false);
+                path.data("originalColor", path.attr("fill"));
+            });
+
+            // Discover Inkscape layers
+            this.bootstrapLayers();
+            const keys = Object.keys(this.layers);
+            if (keys.length > 0) {
+                this.activateLayer(keys[0]);
+            } else {
+                this.activeLayerKey = null;
+            }
+        } else {
+            throw new Error('Svg could not be parsed');
+        }
+    }
+
+    handleSelection(event) {
+        const path = Snap(event.target);
+
+        // Auto-activate layer if clicked
+        const targetKey = this.findLayerKeyFromNode(path.node);
+        if (targetKey && this.layers[targetKey] && targetKey !== this.activeLayerKey) {
+            this.activateLayer(targetKey);
+        }
+
+        if (!this.isInActiveLayer(path.node)) return;
+
+        const id = path.attr("id");
+        const isSelected = path.data("isSelected");
+
+        if (isSelected) {
+            this.unselectPath(id);
+            this.dotNetObjectReference.invokeMethodAsync("OnPathUnselected", id);
+        } else {
+            this.selectPath(id);
+            this.dotNetObjectReference.invokeMethodAsync("OnPathSelected", id);
+        }
+        
+        this.getPaths();
+        const mySelectedIds = Array.from(this.selectedIds);
+        this.dotNetObjectReference.invokeMethodAsync("OnPathsChanged", mySelectedIds);
+    }
+
+    computeIdsInsideBoundingBox(overlapThreshold = 0.5) {
+        const inside = new Set();
+        if (!this.boundingBoxRect || !this.s) return inside;
+
+        const bbox = this.boundingBoxRect.getBBox();
+        const allPaths = this.scope().selectAll("path");
+
+        allPaths.forEach(p => {
+            const b = p.getBBox();
+            const ix1 = Math.max(b.x, bbox.x);
+            const iy1 = Math.max(b.y, bbox.y);
+            const ix2 = Math.min(b.x + b.width, bbox.x + bbox.width);
+            const iy2 = Math.min(b.y + b.height, bbox.y + bbox.height);
+
+            const iw = Math.max(0, ix2 - ix1);
+            const ih = Math.max(0, iy2 - iy1);
+            const inter = iw * ih;
+            const area = b.width * b.height;
+
+            if (area > 0 && inter / area >= overlapThreshold) {
+                const id = p.attr("id");
+                if (id) inside.add(id);
+            }
+        });
+
+        return inside;
+    }
+
+    autoSelectInBoundingBox() {
+        if (!this.boundingBoxRect || !this.s) return;
+
+        const insideIds = this.computeIdsInsideBoundingBox(0.5);
+        const previouslyUpdating = this.isUpdating;
+        this.isUpdating = true;
+
+        insideIds.forEach(id => {
+            const path = this.s.select("#" + id);
+            if (path && !path.data("isSelected") && this.isInActiveLayer(path.node)) {
+                this.selectPath(id);
+            }
+        });
+
+        this.isUpdating = previouslyUpdating;
+    }
+
+    updateGlobalBoundingBox() {
+        if (this.boundingBoxRect != null) {
+            this.boundingBoxRect.remove();
+            this.boundingBoxRect = null;
+        }
+
+        const selectedPaths = this.scope().selectAll(".is-selected");
+
+        if (selectedPaths && selectedPaths.length > 0) {
+            let svg = this.s.select("svg");
+            const tempGroup = svg.g();
+            selectedPaths.forEach(path => tempGroup.append(path.clone()));
+
+            const bbox = tempGroup.getBBox();
+            tempGroup.remove();
+
+            this.boundingBoxRect = svg.rect(bbox.x, bbox.y, bbox.width, bbox.height);
+            this.boundingBoxRect.attr({
+                stroke: '#00F',
+                strokeWidth: 2,
+                fill: 'none',
+                strokeDasharray: '4 2',
+                "pointer-events": "none"
+            });
+            svg.append(this.boundingBoxRect);
+
+            this.boundingBoxPathIds = this.computeIdsInsideBoundingBox(0.5);
+
+            if (!this.isUpdating) 
+                this.autoSelectInBoundingBox();
+                
+            this.highlight();
+        } else {
+            this.boundingBoxPathIds.clear();
+            this.highlight();
+        }
+    }
+
+    highlight() {
+        this.getPaths();
+        const allInsideSelected = [...this.boundingBoxPathIds].every(id => this.selectedIds.has(id));
+
+        this.selectedPaths.forEach(path => {
+            path.attr({ fill: allInsideSelected ? "#00FF00" : "#f00" });
+        });
+    }
+
+    getPaths() {
+        this.selectedPaths = this.s ? this.scope().selectAll(".is-selected") : [];
+        this.selectedIds = new Set();
+        this.selectedPaths.forEach(p => this.selectedIds.add(p.attr("id")));
+    }
+
+    selectPath(pathId) {
+        if (!this.s) return false;
+        let path = this.s.select("#" + pathId);
+        if (!path) return false;
+
+        if (!this.isInActiveLayer(path.node)) return false;
+        if (path.data("isSelected") === true) return false;
+
+        path.data("isSelected", true);
+        path.attr({ fill: this.fillColor });
+        path.addClass("is-selected");
+
+        if (!this.isUpdating) {
+            this.updateGlobalBoundingBox();
+        } else {
+            this.highlight();
+        }
+        return true;
+    }
+
+    selectPaths(paths) {
+        if (!this.s || !Array.isArray(paths)) return;
+        this.isUpdating = true;
+        const ids = paths
+            .filter((id) => id != null && String(id).trim() !== "")
+            .map((id) => String(id).trim());
+
+        for (const id of ids) {
+            const path = this.s.select("#" + id);
+            if (!path) continue;
+            if (path.data("isSelected") === true) continue;
+
+            path.data("isSelected", true);
+            path.attr({ fill: this.fillColor });
+            path.addClass("is-selected");
+        }
+        this.updateGlobalBoundingBox();
+        this.isUpdating = false;
+        return true;
+    }
+
+    unselectPath(pathId) {
+        if (!this.s) return false;
+        let path = this.s.select("#" + pathId);
+        if (!path) return false;
+
+        if (!this.isInActiveLayer(path.node)) return false;
+        if (path.data("isSelected") === false) return false;
+
+        const prevIsUpdating = this.isUpdating;
+        this.isUpdating = true;
+
+        let originalColor = path.data("originalColor");
+        path.data("isSelected", false);
+        path.attr({ fill: originalColor });
+        path.removeClass("is-selected");
+
+        this.updateGlobalBoundingBox();
+
+        this.isUpdating = prevIsUpdating;
+        this.highlight();
+        return true;
+    }
+
+    unselectAllPaths() {
+        if (!this.s) return;
+        this.s.selectAll(".is-selected").forEach((path) => {
+            let originalColor = path.data("originalColor");
+            path.data("isSelected", false);
+            path.attr({ fill: originalColor });
+            path.removeClass("is-selected");
+        });
+        if (this.boundingBoxRect) {
+            this.boundingBoxRect.remove();
+            this.boundingBoxRect = null;
+        }
+        this.boundingBoxPathIds.clear();
+        this.highlight();
+    }
 }
 
-// TRUE if a node is inside the active layer (or no layers detected)
-function isInActiveLayer(domNode) {
-    if (!activeLayerKey || !layers[activeLayerKey]) return true;
-    return findLayerKeyFromNode(domNode) === activeLayerKey;
-}
-
-// Discover layers by Inkscape attributes
-function bootstrapLayers() {
-    layers = {};
-    const nodes = s.selectAll('g[inkscape\\:groupmode="layer"]');
-    nodes.forEach(g => {
-        const label = g.attr('inkscape:label') || g.attr('id');
-        if (!label) return;
-        const key = String(label).trim(); // you said labels are clean lowercase without spaces/specials
-        if (key && !layers[key]) layers[key] = g;
-    });
-}
-
-// Activate a layer by key (label/id). Clears selection to avoid cross-layer mixes.
-// We keep pointer events enabled so you can click on another layer to switch.
-export function activateLayer(name) {
-    if (!s) return false;
-    if (!layers[name]) return false;
-
-    unselectAllPaths();
-
-    activeLayerKey = name;
-
-    // Visual cue: dim non-active layers (pointer events remain enabled for click-to-switch)
-    Object.entries(layers).forEach(([k, g]) => {
-        g.attr({ opacity: k === activeLayerKey ? 1 : 0.6 });
-    });
-
-    return true;
-}
-
-// Track script loading state globally
+// Global instance management
+const instances = new Map();
 let snapLoadingPromise = null;
 
-export function initAsync(dotNetObjectReferenceArg) {
+export function initAsync(containerId, dotNetObjectReference) {
     let url = './_content/LazyMagic.BlazorSvg/snap.svg.js';
-    dotNetObjectReference = dotNetObjectReferenceArg;
     
     // If already loading, return the existing promise
     if (snapLoadingPromise) {
-        return snapLoadingPromise;
+        return snapLoadingPromise.then(() => {
+            const instance = new SvgViewerInstance(containerId, dotNetObjectReference);
+            instances.set(containerId, instance);
+            return containerId;
+        });
     }
     
     // Check if already loaded
     if (typeof Snap !== 'undefined') {
-        return Promise.resolve();
+        const instance = new SvgViewerInstance(containerId, dotNetObjectReference);
+        instances.set(containerId, instance);
+        return Promise.resolve(containerId);
     }
     
     // Check if script tag exists but Snap might still be loading
     if (document.querySelector('script[src="' + url + '"]')) {
-        // Wait for Snap to be defined
         snapLoadingPromise = new Promise((resolve) => {
             const checkSnap = setInterval(() => {
                 if (typeof Snap !== 'undefined') {
@@ -98,7 +366,11 @@ export function initAsync(dotNetObjectReferenceArg) {
                 }
             }, 50);
         });
-        return snapLoadingPromise;
+        return snapLoadingPromise.then(() => {
+            const instance = new SvgViewerInstance(containerId, dotNetObjectReference);
+            instances.set(containerId, instance);
+            return containerId;
+        });
     }
     
     // Create and load the script
@@ -116,292 +388,49 @@ export function initAsync(dotNetObjectReferenceArg) {
         document.head.appendChild(script);
     });
     
-    return snapLoadingPromise;
-}
-
-export function loadSvgAsync(svgContent) {
-    // Ensure Snap is loaded
-    if (typeof Snap === 'undefined') {
-        return Promise.reject('Snap.svg is not loaded. Please call initAsync first.');
-    }
-    
-    if (s) {
-        s.selectAll("path").forEach(function (path) {
-            path.node.removeEventListener("click", handleSelection);
-        });
-        // s.clear();
-        boundingBoxRect = null;
-        boundingBoxPathIds.clear();
-    }
-
-    let svgElement = document.querySelector("#svg");
-    if (!svgElement) {
-        return Promise.reject('SVG element with ID "svg" not found.');
-    }
-
-    return new Promise((resolve, reject) => {
-        fetch(svgContent)
-            .then(response => {
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                return response.text();
-            })
-            .then(svgText => {
-                const fragment = Snap.parse(svgText);
-                if (fragment) {
-                    s = Snap("#svg");
-                    s.append(fragment);
-                    
-                    // Make SVG responsive by removing fixed dimensions
-                    const svgEl = s.select("svg");
-                    if (svgEl) {
-                        svgEl.attr({
-                            width: "100%",
-                            height: "100%",
-                            preserveAspectRatio: "xMidYMid meet"
-                        });
-                    }
-
-                    // Initialize per-path data + click handler
-                    s.selectAll("path").forEach(function (path) {
-                        path.node.addEventListener("click", handleSelection);
-                        path.data("isSelected", false);
-                        path.data("originalColor", path.attr("fill"));
-                    });
-
-                    // Discover Inkscape layers and pick a default (first found)
-                    bootstrapLayers();
-                    const keys = Object.keys(layers);
-                    if (keys.length > 0) {
-                        activateLayer(keys[0]);
-                    } else {
-                        activeLayerKey = null; // no layers detected -> global scope
-                    }
-
-                    resolve();
-                } else {
-                    reject('Svg could not be parsed');
-                }
-            })
-            .catch(error => {
-                reject(`Error loading SVG: ${error.message}`);
-            });
+    return snapLoadingPromise.then(() => {
+        const instance = new SvgViewerInstance(containerId, dotNetObjectReference);
+        instances.set(containerId, instance);
+        return containerId;
     });
 }
 
-function handleSelection(event) {
-    const path = Snap(event.target);
-
-    // If click happened in another layer, auto-activate it first.
-    const targetKey = findLayerKeyFromNode(path.node);
-    if (targetKey && layers[targetKey] && targetKey !== activeLayerKey) {
-        activateLayer(targetKey);
-    }
-
-    // Now only respond if the clicked node is in the active layer
-    if (!isInActiveLayer(path.node)) return;
-
-    const id = path.attr("id");
-    const isSelected = path.data("isSelected");
-
-    if (isSelected) {
-        unselectPath(id);
-        dotNetObjectReference.invokeMethodAsync("OnPathUnselected", id);
-    } else {
-        selectPath(id);
-        dotNetObjectReference.invokeMethodAsync("OnPathSelected", id);
-    }
-    getPaths();
-    const mySelectedIds = Array.from(selectedIds);
-
-    dotNetObjectReference.invokeMethodAsync("OnPathsChanged", mySelectedIds);
+export async function loadSvgAsync(containerId, svgContent) {
+    const instance = instances.get(containerId);
+    if (!instance) throw new Error(`No instance found for container ${containerId}`);
+    await instance.loadSvgAsync(svgContent);
 }
 
-/**
- * Compute IDs of all paths whose bbox overlaps the current selection box
- * by at least overlapThreshold (default 0.5). Scoped to ACTIVE LAYER.
- */
-function computeIdsInsideBoundingBox(overlapThreshold = 0.5) {
-    const inside = new Set();
-    if (!boundingBoxRect || !s) return inside;
-
-    const bbox = boundingBoxRect.getBBox();
-    const allPaths = scope().selectAll("path");
-
-    allPaths.forEach(p => {
-        const b = p.getBBox();
-
-        const ix1 = Math.max(b.x, bbox.x);
-        const iy1 = Math.max(b.y, bbox.y);
-        const ix2 = Math.min(b.x + b.width, bbox.x + bbox.width);
-        const iy2 = Math.min(b.y + b.height, bbox.y + bbox.height);
-
-        const iw = Math.max(0, ix2 - ix1);
-        const ih = Math.max(0, iy2 - iy1);
-
-        const inter = iw * ih;
-        const area = b.width * b.height;
-
-        if (area > 0 && inter / area >= overlapThreshold) {
-            const id = p.attr("id");
-            if (id) inside.add(id);
-        }
-    });
-
-    return inside;
+export function selectPath(containerId, pathId) {
+    const instance = instances.get(containerId);
+    if (!instance) return false;
+    return instance.selectPath(pathId);
 }
 
-/**
- * Auto-select any path ≥ threshold inside the current selection box.
- * Uses guard to avoid recursive bbox updates. Scoped to ACTIVE LAYER.
- */
-function autoSelectInBoundingBox() {
-    if (!boundingBoxRect || !s) return;
-
-    const insideIds = computeIdsInsideBoundingBox(0.5);
-    const previouslyUpdating = isUpdating;
-    isUpdating = true;
-
-    insideIds.forEach(id => {
-        const path = s.select("#" + id);
-        if (path && !path.data("isSelected") && isInActiveLayer(path.node)) {
-            selectPath(id); // guarded: won't recompute bbox
-        }
-    });
-
-    isUpdating = previouslyUpdating;
-    // highlight() will be called by updateGlobalBoundingBox()
+export function selectPaths(containerId, paths) {
+    const instance = instances.get(containerId);
+    if (!instance) return false;
+    return instance.selectPaths(paths);
 }
 
-function updateGlobalBoundingBox() {
-    if (boundingBoxRect != null) {
-        boundingBoxRect.remove();
-        boundingBoxRect = null;
-    }
-
-    const selectedPaths = scope().selectAll(".is-selected");
-
-    if (selectedPaths && selectedPaths.length > 0) {
-        let svg = s.select("svg");
-        const tempGroup = svg.g();
-        selectedPaths.forEach(path => tempGroup.append(path.clone()));
-
-        const bbox = tempGroup.getBBox();
-        tempGroup.remove();
-
-        boundingBoxRect = svg.rect(bbox.x, bbox.y, bbox.width, bbox.height);
-        boundingBoxRect.attr({
-            stroke: '#00F',
-            strokeWidth: 2,
-            fill: 'none',
-            strokeDasharray: '4 2',
-            "pointer-events": "none"
-        });
-        svg.append(boundingBoxRect);
-
-        // Geometry set from CURRENT box within ACTIVE LAYER
-        boundingBoxPathIds = computeIdsInsideBoundingBox(0.5);
-
-        if (!isUpdating) 
-            autoSelectInBoundingBox();
-            
-        highlight();
-    } else {
-        boundingBoxPathIds.clear();
-        highlight();
-    }
+export function unselectPath(containerId, pathId) {
+    const instance = instances.get(containerId);
+    if (!instance) return false;
+    return instance.unselectPath(pathId);
 }
 
-function highlight() {
-    getPaths();
-    const allInsideSelected = [...boundingBoxPathIds].every(id => selectedIds.has(id));
-
-    selectedPaths.forEach(path => {
-        path.attr({ fill: allInsideSelected ? "#00FF00" : "#f00" });
-    });
+export function unselectAllPaths(containerId) {
+    const instance = instances.get(containerId);
+    if (!instance) return;
+    instance.unselectAllPaths();
 }
 
-function getPaths() {
-    selectedPaths = s ? scope().selectAll(".is-selected") : [];
-    selectedIds = new Set();
-    selectedPaths.forEach(p => selectedIds.add(p.attr("id")));
-
-}
-export function selectPath(pathId) {
-    if (s === undefined) return false;
-    let path = s.select("#" + pathId);
-    if (!path) return false;
-
-    if (!isInActiveLayer(path.node)) return false;
-    if (path.data("isSelected") === true) return false;
-
-    path.data("isSelected", true);
-    path.attr({ fill: fillColor });
-    path.addClass("is-selected");
-
-    if (!isUpdating) {
-        updateGlobalBoundingBox();
-    } else {
-        highlight();
-    }
-    return true;
-}
-export function selectPaths(paths) {
-    if (s === undefined || !Array.isArray(paths)) return;
-    isUpdating = true;
-    const ids = paths
-        .filter((id) => id != null && String(id).trim() !== "")
-        .map((id) => String(id).trim());
-
-    for (const id of ids) {
-        const path = s.select("#" + id);
-        if (!path) continue;
-        if (path.data("isSelected") === true) continue;
-
-        path.data("isSelected", true);
-        path.attr({ fill: fillColor });
-        path.addClass("is-selected");
-    }
-    updateGlobalBoundingBox();
-    isUpdating = false;
-    return true;
+export function activateLayer(containerId, name) {
+    const instance = instances.get(containerId);
+    if (!instance) return false;
+    return instance.activateLayer(name);
 }
 
-
-export function unselectPath(pathId) {
-    if (s === undefined) return false;
-    let path = s.select("#" + pathId);
-    if (!path) return false;
-
-    if (!isInActiveLayer(path.node)) return false;
-    if (path.data("isSelected") === false) return false;
-
-    const prevIsUpdating = isUpdating;
-    isUpdating = true;
-
-    let originalColor = path.data("originalColor");
-    path.data("isSelected", false);
-    path.attr({ fill: originalColor });
-    path.removeClass("is-selected");
-
-    updateGlobalBoundingBox();
-
-    isUpdating = prevIsUpdating;
-    highlight();
-    return true;
-}
-
-export function unselectAllPaths() {
-    if (!s) return;
-    s.selectAll(".is-selected").forEach(function (path) {
-        let originalColor = path.data("originalColor");
-        path.data("isSelected", false);
-        path.attr({ fill: originalColor });
-        path.removeClass("is-selected");
-    });
-    if (boundingBoxRect) {
-        boundingBoxRect.remove();
-        boundingBoxRect = null;
-    }
-    boundingBoxPathIds.clear();
-    highlight();
+export function disposeInstance(containerId) {
+    instances.delete(containerId);
 }

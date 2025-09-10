@@ -1,6 +1,6 @@
 ﻿@inject IJSRuntime JSRuntime
 
-<div id="svg" class="svgviewer" @Style></div>
+<div id="@containerId" class="svgviewer" style="@Style"></div>
 @implements IAsyncDisposable
 
 @code {
@@ -11,6 +11,7 @@
     [Parameter] public List<string> InitialPaths { get; set; } = new() { "" };  
     [Parameter] public string Style { get; set; } = "width: 100%; height: 100%;";
 
+    private string containerId = $"svg-{Guid.NewGuid():N}";
     private string style = "";
     private SvgViewerJS? svgViewerJS;
     private ElementReference svg;
@@ -33,7 +34,7 @@
         if (firstRender)
         {
             busy = true;
-            await svgViewerJS!.InitAsync();
+            await svgViewerJS!.InitAsync(containerId);
             busy = false;
         }
         var svgChanged = !SvgUrl!.Equals(lastSvgUrl);

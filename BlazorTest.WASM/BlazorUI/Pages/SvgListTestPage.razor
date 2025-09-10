@@ -8,64 +8,48 @@
 <div class="container">
     <div class="row">
         <div class="col-md-12">
-            <h3>SVG Viewer Configuration Test</h3>
-            <p>Testing SvgViewer component with different configurations.</p>
-            <div class="alert alert-info">
-                Note: Currently only one SvgViewer can be displayed at a time due to JavaScript limitations.
+            <h3>Multiple SVG Viewers Test</h3>
+            <p>Testing multiple concurrent SvgViewer instances with different configurations.</p>
+            <div class="alert alert-success">
+                ✅ Now supports multiple simultaneous SVG viewers!
             </div>
         </div>
     </div>
     
     <div class="row">
-        <div class="col-md-4">
-            <h5>Select Configuration:</h5>
-            <div class="list-group">
-                @foreach (var config in svgConfigs)
-                {
-                    <button class="list-group-item list-group-item-action @(activeConfigId == config.Id ? "active" : "")"
-                            @onclick="() => SelectConfig(config.Id)">
-                        @config.Title
-                    </button>
-                }
-            </div>
-        </div>
-        
-        <div class="col-md-8">
-            @if (activeConfig != null)
-            {
+        @foreach (var config in svgConfigs)
+        {
+            <div class="col-md-4 mb-3">
                 <div class="card">
                     <div class="card-header">
-                        <h5>@activeConfig.Title</h5>
+                        <h5>@config.Title</h5>
                     </div>
-                    <div class="card-body" style="max-width: @(activeConfig.MaxWidth)px;">
-                        <SvgViewer @ref="@svgViewer"
-                                   SvgUrl="@activeConfig.SvgUrl"
-                                   InitialPaths="@activeConfig.InitialPaths"
-                                   PathsChanged="OnPathsChanged" />
+                    <div class="card-body" style="max-width: @(config.MaxWidth)px;">
+                        <SvgViewer @ref="@config.ViewerRef"
+                                   SvgUrl="@config.SvgUrl"
+                                   InitialPaths="@config.InitialPaths"
+                                   PathsChanged="(paths) => OnPathsChanged(config.Id, paths)" />
                     </div>
                     <div class="card-footer">
-                        <small>Max Width: @activeConfig.MaxWidth px</small>
+                        <small>Max Width: @config.MaxWidth px</small>
                         <br />
-                        <small>Selected: @string.Join(", ", activeConfig.SelectedPaths)</small>
+                        <small>Selected: @string.Join(", ", config.SelectedPaths)</small>
                         <br />
-                        <button class="btn btn-sm btn-primary mt-2" @onclick="TestSelection">
+                        <button class="btn btn-sm btn-primary mt-2" @onclick="() => TestSelection(config.Id)">
                             Test Select
                         </button>
-                        <button class="btn btn-sm btn-secondary mt-2" @onclick="ClearSelection">
+                        <button class="btn btn-sm btn-secondary mt-2" @onclick="() => ClearSelection(config.Id)">
                             Clear
                         </button>
                     </div>
                 </div>
-            }
-        </div>
+            </div>
+        }
     </div>
 </div>
 
 @code {
     private List<SvgConfig> svgConfigs = new();
-    private int activeConfigId = 1;
-    private SvgConfig? activeConfig => svgConfigs.FirstOrDefault(c => c.Id == activeConfigId);
-    private SvgViewer? svgViewer;
 
     private class SvgConfig
     {
@@ -75,6 +59,7 @@
         public int MaxWidth { get; set; } = 300;
         public List<string> InitialPaths { get; set; } = new();
         public List<string> SelectedPaths { get; set; } = new();
+        public SvgViewer? ViewerRef { get; set; }
     }
 
     protected override void OnInitialized()
@@ -111,36 +96,34 @@
         };
     }
 
-    private void SelectConfig(int configId)
+    private void OnPathsChanged(int configId, List<string> paths)
     {
-        activeConfigId = configId;
-    }
-
-    private void OnPathsChanged(List<string> paths)
-    {
-        if (activeConfig != null)
+        var config = svgConfigs.FirstOrDefault(c => c.Id == configId);
+        if (config != null)
         {
-            activeConfig.SelectedPaths = paths;
+            config.SelectedPaths = paths;
             StateHasChanged();
         }
     }
 
-    private async Task TestSelection()
+    private async Task TestSelection(int configId)
     {
-        if (svgViewer != null && activeConfig != null)
+        var config = svgConfigs.FirstOrDefault(c => c.Id == configId);
+        if (config?.ViewerRef != null)
         {
             // Select a different path for testing
-            var testPaths = new List<string> { $"Ballroom_{(activeConfigId % 3) + 1}" };
-            await svgViewer.SelectPaths(testPaths);
+            var testPaths = new List<string> { $"Ballroom_{(configId % 3) + 1}" };
+            await config.ViewerRef.SelectPaths(testPaths);
         }
     }
 
-    private async Task ClearSelection()
+    private async Task ClearSelection(int configId)
     {
-        if (svgViewer != null && activeConfig != null)
+        var config = svgConfigs.FirstOrDefault(c => c.Id == configId);
+        if (config?.ViewerRef != null)
         {
-            await svgViewer.UnselectAllPaths();
-            activeConfig.SelectedPaths.Clear();
+            await config.ViewerRef.UnselectAllPaths();
+            config.SelectedPaths.Clear();
             StateHasChanged();
         }
     }
