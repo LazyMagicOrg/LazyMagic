@@ -4,19 +4,34 @@
 <PageTitle>SVGTest</PageTitle>
 
 <h1>SVGTestPage</h1>
-<SvgViewer SvgUrl="Level1.svg"
+<SvgViewer @ref="@svgViewer"
+    InitialPaths="@initialPaths"
+    SvgUrl="Level1.svg"
     PathsChanged="OnPathsChanged"/>
-    <div>@(string.Join(",",currentPaths))</div>
+<div>@(string.Join(",",currentPaths))</div>
 This is for testing SVGs.
+<button onclick="@TestSelect">TestSelect</button>
 
 @code {
     private List<string> currentPaths = new();
+    private SvgViewer? svgViewer;
+    private List<string> initialPaths = new List<string> { "Ballroom_1" };
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
     }
+    protected async override Task OnAfterRenderAsync(bool firstRender)
+    {
+       await base.OnAfterRenderAsync(firstRender);
+    }
+
     private void OnPathsChanged(List<string> paths)
     {
         currentPaths = paths;
+    }
+    private async Task TestSelect()
+    {
+        var paths = new List<string> { "Ballroom_2" };
+        await svgViewer!.SelectPaths(paths);
     }
 }

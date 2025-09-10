@@ -252,12 +252,10 @@ function updateGlobalBoundingBox() {
         // Geometry set from CURRENT box within ACTIVE LAYER
         boundingBoxPathIds = computeIdsInsideBoundingBox(0.5);
 
-        if (!isUpdating) {
+        if (!isUpdating) 
             autoSelectInBoundingBox();
-            highlight();
-        } else {
-            highlight();
-        }
+            
+        highlight();
     } else {
         boundingBoxPathIds.clear();
         highlight();
@@ -299,12 +297,26 @@ export function selectPath(pathId) {
     return true;
 }
 export function selectPaths(paths) {
-    paths.forEach((pathId) => {
-        if (pathId !== '')
-            selectPath(pathId);
-    }); 
+    if (s === undefined || !Array.isArray(paths)) return;
+    isUpdating = true;
+    const ids = paths
+        .filter((id) => id != null && String(id).trim() !== "")
+        .map((id) => String(id).trim());
+
+    for (const id of ids) {
+        const path = s.select("#" + id);
+        if (!path) continue;
+        if (path.data("isSelected") === true) continue;
+
+        path.data("isSelected", true);
+        path.attr({ fill: fillColor });
+        path.addClass("is-selected");
+    }
+    updateGlobalBoundingBox();
+    isUpdating = false;
     return true;
 }
+
 
 export function unselectPath(pathId) {
     if (s === undefined) return false;
