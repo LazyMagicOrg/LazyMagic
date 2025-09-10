@@ -16,6 +16,69 @@
         </div>
     </div>
     
+    <!-- Button Selection Demo -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h4>SVG Button Selection Demo</h4>
+            <p>Click the buttons below to select different SVG configurations. Each SvgViewer is embedded in a button with selection disabled at the SVG level.</p>
+            
+            <div class="alert alert-info">
+                <strong>Selected Option:</strong> @(selectedButtonOption?.Title ?? "None")
+                @if (selectedButtonOption != null)
+                {
+                    <br />
+                    <small>@selectedButtonOption.Description</small>
+                    @if (selectedButtonOption.HighlightedPaths.Any())
+                    {
+                        <br />
+                        <small><strong>Highlighted Paths:</strong> @string.Join(", ", selectedButtonOption.HighlightedPaths)</small>
+                    }
+                }
+            </div>
+            
+            <div class="d-flex flex-wrap gap-3">
+                @foreach (var option in buttonOptions)
+                {
+                    var isSelected = selectedButtonOptionId == option.Id;
+                    var buttonClass = isSelected ? "btn btn-primary" : "btn btn-outline-primary";
+                    var borderStyle = isSelected ? "border: 3px solid #0d6efd; box-shadow: 0 0 10px rgba(13, 110, 253, 0.5);" : "";
+                    
+                    <button class="@buttonClass" 
+                            style="width: 200px; height: 150px; padding: 10px; @borderStyle"
+                            @onclick="() => SelectButtonOption(option.Id)">
+                        <div class="d-flex flex-column h-100">
+                            <div class="flex-grow-1">
+                                <SvgViewer SvgUrl="@option.SvgUrl"
+                                          InitialPaths="@option.HighlightedPaths"
+                                          DisableSelection="true"
+                                          Style="width: 100%; height: 100%;" />
+                            </div>
+                            <div class="mt-2">
+                                <small class="text-center @(isSelected ? "text-white" : "")">
+                                    @option.Title
+                                    @if (isSelected)
+                                    {
+                                        <br /><span class="badge bg-light text-primary">✓ Selected</span>
+                                    }
+                                </small>
+                            </div>
+                        </div>
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+    
+    <hr />
+    
+    <!-- Original Grid Demo -->
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <h4>Interactive SVG Grid Demo</h4>
+            <p>Multiple independent SvgViewer instances with individual path selection capabilities.</p>
+        </div>
+    </div>
+    
     <div class="row">
         @foreach (var config in svgConfigs)
         {
@@ -28,19 +91,29 @@
                         <SvgViewer @ref="@config.ViewerRef"
                                    SvgUrl="@config.SvgUrl"
                                    InitialPaths="@config.InitialPaths"
+                                   DisableSelection="@config.IsDisplayOnly"
                                    PathsChanged="(paths) => OnPathsChanged(config.Id, paths)" />
                     </div>
                     <div class="card-footer">
                         <small>Max Width: @config.MaxWidth px</small>
                         <br />
-                        <small>Selected: @string.Join(", ", config.SelectedPaths)</small>
-                        <br />
-                        <button class="btn btn-sm btn-primary mt-2" @onclick="() => TestSelection(config.Id)">
-                            Test Select
-                        </button>
-                        <button class="btn btn-sm btn-secondary mt-2" @onclick="() => ClearSelection(config.Id)">
-                            Clear
-                        </button>
+                        @if (config.IsDisplayOnly)
+                        {
+                            <small class="text-muted">🔒 Display Only - Selection Disabled</small>
+                            <br />
+                            <small>Highlighted: @string.Join(", ", config.InitialPaths)</small>
+                        }
+                        else
+                        {
+                            <small>Selected: @string.Join(", ", config.SelectedPaths)</small>
+                            <br />
+                            <button class="btn btn-sm btn-primary mt-2" @onclick="() => TestSelection(config.Id)">
+                                Test Select
+                            </button>
+                            <button class="btn btn-sm btn-secondary mt-2" @onclick="() => ClearSelection(config.Id)">
+                                Clear
+                            </button>
+                        }
                     </div>
                 </div>
             </div>
@@ -50,6 +123,9 @@
 
 @code {
     private List<SvgConfig> svgConfigs = new();
+    private List<ButtonOption> buttonOptions = new();
+    private int selectedButtonOptionId = 0;
+    private ButtonOption? selectedButtonOption => buttonOptions.FirstOrDefault(o => o.Id == selectedButtonOptionId);
 
     private class SvgConfig
     {
@@ -60,11 +136,58 @@
         public List<string> InitialPaths { get; set; } = new();
         public List<string> SelectedPaths { get; set; } = new();
         public SvgViewer? ViewerRef { get; set; }
+        public bool IsDisplayOnly { get; set; } = false;
+    }
+
+    private class ButtonOption
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = "";
+        public string SvgUrl { get; set; } = "";
+        public List<string> HighlightedPaths { get; set; } = new();
+        public string Description { get; set; } = "";
     }
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
+        
+        // Initialize button options for selection demo
+        buttonOptions = new List<ButtonOption>
+        {
+            new ButtonOption
+            {
+                Id = 1,
+                Title = "Single Room",
+                SvgUrl = "Level1.svg",
+                HighlightedPaths = new List<string> { "Ballroom_1" },
+                Description = "Ballroom 1 highlighted"
+            },
+            new ButtonOption
+            {
+                Id = 2,
+                Title = "Two Rooms",
+                SvgUrl = "Level1.svg",
+                HighlightedPaths = new List<string> { "Ballroom_1", "Ballroom_2" },
+                Description = "Both ballrooms highlighted"
+            },
+            new ButtonOption
+            {
+                Id = 3,
+                Title = "Alternative Room",
+                SvgUrl = "Level1.svg",
+                HighlightedPaths = new List<string> { "Ballroom_2" },
+                Description = "Ballroom 2 highlighted"
+            },
+            new ButtonOption
+            {
+                Id = 4,
+                Title = "No Selection",
+                SvgUrl = "Level1.svg",
+                HighlightedPaths = new List<string>(),
+                Description = "No rooms highlighted"
+            }
+        };
         
         // Initialize with different SVG configurations
         svgConfigs = new List<SvgConfig>
@@ -92,8 +215,23 @@
                 SvgUrl = "Level1.svg",
                 MaxWidth = 450,
                 InitialPaths = new List<string> { }
+            },
+            new SvgConfig
+            {
+                Id = 4,
+                Title = "Display Only (300px)",
+                SvgUrl = "Level1.svg",
+                MaxWidth = 300,
+                InitialPaths = new List<string> { "Ballroom_1", "Ballroom_2" },
+                IsDisplayOnly = true
             }
         };
+    }
+
+    private void SelectButtonOption(int optionId)
+    {
+        selectedButtonOptionId = optionId;
+        StateHasChanged();
     }
 
     private void OnPathsChanged(int configId, List<string> paths)

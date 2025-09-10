@@ -22,11 +22,11 @@ namespace LazyMagic.BlazorSvg
             dotNetObjectReference = DotNetObjectReference.Create(this);
         }
         
-        public async ValueTask<string> InitAsync(string containerId)
+        public async ValueTask<string> InitAsync(string containerId, bool disableSelection = false)
         {
             this.containerId = containerId;
             var module = await moduleTask.Value;
-            var instanceId = await module.InvokeAsync<string>("initAsync", containerId, dotNetObjectReference);
+            var instanceId = await module.InvokeAsync<string>("initAsync", containerId, dotNetObjectReference, disableSelection);
             return instanceId;
         }
         public async ValueTask DisposeAsync()

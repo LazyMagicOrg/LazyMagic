@@ -1,8 +1,9 @@
 // SvgViewer class to handle multiple instances
 class SvgViewerInstance {
-    constructor(containerId, dotNetObjectReference) {
+    constructor(containerId, dotNetObjectReference, disableSelection = false) {
         this.containerId = containerId;
         this.dotNetObjectReference = dotNetObjectReference;
+        this.disableSelection = disableSelection;
         this.s = null;
         this.fillColor = "#f00";
         this.boundingBoxRect = null;
@@ -106,9 +107,11 @@ class SvgViewerInstance {
                 });
             }
 
-            // Initialize per-path data + click handler
+            // Initialize per-path data + click handler (only if selection is enabled)
             this.s.selectAll("path").forEach((path) => {
-                path.node.addEventListener("click", this.handleSelection.bind(this));
+                if (!this.disableSelection) {
+                    path.node.addEventListener("click", this.handleSelection.bind(this));
+                }
                 path.data("isSelected", false);
                 path.data("originalColor", path.attr("fill"));
             });
@@ -127,6 +130,9 @@ class SvgViewerInstance {
     }
 
     handleSelection(event) {
+        // Do nothing if selection is disabled
+        if (this.disableSelection) return;
+        
         const path = Snap(event.target);
 
         // Auto-activate layer if clicked
@@ -336,13 +342,13 @@ class SvgViewerInstance {
 const instances = new Map();
 let snapLoadingPromise = null;
 
-export function initAsync(containerId, dotNetObjectReference) {
+export function initAsync(containerId, dotNetObjectReference, disableSelection = false) {
     let url = './_content/LazyMagic.BlazorSvg/snap.svg.js';
     
     // If already loading, return the existing promise
     if (snapLoadingPromise) {
         return snapLoadingPromise.then(() => {
-            const instance = new SvgViewerInstance(containerId, dotNetObjectReference);
+            const instance = new SvgViewerInstance(containerId, dotNetObjectReference, disableSelection);
             instances.set(containerId, instance);
             return containerId;
         });
@@ -350,7 +356,7 @@ export function initAsync(containerId, dotNetObjectReference) {
     
     // Check if already loaded
     if (typeof Snap !== 'undefined') {
-        const instance = new SvgViewerInstance(containerId, dotNetObjectReference);
+        const instance = new SvgViewerInstance(containerId, dotNetObjectReference, disableSelection);
         instances.set(containerId, instance);
         return Promise.resolve(containerId);
     }
@@ -367,7 +373,7 @@ export function initAsync(containerId, dotNetObjectReference) {
             }, 50);
         });
         return snapLoadingPromise.then(() => {
-            const instance = new SvgViewerInstance(containerId, dotNetObjectReference);
+            const instance = new SvgViewerInstance(containerId, dotNetObjectReference, disableSelection);
             instances.set(containerId, instance);
             return containerId;
         });
@@ -389,7 +395,7 @@ export function initAsync(containerId, dotNetObjectReference) {
     });
     
     return snapLoadingPromise.then(() => {
-        const instance = new SvgViewerInstance(containerId, dotNetObjectReference);
+        const instance = new SvgViewerInstance(containerId, dotNetObjectReference, disableSelection);
         instances.set(containerId, instance);
         return containerId;
     });
