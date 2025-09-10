@@ -142,7 +142,6 @@ public class LzMessageSet : NotifyBase
     }
     public void UpdateMsgs(LzMessageUnits? unitsArg = null, string? key = null)
     {
-        Console.WriteLine($"UpdateMsgs: Culture:{Culture}, unitsArg: {unitsArg.ToString()}, key:{key}");
         foreach (LzMessageUnits units in Enum.GetValues(typeof(LzMessageUnits)))
         {
             if (unitsArg != null && unitsArg != units)
