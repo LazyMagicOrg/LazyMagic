@@ -233,8 +233,13 @@ public class MauiOIDCService : IOIDCService, IDisposable
     {
         try
         {
+            _logger.LogInformation("=== Building MAUI Authentication URL ===");
+            
             var selectedConfig = _oidcConfig.SelectedAuthConfig;
             var authConfigs = _oidcConfig.AuthConfigs;
+            
+            _logger.LogInformation("Selected Auth Config: {SelectedConfig}", selectedConfig);
+            _logger.LogInformation("Available Configs: {Configs}", string.Join(", ", authConfigs?.Keys ?? Enumerable.Empty<string>()));
             
             if (authConfigs == null || !authConfigs.TryGetValue(selectedConfig, out var authConfig))
             {
@@ -247,6 +252,11 @@ public class MauiOIDCService : IOIDCService, IDisposable
             var userPoolClientId = authConfig["userPoolClientId"]?.ToString() ?? authConfig["ClientId"]?.ToString();
             var awsRegion = authConfig["awsRegion"]?.ToString();
             
+            _logger.LogInformation("Config Values Extracted:");
+            _logger.LogInformation("  userPoolId: {UserPoolId}", userPoolId ?? "null");
+            _logger.LogInformation("  userPoolClientId: {ClientId}", userPoolClientId ?? "null");
+            _logger.LogInformation("  awsRegion: {Region}", awsRegion ?? "null");
+            
             // Use the configured Cognito domain for OAuth operations
             var authority = authConfig["HostedUIDomain"]?.ToString() 
                 ?? authConfig["cognitoDomain"]?.ToString()
@@ -254,6 +264,12 @@ public class MauiOIDCService : IOIDCService, IDisposable
                     ? $"https://{authConfig["cognitoDomainPrefix"]}.auth.{awsRegion}.amazoncognito.com"
                     : null);
             var clientId = userPoolClientId;
+            
+            _logger.LogInformation("Authority Resolution:");
+            _logger.LogInformation("  HostedUIDomain: {HostedUIDomain}", authConfig["HostedUIDomain"]?.ToString() ?? "null");
+            _logger.LogInformation("  cognitoDomain: {CognitoDomain}", authConfig["cognitoDomain"]?.ToString() ?? "null");
+            _logger.LogInformation("  cognitoDomainPrefix: {DomainPrefix}", authConfig["cognitoDomainPrefix"]?.ToString() ?? "null");
+            _logger.LogInformation("  Final Authority: {Authority}", authority ?? "null");
             
             if (string.IsNullOrEmpty(authority) || string.IsNullOrEmpty(clientId))
             {
@@ -264,7 +280,19 @@ public class MauiOIDCService : IOIDCService, IDisposable
             // Build authorization URL
             var state = Guid.NewGuid().ToString();
             var nonce = Guid.NewGuid().ToString();
-            var redirectUri = "awsloginmaui://auth-callback";
+            
+            // Use consistent redirect URI - for localhost development, use http scheme
+            // For production MAUI, use custom scheme
+            var redirectUri = GetRedirectUri();
+            
+            _logger.LogInformation("OAuth Parameters:");
+            _logger.LogInformation("  response_type: code");
+            _logger.LogInformation("  client_id: {ClientId}", clientId);
+            _logger.LogInformation("  redirect_uri: {RedirectUri}", redirectUri);
+            _logger.LogInformation("  scope: openid email profile");
+            _logger.LogInformation("  state: {State}", state);
+            _logger.LogInformation("  nonce: {Nonce}", nonce);
+            _logger.LogInformation("  _forceLogin: {ForceLogin}", _forceLogin);
             
             var authUrl = $"{authority}/oauth2/authorize?" +
                          $"response_type=code&" +
@@ -278,12 +306,15 @@ public class MauiOIDCService : IOIDCService, IDisposable
             if (_forceLogin)
             {
                 authUrl += "&prompt=login";
-                _logger.LogInformation("Added prompt=login to auth URL because user logged out");
+                _logger.LogInformation("✅ Added prompt=login to auth URL because user logged out");
                 _forceLogin = false; // Reset the flag
                 _ = _tokenStorage.SetLoggedOutAsync(false); // Clear the persisted flag
             }
 
-            _logger.LogInformation("Generated authentication URL successfully");
+            _logger.LogInformation("=== Final Authorization URL ===");
+            _logger.LogInformation("Full URL: {AuthUrl}", authUrl);
+            _logger.LogInformation("URL Encoded redirect_uri: {EncodedRedirect}", HttpUtility.UrlEncode(redirectUri));
+            
             return Task.FromResult<string?>(authUrl);
         }
         catch (Exception ex)
@@ -350,9 +381,8 @@ public class MauiOIDCService : IOIDCService, IDisposable
             }
 
             // Exchange code for tokens - use the same redirect URI that was used in the auth request
-            var redirectUri = callbackUrl.StartsWith("http://localhost:7777") 
-                ? "http://localhost:7777/auth-callback" 
-                : "awsloginmaui://auth-callback";
+            var redirectUri = GetRedirectUri();
+            _logger.LogInformation("Using redirect URI for token exchange: {RedirectUri}", redirectUri);
             var tokens = await ExchangeCodeForTokensAsync(authority, clientId, code, redirectUri);
             if (tokens != null)
             {
@@ -599,6 +629,23 @@ public class MauiOIDCService : IOIDCService, IDisposable
                 _logger.LogInformation("✅ Server-side logout completed and page closed");
             }
         });
+    }
+
+    /// <summary>
+    /// Gets the appropriate redirect URI based on the environment
+    /// </summary>
+    private string GetRedirectUri()
+    {
+        // For MAUI apps, we typically use a custom scheme
+        // However, for localhost development, some configurations might prefer http
+        // This method ensures consistency between authorization and token exchange
+        
+        // For now, always use the custom scheme for MAUI
+        // If localhost support is needed later, this can be configured based on environment
+        var redirectUri = "awsloginmaui://auth-callback";
+        
+        _logger.LogInformation("GetRedirectUri returning: {RedirectUri}", redirectUri);
+        return redirectUri;
     }
 
     private class TokenResponse

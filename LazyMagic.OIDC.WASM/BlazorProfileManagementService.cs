@@ -27,7 +27,7 @@ public class BlazorProfileManagementService : IProfileManagementService
             if (!string.IsNullOrEmpty(logoutEndpoint))
             {
                 var cognitoDomain = logoutEndpoint.Replace("/logout", "");
-                var redirectUri = Uri.EscapeDataString($"{_navigation.BaseUri}AuthPage/login-callback");
+                var redirectUri = Uri.EscapeDataString($"{_navigation.BaseUri}authentication/login-callback");
                 var changePasswordUrl = $"{cognitoDomain}/forgotPassword?client_id={clientId}&response_type=code&redirect_uri={redirectUri}";
                 
                 return new ProfileManagementResult
@@ -77,22 +77,29 @@ public class BlazorProfileManagementService : IProfileManagementService
             if (!string.IsNullOrEmpty(logoutEndpoint))
             {
                 var cognitoDomain = logoutEndpoint.Replace("/logout", "");
-                var redirectUri = Uri.EscapeDataString($"{_navigation.BaseUri}AuthPage/login");
+                var redirectUri = Uri.EscapeDataString($"{_navigation.BaseUri}authentication/login-callback");
                 var resetUrl = $"{cognitoDomain}/forgotPassword?client_id={clientId}&response_type=code&redirect_uri={redirectUri}";
                 
-                return new ProfileManagementResult
+                var result = new ProfileManagementResult
                 {
                     Success = true,
                     RedirectUrl = resetUrl
                 };
+                
+                // Automatically handle the redirect
+                await HandleResult(result);
+                return result;
             }
         }
         
-        return new ProfileManagementResult
+        var failureResult = new ProfileManagementResult
         {
             Success = false,
             Message = "Password reset is not available for this authentication provider."
         };
+        
+        await HandleResult(failureResult);
+        return failureResult;
     }
 
     private async Task HandleResult(ProfileManagementResult result)
@@ -100,7 +107,8 @@ public class BlazorProfileManagementService : IProfileManagementService
         if (result.Success && !string.IsNullOrEmpty(result.RedirectUrl))
         {
             Console.WriteLine($"[ProfileManagement] Redirecting to: {result.RedirectUrl}");
-            await _js.InvokeVoidAsync("eval", $"window.location.href = '{result.RedirectUrl}'");
+            // Use NavigationManager for more reliable navigation
+            _navigation.NavigateTo(result.RedirectUrl, forceLoad: true);
         }
         else if (!string.IsNullOrEmpty(result.Message))
         {

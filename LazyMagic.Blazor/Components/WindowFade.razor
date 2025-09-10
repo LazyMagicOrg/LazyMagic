@@ -109,6 +109,11 @@
             // JS runtime not available
             jsModule = null;
         }
+        catch (Exception ex)
+        {
+            // Any other error, ignore
+            jsModule = null;
+        }   
         
         await base.OnInitializedAsync();
     }

@@ -1,6 +1,12 @@
 ﻿@namespace BlazorUI
 @page "/"
+@inject ILzHost Host
 <h3>SplashPage</h3>
+<div>
+    <p>AppPath: @Host.AppPath</p>
+    <p>AppUrl: @Host.AppUrl</p>
+
+</div>
 
 @code {
 

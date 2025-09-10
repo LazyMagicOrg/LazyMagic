@@ -5,5 +5,5 @@
     localApiUrl: "https://localhost:5001/",
     assetsUrl: "https://uptown.lazymagicdev.click/",
     useLocalHostApi: false,
-    authConfigName: "consumerauth"
+    authConfigName: "tenantauth"
 }

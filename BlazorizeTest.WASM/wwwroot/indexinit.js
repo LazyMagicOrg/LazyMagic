@@ -22,7 +22,7 @@ if (window.location.origin.includes("localhost")) {
         console.debug("Running from local development host");
         const { appConfig } = await import('./appConfig.js');
         window.appConfig = {
-            appPath: appConfig.appPath,
+            appPath: "/", // When running from localhost, the appPath is always "/"
             appUrl: window.location.origin,
             androidAppUrl: "",
             remoteApiUrl: appConfig.remoteApiUrl,

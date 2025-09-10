@@ -188,10 +188,10 @@ public class BlazorOIDCService : IOIDCService, IDisposable
             
             // Log the current base URI and where we're redirecting to
             _logger.LogInformation("Base URI: {BaseUri}", _navigation.BaseUri);
-            _logger.LogInformation("Navigating to login endpoint: AuthPage/login");
+            _logger.LogInformation("Navigating to login endpoint: authentication/login");
             
             // Navigate to the authentication/login endpoint
-            _navigation.NavigateToLogin("AuthPage/login");
+            _navigation.NavigateToLogin("authentication/login");
             
             // Trigger the event in case any subscribers need it
             OnAuthenticationRequested?.Invoke("login");

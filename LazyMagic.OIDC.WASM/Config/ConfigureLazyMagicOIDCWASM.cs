@@ -70,9 +70,10 @@ public static class ConfigureLazyMagicOIDCWASM
                 {
                     Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Found matching config, setting configuration in holder");
                     // Store the configuration in the holder
-                    // Get current URL efficiently for redirect URI calculation
-                    var currentUrl = await GetCurrentBaseUrlAsync(host.Services, lzHost.AppUrl);
-                    configHolder.SetConfigurationFromAuthConfig(authConfig, currentUrl);
+                    // Combine AppUrl and AppPath to get the complete base URL
+                    var completeAppUrl = lzHost.AppUrl.TrimEnd('/') + lzHost.AppPath;
+                    Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Using complete app URL for redirect URI: {completeAppUrl} (AppUrl: {lzHost.AppUrl}, AppPath: {lzHost.AppPath})");
+                    configHolder.SetConfigurationFromAuthConfig(authConfig, completeAppUrl);
 
                     // Force OIDC post-configuration to happen NOW instead of waiting for first authentication
                     try
@@ -104,9 +105,10 @@ public static class ConfigureLazyMagicOIDCWASM
                     {
                         Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Found case-insensitive match: '{matchingKey}'");
                         
-                        // Get current URL efficiently for redirect URI calculation
-                        var currentUrl = await GetCurrentBaseUrlAsync(host.Services, lzHost.AppUrl);
-                        configHolder.SetConfigurationFromAuthConfig(authConfigs[matchingKey], currentUrl);
+                        // Combine AppUrl and AppPath to get the complete base URL
+                        var completeAppUrl = lzHost.AppUrl.TrimEnd('/') + lzHost.AppPath;
+                        Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Using complete app URL for redirect URI: {completeAppUrl} (AppUrl: {lzHost.AppUrl}, AppPath: {lzHost.AppPath})");
+                        configHolder.SetConfigurationFromAuthConfig(authConfigs[matchingKey], completeAppUrl);
                     }
                     else
                     {
@@ -132,30 +134,63 @@ public static class ConfigureLazyMagicOIDCWASM
     /// </summary>
     private static async Task<string> GetCurrentBaseUrlAsync(IServiceProvider services, string fallbackUrl)
     {
-        // Return cached URL if available
+        // Return cached URL if available and not on an auth page
+        // We need to recalculate on auth pages to ensure proper base path extraction
         if (!string.IsNullOrEmpty(_cachedBaseUrl))
         {
-            Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Using cached base URL: {_cachedBaseUrl}");
-            return _cachedBaseUrl;
+            var jsRuntime = services.GetService<IJSRuntime>();
+            if (jsRuntime != null)
+            {
+                try
+                {
+                    var currentPath = await jsRuntime.InvokeAsync<string>("eval", "window.location.pathname");
+                    if (!currentPath.Contains("/authentication"))
+                    {
+                        Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Using cached base URL: {_cachedBaseUrl}");
+                        return _cachedBaseUrl;
+                    }
+                    // On authentication pages, recalculate to ensure correct base path
+                    Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] On authentication page, recalculating base URL");
+                }
+                catch
+                {
+                    // If we can't check, use cached
+                    return _cachedBaseUrl;
+                }
+            }
         }
         
-        var jsRuntime = services.GetService<IJSRuntime>();
-        if (jsRuntime != null)
+        var jsRuntime2 = services.GetService<IJSRuntime>();
+        if (jsRuntime2 != null)
         {
             try
             {
                 Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Getting base URL from browser...");
                 
                 // Use a simpler, faster JavaScript call
-                var origin = await jsRuntime.InvokeAsync<string>("eval", "window.location.origin");
-                var pathname = await jsRuntime.InvokeAsync<string>("eval", "window.location.pathname");
+                var origin = await jsRuntime2.InvokeAsync<string>("eval", "window.location.origin");
+                var pathname = await jsRuntime2.InvokeAsync<string>("eval", "window.location.pathname");
                 
-                // For OIDC redirect URIs, we want the base app URL, not the current page path
-                // Skip AuthPage paths since those are temporary OAuth navigation paths
+                // For OIDC redirect URIs, we need to preserve the app's base path (like /baseapp)
+                // but remove the auth-specific segments (/authentication/login, etc.)
                 string basePath = "";
-                if (!pathname.Contains("/AuthPage") && !pathname.Contains("/authentication"))
+                
+                // Remove auth-specific paths while preserving the app base path
+                if (pathname.Contains("/authentication"))
                 {
-                    // Only use the path if it's not an auth-related path
+                    // Remove everything from /authentication onwards
+                    var authIndex = pathname.IndexOf("/authentication");
+                    
+                    if (authIndex > 0)
+                    {
+                        // Keep everything before the auth path (e.g., /baseapp)
+                        basePath = pathname.Substring(0, authIndex);
+                    }
+                    // else authIndex == 0 means we're at root with /authentication, use empty basePath
+                }
+                else
+                {
+                    // Not on an auth page, use the current path minus any file/page name
                     basePath = pathname.EndsWith("/") ? pathname.TrimEnd('/') : 
                                pathname.Contains('/') ? pathname.Substring(0, pathname.LastIndexOf('/')) : "";
                 }

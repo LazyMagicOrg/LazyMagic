@@ -124,7 +124,7 @@ self.addEventListener('fetch', event => {
         // You must handle hard reloads on the server side.
         // The following code breaks the PWA. When the app is run, it doesn't load 
         // and when we inspect appInfo it says the domain is insecure.
-        if (request.mode === 'navigate' || request.url.endsWith('Page')) {
+        if ((request.mode === 'navigate' || request.url.endsWith('Page')) && !request.url.includes('authentication')) {
             // Blazor navigation detected - ignore
             // We don't want to fetch when all we are doing is updating the URL for an internal Blazor navigation.
             // e.g. when we route to a different "page" (really just a Blazor component) in the SPA.

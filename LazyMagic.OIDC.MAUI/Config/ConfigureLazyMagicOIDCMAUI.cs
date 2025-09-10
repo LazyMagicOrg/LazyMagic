@@ -29,6 +29,8 @@ public static class ConfigureLazyMagicOIDCMAUI
         // Register dynamic configuration provider (MAUI implementation)  
         services.TryAddSingleton<IDynamicConfigurationProvider, DynamicConfigurationProvider>();
 
+        services.TryAddSingleton<IProfileManagementService, MauiProfileManagementService>();
+
         services.TryAddSingleton<AuthenticationStateProvider, LazyMagic.OIDC.MAUI.MauiAuthenticationStateProvider>();
 
         services.AddLazyMagicOIDCBase(); // Base OIDC services

@@ -22,16 +22,16 @@ public static class ConfigureBlazorServices
             var lzHost = provider.GetService<ILzHost>();
             // Note: This will be a placeholder - real URL comes from dynamic config
             // We can't get the actual current URL here during service setup
-            var currentHost = lzHost!.AppUrl;
+            var completeAppUrl = lzHost!.AppUrl.TrimEnd('/') + lzHost.AppPath;
             
             // Placeholder values - will be overridden by dynamic config
             options.ProviderOptions.Authority = "https://placeholder.authority";
             options.ProviderOptions.ClientId = "placeholder-client-id";
             options.ProviderOptions.ResponseType = "code";
             
-            // Calculate redirect URIs from current browser state
-            options.ProviderOptions.RedirectUri = $"{currentHost.TrimEnd('/')}/AuthPage/login-callback";
-            options.ProviderOptions.PostLogoutRedirectUri = currentHost.TrimEnd('/');
+            // Calculate redirect URIs using complete app URL (AppUrl + AppPath)
+            options.ProviderOptions.RedirectUri = $"{completeAppUrl.TrimEnd('/')}/authentication/login-callback";
+            options.ProviderOptions.PostLogoutRedirectUri = completeAppUrl.TrimEnd('/');
             
             // Standard OIDC scopes
             options.ProviderOptions.DefaultScopes.Add("openid");

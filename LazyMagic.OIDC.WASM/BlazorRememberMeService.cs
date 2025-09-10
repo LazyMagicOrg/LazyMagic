@@ -217,7 +217,7 @@ public class BlazorRememberMeService : IRememberMeService
                 try
                 {
                     var currentUrl = await _jsRuntime.InvokeAsync<string>("eval", "window.location.href");
-                    var isOAuthCallback = currentUrl.Contains("/AuthPage/login-callback") || 
+                    var isOAuthCallback = currentUrl.Contains("/authentication/login-callback") || 
                                          currentUrl.Contains("code=") ||
                                          currentUrl.Contains("state=");
                     

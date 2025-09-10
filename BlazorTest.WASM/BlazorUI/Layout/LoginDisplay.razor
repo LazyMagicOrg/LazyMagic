@@ -2,6 +2,7 @@
 @inject NavigationManager Navigation
 @inject IOIDCService AuthService
 @inject IRememberMeService RememberMe
+@inject IProfileManagementService ProfileService
 
 @try
 {
@@ -26,7 +27,7 @@
             {
                 <button class="btn btn-link" @onclick="BeginLogIn">Log in</button>
             }
-            <a href="/forgot-password" class="btn btn-link text-muted" style="font-size: 0.875rem;">Forgot password?</a>
+            <button class="btn btn-link text-muted" style="font-size: 0.875rem;" @onclick="HandleForgotPassword">Forgot password?</button>
         </div>
     }
 }
@@ -81,7 +82,7 @@ catch (Exception ex)
             var authState = await AuthService.GetAuthenticationStateAsync();
             isAuthenticated = authState.IsAuthenticated;
             userName = authState.UserName;
-            if (isAuthenticated) Navigation.NavigateTo("/SessionPage");
+            if (isAuthenticated) Navigation.NavigateTo("SessionPage");
         }
         catch (Exception ex)
         {
@@ -116,6 +117,19 @@ catch (Exception ex)
             Console.WriteLine($"[LoginDisplay] Error during logout: {ex.Message}");
             // Fallback to local navigation if logout fails
             Navigation.NavigateTo("/", forceLoad: true);
+        }
+    }
+
+    private async void HandleForgotPassword()
+    {
+        try
+        {
+            await ProfileService.GetPasswordResetUrlAsync();
+        }
+        catch (Exception ex)
+        {
+            // Handle error silently for now
+            Console.WriteLine($"[LoginDisplay] Error during forgot password: {ex.Message}");
         }
     }
 
