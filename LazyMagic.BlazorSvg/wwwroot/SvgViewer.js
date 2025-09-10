@@ -69,23 +69,62 @@ export function activateLayer(name) {
     return true;
 }
 
+// Track script loading state globally
+let snapLoadingPromise = null;
+
 export function initAsync(dotNetObjectReferenceArg) {
     let url = './_content/LazyMagic.BlazorSvg/snap.svg.js';
     dotNetObjectReference = dotNetObjectReferenceArg;
-    return new Promise((resolve, reject) => {
-        if (document.querySelector('script[src="' + url + '"]')) {
-            resolve();
-            return;
-        }
+    
+    // If already loading, return the existing promise
+    if (snapLoadingPromise) {
+        return snapLoadingPromise;
+    }
+    
+    // Check if already loaded
+    if (typeof Snap !== 'undefined') {
+        return Promise.resolve();
+    }
+    
+    // Check if script tag exists but Snap might still be loading
+    if (document.querySelector('script[src="' + url + '"]')) {
+        // Wait for Snap to be defined
+        snapLoadingPromise = new Promise((resolve) => {
+            const checkSnap = setInterval(() => {
+                if (typeof Snap !== 'undefined') {
+                    clearInterval(checkSnap);
+                    snapLoadingPromise = null;
+                    resolve();
+                }
+            }, 50);
+        });
+        return snapLoadingPromise;
+    }
+    
+    // Create and load the script
+    snapLoadingPromise = new Promise((resolve, reject) => {
         let script = document.createElement('script');
         script.src = url;
-        script.onload = () => resolve();
-        script.onerror = () => reject('Snap.svg could not be loaded');
+        script.onload = () => {
+            snapLoadingPromise = null;
+            resolve();
+        };
+        script.onerror = () => {
+            snapLoadingPromise = null;
+            reject('Snap.svg could not be loaded');
+        };
         document.head.appendChild(script);
     });
+    
+    return snapLoadingPromise;
 }
 
 export function loadSvgAsync(svgContent) {
+    // Ensure Snap is loaded
+    if (typeof Snap === 'undefined') {
+        return Promise.reject('Snap.svg is not loaded. Please call initAsync first.');
+    }
+    
     if (s) {
         s.selectAll("path").forEach(function (path) {
             path.node.removeEventListener("click", handleSelection);
@@ -111,6 +150,16 @@ export function loadSvgAsync(svgContent) {
                 if (fragment) {
                     s = Snap("#svg");
                     s.append(fragment);
+                    
+                    // Make SVG responsive by removing fixed dimensions
+                    const svgEl = s.select("svg");
+                    if (svgEl) {
+                        svgEl.attr({
+                            width: "100%",
+                            height: "100%",
+                            preserveAspectRatio: "xMidYMid meet"
+                        });
+                    }
 
                     // Initialize per-path data + click handler
                     s.selectAll("path").forEach(function (path) {

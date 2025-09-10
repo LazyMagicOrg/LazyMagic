@@ -1,6 +1,8 @@
 ﻿@inject IJSRuntime JSRuntime
 
 <div id="svg" class="svgviewer" @Style></div>
+@implements IAsyncDisposable
+
 @code {
     [Parameter] public string? SvgUrl { get; set; }
     [Parameter] public EventCallback<string> PathSelected { get; set; }
@@ -87,5 +89,15 @@
         await svgViewerJS!.SelectPaths(paths);
         await InvokeAsync(StateHasChanged);
     }
-    // todo - dispose
+    
+    public async ValueTask DisposeAsync()
+    {
+        if (svgViewerJS != null)
+        {
+            svgViewerJS.PathSelectedEvent -= OnPathSelected;
+            svgViewerJS.PathUnselectedEvent -= OnPathUnselected;
+            svgViewerJS.PathsChangedEvent -= OnPathsChanged;
+            await svgViewerJS.DisposeAsync();
+        }
+    }
 }

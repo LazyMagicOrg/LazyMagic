@@ -1,0 +1,147 @@
+@namespace BlazorUI
+@page "/SvgListTestPage"
+
+<PageTitle>SVG List Test</PageTitle>
+
+<h1>SVG List Test Page</h1>
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <h3>SVG Viewer Configuration Test</h3>
+            <p>Testing SvgViewer component with different configurations.</p>
+            <div class="alert alert-info">
+                Note: Currently only one SvgViewer can be displayed at a time due to JavaScript limitations.
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-4">
+            <h5>Select Configuration:</h5>
+            <div class="list-group">
+                @foreach (var config in svgConfigs)
+                {
+                    <button class="list-group-item list-group-item-action @(activeConfigId == config.Id ? "active" : "")"
+                            @onclick="() => SelectConfig(config.Id)">
+                        @config.Title
+                    </button>
+                }
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            @if (activeConfig != null)
+            {
+                <div class="card">
+                    <div class="card-header">
+                        <h5>@activeConfig.Title</h5>
+                    </div>
+                    <div class="card-body" style="max-width: @(activeConfig.MaxWidth)px;">
+                        <SvgViewer @ref="@svgViewer"
+                                   SvgUrl="@activeConfig.SvgUrl"
+                                   InitialPaths="@activeConfig.InitialPaths"
+                                   PathsChanged="OnPathsChanged" />
+                    </div>
+                    <div class="card-footer">
+                        <small>Max Width: @activeConfig.MaxWidth px</small>
+                        <br />
+                        <small>Selected: @string.Join(", ", activeConfig.SelectedPaths)</small>
+                        <br />
+                        <button class="btn btn-sm btn-primary mt-2" @onclick="TestSelection">
+                            Test Select
+                        </button>
+                        <button class="btn btn-sm btn-secondary mt-2" @onclick="ClearSelection">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<SvgConfig> svgConfigs = new();
+    private int activeConfigId = 1;
+    private SvgConfig? activeConfig => svgConfigs.FirstOrDefault(c => c.Id == activeConfigId);
+    private SvgViewer? svgViewer;
+
+    private class SvgConfig
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = "";
+        public string SvgUrl { get; set; } = "";
+        public int MaxWidth { get; set; } = 300;
+        public List<string> InitialPaths { get; set; } = new();
+        public List<string> SelectedPaths { get; set; } = new();
+    }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        
+        // Initialize with different SVG configurations
+        svgConfigs = new List<SvgConfig>
+        {
+            new SvgConfig
+            {
+                Id = 1,
+                Title = "Small (250px)",
+                SvgUrl = "Level1.svg",
+                MaxWidth = 250,
+                InitialPaths = new List<string> { "Ballroom_1" }
+            },
+            new SvgConfig
+            {
+                Id = 2,
+                Title = "Medium (350px)",
+                SvgUrl = "Level1.svg",
+                MaxWidth = 350,
+                InitialPaths = new List<string> { "Ballroom_2" }
+            },
+            new SvgConfig
+            {
+                Id = 3,
+                Title = "Large (450px)",
+                SvgUrl = "Level1.svg",
+                MaxWidth = 450,
+                InitialPaths = new List<string> { }
+            }
+        };
+    }
+
+    private void SelectConfig(int configId)
+    {
+        activeConfigId = configId;
+    }
+
+    private void OnPathsChanged(List<string> paths)
+    {
+        if (activeConfig != null)
+        {
+            activeConfig.SelectedPaths = paths;
+            StateHasChanged();
+        }
+    }
+
+    private async Task TestSelection()
+    {
+        if (svgViewer != null && activeConfig != null)
+        {
+            // Select a different path for testing
+            var testPaths = new List<string> { $"Ballroom_{(activeConfigId % 3) + 1}" };
+            await svgViewer.SelectPaths(testPaths);
+        }
+    }
+
+    private async Task ClearSelection()
+    {
+        if (svgViewer != null && activeConfig != null)
+        {
+            await svgViewer.UnselectAllPaths();
+            activeConfig.SelectedPaths.Clear();
+            StateHasChanged();
+        }
+    }
+}

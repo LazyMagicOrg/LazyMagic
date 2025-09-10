@@ -4,10 +4,13 @@
 <PageTitle>SVGTest</PageTitle>
 
 <h1>SVGTestPage</h1>
+
 <SvgViewer @ref="@svgViewer"
     InitialPaths="@initialPaths"
     SvgUrl="Level1.svg"
     PathsChanged="OnPathsChanged"/>
+
+
 <div>@(string.Join(",",currentPaths))</div>
 This is for testing SVGs.
 <button onclick="@TestSelect">TestSelect</button>
