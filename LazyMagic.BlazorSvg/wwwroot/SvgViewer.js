@@ -249,6 +249,11 @@ class SvgViewerInstance {
         this.selectedPaths.forEach(path => {
             path.attr({ fill: allInsideSelected ? "#00FF00" : "#f00" });
         });
+        
+        // Report the allInsideSelected state to Blazor
+        if (!this.disableSelection) {
+            this.dotNetObjectReference.invokeMethodAsync("OnAllInsideSelectedChanged", allInsideSelected);
+        }
     }
 
     getPaths() {

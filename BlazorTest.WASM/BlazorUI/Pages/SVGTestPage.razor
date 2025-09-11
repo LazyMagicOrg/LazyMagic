@@ -8,10 +8,18 @@
 <SvgViewer @ref="@svgViewer"
     InitialPaths="@initialPaths"
     SvgUrl="Level1.svg"
-    PathsChanged="OnPathsChanged"/>
+    PathsChanged="OnPathsChanged"
+    @bind-AllInsideSelected="@allInsideSelected"/>
 
 
-<div>@(string.Join(",",currentPaths))</div>
+<div>Selected Paths: @(string.Join(",",currentPaths))</div>
+<div>All Inside Selected: <strong>@(allInsideSelected ? "✅ YES" : "❌ NO")</strong></div>
+@if (allInsideSelected)
+{
+    <div class="alert alert-success mt-2">
+        All paths inside the bounding box are selected!
+    </div>
+}
 This is for testing SVGs.
 <button onclick="@TestSelect">TestSelect</button>
 
@@ -19,6 +27,7 @@ This is for testing SVGs.
     private List<string> currentPaths = new();
     private SvgViewer? svgViewer;
     private List<string> initialPaths = new List<string> { "Ballroom_1" };
+    private bool allInsideSelected = false;
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
