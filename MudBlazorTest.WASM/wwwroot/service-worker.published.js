@@ -6,6 +6,9 @@
 import { appConfig } from './_content/MudBlazorTest.WASM/appConfig.js';
 import { settings } from './_content/MudBlazorTest.WASM/staticContentSettings.js';
 
+// Import the Blazor-generated assets manifest
+import './service-worker-assets.js';
+
 // Now import the service worker and caching support code
 import * as staticContentModule from './_content/LazyMagic.Blazor/staticContentModule.js'; // Note namespace use
 import { connectivityService } from './_content/LazyMagic.Blazor/connectivityService.js';
