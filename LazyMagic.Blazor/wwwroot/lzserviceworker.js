@@ -8,6 +8,9 @@ includes support for:
 - Redirection to the base URL when the app is navigated to a different URL.
 - Graceful application updates.
 */
+
+console.warn('Loading service worker script');
+
 // In the service worker file (e.g., service-worker.published.js)
 // First, import the config files using static imports
 

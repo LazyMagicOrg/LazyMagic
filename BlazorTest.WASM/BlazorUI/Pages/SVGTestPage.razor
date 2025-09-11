@@ -5,28 +5,55 @@
 
 <h1>SVGTestPage</h1>
 
+<div class="alert alert-info mb-3">
+    <strong>Initial State Test:</strong> Starting with paths "Ballroom_1" and "Ballroom_3" selected.
+    <br />
+    This creates a bounding box that may contain other unselected paths, demonstrating that AllInsideSelected is properly calculated on initial display.
+</div>
+
 <SvgViewer @ref="@svgViewer"
     InitialPaths="@initialPaths"
     SvgUrl="Level1.svg"
     PathsChanged="OnPathsChanged"
     @bind-AllInsideSelected="@allInsideSelected"/>
 
+<div class="mt-3">
+    <div>Initial Paths: <code>@(string.Join(", ", initialPaths))</code></div>
+    <div>Currently Selected: <code>@(string.Join(", ", currentPaths.Any() ? currentPaths : initialPaths))</code></div>
+    <div>All Inside Selected: <strong>@(allInsideSelected ? "✅ YES - All paths within bounding box are selected" : "❌ NO - Some paths within bounding box are NOT selected")</strong></div>
+</div>
 
-<div>Selected Paths: @(string.Join(",",currentPaths))</div>
-<div>All Inside Selected: <strong>@(allInsideSelected ? "✅ YES" : "❌ NO")</strong></div>
 @if (allInsideSelected)
 {
     <div class="alert alert-success mt-2">
-        All paths inside the bounding box are selected!
+        ✅ All paths inside the bounding box are selected! The selection is complete.
     </div>
 }
-This is for testing SVGs.
-<button onclick="@TestSelect">TestSelect</button>
+else if (currentPaths.Count > 1 || initialPaths.Count > 1)
+{
+    <div class="alert alert-warning mt-2">
+        ⚠️ Partial selection detected. There are unselected paths within the bounding box created by your selection.
+    </div>
+}
+
+<div class="mt-4">
+    <h5>Test Instructions:</h5>
+    <ul>
+        <li><strong>Initial State:</strong> Should show "AllInsideSelected = ❌ NO" because Ballroom_1 and Ballroom_3 create a bounding box that may contain Ballroom_2 (if it exists and is unselected).</li>
+        <li><strong>Click TestSelect:</strong> Adds Ballroom_2 to selection, which should make "AllInsideSelected = ✅ YES" if all paths in the bounding box are now selected.</li>
+        <li><strong>Manual Selection:</strong> Click on SVG paths to see how AllInsideSelected changes dynamically.</li>
+    </ul>
+</div>
+
+<button class="btn btn-primary" @onclick="TestSelect">TestSelect (Add Ballroom_2)</button>
 
 @code {
     private List<string> currentPaths = new();
     private SvgViewer? svgViewer;
-    private List<string> initialPaths = new List<string> { "Ballroom_1" };
+    // Initialize with multiple paths that create a bounding box
+    // If there are other paths inside this bounding box that aren't selected,
+    // AllInsideSelected should be false initially
+    private List<string> initialPaths = new List<string> { "Ballroom_1", "Ballroom_3" };
     private bool allInsideSelected = false;
     protected override async Task OnInitializedAsync()
     {

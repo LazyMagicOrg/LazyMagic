@@ -300,6 +300,14 @@ class SvgViewerInstance {
         }
         this.updateGlobalBoundingBox();
         this.isUpdating = false;
+        
+        // Report initial selection state
+        this.getPaths();
+        const mySelectedIds = Array.from(this.selectedIds);
+        if (!this.disableSelection && mySelectedIds.length > 0) {
+            this.dotNetObjectReference.invokeMethodAsync("OnPathsChanged", mySelectedIds);
+        }
+        
         return true;
     }
 

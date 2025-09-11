@@ -109,6 +109,11 @@
                             <small>Selected: @string.Join(", ", config.SelectedPaths)</small>
                             <br />
                             <small>All Inside Selected: <strong>@(config.AllInsideSelected ? "✅" : "❌")</strong></small>
+                            @if (!config.AllInsideSelected && config.SelectedPaths.Count > 1)
+                            {
+                                <br />
+                                <small class="text-warning">⚠️ Partial selection - not all paths in bounding box are selected</small>
+                            }
                             <br />
                             <button class="btn btn-sm btn-primary mt-2" @onclick="() => TestSelection(config.Id)">
                                 Test Select
@@ -219,6 +224,15 @@
                 SvgUrl = "Level1.svg",
                 MaxWidth = 450,
                 InitialPaths = new List<string> { }
+            },
+            new SvgConfig
+            {
+                Id = 5,
+                Title = "Partial Selection",
+                SvgUrl = "Level1.svg",
+                MaxWidth = 300,
+                InitialPaths = new List<string> { "Ballroom_1", "Ballroom_3" },
+                IsDisplayOnly = false
             },
             new SvgConfig
             {
