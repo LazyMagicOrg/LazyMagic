@@ -21,6 +21,7 @@ public abstract class LzSessionViewModel : LzViewModel, ILzSessionViewModel
             .ToPropertyEx(this, x => x.IsOnline);
 
         this.WhenAnyValue(x => x.MessageSetSelector)
+            .Skip(1) // Skip the initial value assignment to avoid load timing issues.
             .DistinctUntilChanged()
             .Subscribe(async (messageSetSelector) =>
             { 
