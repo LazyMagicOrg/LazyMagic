@@ -1,15 +1,17 @@
 namespace LazyMagic.Blazor;
 
-public class ConnectivityService : NotifyBase, IConnectivityService
+public class ConnectivityService : NotifyBase, IConnectivityService, IAsyncDisposable
 {
     private IJSRuntime? _jsRuntime;
     private DotNetObjectReference<ConnectivityService>? _objRef;
     private bool _isOnline = true;
     private bool _isInitialized = false;
-
-    public ConnectivityService()
+    private bool _disposed = false;
+    private ILzHost _host;
+    public ConnectivityService(ILzHost host)
     {
         _objRef = DotNetObjectReference.Create(this);
+        _host = host;
     }
     public bool IsOnline
     {
@@ -28,7 +30,7 @@ public class ConnectivityService : NotifyBase, IConnectivityService
         try
         {
             await _jsRuntime.InvokeVoidAsync("import", "./_content/LazyMagic.Blazor/connectivityManager.js");
-            await _jsRuntime.InvokeVoidAsync("initializeConnectivity", _objRef);
+            await _jsRuntime.InvokeVoidAsync("initializeConnectivity", _objRef, _host.AssetsUrl);
             _isInitialized = true;
         }
         catch (Exception ex)
@@ -38,13 +40,19 @@ public class ConnectivityService : NotifyBase, IConnectivityService
     }
     public async Task<bool> CheckInternetConnectivityAsync()
     {
-        if (!_isInitialized)
+        if (!_isInitialized || _jsRuntime == null)
         {
-            throw new InvalidOperationException("JSRuntime must be set before calling InitializeAsync.");
+            throw new InvalidOperationException("Service must be initialized before calling this method.");
         }
+        
+        if (_disposed)
+        {
+            throw new ObjectDisposedException(nameof(ConnectivityService));
+        }
+        
         try
         {
-            return await _jsRuntime!.InvokeAsync<bool>("getConnectivityStatus");
+            return await _jsRuntime.InvokeAsync<bool>("getConnectivityStatus");
         }
         catch (Exception ex)
         {
@@ -54,13 +62,19 @@ public class ConnectivityService : NotifyBase, IConnectivityService
     }
     public async Task<bool> ShouldMakeNetworkRequestAsync()
     {
-        if (!_isInitialized)
+        if (!_isInitialized || _jsRuntime == null)
         {
-            throw new InvalidOperationException("JSRuntime must be set before calling InitializeAsync.");
+            throw new InvalidOperationException("Service must be initialized before calling this method.");
         }
+        
+        if (_disposed)
+        {
+            throw new ObjectDisposedException(nameof(ConnectivityService));
+        }
+        
         try
         {
-            return await _jsRuntime!.InvokeAsync<bool>("shouldMakeNetworkRequest");
+            return await _jsRuntime.InvokeAsync<bool>("shouldMakeNetworkRequest");
         }
         catch (Exception ex)
         {
@@ -74,19 +88,18 @@ public class ConnectivityService : NotifyBase, IConnectivityService
         IsOnline = isOnline;
         await Task.CompletedTask;
     }
-    public async void Dispose()
+    public void Dispose()
     {
-
-        if (_isInitialized && _jsRuntime != null)
-        {
-            await _jsRuntime.InvokeVoidAsync("disposeConnectivity");
-        }
-        _objRef?.Dispose();
-        _objRef = null;
-        GC.SuppressFinalize(this);
+        DisposeAsync().AsTask().GetAwaiter().GetResult();
     }
+    
     public async ValueTask DisposeAsync()
     {
+        if (_disposed)
+            return;
+            
+        _disposed = true;
+        
         if (_isInitialized && _jsRuntime != null)
         {
             try
@@ -98,8 +111,11 @@ public class ConnectivityService : NotifyBase, IConnectivityService
                 Console.WriteLine($"Error disposing connectivity service: {ex.Message}");
             }
         }
+        
         _objRef?.Dispose();
         _objRef = null;
         _isInitialized = false;
+        
+        GC.SuppressFinalize(this);
     }
 }

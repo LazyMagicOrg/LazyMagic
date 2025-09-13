@@ -9,21 +9,28 @@ class ConnectivityManager {
     constructor() {
         this.dotNetRef = null;
         this.isInitialized = false;
+        this.connectivityListener = null;
         
-        // Add listener for connectivity changes
-        connectivityService.addListener((isOnline) => {
+        // Create and store listener for connectivity changes
+        this.connectivityListener = (isOnline) => {
             this.notifyDotNet(isOnline);
-        });
+        };
+        connectivityService.addListener(this.connectivityListener);
     }
 
     /**
-     * Initialize with .NET reference for callbacks
+     * Initialize with .NET reference for callbacks and assets URL
      * @param {any} dotNetRef - DotNetObjectReference from Blazor
+     * @param {string} assetsUrl - Base URL for assets from ILzHost
      */
-    initialize(dotNetRef) {
+    initialize(dotNetRef, assetsUrl) {
         this.dotNetRef = dotNetRef;
         this.isInitialized = true;
-        console.log('ConnectivityManager initialized');
+        
+        // Configure the connectivity service with the assets URL
+        connectivityService.setAssetsUrl(assetsUrl);
+        
+        console.log('ConnectivityManager initialized with assets URL:', assetsUrl);
         
         // Send initial status
         this.notifyDotNet(connectivityService.isOnline);
@@ -66,11 +73,19 @@ class ConnectivityManager {
      * Dispose resources
      */
     dispose() {
+        // Remove connectivity listener
+        if (this.connectivityListener) {
+            connectivityService.removeListener(this.connectivityListener);
+            this.connectivityListener = null;
+        }
+        
         if (this.dotNetRef) {
-            this.dotNetRef.dispose();
+            // Note: We don't dispose dotNetRef here as it's managed by .NET
             this.dotNetRef = null;
         }
+        
         this.isInitialized = false;
+        console.log('ConnectivityManager disposed');
     }
 }
 
@@ -78,8 +93,8 @@ class ConnectivityManager {
 const connectivityManager = new ConnectivityManager();
 
 // Global functions for Blazor interop
-window.initializeConnectivity = (dotNetRef) => {
-    connectivityManager.initialize(dotNetRef);
+window.initializeConnectivity = (dotNetRef, assetsUrl) => {
+    connectivityManager.initialize(dotNetRef, assetsUrl);
 };
 
 window.getConnectivityStatus = async () => {

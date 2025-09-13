@@ -10,37 +10,53 @@ export class ConnectivityService {
         this.lastCheckTime = Date.now();
         this.checkInterval = 30000; // 30 seconds
         this.listeners = new Set();
-        this.testUrl = '/favicon.ico'; // Small file that should always exist
-        this.alternateTestUrls = [
-            'https://www.google.com/favicon.ico',
-            'https://www.cloudflare.com/favicon.ico'
-        ];
+        this.intervalId = null;
+        this.eventHandlers = new Map();
+        this.assetsUrl = ''; // Will be set during initialization
         
         this.init();
     }
+    
+    /**
+     * Set the assets URL for connectivity checks
+     * @param {string} url - Base URL for assets from ILzHost
+     */
+    setAssetsUrl(url) {
+        this.assetsUrl = url;
+        console.debug(`[ConnectivityService] Assets URL set to: ${url}`);
+    }
 
     init() {
-        // Detect execution context
-        const isServiceWorker = typeof self !== 'undefined' && self.ServiceWorkerGlobalScope;
+        // Detect execution context - improved detection
+        const isServiceWorker = typeof importScripts === 'function';
         const globalScope = isServiceWorker ? self : (typeof window !== 'undefined' ? window : self);
         
         if (!isServiceWorker) {
             // Main thread only - listen to browser online/offline events
-            globalScope.addEventListener('online', () => this.handleConnectivityChange(true));
-            globalScope.addEventListener('offline', () => this.handleConnectivityChange(false));
+            const onlineHandler = () => this.handleConnectivityChange(true);
+            const offlineHandler = () => this.handleConnectivityChange(false);
+            
+            globalScope.addEventListener('online', onlineHandler);
+            globalScope.addEventListener('offline', offlineHandler);
+            
+            // Store handlers for cleanup
+            this.eventHandlers.set('online', onlineHandler);
+            this.eventHandlers.set('offline', offlineHandler);
             
             // Check on focus (user returning to app) - main thread only
             if (typeof document !== 'undefined') {
-                document.addEventListener('visibilitychange', () => {
+                const visibilityHandler = () => {
                     if (!document.hidden) {
                         this.checkConnectivity();
                     }
-                });
+                };
+                document.addEventListener('visibilitychange', visibilityHandler);
+                this.eventHandlers.set('visibilitychange', visibilityHandler);
             }
         }
         
-        // Periodic connectivity check (works in both contexts)
-        setInterval(() => this.checkConnectivity(), this.checkInterval);
+        // Periodic connectivity check (works in both contexts) - store interval ID
+        this.intervalId = setInterval(() => this.checkConnectivity(), this.checkInterval);
     }
 
     /**
@@ -50,49 +66,39 @@ export class ConnectivityService {
     async isReallyOnline() {
         // First check navigator.onLine
         if (!navigator.onLine) {
+            console.debug('[ConnectivityService] navigator.onLine is false');
             return false;
         }
 
-        // Then try actual network request
+        // Use HEAD request with no-cors mode to avoid CORS issues
+        // HEAD is lightweight and doesn't retrieve body content
+        const baseUrl = this.assetsUrl || '';
+        // Remove trailing slash from baseUrl if present, then add /config
+        const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
+        const url = `${cleanBaseUrl}/config?t=${Date.now()}`;
+        console.debug(`[ConnectivityService] Testing connectivity using HEAD request to: ${url}`);
+        
         try {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
             
-            const response = await fetch(this.testUrl, {
+            await fetch(url, {
                 method: 'HEAD',
-                mode: 'no-cors',
+                mode: 'no-cors',  // This bypasses CORS entirely
                 cache: 'no-store',
                 signal: controller.signal
             });
             
             clearTimeout(timeoutId);
             
-            // For no-cors mode, we just check if fetch succeeded
-            // Response will be opaque, so we can't check status
+            // With no-cors mode, we can't read the response but if fetch succeeds, we're online
+            console.debug('[ConnectivityService] Connectivity check succeeded');
             return true;
         } catch (error) {
-            // If local test failed, try external URLs (for development scenarios)
-            const globalScope = typeof window !== 'undefined' ? window : self;
-            if (globalScope.location.hostname === 'localhost') {
-                for (const url of this.alternateTestUrls) {
-                    try {
-                        const controller = new AbortController();
-                        const timeoutId = setTimeout(() => controller.abort(), 3000);
-                        
-                        await fetch(url, {
-                            method: 'HEAD',
-                            mode: 'no-cors',
-                            cache: 'no-store',
-                            signal: controller.signal
-                        });
-                        
-                        clearTimeout(timeoutId);
-                        return true;
-                    } catch {
-                        continue;
-                    }
-                }
-            }
+            console.debug('[ConnectivityService] Connectivity check failed:', error.message);
+            
+            // If the HEAD request fails, we're likely offline or have network issues
+            console.info('[ConnectivityService] Device appears to be offline');
             return false;
         }
     }
@@ -162,6 +168,48 @@ export class ConnectivityService {
      */
     async forceCheck() {
         return await this.checkConnectivity();
+    }
+    
+    /**
+     * Clean up resources
+     */
+    dispose() {
+        // Clear interval
+        if (this.intervalId) {
+            clearInterval(this.intervalId);
+            this.intervalId = null;
+        }
+        
+        // Remove event listeners
+        const isServiceWorker = typeof importScripts === 'function';
+        const globalScope = isServiceWorker ? self : (typeof window !== 'undefined' ? window : self);
+        
+        if (!isServiceWorker) {
+            // Remove window event listeners
+            const onlineHandler = this.eventHandlers.get('online');
+            const offlineHandler = this.eventHandlers.get('offline');
+            
+            if (onlineHandler) {
+                globalScope.removeEventListener('online', onlineHandler);
+            }
+            if (offlineHandler) {
+                globalScope.removeEventListener('offline', offlineHandler);
+            }
+            
+            // Remove document event listener
+            if (typeof document !== 'undefined') {
+                const visibilityHandler = this.eventHandlers.get('visibilitychange');
+                if (visibilityHandler) {
+                    document.removeEventListener('visibilitychange', visibilityHandler);
+                }
+            }
+        }
+        
+        // Clear handlers map
+        this.eventHandlers.clear();
+        
+        // Clear listeners
+        this.listeners.clear();
     }
 }
 
