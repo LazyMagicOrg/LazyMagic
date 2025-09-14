@@ -66,7 +66,7 @@ export class ConnectivityService {
     async isReallyOnline() {
         // First check navigator.onLine
         if (!navigator.onLine) {
-            //console.debug('[ConnectivityService] navigator.onLine is false');
+            console.debug('[ConnectivityService] navigator.onLine is false');
             return false;
         }
 
@@ -80,7 +80,7 @@ export class ConnectivityService {
         
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+            const timeoutId = setTimeout(() => controller.abort(), 100); 
             
             await fetch(url, {
                 method: 'HEAD',
@@ -91,8 +91,6 @@ export class ConnectivityService {
             
             clearTimeout(timeoutId);
             
-            // With no-cors mode, we can't read the response but if fetch succeeds, we're online
-            //console.debug('[ConnectivityService] Connectivity check succeeded');
             return true;
         } catch (error) {
             //console.debug('[ConnectivityService] Connectivity check failed:', error.message);

@@ -117,30 +117,65 @@ self.addEventListener('fetch', event => {
         const isOnline = await self.connectivityService.isReallyOnline();
         let request = event.request;
 
-        // Redirect to the base URL if the app is navigated to a different URL
-        // Note that this doesn't handle hard relaods as these bypass the service worker.
-        // You must handle hard reloads on the server side.
-        // The following code breaks the PWA. When the app is run, it doesn't load 
-        // and when we inspect appInfo it says the domain is insecure.
-        if ((request.mode === 'navigate' || request.url.endsWith('Page')) && !request.url.includes('authentication')) {
-            // Blazor navigation detected - ignore
-            // We don't want to fetch when all we are doing is updating the URL for an internal Blazor navigation.
-            // e.g. when we route to a different "page" (really just a Blazor component) in the SPA.
-            // Note: It is important to not return the null, 204 response when the path is the appPrefix 
-            // as this will break the PWA. The PWA will not load and the appInfo will say the domain is insecure.
-            console.log('Blazor navigation to root detected', url);
-            url = new URL(event.request.url);
-            url.pathname = self.appConfig.appPath; // Redirect to the root document
-            console.debug('Redirecting to:', url.toString());
-            request = new Request(url.toString(), {
-                method: 'GET',
-                headers: event.request.headers,
-                mode: 'same-origin',
-                credentials: event.request.credentials,
-                cache: event.request.cache
-            });
+        // Handle navigation requests for Blazor/SPA applications
+        if (request.mode === 'navigate') {
+            console.debug('Handling navigation request for:', path);
+            
+            // Check if we're at the exact app root path
+            const isAppRoot = path === self.appConfig.appPath || 
+                            path === self.appConfig.appPath + '/';
+            
+            if (isAppRoot) {
+                // For the app root, we need to explicitly request index.html
+                // because that's how it's stored in the cache
+                console.log('App root requested, changing to index.html for cache lookup');
+                const newPath = self.appConfig.appPath + (self.appConfig.appPath.endsWith('/') ? '' : '/') + 'index.html';
+                url.pathname = newPath;
+                request = new Request(url.toString(), {
+                    method: 'GET',
+                    headers: event.request.headers,
+                    mode: 'same-origin',
+                    credentials: event.request.credentials,
+                    cache: event.request.cache
+                });
+            } else {
+                // For other paths, check if it's a client-side route that needs redirection
+                const hasFileExtension = /\.[a-zA-Z0-9]+$/.test(path);
+                
+                // Special paths that should not be redirected
+                const isSpecialPath = path.includes('/authentication/') || 
+                                     path.includes('/_framework/') || 
+                                     path.includes('/_content/');
+                
+                // If it's a navigation request without a file extension and not a special path,
+                // redirect to the app root (without index.html) so Blazor can handle client-side routing
+                if (!hasFileExtension && !isSpecialPath) {
+                    console.log('SPA route detected, redirecting to app root:', path);
+                    url.pathname = self.appConfig.appPath;
+                    request = new Request(url.toString(), {
+                        method: 'GET',
+                        headers: event.request.headers,
+                        mode: 'same-origin',
+                        credentials: event.request.credentials,
+                        cache: event.request.cache
+                    });
+                }
+            }
         }
+        
+        // Log the final request details for debugging
+        console.debug('Fetch processing:', {
+            originalUrl: event.request.url,
+            finalUrl: request.url,
+            method: request.method,
+            cache: request.cache,
+            isOnline: isOnline,
+            mode: request.mode
+        });
 
+
+        // Blazor issues fetch requests with "no-cache" for some items and this breaks PWA offline support.
+        // So, if we are offline and the request is "no-cache", we change it to "default" to allow the cache to be used.
         if (!isOnline && request.cache === "no-cache") {
             await sendMessage('no-cache detected, switching to default', ' no-cache request. method:' + request.method + ', url:' + request.url);
             url = new URL(event.request.url);
@@ -161,6 +196,7 @@ self.addEventListener('fetch', event => {
                 if (cacheName) {
                     await self.staticContentModule.lazyLoadAssetCache(cacheName);
                     const cachedResponse = await self.staticContentModule.getCachedResponse(cacheName, request);
+                    console.debug('Cache lookup for request:', request.url, 'cacheName:', cacheName, 'found:', !!cachedResponse);
                     if (cachedResponse instanceof Response) {
                         return cachedResponse;
                     } else {
