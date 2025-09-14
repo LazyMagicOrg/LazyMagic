@@ -80,6 +80,13 @@ public class LazyOidcConfig : IOidcConfig
     /// </summary>
     public async Task<Dictionary<string, JObject>> LoadAuthConfigsAsync()
     {
+        // If AuthConfigName is empty, skip loading and return empty config
+        if (string.IsNullOrEmpty(_lzHost.AuthConfigName))
+        {
+            LogMessage("AuthConfigName is empty, returning empty configuration");
+            return new Dictionary<string, JObject>();
+        }
+        
         try
         {
             var config = await GetConfigAsync();
@@ -99,6 +106,13 @@ public class LazyOidcConfig : IOidcConfig
     /// </summary>
     public async Task<string> GetSelectedAuthConfigAsync()
     {
+        // If AuthConfigName is empty, return empty string
+        if (string.IsNullOrEmpty(_lzHost.AuthConfigName))
+        {
+            LogMessage("AuthConfigName is empty, returning empty string");
+            return string.Empty;
+        }
+        
         try
         {
             var config = await GetConfigAsync();
@@ -143,6 +157,13 @@ public class LazyOidcConfig : IOidcConfig
     {
         if (_loadedConfig != null)
             return _loadedConfig;
+
+        // If AuthConfigName is empty, return fallback config without trying to load
+        if (string.IsNullOrEmpty(_lzHost.AuthConfigName))
+        {
+            LogMessage("AuthConfigName is empty, returning fallback configuration");
+            return CreateFallbackConfig();
+        }
 
         await _loadSemaphore.WaitAsync();
         try

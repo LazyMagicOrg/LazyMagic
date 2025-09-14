@@ -66,7 +66,7 @@ export class ConnectivityService {
     async isReallyOnline() {
         // First check navigator.onLine
         if (!navigator.onLine) {
-            console.debug('[ConnectivityService] navigator.onLine is false');
+            //console.debug('[ConnectivityService] navigator.onLine is false');
             return false;
         }
 
@@ -76,7 +76,7 @@ export class ConnectivityService {
         // Remove trailing slash from baseUrl if present, then add /config
         const cleanBaseUrl = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
         const url = `${cleanBaseUrl}/config?t=${Date.now()}`;
-        console.debug(`[ConnectivityService] Testing connectivity using HEAD request to: ${url}`);
+        //console.debug(`[ConnectivityService] Testing connectivity using HEAD request to: ${url}`);
         
         try {
             const controller = new AbortController();
@@ -92,13 +92,13 @@ export class ConnectivityService {
             clearTimeout(timeoutId);
             
             // With no-cors mode, we can't read the response but if fetch succeeds, we're online
-            console.debug('[ConnectivityService] Connectivity check succeeded');
+            //console.debug('[ConnectivityService] Connectivity check succeeded');
             return true;
         } catch (error) {
-            console.debug('[ConnectivityService] Connectivity check failed:', error.message);
+            //console.debug('[ConnectivityService] Connectivity check failed:', error.message);
             
             // If the HEAD request fails, we're likely offline or have network issues
-            console.info('[ConnectivityService] Device appears to be offline');
+            //console.info('[ConnectivityService] Device appears to be offline');
             return false;
         }
     }

@@ -44,17 +44,39 @@ public static class ConfigureLazyMagicOIDCWASM
     {
         Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] LoadConfiguration started");
 
+        // Get the config holder first
+        var configHolder = host.Services.GetRequiredService<DynamicOidcConfigHolder>();
+        
+        // Check if authentication should be skipped
+        var lzHost = host.Services.GetRequiredService<ILzHost>();
+        if (string.IsNullOrEmpty(lzHost.AuthConfigName))
+        {
+            Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] AuthConfigName is empty - disabling OIDC");
+            configHolder.SetAuthenticationDisabled();
+            
+            // Force OIDC post-configuration to happen NOW with disabled flag
+            try
+            {
+                var oidcOptions = host.Services.GetRequiredService<IOptionsSnapshot<RemoteAuthenticationOptions<OidcProviderOptions>>>();
+                var options = oidcOptions.Value; // This will trigger post-configuration with disabled flag
+            }
+            catch
+            {
+                // Ignore errors when auth is disabled
+            }
+            
+            return;
+        }
+
         // Load and apply OIDC configuration now that _appConfig is available
         // This MUST complete before any authentication attempts
         var oidcConfig = host.Services.GetRequiredService<IOidcConfig>();
-        var configHolder = host.Services.GetRequiredService<DynamicOidcConfigHolder>();
         // Load configuration directly (not in Task.Run) to ensure it completes before app starts
         try
         {
             if (oidcConfig is LazyOidcConfig lazyConfig)
             {
                 Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Getting ILzHost");
-                var lzHost = host.Services.GetRequiredService<ILzHost>();
                 
                 Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Starting LoadAuthConfigsAsync");
                 var authConfigs = await lazyConfig.LoadAuthConfigsAsync();

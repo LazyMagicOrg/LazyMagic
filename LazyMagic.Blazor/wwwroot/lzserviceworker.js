@@ -79,19 +79,14 @@ self.addEventListener('install', event => {
                     .filter(asset => offlineAssetsInclude.some(pattern => pattern.test(asset.url)))
                     .filter(asset => !offlineAssetsExclude.some(pattern => pattern.test(asset.url)))
                     .map(asset => {
-                        if (asset.url.includes('index.html')) {
-                            // We don't us asset.hash on index.html because we update the base tag after the 
-                            // msbuild publish step.
-                            return new Request(asset.url, {
-                                cache: 'no-cache'
-                            });
-                        }
-                        else {
-                            return new Request(asset.url, {
-                                // integrity: asset.hash,
-                                cache: 'no-cache'
-                            });
-                        }
+                        // Make sure to use the full absolute URL for the request,
+                        //otherwise the request may fail when the service worker is not at the root.
+                        if (!asset.url.startsWith('/') )
+                            asset.url = '/' + asset.url;  
+                        return new Request(asset.url, {
+                            //integrity: asset.hash,
+                            cache: 'no-cache'
+                        });
                     });
 
                 await self.staticContentModule.cacheApplicationAssets(assetsRequests);

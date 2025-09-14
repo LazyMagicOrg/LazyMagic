@@ -54,10 +54,21 @@ public class DynamicOidcPostConfigureOptions : IPostConfigureOptions<RemoteAuthe
                 }
                 else
                 {
-                    // Configuration not loaded yet - this means authentication happened too early
-                    _logger.LogWarning("Dynamic OIDC configuration not available during post-configure");
-                    _logger.LogInformation("Current options - Authority: {Authority}, ClientId: {ClientId}", 
-                        options.ProviderOptions.Authority, options.ProviderOptions.ClientId);
+                    // Check if authentication is intentionally disabled
+                    if (_configHolder.IsAuthenticationDisabled)
+                    {
+                        _logger.LogInformation("Authentication is disabled - using null authority to prevent OIDC initialization");
+                        // Set authority to null to prevent OIDC from trying to fetch metadata
+                        options.ProviderOptions.Authority = null;
+                        options.ProviderOptions.MetadataUrl = null;
+                    }
+                    else
+                    {
+                        // Configuration not loaded yet - this means authentication happened too early
+                        _logger.LogWarning("Dynamic OIDC configuration not available during post-configure");
+                        _logger.LogInformation("Current options - Authority: {Authority}, ClientId: {ClientId}", 
+                            options.ProviderOptions.Authority, options.ProviderOptions.ClientId);
+                    }
                 }
 
                 _hasConfigured = true;

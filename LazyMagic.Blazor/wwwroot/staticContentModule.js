@@ -35,10 +35,11 @@ async function initializeModule() {
         appPrefix = appConfig.appPath;
         TEMP_APP_CACHE_NAME = `temp-${appPrefix}-app-cache`;
         APP_CACHE_NAME = `${appPrefix}-app-cache`;
-
+        console.warn(`staticContentModule: appPrefix: ${appPrefix}, TEMP_APP_CACHE_NAME: ${TEMP_APP_CACHE_NAME}, APP_CACHE_NAME: ${APP_CACHE_NAME}`);
         assetsUrl = isRunningInServiceWorker
             ? self.location.origin.endsWith('/') ? self.location.origin.slice(0, -1) : self.location.origin
             : appConfig.assetsUrl.endsWith('/') ? appConfig.assetsUrl.slice(0, -1) : appConfig.assetsUrl;
+        console.warn(`staticContentModule: assetsUrl: ${assetsUrl}`);
         makeAssetCaches(); // Initialize the asset caches dictionary
 
     } catch (error) {

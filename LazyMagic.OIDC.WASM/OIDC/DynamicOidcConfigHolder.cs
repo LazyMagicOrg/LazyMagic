@@ -7,6 +7,7 @@ namespace LazyMagic.OIDC.WASM;
 public class DynamicOidcConfigHolder
 {
     private OidcOptionsConfiguration? _configuration;
+    private bool _isAuthenticationDisabled = false;
     private readonly object _lock = new();
 
     public bool IsConfigured 
@@ -17,6 +18,25 @@ public class DynamicOidcConfigHolder
             {
                 return _configuration != null;
             }
+        }
+    }
+
+    public bool IsAuthenticationDisabled
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _isAuthenticationDisabled;
+            }
+        }
+    }
+
+    public void SetAuthenticationDisabled()
+    {
+        lock (_lock)
+        {
+            _isAuthenticationDisabled = true;
         }
     }
 
