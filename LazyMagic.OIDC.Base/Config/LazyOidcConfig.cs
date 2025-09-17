@@ -274,9 +274,13 @@ public class LazyOidcConfig : IOidcConfig
         return fallbackConfig;
     }
 
-    protected virtual void LogMessage(string message)
+    protected virtual void LogMessage(string message, LogLevel level = LogLevel.Information)
     {
-        Console.WriteLine($"[{GetType().Name}] {message}");
+        if (_logger != null)
+        {
+            var methodName = new System.Diagnostics.StackTrace().GetFrame(1)?.GetMethod()?.Name ?? "Unknown";
+            _logger.Log(level, "[{MethodName}][{Timestamp}] {Message}", methodName, DateTime.UtcNow.ToString("HH:mm:ss.fff"), message);
+        }
     }
 
     protected virtual void Dispose(bool disposing)

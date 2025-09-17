@@ -56,25 +56,25 @@ public class BlazorOIDCService : IOIDCService, IDisposable
     {
         try
         {
-            _logger.LogInformation($"[{DateTime.UtcNow:HH:mm:ss.fff}] Starting _authStateProvider.GetAuthenticationStateAsync()");
-            _logger.LogInformation($"[{DateTime.UtcNow:HH:mm:ss.fff}] AuthStateProvider type: {_authStateProvider.GetType().Name}");
+            _logger.LogInformation("[GetAuthenticationStateAsync][{Timestamp}] Starting _authStateProvider.GetAuthenticationStateAsync()", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
+            _logger.LogInformation("[GetAuthenticationStateAsync][{Timestamp}] AuthStateProvider type: {AuthStateProviderType}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), _authStateProvider.GetType().Name);
             
             var authState = await _authStateProvider.GetAuthenticationStateAsync();
             
-            _logger.LogInformation($"[{DateTime.UtcNow:HH:mm:ss.fff}] Completed _authStateProvider.GetAuthenticationStateAsync()");
-            _logger.LogInformation($"[{DateTime.UtcNow:HH:mm:ss.fff}] AuthState.User.Identity.IsAuthenticated: {authState.User?.Identity?.IsAuthenticated}");
-            _logger.LogInformation($"[{DateTime.UtcNow:HH:mm:ss.fff}] AuthState.User.Identity.Name: {authState.User?.Identity?.Name ?? "null"}");
-            _logger.LogInformation($"[{DateTime.UtcNow:HH:mm:ss.fff}] AuthState.User.Claims.Count: {authState.User?.Claims?.Count() ?? 0}");
+            _logger.LogInformation("[GetAuthenticationStateAsync][{Timestamp}] Completed _authStateProvider.GetAuthenticationStateAsync()", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
+            _logger.LogInformation("[GetAuthenticationStateAsync][{Timestamp}] AuthState.User.Identity.IsAuthenticated: {IsAuthenticated}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), authState.User?.Identity?.IsAuthenticated);
+            _logger.LogInformation("[GetAuthenticationStateAsync][{Timestamp}] AuthState.User.Identity.Name: {UserName}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), authState.User?.Identity?.Name ?? "null");
+            _logger.LogInformation("[GetAuthenticationStateAsync][{Timestamp}] AuthState.User.Claims.Count: {ClaimsCount}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), authState.User?.Claims?.Count() ?? 0);
             
-            _logger.LogInformation($"[{DateTime.UtcNow:HH:mm:ss.fff}] Starting CreateAuthenticationState()");
+            _logger.LogInformation("[GetAuthenticationStateAsync][{Timestamp}] Starting CreateAuthenticationState()", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
             var result = await CreateAuthenticationState(authState.User);
-            _logger.LogInformation($"[{DateTime.UtcNow:HH:mm:ss.fff}] Completed CreateAuthenticationState()");
+            _logger.LogInformation("[GetAuthenticationStateAsync][{Timestamp}] Completed CreateAuthenticationState()", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
             
             return result;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, $"[{DateTime.UtcNow:HH:mm:ss.fff}] Error in GetAuthenticationStateAsync: {ex.Message}");
+            _logger.LogError(ex, "[GetAuthenticationStateAsync][{Timestamp}] Error in GetAuthenticationStateAsync: {ErrorMessage}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), ex.Message);
             throw;
         }
     }
@@ -129,7 +129,7 @@ public class BlazorOIDCService : IOIDCService, IDisposable
 
     private async Task<OIDCAuthenticationState> CreateAuthenticationState(ClaimsPrincipal user)
     {
-        _logger.LogInformation($"[{DateTime.UtcNow:HH:mm:ss.fff}] CreateAuthenticationState - Creating state for user: {user?.Identity?.Name ?? "anonymous"}");
+        _logger.LogInformation("[CreateAuthenticationState][{Timestamp}] Creating state for user: {UserName}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), user?.Identity?.Name ?? "anonymous");
         
         var state = new OIDCAuthenticationState
         {
@@ -138,36 +138,36 @@ public class BlazorOIDCService : IOIDCService, IDisposable
             Email = user?.FindFirst("email")?.Value ?? user?.FindFirst(ClaimTypes.Email)?.Value
         };
 
-        _logger.LogInformation($"[{DateTime.UtcNow:HH:mm:ss.fff}] CreateAuthenticationState - IsAuthenticated: {state.IsAuthenticated}");
+        _logger.LogInformation("[CreateAuthenticationState][{Timestamp}] IsAuthenticated: {IsAuthenticated}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), state.IsAuthenticated);
 
         if (state.IsAuthenticated)
         {
-            _logger.LogInformation($"[{DateTime.UtcNow:HH:mm:ss.fff}] CreateAuthenticationState - User authenticated, getting token expiry");
+            _logger.LogInformation("[CreateAuthenticationState][{Timestamp}] User authenticated, getting token expiry", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
             
             // Get token expiry
             try
             {
-                _logger.LogInformation($"[{DateTime.UtcNow:HH:mm:ss.fff}] CreateAuthenticationState - Requesting access token");
+                _logger.LogInformation("[CreateAuthenticationState][{Timestamp}] Requesting access token", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
                 var tokenResult = await _tokenProvider.RequestAccessToken();
-                _logger.LogInformation($"[{DateTime.UtcNow:HH:mm:ss.fff}] CreateAuthenticationState - Token request completed");
+                _logger.LogInformation("[CreateAuthenticationState][{Timestamp}] Token request completed", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
                 
                 if (tokenResult.TryGetToken(out var token))
                 {
                     state.TokenExpiry = token.Expires.DateTime;
-                    _logger.LogInformation($"[{DateTime.UtcNow:HH:mm:ss.fff}] CreateAuthenticationState - Token expires: {token.Expires.DateTime}");
+                    _logger.LogInformation("[CreateAuthenticationState][{Timestamp}] Token expires: {TokenExpiry}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), token.Expires.DateTime);
                 }
                 else
                 {
-                    _logger.LogInformation($"[{DateTime.UtcNow:HH:mm:ss.fff}] CreateAuthenticationState - No token returned");
+                    _logger.LogInformation("[CreateAuthenticationState][{Timestamp}] No token returned", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"[{DateTime.UtcNow:HH:mm:ss.fff}] Error getting token expiry");
+                _logger.LogError(ex, "[CreateAuthenticationState][{Timestamp}] Error getting token expiry", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
             }
 
             // Populate claims
-            _logger.LogInformation($"[{DateTime.UtcNow:HH:mm:ss.fff}] CreateAuthenticationState - Processing {user!.Claims.Count()} claims");
+            _logger.LogInformation("[CreateAuthenticationState][{Timestamp}] Processing {ClaimsCount} claims", DateTime.UtcNow.ToString("HH:mm:ss.fff"), user!.Claims.Count());
             var claims = new Dictionary<string, string>();
             foreach (var claim in user!.Claims)
             {
@@ -176,7 +176,7 @@ public class BlazorOIDCService : IOIDCService, IDisposable
             state.Claims = claims;
         }
 
-        _logger.LogInformation($"[{DateTime.UtcNow:HH:mm:ss.fff}] CreateAuthenticationState - State creation completed");
+        _logger.LogInformation("[CreateAuthenticationState][{Timestamp}] State creation completed", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
         return state;
     }
 
@@ -209,44 +209,44 @@ public class BlazorOIDCService : IOIDCService, IDisposable
     {
         try
         {
-            _logger.LogInformation("Starting logout process");
+            _logger.LogInformation("[LogoutAsync][{Timestamp}] Starting logout process", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
             
             // Clear tokens from storage to prevent immediate re-login
             await _rememberMeService.ClearTokensAsync();
-            _logger.LogInformation("Tokens cleared from storage");
+            _logger.LogInformation("[LogoutAsync][{Timestamp}] Tokens cleared from storage", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
             
             // Build logout URL to clear Cognito session
             var postLogoutRedirectUri = _navigation.BaseUri;
-            _logger.LogInformation("PostLogoutRedirectUri: {PostLogoutRedirectUri}", postLogoutRedirectUri);
+            _logger.LogInformation("[LogoutAsync][{Timestamp}] PostLogoutRedirectUri: {PostLogoutRedirectUri}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), postLogoutRedirectUri);
             
             var logoutUrl = _configProvider.BuildLogoutUrl(postLogoutRedirectUri);
             
             if (!string.IsNullOrEmpty(logoutUrl))
             {
-                _logger.LogInformation("Navigating to Cognito logout: {LogoutUrl}", logoutUrl);
-                _logger.LogInformation("Navigation BaseUri: {BaseUri}", _navigation.BaseUri);
-                _logger.LogInformation("Navigation Uri: {Uri}", _navigation.Uri);
+                _logger.LogInformation("[LogoutAsync][{Timestamp}] Navigating to Cognito logout: {LogoutUrl}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), logoutUrl);
+                _logger.LogInformation("[LogoutAsync][{Timestamp}] Navigation BaseUri: {BaseUri}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), _navigation.BaseUri);
+                _logger.LogInformation("[LogoutAsync][{Timestamp}] Navigation Uri: {Uri}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), _navigation.Uri);
                 
                 // Force a full page reload to ensure we hit the Cognito logout endpoint
                 _navigation.NavigateTo(logoutUrl, forceLoad: true);
                 
-                _logger.LogInformation("Navigation to Cognito logout URL initiated");
+                _logger.LogInformation("[LogoutAsync][{Timestamp}] Navigation to Cognito logout URL initiated", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
             }
             else
             {
-                _logger.LogWarning("Could not build logout URL, falling back to local logout");
-                _logger.LogWarning("Provider type: {ProviderType}", _configProvider.GetProviderType());
-                _logger.LogWarning("Logout endpoint: {LogoutEndpoint}", _configProvider.GetLogoutEndpoint());
-                _logger.LogWarning("Client ID: {ClientId}", _configProvider.GetClientId());
+                _logger.LogWarning("[LogoutAsync][{Timestamp}] Could not build logout URL, falling back to local logout", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
+                _logger.LogWarning("[LogoutAsync][{Timestamp}] Provider type: {ProviderType}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), _configProvider.GetProviderType());
+                _logger.LogWarning("[LogoutAsync][{Timestamp}] Logout endpoint: {LogoutEndpoint}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), _configProvider.GetLogoutEndpoint());
+                _logger.LogWarning("[LogoutAsync][{Timestamp}] Client ID: {ClientId}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), _configProvider.GetClientId());
                 
                 OnAuthenticationRequested?.Invoke("logout");
             }
             
-            _logger.LogInformation("Logout process completed");
+            _logger.LogInformation("[LogoutAsync][{Timestamp}] Logout process completed", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error during logout");
+            _logger.LogError(ex, "[LogoutAsync][{Timestamp}] Error during logout", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
         }
     }
 

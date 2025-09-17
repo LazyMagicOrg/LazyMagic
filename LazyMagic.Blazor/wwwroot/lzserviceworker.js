@@ -9,7 +9,13 @@ includes support for:
 - Graceful application updates.
 */
 
-console.warn('Loading service worker script');
+// Standard logging utility for service worker
+function logSW(methodName, message, level = 'info') {
+    const timestamp = new Date().toISOString().substr(11, 12); // HH:mm:ss.fff format
+    console[level](`[${methodName}][${timestamp}] ${message}`);
+}
+
+logSW('ServiceWorker', 'Loading service worker script', 'warn');
 
 // In the service worker file (e.g., service-worker.published.js)
 // First, import the config files using static imports
@@ -64,7 +70,7 @@ self.addEventListener('message', async event => {
 
 
 self.addEventListener('install', event => {
-    console.info('Service worker installing...');
+    logSW('install', 'Service worker installing...');
     event.waitUntil(
         (async () => {
             try {
@@ -101,7 +107,7 @@ self.addEventListener('install', event => {
 
 // This event listener is used to make sure all existing clients are claimed by the new service worker
 self.addEventListener('activate', (event) => {
-    console.log("Service worker activating");
+    logSW('activate', 'Service worker activating');
     event.waitUntil((async () => {
         await self.staticContentModule.activateApplicationCache();
         await self.clients.claim();
