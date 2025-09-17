@@ -169,17 +169,6 @@ self.addEventListener('fetch', event => {
             }
         }
         
-        // Log the final request details for debugging
-        console.debug('Fetch processing:', {
-            originalUrl: event.request.url,
-            finalUrl: request.url,
-            method: request.method,
-            cache: request.cache,
-            isOnline: isOnline,
-            mode: request.mode
-        });
-
-
         // Blazor issues fetch requests with "no-cache" for some items and this breaks PWA offline support.
         // So, if we are offline and the request is "no-cache", we change it to "default" to allow the cache to be used.
         if (!isOnline && request.cache === "no-cache") {

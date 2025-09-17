@@ -8,10 +8,13 @@ public class ConnectivityService : NotifyBase, IConnectivityService, IAsyncDispo
     private bool _isInitialized = false;
     private bool _disposed = false;
     private ILzHost _host;
-    public ConnectivityService(ILzHost host)
+    private readonly ILogger<ConnectivityService>? _logger;
+    
+    public ConnectivityService(ILzHost host, ILogger<ConnectivityService>? logger = null)
     {
         _objRef = DotNetObjectReference.Create(this);
         _host = host;
+        _logger = logger;
     }
     public bool IsOnline
     {
@@ -35,7 +38,7 @@ public class ConnectivityService : NotifyBase, IConnectivityService, IAsyncDispo
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to initialize connectivity service: {ex.Message}");
+            _logger?.LogError(ex, "[InitializeAsync][{Timestamp}] Failed to initialize connectivity service: {ErrorMessage}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), ex.Message);
         }
     }
     public async Task<bool> CheckInternetConnectivityAsync()
@@ -56,7 +59,7 @@ public class ConnectivityService : NotifyBase, IConnectivityService, IAsyncDispo
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to check connectivity: {ex.Message}");
+            _logger?.LogError(ex, "[CheckInternetConnectivityAsync][{Timestamp}] Failed to check connectivity: {ErrorMessage}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), ex.Message);
             return false;
         }
     }
@@ -78,7 +81,7 @@ public class ConnectivityService : NotifyBase, IConnectivityService, IAsyncDispo
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Failed to check if should make network request: {ex.Message}");
+            _logger?.LogError(ex, "[ShouldMakeNetworkRequestAsync][{Timestamp}] Failed to check if should make network request: {ErrorMessage}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), ex.Message);
             return false;
         }
     }
@@ -108,7 +111,7 @@ public class ConnectivityService : NotifyBase, IConnectivityService, IAsyncDispo
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error disposing connectivity service: {ex.Message}");
+                _logger?.LogError(ex, "[DisposeAsync][{Timestamp}] Error disposing connectivity service: {ErrorMessage}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), ex.Message);
             }
         }
         

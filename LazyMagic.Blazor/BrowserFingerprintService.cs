@@ -19,7 +19,7 @@ public class BrowserFingerprintService : LzBaseJSModule
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error getting browser fingerprint: {ex.Message}");
+            _logger?.LogError(ex, "[GetFingerprintAsync][{Timestamp}] Error getting browser fingerprint: {ErrorMessage}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), ex.Message);
             return new BrowserFingerprint();
         }
     }

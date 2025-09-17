@@ -1,6 +1,7 @@
 @namespace BlazorUI
 @inject IRememberMeService RememberMe
 @inject IOIDCService AuthService
+@inject ILogger<RememberMeToggle> Logger
 
 @if (isAuthenticated)
 {
@@ -39,7 +40,7 @@
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"RememberMeToggle initialization error: {ex.Message}");
+            Logger.LogError(ex, "[OnInitializedAsync][{Timestamp}] RememberMeToggle initialization error: {ErrorMessage}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), ex.Message);
             // Continue with default values if initialization fails
             isRemembered = false;
             isInitialized = true;
@@ -72,6 +73,6 @@
             : "Remember Me disabled - You'll be logged out when you close your browser";
         
         // Log the change
-        Console.WriteLine($"Remember Me changed to: {isRemembered} - {message}");
+        Logger.LogInformation("[OnRememberMeChanged][{Timestamp}] Remember Me changed to: {IsRemembered} - {Message}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), isRemembered, message);
     }
 }

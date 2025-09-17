@@ -5,6 +5,7 @@ public abstract class LzBaseJSModule : ILzBaseJSModule, INotifyPropertyChanged, 
 {
     protected IJSRuntime jsRuntime;
     private Task<IJSObjectReference>? moduleTask;
+    protected ILogger? _logger;
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
@@ -32,6 +33,11 @@ public abstract class LzBaseJSModule : ILzBaseJSModule, INotifyPropertyChanged, 
     public virtual void SetJSRuntime(object jsRuntime)
     {
         this.jsRuntime = (JSRuntime)jsRuntime;
+    }
+    
+    public virtual void SetLogger(ILogger logger)
+    {
+        _logger = logger;
     }
 
     protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
@@ -139,11 +145,11 @@ public abstract class LzBaseJSModule : ILzBaseJSModule, INotifyPropertyChanged, 
         }
         catch (Exception exc) when (exc is JSDisconnectedException or ObjectDisposedException or TaskCanceledException)
         {
-            Console.WriteLine($"InvokeSafeVoidAsync expected error: {exc.Message}");
+            _logger?.LogDebug("[InvokeSafeVoidAsync][{Timestamp}] Expected error (JS disconnected/disposed/cancelled): {ErrorMessage}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), exc.Message);
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"InvokeSafeVoidAsync unexpected error: {ex.Message}");
+            _logger?.LogError(ex, "[InvokeSafeVoidAsync][{Timestamp}] Unexpected error: {ErrorMessage}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), ex.Message);
         }
 
     }
@@ -193,7 +199,7 @@ public abstract class LzBaseJSModule : ILzBaseJSModule, INotifyPropertyChanged, 
             }
             catch (Exception exc)
             {
-                Console.WriteLine($"InitializeModule, {exc.Message}", exc);
+                _logger?.LogError(exc, "[InitializeModule][{Timestamp}] Failed to initialize JS module: {ErrorMessage}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), exc.Message);
                 throw;
             }
 
