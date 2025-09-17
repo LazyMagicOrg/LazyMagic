@@ -3,8 +3,8 @@
 // which will register all the necessary event listeners in this context
 
 // Impot the app configuration and settings
-import { appConfig } from './_content/BlazorUI/appConfig.js';
-import { settings } from './_content/BlazorUI/staticContentSettings.js';
+import { appConfig } from './appConfig.js';
+import { settings } from './staticContentSettings.js';
 
 // Import the Blazor-generated assets manifest
 import './service-worker-assets.js';

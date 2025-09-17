@@ -89,20 +89,21 @@ export async function serviceWorkerUpdateStarted() {
     }
 }
 export async function reload() {
-    // We can't use reload() because the current browser URL may include a Blazor "page" (component)
-    // and that would cause a 404. Example: /myapp/HomePage.
-    // Also, the reload behavior is different for reload in dev (localhost) and
-    // reload from a non-dev server.
-    const isDev = window.location.hostname.includes('localhost');
-    const baseHrefElement = document.querySelector('base');
-    const appPath = new URL(baseHrefElement.href).pathname;
-    if (isDev) {
-        location.href = new URL("/", self.location.origin);
-    }
-    else {
-        console.log("reload appPath:" + appPath);
-        location.href = new URL(appPath, self.location.origin);
-    }
+    //// We can't use reload() because the current browser URL may include a Blazor "page" (component)
+    //// and that would cause a 404. Example: /myapp/HomePage.
+    //// Also, the reload behavior is different for reload in dev (localhost) and
+    //// reload from a non-dev server.
+    //const isDev = window.location.hostname.includes('localhost');
+    //const baseHrefElement = document.querySelector('base');
+    //const appPath = new URL(baseHrefElement.href).pathname;
+    //if (isDev) {
+    //    location.href = new URL("/", self.location.origin);
+    //}
+    //else {
+    //    console.log("reload appPath:" + appPath);
+    //    location.href = new URL(appPath, self.location.origin);
+    //}
+    window.reload();
 }
 export async function getMemory() {
     return [performance.memory.jsHeapSizeLimit, performance.memory.usedJSHeapSize]

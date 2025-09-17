@@ -217,20 +217,32 @@ public class BlazorOIDCService : IOIDCService, IDisposable
             
             // Build logout URL to clear Cognito session
             var postLogoutRedirectUri = _navigation.BaseUri;
+            _logger.LogInformation("PostLogoutRedirectUri: {PostLogoutRedirectUri}", postLogoutRedirectUri);
+            
             var logoutUrl = _configProvider.BuildLogoutUrl(postLogoutRedirectUri);
             
             if (!string.IsNullOrEmpty(logoutUrl))
             {
-                _logger.LogInformation($"Navigating to Cognito logout: {logoutUrl}");
+                _logger.LogInformation("Navigating to Cognito logout: {LogoutUrl}", logoutUrl);
+                _logger.LogInformation("Navigation BaseUri: {BaseUri}", _navigation.BaseUri);
+                _logger.LogInformation("Navigation Uri: {Uri}", _navigation.Uri);
+                
+                // Force a full page reload to ensure we hit the Cognito logout endpoint
                 _navigation.NavigateTo(logoutUrl, forceLoad: true);
+                
+                _logger.LogInformation("Navigation to Cognito logout URL initiated");
             }
             else
             {
                 _logger.LogWarning("Could not build logout URL, falling back to local logout");
+                _logger.LogWarning("Provider type: {ProviderType}", _configProvider.GetProviderType());
+                _logger.LogWarning("Logout endpoint: {LogoutEndpoint}", _configProvider.GetLogoutEndpoint());
+                _logger.LogWarning("Client ID: {ClientId}", _configProvider.GetClientId());
+                
                 OnAuthenticationRequested?.Invoke("logout");
             }
             
-            _logger.LogInformation("Logout navigation triggered");
+            _logger.LogInformation("Logout process completed");
         }
         catch (Exception ex)
         {

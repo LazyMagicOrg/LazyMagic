@@ -182,16 +182,21 @@ public class DynamicConfigurationProvider : IDynamicConfigurationProvider
             return null;
         }
         
+        var escapedRedirectUri = Uri.EscapeDataString(postLogoutRedirectUri);
+        _logger.LogInformation("Escaped redirect URI: {EscapedRedirectUri}", escapedRedirectUri);
+        
         var logoutUrl = providerType?.ToLower() switch
         {
-            "cognito" => $"{logoutEndpoint}?client_id={clientId}&logout_uri={Uri.EscapeDataString(postLogoutRedirectUri)}",
-            "auth0" => $"{logoutEndpoint.TrimEnd('/')}/v2/logout?client_id={clientId}&returnTo={Uri.EscapeDataString(postLogoutRedirectUri)}",
-            "okta" => $"{logoutEndpoint}?id_token_hint={{id_token}}&post_logout_redirect_uri={Uri.EscapeDataString(postLogoutRedirectUri)}",
-            "azuread" => $"{logoutEndpoint}?post_logout_redirect_uri={Uri.EscapeDataString(postLogoutRedirectUri)}",
-            _ => $"{logoutEndpoint}?post_logout_redirect_uri={Uri.EscapeDataString(postLogoutRedirectUri)}" // Generic OIDC
+            "cognito" => $"{logoutEndpoint}?client_id={clientId}&logout_uri={escapedRedirectUri}",
+            "auth0" => $"{logoutEndpoint.TrimEnd('/')}/v2/logout?client_id={clientId}&returnTo={escapedRedirectUri}",
+            "okta" => $"{logoutEndpoint}?id_token_hint={{id_token}}&post_logout_redirect_uri={escapedRedirectUri}",
+            "azuread" => $"{logoutEndpoint}?post_logout_redirect_uri={escapedRedirectUri}",
+            _ => $"{logoutEndpoint}?post_logout_redirect_uri={escapedRedirectUri}" // Generic OIDC
         };
         
-        _logger.LogInformation("Built logout URL: {LogoutUrl}", logoutUrl);
+        _logger.LogInformation("Final logout URL constructed: {LogoutUrl}", logoutUrl);
+        _logger.LogInformation("Provider type matched: {ProviderTypeMatched}", providerType?.ToLower());
+        
         return logoutUrl;
     }
     

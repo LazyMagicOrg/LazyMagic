@@ -1,4 +1,4 @@
-﻿namespace BlazorTest;
+﻿namespace WASMApp;
 
 public class Program
 {
@@ -56,6 +56,7 @@ public class Program
 
         builder.Services.AddSingleton<ILzHost>(sp => {
             LzHost = new LzHost(
+                appPath: (string)_appConfig!["appPath"]!, // app path (e.g. /baseapp/)
                 appUrl: (string)_appConfig!["appUrl"]!, // web app url
                 androidAppUrl: (string)_appConfig!["androidAppUrl"]!, // android app url 
                 remoteApiUrl: (string)_appConfig!["remoteApiUrl"]!,  // api url

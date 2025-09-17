@@ -1,4 +1,4 @@
-﻿namespace BlazorTest;
+﻿namespace WASMApp;
 
 public static class ConfigApp
 {

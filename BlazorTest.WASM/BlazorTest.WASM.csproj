@@ -1,20 +1,28 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
-
 	<PropertyGroup>
+		<!-- Define the app path for different configurations -->
+		<AppPath Condition="'$(Configuration)' == 'Release'">/baseapp/</AppPath>
+		<AppPath Condition="'$(Configuration)' == 'Debug'">/</AppPath>
+		<StaticWebAssetBasePath>$(AppPath)</StaticWebAssetBasePath>
 		<TargetFramework>net9.0</TargetFramework>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
-		<RootNamespace>BlazorTest</RootNamespace>
-		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-		<Nowarn>NU1504;NU1507</Nowarn>
+		<ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
 		<PublishTrimmed>true</PublishTrimmed>
 		<TrimmerLog>trimmer.log</TrimmerLog>
-
-	</PropertyGroup>
+		<RootNamespace>WASMApp</RootNamespace>
+		<AssemblyName>WASMApp</AssemblyName>
+	</PropertyGroup> 
 
 	<ItemGroup>
+		<TrimmerRootDescriptors Include="LinkerConfig.xml" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
 		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
+		<ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+		<PackageReference Include="Microsoft.Extensions.Logging" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Configuration" />
+
 	</ItemGroup>
 
 	<ItemGroup>
@@ -22,7 +30,31 @@
 		<ProjectReference Include="..\LazyMagic.BlazorSvg\LazyMagic.BlazorSvg.csproj" />
 		<ProjectReference Include="..\LazyMagic.Blazor\LazyMagic.Blazor.csproj" />
 		<ProjectReference Include="..\LazyMagic.OIDC.WASM\LazyMagic.OIDC.WASM.csproj" />
-	</ItemGroup>
+	</ItemGroup>	
 
-	
+
+	<Target Name="ProcessIndexTemplate" BeforeTargets="Build">
+		<WriteLinesToFile File="wwwroot/index.html"
+						  Lines="$([System.IO.File]::ReadAllText('wwwroot/index.template.html').Replace('{{BASE_HREF}}', '$(AppPath)'))"
+						  Overwrite="true" />
+	</Target>
+
+	<Target Name="FixCssPathsAfterPublish" AfterTargets="Publish" Condition="'$(AppPath)' != ''">
+		<PropertyGroup>
+			<PublishedCssPath>$(PublishDir)wwwroot$(AppPath)WASMApp.styles.css</PublishedCssPath>
+		</PropertyGroup>
+
+		<Message Text="Fixing CSS import paths in $(PublishedCssPath)" Importance="high" />
+
+		<!-- Read the CSS file, replace relative paths with absolute paths, and write it back -->
+		<WriteLinesToFile
+			File="$(PublishedCssPath)"
+			Lines="$([System.IO.File]::ReadAllText('$(PublishedCssPath)').Replace('../_content/', '$(AppPath)_content/'))"
+			Overwrite="true"
+			Condition="Exists('$(PublishedCssPath)')" />
+
+		<Message Text="CSS import paths have been fixed for /$(AppPath)/ base path" Importance="high" Condition="Exists('$(PublishedCssPath)')" />
+		<Warning Text="WASMApp.styles.css not found at $(PublishedCssPath)" Condition="!Exists('$(PublishedCssPath)')" />
+	</Target>
+
 </Project>
