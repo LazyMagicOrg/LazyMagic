@@ -1,4 +1,4 @@
-// SvgViewer class to handle multiple instances
+﻿// SvgViewer class to handle multiple instances
 class SvgViewerInstance {
     constructor(containerId, dotNetObjectReference, disableSelection = false) {
         this.containerId = containerId;
@@ -15,9 +15,17 @@ class SvgViewerInstance {
         this.activeLayerKey = null;
     }
 
-    // Active scope = current layer group (or whole paper if none detected)
+    // Return the inner <svg> if present, otherwise the paper itself
+    rootSvg() {
+        return this.s ? (this.s.select("svg") || this.s) : null;
+    }
+
+    // Active scope = current layer group (or inner <svg>/paper if none detected)
     scope() {
-        return (this.activeLayerKey && this.layers[this.activeLayerKey]) ? this.layers[this.activeLayerKey] : this.s;
+        const root = this.rootSvg();
+        return (this.activeLayerKey && this.layers[this.activeLayerKey])
+            ? this.layers[this.activeLayerKey]
+            : root;
     }
 
     // Find nearest ancestor that is an Inkscape layer; return its label/id key
@@ -74,7 +82,7 @@ class SvgViewerInstance {
         if (typeof Snap === 'undefined') {
             throw new Error('Snap.svg is not loaded. Please call initAsync first.');
         }
-        
+
         if (this.s) {
             this.s.selectAll("path").forEach((path) => {
                 path.node.removeEventListener("click", this.handleSelection.bind(this));
@@ -91,12 +99,12 @@ class SvgViewerInstance {
         const response = await fetch(svgContent);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const svgText = await response.text();
-        
+
         const fragment = Snap.parse(svgText);
         if (fragment) {
             this.s = Snap(`#${this.containerId}`);
             this.s.append(fragment);
-            
+
             // Make SVG responsive
             const svgEl = this.s.select("svg");
             if (svgEl) {
@@ -132,7 +140,7 @@ class SvgViewerInstance {
     handleSelection(event) {
         // Do nothing if selection is disabled
         if (this.disableSelection) return;
-        
+
         const path = Snap(event.target);
 
         // Auto-activate layer if clicked
@@ -153,21 +161,40 @@ class SvgViewerInstance {
             this.selectPath(id);
             this.dotNetObjectReference.invokeMethodAsync("OnPathSelected", id);
         }
-        
+
         this.getPaths();
         const mySelectedIds = Array.from(this.selectedIds);
         this.dotNetObjectReference.invokeMethodAsync("OnPathsChanged", mySelectedIds);
+    }
+
+    // Compute union of transformed bboxes (no cloning, includes transforms)
+    unionTransformedBBoxes(nodes) {
+        if (!nodes || nodes.length === 0) return null;
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+
+        nodes.forEach(p => {
+            // Default getBBox() includes transforms; this is what we want
+            const b = p.getBBox();
+            minX = Math.min(minX, b.x);
+            minY = Math.min(minY, b.y);
+            maxX = Math.max(maxX, b.x + b.width);
+            maxY = Math.max(maxY, b.y + b.height);
+        });
+
+        return { x: minX, y: minY, width: (maxX - minX), height: (maxY - minY) };
     }
 
     computeIdsInsideBoundingBox(overlapThreshold = 0.5) {
         const inside = new Set();
         if (!this.boundingBoxRect || !this.s) return inside;
 
+        // Use transformed bboxes for both rect and paths to compare consistently
         const bbox = this.boundingBoxRect.getBBox();
         const allPaths = this.scope().selectAll("path");
 
         allPaths.forEach(p => {
             const b = p.getBBox();
+
             const ix1 = Math.max(b.x, bbox.x);
             const iy1 = Math.max(b.y, bbox.y);
             const ix2 = Math.min(b.x + b.width, bbox.x + bbox.width);
@@ -195,7 +222,7 @@ class SvgViewerInstance {
         this.isUpdating = true;
 
         insideIds.forEach(id => {
-            const path = this.s.select("#" + id);
+            const path = this.rootSvg().select("#" + id) || this.s.select("#" + id);
             if (path && !path.data("isSelected") && this.isInActiveLayer(path.node)) {
                 this.selectPath(id);
             }
@@ -210,31 +237,36 @@ class SvgViewerInstance {
             this.boundingBoxRect = null;
         }
 
-        const selectedPaths = this.scope().selectAll(".is-selected");
+        const layer = this.scope(); // active layer or inner <svg> (root)
+        if (!layer) return;
+
+        const selectedPaths = layer.selectAll(".is-selected");
 
         if (selectedPaths && selectedPaths.length > 0) {
-            let svg = this.s.select("svg");
-            const tempGroup = svg.g();
-            selectedPaths.forEach(path => tempGroup.append(path.clone()));
+            // Union of transformed bboxes (robust even with huge scales)
+            const bbox = this.unionTransformedBBoxes(selectedPaths);
+            if (!bbox) {
+                this.boundingBoxPathIds.clear();
+                this.highlight();
+                return;
+            }
 
-            const bbox = tempGroup.getBBox();
-            tempGroup.remove();
-
-            this.boundingBoxRect = svg.rect(bbox.x, bbox.y, bbox.width, bbox.height);
+            this.boundingBoxRect = layer.rect(bbox.x, bbox.y, bbox.width, bbox.height);
             this.boundingBoxRect.attr({
                 stroke: '#00F',
                 strokeWidth: 2,
                 fill: 'none',
                 strokeDasharray: '4 2',
+                'vector-effect': 'non-scaling-stroke', // keep outline readable at any zoom/scale
                 "pointer-events": "none"
             });
-            svg.append(this.boundingBoxRect);
+            layer.append(this.boundingBoxRect);
 
             this.boundingBoxPathIds = this.computeIdsInsideBoundingBox(0.5);
 
-            if (!this.isUpdating) 
+            if (!this.isUpdating)
                 this.autoSelectInBoundingBox();
-                
+
             this.highlight();
         } else {
             this.boundingBoxPathIds.clear();
@@ -249,7 +281,7 @@ class SvgViewerInstance {
         this.selectedPaths.forEach(path => {
             path.attr({ fill: allInsideSelected ? "#00FF00" : "#f00" });
         });
-        
+
         // Report the allInsideSelected state to Blazor
         if (!this.disableSelection) {
             this.dotNetObjectReference.invokeMethodAsync("OnAllInsideSelectedChanged", allInsideSelected);
@@ -257,14 +289,15 @@ class SvgViewerInstance {
     }
 
     getPaths() {
-        this.selectedPaths = this.s ? this.scope().selectAll(".is-selected") : [];
+        const scope = this.scope();
+        this.selectedPaths = (this.s && scope) ? scope.selectAll(".is-selected") : [];
         this.selectedIds = new Set();
         this.selectedPaths.forEach(p => this.selectedIds.add(p.attr("id")));
     }
 
     selectPath(pathId) {
         if (!this.s) return false;
-        let path = this.s.select("#" + pathId);
+        let path = this.rootSvg().select("#" + pathId) || this.s.select("#" + pathId);
         if (!path) return false;
 
         if (!this.isInActiveLayer(path.node)) return false;
@@ -290,7 +323,7 @@ class SvgViewerInstance {
             .map((id) => String(id).trim());
 
         for (const id of ids) {
-            const path = this.s.select("#" + id);
+            const path = this.rootSvg().select("#" + id) || this.s.select("#" + id);
             if (!path) continue;
             if (path.data("isSelected") === true) continue;
 
@@ -300,20 +333,20 @@ class SvgViewerInstance {
         }
         this.updateGlobalBoundingBox();
         this.isUpdating = false;
-        
+
         // Report initial selection state
         this.getPaths();
         const mySelectedIds = Array.from(this.selectedIds);
         if (!this.disableSelection && mySelectedIds.length > 0) {
             this.dotNetObjectReference.invokeMethodAsync("OnPathsChanged", mySelectedIds);
         }
-        
+
         return true;
     }
 
     unselectPath(pathId) {
         if (!this.s) return false;
-        let path = this.s.select("#" + pathId);
+        let path = this.rootSvg().select("#" + pathId) || this.s.select("#" + pathId);
         if (!path) return false;
 
         if (!this.isInActiveLayer(path.node)) return false;
@@ -336,7 +369,8 @@ class SvgViewerInstance {
 
     unselectAllPaths() {
         if (!this.s) return;
-        this.s.selectAll(".is-selected").forEach((path) => {
+        const scope = this.scope() || this.rootSvg() || this.s;
+        scope.selectAll(".is-selected").forEach((path) => {
             let originalColor = path.data("originalColor");
             path.data("isSelected", false);
             path.attr({ fill: originalColor });
@@ -357,7 +391,7 @@ let snapLoadingPromise = null;
 
 export function initAsync(containerId, dotNetObjectReference, disableSelection = false) {
     let url = './_content/LazyMagic.BlazorSvg/snap.svg.js';
-    
+
     // If already loading, return the existing promise
     if (snapLoadingPromise) {
         return snapLoadingPromise.then(() => {
@@ -366,14 +400,14 @@ export function initAsync(containerId, dotNetObjectReference, disableSelection =
             return containerId;
         });
     }
-    
+
     // Check if already loaded
     if (typeof Snap !== 'undefined') {
         const instance = new SvgViewerInstance(containerId, dotNetObjectReference, disableSelection);
         instances.set(containerId, instance);
         return Promise.resolve(containerId);
     }
-    
+
     // Check if script tag exists but Snap might still be loading
     if (document.querySelector('script[src="' + url + '"]')) {
         snapLoadingPromise = new Promise((resolve) => {
@@ -391,7 +425,7 @@ export function initAsync(containerId, dotNetObjectReference, disableSelection =
             return containerId;
         });
     }
-    
+
     // Create and load the script
     snapLoadingPromise = new Promise((resolve, reject) => {
         let script = document.createElement('script');
@@ -406,7 +440,7 @@ export function initAsync(containerId, dotNetObjectReference, disableSelection =
         };
         document.head.appendChild(script);
     });
-    
+
     return snapLoadingPromise.then(() => {
         const instance = new SvgViewerInstance(containerId, dotNetObjectReference, disableSelection);
         instances.set(containerId, instance);
