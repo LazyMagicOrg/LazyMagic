@@ -134,7 +134,11 @@ public class BlazorOIDCService : IOIDCService, IDisposable
         var state = new OIDCAuthenticationState
         {
             IsAuthenticated = user?.Identity?.IsAuthenticated ?? false,
-            UserName = user?.Identity?.Name,
+            UserName = user?.Identity?.Name ?? 
+                      user?.FindFirst("cognito:username")?.Value ?? 
+                      user?.FindFirst("preferred_username")?.Value ??
+                      user?.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
+                      user?.FindFirst("sub")?.Value,
             Email = user?.FindFirst("email")?.Value ?? user?.FindFirst(ClaimTypes.Email)?.Value
         };
 
