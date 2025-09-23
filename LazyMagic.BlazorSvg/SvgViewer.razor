@@ -103,14 +103,6 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    // Path Grouping Methods
-    public async Task<string?> GroupSelectedPaths() => await svgViewerJS!.GroupSelectedPaths();
-    public async Task<bool> CreateGroup(string groupId, List<string> pathIds) => await svgViewerJS!.CreateGroup(groupId, pathIds);
-    public async Task<bool> RemoveGroup(string groupId) => await svgViewerJS!.RemoveGroup(groupId);
-    public async Task<bool> SelectGroup(string groupId) => await svgViewerJS!.SelectGroup(groupId);
-    public async Task<GroupInfo?> GetGroupInfo(string pathId) => await svgViewerJS!.GetGroupInfo(pathId);
-    public async Task<Dictionary<string, GroupData>?> GetAllGroups() => await svgViewerJS!.GetAllGroups();
-    public async Task<bool> ClearAllGroups() => await svgViewerJS!.ClearAllGroups();
     
     public async ValueTask DisposeAsync()
     {

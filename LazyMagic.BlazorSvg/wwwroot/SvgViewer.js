@@ -13,10 +13,6 @@ class SvgViewerInstance {
         this.selectedPaths = null;
         this.layers = {};
         this.activeLayerKey = null;
-        this.pathGroups = new Map(); // Map of groupId -> Set of pathIds
-        this.pathToGroup = new Map(); // Map of pathId -> groupId
-        this.groupColors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8', '#F7DC6F'];
-        this.nextGroupId = 1;
     }
 
     // Return the inner <svg> if present, otherwise the paper itself
@@ -82,8 +78,6 @@ class SvgViewerInstance {
         return true;
     }
 
-    // Path Grouping Functions
-
     // Calculate distance between two path bounding boxes
     calculatePathDistance(path1, path2) {
         const bbox1 = path1.getBBox();
@@ -97,110 +91,6 @@ class SvgViewerInstance {
         return Math.sqrt(Math.pow(center2.x - center1.x, 2) + Math.pow(center2.y - center1.y, 2));
     }
 
-    // Group currently selected paths together
-    groupSelectedPaths() {
-        if (!this.s) return null;
-
-        this.getPaths();
-        const selectedIds = Array.from(this.selectedIds);
-
-        if (selectedIds.length < 2) {
-            console.log("Need at least 2 selected paths to create a group");
-            return null;
-        }
-
-        // Clear all existing groups first (only allow one group at a time)
-        this.clearAllGroups();
-
-        const groupId = `selected_group_${this.nextGroupId++}`;
-        this.createGroup(groupId, selectedIds);
-        return groupId;
-    }
-
-    // Create a new group
-    createGroup(groupId, pathIds) {
-        if (this.pathGroups.has(groupId)) return false;
-
-        const pathSet = new Set(pathIds);
-        this.pathGroups.set(groupId, pathSet);
-
-        // Update path-to-group mapping
-        pathIds.forEach(pathId => {
-            this.pathToGroup.set(pathId, groupId);
-        });
-
-        this.visualizeGroups();
-        return true;
-    }
-
-    // Remove a group
-    removeGroup(groupId) {
-        if (!this.pathGroups.has(groupId)) return false;
-
-        const pathIds = this.pathGroups.get(groupId);
-        pathIds.forEach(pathId => {
-            this.pathToGroup.delete(pathId);
-        });
-
-        this.pathGroups.delete(groupId);
-        this.visualizeGroups();
-        return true;
-    }
-
-    // Add path to existing group
-    addPathToGroup(pathId, groupId) {
-        if (!this.pathGroups.has(groupId)) return false;
-        if (this.pathToGroup.has(pathId)) return false; // Already in a group
-
-        this.pathGroups.get(groupId).add(pathId);
-        this.pathToGroup.set(pathId, groupId);
-        this.visualizeGroups();
-        return true;
-    }
-
-    // Remove path from its group
-    removePathFromGroup(pathId) {
-        const groupId = this.pathToGroup.get(pathId);
-        if (!groupId) return false;
-
-        this.pathGroups.get(groupId).delete(pathId);
-        this.pathToGroup.delete(pathId);
-
-        // Remove group if it has less than 2 paths
-        if (this.pathGroups.get(groupId).size < 2) {
-            this.removeGroup(groupId);
-        } else {
-            this.visualizeGroups();
-        }
-        return true;
-    }
-
-    // Select entire group when one path in group is selected
-    selectGroup(groupId) {
-        if (!this.pathGroups.has(groupId)) return false;
-
-        const pathIds = Array.from(this.pathGroups.get(groupId));
-        this.selectPaths(pathIds);
-        return true;
-    }
-
-    // Get group information
-    getGroupInfo(pathId) {
-        const groupId = this.pathToGroup.get(pathId);
-        if (!groupId) return null;
-
-        return {
-            groupId: groupId,
-            pathIds: Array.from(this.pathGroups.get(groupId)),
-            color: this.getGroupColor(groupId)
-        };
-    }
-
-    // Get color for a group
-    getGroupColor(groupId) {
-        const groupIndex = Array.from(this.pathGroups.keys()).indexOf(groupId);
-        return this.groupColors[groupIndex % this.groupColors.length];
-    }
 
     // --------- OUTLINE GENERATION (smart concave, gap-aware) ---------
 
@@ -615,15 +505,8 @@ class SvgViewerInstance {
         return this.simpleConvexHull(pts);
     }
 
-    // --------- SELECTION / RENDERING ---------
 
-    // Clear all groups
-    clearAllGroups() {
-        this.pathGroups.clear();
-        this.pathToGroup.clear();
-        this.nextGroupId = 1;
-        this.visualizeGroups();
-    }
+    // --------- SELECTION / RENDERING ---------
 
     // Visualize groups AND the live selection perimeter directly on the SVG
     visualizeGroups() {
@@ -662,83 +545,20 @@ class SvgViewerInstance {
             }
         }
 
-        // 2) Reset path colors to original (unless selected) + draw group outlines
+        // 2) Reset path colors to original (unless selected)
         scope.selectAll("path").forEach(path => {
             const id = path.attr("id");
-            const groupId = this.pathToGroup.get(id);
 
             if (!path.data("isSelected")) {
-                if (groupId) {
-                    // Apply group color as stroke
-                    const groupColor = this.getGroupColor(groupId);
-                    path.attr({
-                        stroke: groupColor,
-                        strokeWidth: 3,
-                        'stroke-opacity': 0.7
-                    });
-                } else {
-                    // Reset to default stroke
-                    path.attr({
-                        stroke: path.data("originalStroke") || "#000",
-                        strokeWidth: path.data("originalStrokeWidth") || 1,
-                        'stroke-opacity': 1
-                    });
-                }
-            }
-        });
-
-        // 3) Create accurate group outlines (if any groups)
-        this.pathGroups.forEach((pathIds, groupId) => {
-            if (pathIds.size > 1) {
-                const pathIdsArray = Array.from(pathIds);
-                const outlinePathData = this.generateGroupOutline(pathIdsArray, {
-                    gapHopPx: 8,
-                    kStart: 4,
-                    kMax: 24,
-                    maxEdgePx: 200,
-                    sampleStride: 1,
-                    downsampleEveryN: 1
+                // Reset to default stroke
+                path.attr({
+                    stroke: path.data("originalStroke") || "#000",
+                    strokeWidth: path.data("originalStrokeWidth") || 1,
+                    'stroke-opacity': 1
                 });
-
-                if (outlinePathData) {
-                    const groupColor = this.getGroupColor(groupId);
-                    const groupOutline = scope.path(outlinePathData);
-
-                    groupOutline.attr({
-                        stroke: groupColor,
-                        strokeWidth: 3,
-                        fill: 'none',
-                        strokeDasharray: '10 5',
-                        'stroke-opacity': 0.8,
-                        'vector-effect': 'non-scaling-stroke',
-                        "pointer-events": "none"
-                    });
-
-                    groupOutline.addClass("group-outline");
-
-                    // Add group label at the center of the outline
-                    const bbox = this.unionTransformedBBoxes(pathIdsArray.map(id => scope.select("#" + id)).filter(p => p));
-                    if (bbox) {
-                        const label = scope.text(
-                            bbox.x + bbox.width / 2,
-                            bbox.y - 15,
-                            `Group: ${groupId.replace(/^selected_group_/, 'G')}`
-                        );
-
-                        label.attr({
-                            'text-anchor': 'middle',
-                            'font-size': '14px',
-                            'font-family': 'Arial, sans-serif',
-                            fill: groupColor,
-                            'font-weight': 'bold',
-                            "pointer-events": "none"
-                        });
-
-                        label.addClass("group-outline");
-                    }
-                }
             }
         });
+
     }
 
     async loadSvgAsync(svgContent) {
@@ -818,35 +638,13 @@ class SvgViewerInstance {
 
         const id = path.attr("id");
         const isSelected = path.data("isSelected");
-        const groupId = this.pathToGroup.get(id);
-
-        // Check if Ctrl key is held for group selection
-        const selectWholeGroup = event.ctrlKey && groupId;
 
         if (isSelected) {
-            if (selectWholeGroup) {
-                // Unselect entire group
-                const pathIds = Array.from(this.pathGroups.get(groupId));
-                pathIds.forEach(pathId => {
-                    this.unselectPath(pathId);
-                    this.dotNetObjectReference.invokeMethodAsync("OnPathUnselected", pathId);
-                });
-            } else {
-                this.unselectPath(id);
-                this.dotNetObjectReference.invokeMethodAsync("OnPathUnselected", id);
-            }
+            this.unselectPath(id);
+            this.dotNetObjectReference.invokeMethodAsync("OnPathUnselected", id);
         } else {
-            if (selectWholeGroup) {
-                // Select entire group
-                const pathIds = Array.from(this.pathGroups.get(groupId));
-                pathIds.forEach(pathId => {
-                    this.selectPath(pathId);
-                    this.dotNetObjectReference.invokeMethodAsync("OnPathSelected", pathId);
-                });
-            } else {
-                this.selectPath(id);
-                this.dotNetObjectReference.invokeMethodAsync("OnPathSelected", id);
-            }
+            this.selectPath(id);
+            this.dotNetObjectReference.invokeMethodAsync("OnPathSelected", id);
         }
 
         this.getPaths();
@@ -1177,54 +975,3 @@ export function disposeInstance(containerId) {
     instances.delete(containerId);
 }
 
-// Path Grouping Exports
-export function groupSelectedPaths(containerId) {
-    const instance = instances.get(containerId);
-    if (!instance) return null;
-    return instance.groupSelectedPaths();
-}
-
-export function createGroup(containerId, groupId, pathIds) {
-    const instance = instances.get(containerId);
-    if (!instance) return false;
-    return instance.createGroup(groupId, pathIds);
-}
-
-export function removeGroup(containerId, groupId) {
-    const instance = instances.get(containerId);
-    if (!instance) return false;
-    return instance.removeGroup(groupId);
-}
-
-export function selectGroup(containerId, groupId) {
-    const instance = instances.get(containerId);
-    if (!instance) return false;
-    return instance.selectGroup(groupId);
-}
-
-export function getGroupInfo(containerId, pathId) {
-    const instance = instances.get(containerId);
-    if (!instance) return null;
-    return instance.getGroupInfo(pathId);
-}
-
-export function getAllGroups(containerId) {
-    const instance = instances.get(containerId);
-    if (!instance) return null;
-
-    const groups = {};
-    instance.pathGroups.forEach((pathIds, groupId) => {
-        groups[groupId] = {
-            pathIds: Array.from(pathIds),
-            color: instance.getGroupColor(groupId)
-        };
-    });
-    return groups;
-}
-
-export function clearAllGroups(containerId) {
-    const instance = instances.get(containerId);
-    if (!instance) return false;
-    instance.clearAllGroups();
-    return true;
-}
