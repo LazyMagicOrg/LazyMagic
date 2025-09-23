@@ -94,6 +94,75 @@ namespace LazyMagic.BlazorSvg
         public event AllInsideSelectedChangedEventHandler? AllInsideSelectedChangedEvent;
         public delegate void AllInsideSelectedChangedEventHandler(bool allInsideSelected);
 
+        // Path Grouping Methods
+        public async ValueTask<string?> GroupSelectedPaths()
+        {
+            if (containerId == null) throw new InvalidOperationException("InitAsync must be called first");
+            var module = await moduleTask.Value;
+            var result = await module.InvokeAsync<string?>("groupSelectedPaths", containerId);
+            return result;
+        }
+
+        public async ValueTask<bool> CreateGroup(string groupId, List<string> pathIds)
+        {
+            if (containerId == null) throw new InvalidOperationException("InitAsync must be called first");
+            var module = await moduleTask.Value;
+            var result = await module.InvokeAsync<bool>("createGroup", containerId, groupId, pathIds);
+            return result;
+        }
+
+        public async ValueTask<bool> RemoveGroup(string groupId)
+        {
+            if (containerId == null) throw new InvalidOperationException("InitAsync must be called first");
+            var module = await moduleTask.Value;
+            var result = await module.InvokeAsync<bool>("removeGroup", containerId, groupId);
+            return result;
+        }
+
+        public async ValueTask<bool> SelectGroup(string groupId)
+        {
+            if (containerId == null) throw new InvalidOperationException("InitAsync must be called first");
+            var module = await moduleTask.Value;
+            var result = await module.InvokeAsync<bool>("selectGroup", containerId, groupId);
+            return result;
+        }
+
+        public async ValueTask<GroupInfo?> GetGroupInfo(string pathId)
+        {
+            if (containerId == null) throw new InvalidOperationException("InitAsync must be called first");
+            var module = await moduleTask.Value;
+            var result = await module.InvokeAsync<GroupInfo?>("getGroupInfo", containerId, pathId);
+            return result;
+        }
+
+        public async ValueTask<Dictionary<string, GroupData>?> GetAllGroups()
+        {
+            if (containerId == null) throw new InvalidOperationException("InitAsync must be called first");
+            var module = await moduleTask.Value;
+            var result = await module.InvokeAsync<Dictionary<string, GroupData>?>("getAllGroups", containerId);
+            return result;
+        }
+
+        public async ValueTask<bool> ClearAllGroups()
+        {
+            if (containerId == null) throw new InvalidOperationException("InitAsync must be called first");
+            var module = await moduleTask.Value;
+            var result = await module.InvokeAsync<bool>("clearAllGroups", containerId);
+            return result;
+        }
+    }
+
+    public class GroupInfo
+    {
+        public string GroupId { get; set; } = string.Empty;
+        public List<string> PathIds { get; set; } = new();
+        public string Color { get; set; } = string.Empty;
+    }
+
+    public class GroupData
+    {
+        public List<string> PathIds { get; set; } = new();
+        public string Color { get; set; } = string.Empty;
     }
 
 }
