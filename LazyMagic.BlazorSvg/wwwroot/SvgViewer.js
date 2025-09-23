@@ -96,17 +96,90 @@ class SvgViewerInstance {
 
     // Generate tight-fitting concave outline for a set of paths.
     // This ALWAYS returns a path (falls back to convex), so we always draw something.
+    //generateGroupOutline(pathIds, options = {}) {
+    //    if (!this.s || !pathIds || pathIds.length === 0) return null;
+
+    //    const {
+    //        gapHopPx = 8,
+    //        sampleStride = 1,
+    //        kStart = 4,
+    //        kMax = 24,
+    //        maxEdgePx = 200,
+    //        downsampleEveryN = 1,
+    //        minContainment = 0.75   // draw if at least 75% of sampled points are inside
+    //    } = options;
+
+    //    const scope = this.scope();
+    //    const groupPaths = [];
+    //    pathIds.forEach(id => {
+    //        const p = scope.select("#" + id);
+    //        if (p) groupPaths.push(p);
+    //    });
+    //    if (groupPaths.length === 0) return null;
+
+    //    const allBoundaryPoints = [];
+    //    const pathInfos = [];
+    //    groupPaths.forEach(p => {
+    //        const bbox = p.getBBox();
+    //        const center = { x: bbox.x + bbox.width / 2, y: bbox.y + bbox.height / 2 };
+    //        const raw = this.extractPathBoundaryPoints(p, bbox);
+    //        const sampled = sampleStride > 1 ? this._downsamplePoints(raw, sampleStride) : raw;
+
+    //        pathInfos.push({ bbox, center, boundaryPoints: sampled });
+    //        allBoundaryPoints.push(...sampled);
+    //    });
+
+    //    if (allBoundaryPoints.length < 3) {
+    //        // Last resort: triangle around union bbox
+    //        const union = this.unionTransformedBBoxes(groupPaths);
+    //        if (!union) return null;
+    //        const tri = [
+    //            { x: union.x, y: union.y },
+    //            { x: union.x + union.width, y: union.y },
+    //            { x: union.x + union.width, y: union.y + union.height }
+    //        ];
+    //        return `M ${tri[0].x} ${tri[0].y} L ${tri[1].x} ${tri[1].y} L ${tri[2].x} ${tri[2].y} Z`;
+    //    }
+
+    //    // Seed tiny bridges between selected shapes only
+    //    const bridges = this._seedBridgePoints(pathInfos, gapHopPx, Math.max(4, sampleStride * 2));
+    //    const cloud = (downsampleEveryN > 1)
+    //        ? this._downsamplePoints(allBoundaryPoints.concat(bridges), downsampleEveryN)
+    //        : allBoundaryPoints.concat(bridges);
+
+    //    // Try concave hull
+    //    let hull = this._concaveHull(cloud, kStart, kMax, maxEdgePx);
+    //    if (!hull || hull.length < 3) {
+    //        // Fallback to convex
+    //        hull = this.simpleConvexHull(cloud);
+    //    }
+
+    //    // Soft containment gate: draw anyway if threshold met; else convex fallback
+    //    const score = this._validateContainmentScore(hull, pathInfos);
+    //    if (score < minContainment) {
+    //        hull = this.simpleConvexHull(cloud);
+    //    }
+
+    //    if (!hull || hull.length < 3) return null;
+
+    //    let d = `M ${hull[0].x} ${hull[0].y}`;
+    //    for (let i = 1; i < hull.length; i++) d += ` L ${hull[i].x} ${hull[i].y}`;
+    //    d += " Z";
+    //    return d;
+    //}
+    // Generate tight-fitting concave outline for a set of paths.
+    // Includes diagnostic logging to reveal whether concave or convex was used.
     generateGroupOutline(pathIds, options = {}) {
         if (!this.s || !pathIds || pathIds.length === 0) return null;
 
         const {
-            gapHopPx = 8,
+            gapHopPx = 3,
+            kStart = 2,
+            kMax = 10,
+            maxEdgePx = 40,
             sampleStride = 1,
-            kStart = 4,
-            kMax = 24,
-            maxEdgePx = 200,
             downsampleEveryN = 1,
-            minContainment = 0.75   // draw if at least 75% of sampled points are inside
+            minContainment = 0.95
         } = options;
 
         const scope = this.scope();
@@ -130,7 +203,6 @@ class SvgViewerInstance {
         });
 
         if (allBoundaryPoints.length < 3) {
-            // Last resort: triangle around union bbox
             const union = this.unionTransformedBBoxes(groupPaths);
             if (!union) return null;
             const tri = [
@@ -138,27 +210,49 @@ class SvgViewerInstance {
                 { x: union.x + union.width, y: union.y },
                 { x: union.x + union.width, y: union.y + union.height }
             ];
-            return `M ${tri[0].x} ${tri[0].y} L ${tri[1].x} ${tri[1].y} L ${tri[2].x} ${tri[2].y} Z`;
+            const dTri = `M ${tri[0].x} ${tri[0].y} L ${tri[1].x} ${tri[1].y} L ${tri[2].x} ${tri[2].y} Z`;
+            console.debug('[outline] fallback triangle (insufficient points)');
+            return dTri;
         }
 
-        // Seed tiny bridges between selected shapes only
+        // Seed tiny bridges between selected shapes only (keep enabled for baseline behavior)
         const bridges = this._seedBridgePoints(pathInfos, gapHopPx, Math.max(4, sampleStride * 2));
+
+        // Final point cloud (optionally downsampled)
         const cloud = (downsampleEveryN > 1)
             ? this._downsamplePoints(allBoundaryPoints.concat(bridges), downsampleEveryN)
             : allBoundaryPoints.concat(bridges);
 
-        // Try concave hull
+        // --- Diagnostic: show cloud size before hull ---
+        console.debug('[outline] cloud points:', cloud.length, 'bridges:', bridges.length);
+
+        // Try concave hull first
         let hull = this._concaveHull(cloud, kStart, kMax, maxEdgePx);
+        let hullType = 'concave';
+
+        // If concave failed, do an initial convex fallback
         if (!hull || hull.length < 3) {
-            // Fallback to convex
             hull = this.simpleConvexHull(cloud);
+            hullType = 'convex_fallback_initial';
         }
 
-        // Soft containment gate: draw anyway if threshold met; else convex fallback
-        const score = this._validateContainmentScore(hull, pathInfos);
-        if (score < minContainment) {
-            hull = this.simpleConvexHull(cloud);
+        // Optional containment gate — if set and score is too low, force convex
+        let score = 1;
+        try {
+            score = this._validateContainmentScore(hull, pathInfos);
+            if (typeof minContainment === 'number' && score < minContainment) {
+                hull = this.simpleConvexHull(cloud);
+                hullType = 'convex_fallback_containment';
+            }
+        } catch (e) {
+            console.warn('[outline] containment scoring error:', e);
         }
+
+        // --- Diagnostic: log final hull characteristics ---
+        console.debug('[outline] hullType:', hullType,
+            'hullVerts:', hull ? hull.length : 0,
+            'containmentScore:', score.toFixed ? score.toFixed(3) : score,
+            { kStart, kMax, maxEdgePx, gapHopPx, sampleStride, downsampleEveryN, minContainment });
 
         if (!hull || hull.length < 3) return null;
 
@@ -168,53 +262,138 @@ class SvgViewerInstance {
         return d;
     }
 
+
     // Extract boundary points that follow the actual path edges closely
     // Uses native SVGPathElement APIs via path.node with solid fallbacks.
+    //extractPathBoundaryPoints(path, bbox) {
+    //    const pts = [];
+    //    try {
+    //        const node = path && path.node ? path.node : path;
+    //        if (node && typeof node.getTotalLength === "function" && typeof node.getPointAtLength === "function") {
+    //            const len = node.getTotalLength();
+    //            if (isFinite(len) && len > 0) {
+    //                // Sample ~every 3–8 px, capped for very long paths
+    //                const step = Math.max(3, Math.min(8, Math.floor(len / 250) || 4));
+    //                for (let d = 0; d <= len; d += step) {
+    //                    const p = node.getPointAtLength(d);
+    //                    if (isFinite(p.x) && isFinite(p.y)) pts.push({ x: p.x, y: p.y });
+    //                }
+    //            }
+    //        }
+    //    } catch (e) {
+    //        // ignore and fall back below
+    //    }
+
+    //    // If too few samples, add a light bbox “ring”
+    //    if (pts.length < 8 && bbox) {
+    //        const margin = 1.5;
+    //        const n = 16;
+    //        for (let i = 0; i < n; i++) {
+    //            const t = i / n;
+    //            // top
+    //            pts.push({ x: bbox.x + bbox.width * t, y: bbox.y - margin });
+    //            // right
+    //            pts.push({ x: bbox.x + bbox.width + margin, y: bbox.y + bbox.height * t });
+    //            // bottom
+    //            pts.push({ x: bbox.x + bbox.width * (1 - t), y: bbox.y + bbox.height + margin });
+    //            // left
+    //            pts.push({ x: bbox.x - margin, y: bbox.y + bbox.height * (1 - t) });
+    //        }
+    //    }
+
+    //    // Absolute last resort: the 4 corners
+    //    if (pts.length === 0 && bbox) {
+    //        pts.push({ x: bbox.x, y: bbox.y });
+    //        pts.push({ x: bbox.x + bbox.width, y: bbox.y });
+    //        pts.push({ x: bbox.x + bbox.width, y: bbox.y + bbox.height });
+    //        pts.push({ x: bbox.x, y: bbox.y + bbox.height });
+    //    }
+    //    return pts;
+    //}
+    // Extract boundary points along the actual path outline,
+    // then PROJECT them into the current scope's coordinate system
+    // so the outline lands exactly where it should.
     extractPathBoundaryPoints(path, bbox) {
-        const pts = [];
+        const scope = this.scope();
+        const node = path && path.node ? path.node : path; // native SVG element
+        const localPts = [];
+
+        // 1) Sample along the path in the element's LOCAL coords
         try {
-            const node = path && path.node ? path.node : path;
             if (node && typeof node.getTotalLength === "function" && typeof node.getPointAtLength === "function") {
                 const len = node.getTotalLength();
                 if (isFinite(len) && len > 0) {
-                    // Sample ~every 3–8 px, capped for very long paths
+                    // ~every 3–8 px depending on length
                     const step = Math.max(3, Math.min(8, Math.floor(len / 250) || 4));
                     for (let d = 0; d <= len; d += step) {
                         const p = node.getPointAtLength(d);
-                        if (isFinite(p.x) && isFinite(p.y)) pts.push({ x: p.x, y: p.y });
+                        if (isFinite(p.x) && isFinite(p.y)) localPts.push({ x: p.x, y: p.y });
                     }
                 }
             }
-        } catch (e) {
-            // ignore and fall back below
+        } catch (_) {
+            // ignore; we'll use bbox fallbacks below if needed
         }
 
-        // If too few samples, add a light bbox “ring”
-        if (pts.length < 8 && bbox) {
+        // 2) If too few points, add a light bbox ring (still in element-local terms)
+        if (localPts.length < 8 && bbox) {
             const margin = 1.5;
             const n = 16;
             for (let i = 0; i < n; i++) {
                 const t = i / n;
                 // top
-                pts.push({ x: bbox.x + bbox.width * t, y: bbox.y - margin });
+                localPts.push({ x: bbox.x + bbox.width * t, y: bbox.y - margin });
                 // right
-                pts.push({ x: bbox.x + bbox.width + margin, y: bbox.y + bbox.height * t });
+                localPts.push({ x: bbox.x + bbox.width + margin, y: bbox.y + bbox.height * t });
                 // bottom
-                pts.push({ x: bbox.x + bbox.width * (1 - t), y: bbox.y + bbox.height + margin });
+                localPts.push({ x: bbox.x + bbox.width * (1 - t), y: bbox.y + bbox.height + margin });
                 // left
-                pts.push({ x: bbox.x - margin, y: bbox.y + bbox.height * (1 - t) });
+                localPts.push({ x: bbox.x - margin, y: bbox.y + bbox.height * (1 - t) });
             }
         }
 
-        // Absolute last resort: the 4 corners
-        if (pts.length === 0 && bbox) {
-            pts.push({ x: bbox.x, y: bbox.y });
-            pts.push({ x: bbox.x + bbox.width, y: bbox.y });
-            pts.push({ x: bbox.x + bbox.width, y: bbox.y + bbox.height });
-            pts.push({ x: bbox.x, y: bbox.y + bbox.height });
+        // 3) Absolute last resort: corners
+        if (localPts.length === 0 && bbox) {
+            localPts.push({ x: bbox.x, y: bbox.y });
+            localPts.push({ x: bbox.x + bbox.width, y: bbox.y });
+            localPts.push({ x: bbox.x + bbox.width, y: bbox.y + bbox.height });
+            localPts.push({ x: bbox.x, y: bbox.y + bbox.height });
         }
-        return pts;
+
+        // 4) Project those points from element-local → scope-local coordinates
+        try {
+            const svgEl =
+                (this.rootSvg() && this.rootSvg().node) ||
+                (scope && scope.node && scope.node.ownerSVGElement) ||
+                (node && node.ownerSVGElement) ||
+                null;
+
+            const svgPoint = svgEl && svgEl.createSVGPoint ? svgEl.createSVGPoint() : null;
+            const nodeCTM = node && node.getCTM ? node.getCTM() : null;
+            const scopeCTM = scope && scope.node && scope.node.getCTM ? scope.node.getCTM() : null;
+
+            if (svgPoint && nodeCTM) {
+                // Matrix that maps element-local → scope-local
+                // M = inverse(scopeCTM) * nodeCTM
+                const toScope = scopeCTM ? scopeCTM.inverse().multiply(nodeCTM) : nodeCTM;
+
+                const out = [];
+                for (const p of localPts) {
+                    svgPoint.x = p.x;
+                    svgPoint.y = p.y;
+                    const sp = svgPoint.matrixTransform(toScope);
+                    out.push({ x: sp.x, y: sp.y });
+                }
+                return out;
+            }
+        } catch (e) {
+            console.warn('[outline] CTM projection failed; using unprojected points', e);
+        }
+
+        // If we couldn't project, return what we have (may misalign if transforms exist)
+        return localPts;
     }
+
 
     // Check if two line segments intersect
     doLinesIntersect(p1, p2, p3, p4) {
@@ -522,22 +701,23 @@ class SvgViewerInstance {
         const selectedIds = Array.from(this.selectedIds || []);
         if (selectedIds.length > 0) {
             const selectionPathData = this.generateGroupOutline(selectedIds, {
-                gapHopPx: 8,        // tiny gaps only
-                kStart: 4,
-                kMax: 24,
-                maxEdgePx: 200,     // avoids long jumps
-                sampleStride: 1,
-                downsampleEveryN: 1
+                gapHopPx: 3,          // only hop over hairline gaps
+                kStart: 2,            // start with very concave
+                kMax: 10,             // don’t go very convex
+                maxEdgePx: 40,        // forbid any long spans at all
+                sampleStride: 1,      // full-fidelity sampling
+                downsampleEveryN: 1,
+                minContainment: 0.95  // reject hulls that don’t cover 95% of points
             });
 
             if (selectionPathData) {
                 const selectionOutline = scope.path(selectionPathData);
                 selectionOutline.attr({
-                    stroke: '#00AEEF',              // cyan for live selection
+                    stroke: '#FFA500',              // orange for live selection
                     strokeWidth: 3,
                     fill: 'none',
                     strokeDasharray: '10 5',
-                    'stroke-opacity': 0.9,
+                    'stroke-opacity': .9,
                     'vector-effect': 'non-scaling-stroke',
                     'pointer-events': 'none'
                 });
@@ -547,6 +727,9 @@ class SvgViewerInstance {
 
         // 2) Reset path colors to original (unless selected)
         scope.selectAll("path").forEach(path => {
+            // ⬅️ Skip the live/group outline we just drew
+            if (path.hasClass("group-outline")) return;
+
             const id = path.attr("id");
 
             if (!path.data("isSelected")) {
@@ -558,7 +741,6 @@ class SvgViewerInstance {
                 });
             }
         });
-
     }
 
     async loadSvgAsync(svgContent) {
