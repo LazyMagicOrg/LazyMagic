@@ -1,5 +1,6 @@
 using Microsoft.Maui.Controls;
 using Microsoft.Maui.Dispatching;
+using LazyMagic.OIDC.Base.Services;
 
 namespace LazyMagic.OIDC.MAUI;
 
@@ -15,6 +16,7 @@ public class MauiOIDCService : IOIDCService, IDisposable
     private readonly ITokenStorageService _tokenStorage;
     private readonly IWebViewAuthenticationProvider? _webViewProvider;
     private readonly IDynamicConfigurationProvider _configProvider;
+    private readonly ITokenRefreshService? _tokenRefreshService;
     private OIDCAuthenticationState? _currentState;
     private string? _accessToken;
     private string? _idToken;
@@ -24,7 +26,7 @@ public class MauiOIDCService : IOIDCService, IDisposable
     public event EventHandler<OIDCAuthenticationStateChangedEventArgs>? AuthenticationStateChanged;
     public event Action<string>? OnAuthenticationRequested;
 
-    public MauiOIDCService(ILogger<MauiOIDCService> logger, ILoggerFactory loggerFactory, IOidcConfig oidcConfig, ITokenStorageService tokenStorage, IDynamicConfigurationProvider configProvider, IWebViewAuthenticationProvider? webViewProvider = null)
+    public MauiOIDCService(ILogger<MauiOIDCService> logger, ILoggerFactory loggerFactory, IOidcConfig oidcConfig, ITokenStorageService tokenStorage, IDynamicConfigurationProvider configProvider, IWebViewAuthenticationProvider? webViewProvider = null, ITokenRefreshService? tokenRefreshService = null)
     {
         _logger = logger;
         _loggerFactory = loggerFactory;
@@ -32,6 +34,7 @@ public class MauiOIDCService : IOIDCService, IDisposable
         _tokenStorage = tokenStorage;
         _configProvider = configProvider;
         _webViewProvider = webViewProvider;
+        _tokenRefreshService = tokenRefreshService;
         
         // Initialize with unauthenticated state
         _currentState = new OIDCAuthenticationState
@@ -83,6 +86,15 @@ public class MauiOIDCService : IOIDCService, IDisposable
                     _accessToken = accessToken;
                     _idToken = idToken;
                     _currentState = userInfo;
+                    
+                    // Start token refresh monitoring if available
+                    if (_tokenRefreshService != null && userInfo.TokenExpiry.HasValue)
+                    {
+                        _logger.LogInformation("[TokenRefresh] User authenticated during session restore, starting token monitoring. Token expires: {Expiry}", 
+                            userInfo.TokenExpiry.Value);
+                        _tokenRefreshService.UpdateTokenExpiration(userInfo.TokenExpiry.Value);
+                        await _tokenRefreshService.StartMonitoringAsync();
+                    }
                     
                     AuthenticationStateChanged?.Invoke(this, new OIDCAuthenticationStateChangedEventArgs(_currentState));
                     _logger.LogInformation("Session restored for user: {UserName}", userInfo.UserName);
@@ -401,6 +413,15 @@ public class MauiOIDCService : IOIDCService, IDisposable
                     // Save tokens for Remember Me functionality
                     await _tokenStorage.SaveTokensAsync(tokens.AccessToken, tokens.IdToken, tokens.RefreshToken);
                     
+                    // Start token refresh monitoring if available
+                    if (_tokenRefreshService != null && userInfo.TokenExpiry.HasValue)
+                    {
+                        _logger.LogInformation("[TokenRefresh] User authenticated, starting token monitoring. Token expires: {Expiry}", 
+                            userInfo.TokenExpiry.Value);
+                        _tokenRefreshService.UpdateTokenExpiration(userInfo.TokenExpiry.Value);
+                        await _tokenRefreshService.StartMonitoringAsync();
+                    }
+                    
                     AuthenticationStateChanged?.Invoke(this, new OIDCAuthenticationStateChangedEventArgs(_currentState));
                     
                     _logger.LogInformation("User logged in successfully: {UserName}", userInfo.UserName);
@@ -423,6 +444,13 @@ public class MauiOIDCService : IOIDCService, IDisposable
     public async Task LogoutAsync()
     {
         _logger.LogInformation("=== LOGOUT STARTED ===");
+        
+        // Stop token refresh monitoring
+        if (_tokenRefreshService != null)
+        {
+            _logger.LogInformation("[TokenRefresh] User logging out, stopping token monitoring");
+            _tokenRefreshService.StopMonitoring();
+        }
         
         // Clear local state
         _currentState = new OIDCAuthenticationState
@@ -669,6 +697,6 @@ public class MauiOIDCService : IOIDCService, IDisposable
 
     public void Dispose()
     {
-        // Cleanup if needed
+        _tokenRefreshService?.Dispose();
     }
 }

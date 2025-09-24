@@ -1,0 +1,198 @@
+@using LazyMagic.OIDC.WASM.Services
+@namespace LazyMagic.OIDC.WASM.Components
+@inject NavigationManager Navigation
+@inject IOIDCService AuthService
+@inject IFastAuthenticationService FastAuth
+@inject IRememberMeService RememberMe
+@inject IProfileManagementService ProfileService
+@inject ILogger<FastLoginDisplay> Logger
+
+@try
+{
+    @if (isAuthenticated)
+    {
+        <div class="d-flex align-items-center">
+            <RememberMeToggle />
+            <span class="me-3">Hello, @userName!</span>
+            <a href="/ProfilePage" class="btn btn-link">Profile</a>
+            <button class="btn btn-link" @onclick="async () => await BeginLogOut()">Log out</button>
+        </div>
+    }
+    else
+    {
+        <div class="d-flex align-items-center">
+            @if (isCheckingAuthState)
+            {
+                <button class="btn btn-link" @onclick="BeginLogIn">Log in</button>
+                <span class="text-muted small ms-2">Checking login status...</span>
+            }
+            else
+            {
+                <button class="btn btn-link" @onclick="BeginLogIn">Log in</button>
+            }
+            <button class="btn btn-link text-muted" style="font-size: 0.875rem;" @onclick="HandleForgotPassword">Forgot password?</button>
+        </div>
+    }
+}
+catch (Exception ex)
+{
+    <div style="color: red; font-size: 0.8em;">
+        FastLoginDisplay Error: @ex.Message
+    </div>
+}
+
+@code {
+    private bool isAuthenticated = false;
+    private string? userName = null;
+    private bool isCheckingAuthState = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Logger.LogInformation("[FastLoginDisplay] Initializing with fast authentication...");
+            
+            // Initialize fast auth system
+            await FastAuth.InitializeAsync();
+
+            // Show checking state briefly
+            isCheckingAuthState = true;
+            StateHasChanged();
+
+            // Use fast authentication check (should be sub-5ms if cached)
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            await UpdateFastAuthenticationState();
+            stopwatch.Stop();
+            
+            Logger.LogInformation("[FastLoginDisplay] Fast auth check completed in {Time}ms", stopwatch.ElapsedMilliseconds);
+
+            // Hide checking state
+            isCheckingAuthState = false;
+            StateHasChanged();
+
+            // If we got an unauthenticated result from cache, validate with full check in background
+            if (!isAuthenticated)
+            {
+                _ = Task.Run(async () =>
+                {
+                    try
+                    {
+                        Logger.LogDebug("[FastLoginDisplay] Running background full auth validation...");
+                        var fullAuthState = await AuthService.GetAuthenticationStateAsync();
+                        
+                        // If the full check differs from our fast result, update UI
+                        if (fullAuthState.IsAuthenticated != isAuthenticated)
+                        {
+                            Logger.LogInformation("[FastLoginDisplay] Background auth check found different state, updating UI");
+                            isAuthenticated = fullAuthState.IsAuthenticated;
+                            userName = fullAuthState.UserName;
+                            
+                            // Cache this result for future fast checks
+                            var authState = await FastAuth.GetFastAuthenticationStateAsync();
+                            await FastAuth.CacheAuthenticationStateAsync(authState);
+                            
+                            await InvokeAsync(StateHasChanged);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogWarning(ex, "[FastLoginDisplay] Background auth validation failed");
+                    }
+                });
+            }
+
+            // Subscribe to authentication changes from the standard service
+            AuthService.AuthenticationStateChanged += OnAuthenticationStateChanged;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "[FastLoginDisplay] Initialization failed");
+            isCheckingAuthState = false;
+            StateHasChanged();
+        }
+    }
+
+    private async void OnAuthenticationStateChanged(object? sender, OIDCAuthenticationStateChangedEventArgs e)
+    {
+        Logger.LogInformation("[FastLoginDisplay] Authentication state changed event received");
+        
+        // Clear fast auth cache since state changed
+        await FastAuth.InvalidateCacheAsync();
+        
+        // Update with new state
+        await UpdateFastAuthenticationState();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task UpdateFastAuthenticationState()
+    {
+        try
+        {
+            var authState = await FastAuth.GetFastAuthenticationStateAsync();
+            isAuthenticated = authState.User?.Identity?.IsAuthenticated ?? false;
+            userName = authState.User?.Identity?.Name;
+            
+            Logger.LogDebug("[FastLoginDisplay] Fast auth state updated: {IsAuth}, User: {User}", 
+                isAuthenticated, userName ?? "null");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "[FastLoginDisplay] Failed to update fast auth state");
+            isAuthenticated = false;
+            userName = null;
+        }
+    }
+
+    private async void BeginLogIn()
+    {
+        try
+        {
+            Logger.LogInformation("[FastLoginDisplay] Beginning login process...");
+            await AuthService.LoginAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "[FastLoginDisplay] Login failed");
+        }
+    }
+
+    private async Task BeginLogOut()
+    {
+        try
+        {
+            Logger.LogInformation("[FastLoginDisplay] Beginning logout process...");
+            
+            // Clear fast auth cache
+            await FastAuth.InvalidateCacheAsync();
+            
+            // Perform logout through standard service
+            await AuthService.LogoutAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "[FastLoginDisplay] Logout failed");
+            Navigation.NavigateTo("/", forceLoad: true);
+        }
+    }
+
+    private async void HandleForgotPassword()
+    {
+        try
+        {
+            Logger.LogInformation("[FastLoginDisplay] Handling forgot password...");
+            await ProfileService.GetPasswordResetUrlAsync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "[FastLoginDisplay] Forgot password failed");
+        }
+    }
+
+    public void Dispose()
+    {
+        if (AuthService != null)
+        {
+            AuthService.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+        }
+    }
+}

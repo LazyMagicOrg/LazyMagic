@@ -1,3 +1,6 @@
+using LazyMagic.OIDC.Base.Services;
+using LazyMagic.OIDC.WASM.Services;
+
 namespace LazyMagic.OIDC.WASM;
 
 /// <summary>
@@ -13,6 +16,8 @@ public class BlazorOIDCService : IOIDCService, IDisposable
     private readonly ILogger<BlazorOIDCService> _logger;
     private readonly IRememberMeService _rememberMeService;
     private readonly IDynamicConfigurationProvider _configProvider;
+    private readonly IFastAuthenticationService? _fastAuth;
+    private readonly ITokenRefreshService? _tokenRefreshService;
 
     public event EventHandler<OIDCAuthenticationStateChangedEventArgs>? AuthenticationStateChanged;
     public event Action<string>? OnAuthenticationRequested;
@@ -24,7 +29,9 @@ public class BlazorOIDCService : IOIDCService, IDisposable
         NavigationManager navigation,
         ILogger<BlazorOIDCService> logger,
         IRememberMeService rememberMeService,
-        IDynamicConfigurationProvider configProvider)
+        IDynamicConfigurationProvider configProvider,
+        IFastAuthenticationService? fastAuth = null,
+        ITokenRefreshService? tokenRefreshService = null)
     {
         _authStateProvider = authStateProvider;
         _tokenProvider = tokenProvider;
@@ -33,6 +40,14 @@ public class BlazorOIDCService : IOIDCService, IDisposable
         _logger = logger;
         _rememberMeService = rememberMeService;
         _configProvider = configProvider;
+        _fastAuth = fastAuth;
+        _tokenRefreshService = tokenRefreshService;
+
+        // Initialize fast auth if available
+        if (_fastAuth != null)
+        {
+            _ = Task.Run(async () => await _fastAuth.InitializeAsync());
+        }
 
         // Subscribe to authentication state changes
         _authStateProvider.AuthenticationStateChanged += OnAuthenticationStateChanged;
@@ -42,8 +57,38 @@ public class BlazorOIDCService : IOIDCService, IDisposable
     {
         try
         {
+            // Invalidate fast auth cache since state changed
+            if (_fastAuth != null)
+            {
+                await _fastAuth.InvalidateCacheAsync();
+            }
+            
             var authState = await task;
             var state = await CreateAuthenticationState(authState.User);
+            
+            // Cache the new state for future fast auth calls
+            if (_fastAuth != null)
+            {
+                await _fastAuth.CacheAuthenticationStateAsync(authState);
+            }
+            
+            // Start or stop token refresh monitoring based on auth state
+            if (_tokenRefreshService != null)
+            {
+                if (state.IsAuthenticated && state.TokenExpiry.HasValue)
+                {
+                    _logger.LogInformation("[TokenRefresh] User authenticated, starting token monitoring. Token expires: {Expiry}", 
+                        state.TokenExpiry.Value);
+                    _tokenRefreshService.UpdateTokenExpiration(state.TokenExpiry.Value);
+                    await _tokenRefreshService.StartMonitoringAsync();
+                }
+                else
+                {
+                    _logger.LogInformation("[TokenRefresh] User not authenticated, stopping token monitoring");
+                    _tokenRefreshService.StopMonitoring();
+                }
+            }
+            
             AuthenticationStateChanged?.Invoke(this, new OIDCAuthenticationStateChangedEventArgs(state));
         }
         catch (Exception ex)
@@ -56,19 +101,73 @@ public class BlazorOIDCService : IOIDCService, IDisposable
     {
         try
         {
-            _logger.LogInformation("[GetAuthenticationStateAsync][{Timestamp}] Starting _authStateProvider.GetAuthenticationStateAsync()", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
-            _logger.LogInformation("[GetAuthenticationStateAsync][{Timestamp}] AuthStateProvider type: {AuthStateProviderType}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), _authStateProvider.GetType().Name);
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            _logger.LogInformation("[GetAuthenticationStateAsync][{Timestamp}] Starting authentication check (FastAuth: {HasFastAuth})", DateTime.UtcNow.ToString("HH:mm:ss.fff"), _fastAuth != null);
             
-            var authState = await _authStateProvider.GetAuthenticationStateAsync();
+            Microsoft.AspNetCore.Components.Authorization.AuthenticationState authState;
             
-            _logger.LogInformation("[GetAuthenticationStateAsync][{Timestamp}] Completed _authStateProvider.GetAuthenticationStateAsync()", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
-            _logger.LogInformation("[GetAuthenticationStateAsync][{Timestamp}] AuthState.User.Identity.IsAuthenticated: {IsAuthenticated}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), authState.User?.Identity?.IsAuthenticated);
-            _logger.LogInformation("[GetAuthenticationStateAsync][{Timestamp}] AuthState.User.Identity.Name: {UserName}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), authState.User?.Identity?.Name ?? "null");
-            _logger.LogInformation("[GetAuthenticationStateAsync][{Timestamp}] AuthState.User.Claims.Count: {ClaimsCount}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), authState.User?.Claims?.Count() ?? 0);
+            // Try fast auth first if available
+            if (_fastAuth != null)
+            {
+                try
+                {
+                    _logger.LogDebug("[GetAuthenticationStateAsync][{Timestamp}] Using fast authentication service", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
+                    authState = await _fastAuth.GetFastAuthenticationStateAsync();
+                    stopwatch.Stop();
+                    _logger.LogInformation("[GetAuthenticationStateAsync][{Timestamp}] Fast auth completed in {ElapsedMs}ms", DateTime.UtcNow.ToString("HH:mm:ss.fff"), stopwatch.ElapsedMilliseconds);
+                    
+                    // If we got an unauthenticated result from fast auth, validate with full check in background
+                    if (!authState.User?.Identity?.IsAuthenticated == true)
+                    {
+                        _ = Task.Run(async () =>
+                        {
+                            try
+                            {
+                                _logger.LogDebug("[GetAuthenticationStateAsync][{Timestamp}] Running background full auth validation", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
+                                var fullAuthState = await _authStateProvider.GetAuthenticationStateAsync();
+                                
+                                // If full check shows authenticated but fast auth didn't, update cache
+                                if (fullAuthState.User?.Identity?.IsAuthenticated == true && 
+                                    authState.User?.Identity?.IsAuthenticated != true)
+                                {
+                                    _logger.LogInformation("[GetAuthenticationStateAsync][{Timestamp}] Background validation found authenticated state, updating cache", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
+                                    await _fastAuth.CacheAuthenticationStateAsync(fullAuthState);
+                                    
+                                    // Trigger authentication state changed event
+                                    var state = await CreateAuthenticationState(fullAuthState.User);
+                                    AuthenticationStateChanged?.Invoke(this, new OIDCAuthenticationStateChangedEventArgs(state));
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                _logger.LogWarning(ex, "[GetAuthenticationStateAsync][{Timestamp}] Background validation failed", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
+                            }
+                        });
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "[GetAuthenticationStateAsync][{Timestamp}] Fast auth failed, falling back to standard auth", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
+                    authState = await _authStateProvider.GetAuthenticationStateAsync();
+                    stopwatch.Stop();
+                    _logger.LogInformation("[GetAuthenticationStateAsync][{Timestamp}] Standard auth fallback completed in {ElapsedMs}ms", DateTime.UtcNow.ToString("HH:mm:ss.fff"), stopwatch.ElapsedMilliseconds);
+                }
+            }
+            else
+            {
+                // No fast auth available, use standard provider
+                _logger.LogDebug("[GetAuthenticationStateAsync][{Timestamp}] Using standard authentication provider", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
+                authState = await _authStateProvider.GetAuthenticationStateAsync();
+                stopwatch.Stop();
+                _logger.LogInformation("[GetAuthenticationStateAsync][{Timestamp}] Standard auth completed in {ElapsedMs}ms", DateTime.UtcNow.ToString("HH:mm:ss.fff"), stopwatch.ElapsedMilliseconds);
+            }
             
-            _logger.LogInformation("[GetAuthenticationStateAsync][{Timestamp}] Starting CreateAuthenticationState()", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
+            _logger.LogDebug("[GetAuthenticationStateAsync][{Timestamp}] AuthState.User.Identity.IsAuthenticated: {IsAuthenticated}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), authState.User?.Identity?.IsAuthenticated);
+            _logger.LogDebug("[GetAuthenticationStateAsync][{Timestamp}] AuthState.User.Identity.Name: {UserName}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), authState.User?.Identity?.Name ?? "null");
+            _logger.LogDebug("[GetAuthenticationStateAsync][{Timestamp}] AuthState.User.Claims.Count: {ClaimsCount}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), authState.User?.Claims?.Count() ?? 0);
+            
             var result = await CreateAuthenticationState(authState.User);
-            _logger.LogInformation("[GetAuthenticationStateAsync][{Timestamp}] Completed CreateAuthenticationState()", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
+            _logger.LogInformation("[GetAuthenticationStateAsync][{Timestamp}] Total auth state creation completed", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
             
             return result;
         }
@@ -81,13 +180,17 @@ public class BlazorOIDCService : IOIDCService, IDisposable
 
     public async Task<ClaimsPrincipal?> GetCurrentUserAsync()
     {
-        var authState = await _authStateProvider.GetAuthenticationStateAsync();
+        var authState = _fastAuth != null 
+            ? await _fastAuth.GetFastAuthenticationStateAsync()
+            : await _authStateProvider.GetAuthenticationStateAsync();
         return authState.User;
     }
 
     public async Task<bool> IsAuthenticatedAsync()
     {
-        var authState = await _authStateProvider.GetAuthenticationStateAsync();
+        var authState = _fastAuth != null 
+            ? await _fastAuth.GetFastAuthenticationStateAsync()
+            : await _authStateProvider.GetAuthenticationStateAsync();
         return authState.User?.Identity?.IsAuthenticated ?? false;
     }
 
@@ -111,7 +214,9 @@ public class BlazorOIDCService : IOIDCService, IDisposable
 
     public async Task<IEnumerable<Claim>> GetUserClaimsAsync()
     {
-        var authState = await _authStateProvider.GetAuthenticationStateAsync();
+        var authState = _fastAuth != null 
+            ? await _fastAuth.GetFastAuthenticationStateAsync()
+            : await _authStateProvider.GetAuthenticationStateAsync();
         return authState.User?.Claims ?? Enumerable.Empty<Claim>();
     }
 
@@ -123,7 +228,9 @@ public class BlazorOIDCService : IOIDCService, IDisposable
 
     public async Task<bool> IsInRoleAsync(string role)
     {
-        var authState = await _authStateProvider.GetAuthenticationStateAsync();
+        var authState = _fastAuth != null 
+            ? await _fastAuth.GetFastAuthenticationStateAsync()
+            : await _authStateProvider.GetAuthenticationStateAsync();
         return authState.User?.IsInRole(role) ?? false;
     }
 
@@ -214,6 +321,13 @@ public class BlazorOIDCService : IOIDCService, IDisposable
         try
         {
             _logger.LogInformation("[LogoutAsync][{Timestamp}] Starting logout process", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
+            
+            // Clear fast auth cache
+            if (_fastAuth != null)
+            {
+                await _fastAuth.InvalidateCacheAsync();
+                _logger.LogInformation("[LogoutAsync][{Timestamp}] Fast auth cache cleared", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
+            }
             
             // Clear tokens from storage to prevent immediate re-login
             await _rememberMeService.ClearTokensAsync();

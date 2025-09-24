@@ -1,4 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
+using LazyMagic.OIDC.Base.Services;
+using LazyMagic.OIDC.WASM.Services;
 
 namespace LazyMagic.OIDC.WASM;
 
@@ -6,6 +8,13 @@ public static class ConfigureLazyMagicOIDCWASM
 {
     public static IServiceCollection AddLazyMagicOIDCWASM(this IServiceCollection services)
     {
+        // Register fast authentication service first
+        services.TryAddScoped<IFastAuthenticationService, FastAuthenticationService>();
+        
+        // Register token refresh service for automatic token renewal
+        services.TryAddScoped<ITokenRefreshService, WasmTokenRefreshService>();
+        
+        // Register OIDC service with fast auth dependency
         services.TryAddScoped<IOIDCService, BlazorOIDCService>();
         services.TryAddSingleton<IRememberMeService, BlazorRememberMeService>();
         services.TryAddTransient<UserProfileViewModel>();

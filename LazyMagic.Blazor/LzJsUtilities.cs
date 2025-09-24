@@ -130,6 +130,25 @@ public class LzJsUtilities : LzBaseJSModule, ILzJsUtilities
     public virtual async ValueTask<T> GetJSONCookie<T>(string name)
         => await InvokeSafeAsync<T>("getJSONCookie", name);
 
+    // Fast Authentication Cache Methods
+    public virtual async ValueTask<bool> InitializeFastAuth()
+        => await InvokeSafeAsync<bool>("initializeFastAuth");
+
+    public virtual async ValueTask<string> GetCachedAuthStateAsync()
+        => await InvokeSafeAsync<string>("getCachedAuthState");
+
+    public virtual async ValueTask SetCachedAuthStateAsync(string authStateJson, int cacheTimeoutMinutes = 5)
+        => await InvokeSafeVoidAsync("setCachedAuthState", authStateJson, cacheTimeoutMinutes);
+
+    public virtual async ValueTask ClearAuthCacheAsync()
+        => await InvokeSafeVoidAsync("clearAuthCache");
+
+    public virtual async ValueTask<bool> IsAuthCacheValidAsync()
+        => await InvokeSafeAsync<bool>("isAuthCacheValid");
+
+    public virtual async ValueTask<string> GetStoredTokensAsync()
+        => await InvokeSafeAsync<string>("getStoredTokens");
+
     // Callbacks. ie. [JSInvokable]
     [JSInvokable]
     public void AssetDataCheckStarted()

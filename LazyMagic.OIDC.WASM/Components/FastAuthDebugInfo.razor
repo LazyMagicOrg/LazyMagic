@@ -1,0 +1,147 @@
+@using LazyMagic.OIDC.WASM.Services
+@inject IOIDCService OidcService
+@inject IFastAuthenticationService FastAuth
+@inject ILogger<FastAuthDebugInfo> Logger
+
+<div class="fast-auth-debug">
+    <h5>🚀 Fast Auth Debug Info</h5>
+    <div class="debug-info">
+        <p><strong>Fast Auth Service:</strong> @(FastAuth != null ? "✅ Available" : "❌ Not Available")</p>
+        <p><strong>OIDC Service Type:</strong> @OidcService?.GetType().Name</p>
+        <p><strong>Last Check Time:</strong> @lastCheckTime ms</p>
+        <p><strong>Authentication State:</strong> @(isAuthenticated ? "✅ Authenticated" : "❌ Not Authenticated")</p>
+        <p><strong>User Name:</strong> @(userName ?? "N/A")</p>
+    </div>
+    
+    <div class="debug-actions">
+        <button class="btn btn-sm btn-primary" @onclick="TestFastAuth">Test Fast Auth</button>
+        <button class="btn btn-sm btn-secondary" @onclick="TestStandardAuth">Test Standard Auth</button>
+        <button class="btn btn-sm btn-info" @onclick="CheckJavaScript">Check JS Init</button>
+    </div>
+    
+    @if (!string.IsNullOrEmpty(debugMessage))
+    {
+        <div class="alert alert-info mt-2 debug-message">
+            @debugMessage
+        </div>
+    }
+</div>
+
+<style>
+    .fast-auth-debug {
+        border: 1px solid #007bff;
+        border-radius: 4px;
+        padding: 10px;
+        margin: 10px 0;
+        background-color: #f8f9fa;
+        font-size: 12px;
+    }
+    
+    .debug-info p {
+        margin: 2px 0;
+    }
+    
+    .debug-actions {
+        margin-top: 10px;
+    }
+    
+    .debug-actions button {
+        margin-right: 5px;
+        margin-bottom: 5px;
+    }
+    
+    .debug-message {
+        font-size: 11px;
+        padding: 5px;
+        margin: 5px 0;
+    }
+</style>
+
+@code {
+    private bool isAuthenticated = false;
+    private string? userName = null;
+    private long lastCheckTime = 0;
+    private string debugMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        debugMessage = $"Component initialized. Fast Auth: {FastAuth != null}";
+    }
+
+    private async Task TestFastAuth()
+    {
+        try
+        {
+            if (FastAuth == null)
+            {
+                debugMessage = "❌ FastAuth service is null";
+                return;
+            }
+
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            var authState = await FastAuth.GetFastAuthenticationStateAsync();
+            stopwatch.Stop();
+            
+            lastCheckTime = stopwatch.ElapsedMilliseconds;
+            isAuthenticated = authState.User?.Identity?.IsAuthenticated ?? false;
+            userName = authState.User?.Identity?.Name;
+            
+            debugMessage = $"✅ Fast auth completed in {lastCheckTime}ms. IsAuth: {isAuthenticated}";
+            Logger.LogInformation("[FastAuthDebug] Fast auth test: {Time}ms, IsAuth: {IsAuth}", lastCheckTime, isAuthenticated);
+            
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            debugMessage = $"❌ Fast auth error: {ex.Message}";
+            Logger.LogError(ex, "[FastAuthDebug] Fast auth test failed");
+        }
+    }
+
+    private async Task TestStandardAuth()
+    {
+        try
+        {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            var authState = await OidcService.GetAuthenticationStateAsync();
+            stopwatch.Stop();
+            
+            lastCheckTime = stopwatch.ElapsedMilliseconds;
+            isAuthenticated = authState.IsAuthenticated;
+            userName = authState.UserName;
+            
+            debugMessage = $"✅ Standard auth completed in {lastCheckTime}ms. IsAuth: {isAuthenticated}";
+            Logger.LogInformation("[FastAuthDebug] Standard auth test: {Time}ms, IsAuth: {IsAuth}", lastCheckTime, isAuthenticated);
+            
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            debugMessage = $"❌ Standard auth error: {ex.Message}";
+            Logger.LogError(ex, "[FastAuthDebug] Standard auth test failed");
+        }
+    }
+
+    private async Task CheckJavaScript()
+    {
+        try
+        {
+            if (FastAuth == null)
+            {
+                debugMessage = "❌ FastAuth service is null";
+                return;
+            }
+
+            var isInitialized = await FastAuth.InitializeAsync();
+            var isCacheValid = await FastAuth.IsCacheValidAsync();
+            
+            debugMessage = $"🔧 JS Init: {isInitialized}, Cache Valid: {isCacheValid}";
+            Logger.LogInformation("[FastAuthDebug] JS check - Init: {Init}, CacheValid: {CacheValid}", isInitialized, isCacheValid);
+        }
+        catch (Exception ex)
+        {
+            debugMessage = $"❌ JS check error: {ex.Message}";
+            Logger.LogError(ex, "[FastAuthDebug] JS check failed");
+        }
+    }
+}

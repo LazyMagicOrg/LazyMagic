@@ -165,6 +165,14 @@ public interface ILzJsUtilities : INotifyPropertyChanged
 	ValueTask SetJSONCookie<T>(string name, T obj, CookieOptions options = null);
     ValueTask<T> GetJSONCookie<T>(string name);
 
+    // Fast Authentication Cache Methods
+    ValueTask<bool> InitializeFastAuth();
+    ValueTask<string> GetCachedAuthStateAsync();
+    ValueTask SetCachedAuthStateAsync(string authStateJson, int cacheTimeoutMinutes = 5);
+    ValueTask ClearAuthCacheAsync();
+    ValueTask<bool> IsAuthCacheValidAsync();
+    ValueTask<string> GetStoredTokensAsync();
+
     // Callbacks. ie. [JSInvokable]
     void AssetDataCheckStarted();
 	void AssetDataCheckComplete();

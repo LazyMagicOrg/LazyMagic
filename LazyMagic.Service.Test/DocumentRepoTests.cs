@@ -1,8 +1,4 @@
-using LazyMagic.Service.Shared;
-using Microsoft.AspNetCore.Mvc;
-using Amazon.DynamoDBv2;
 using JsonSerializer = Newtonsoft.Json.JsonSerializer;
-using Amazon.Runtime.CredentialManagement;
 
 namespace LazyMagic.Service.Test;
 
@@ -27,15 +23,87 @@ public class DocumentRepoFixture : IAsyncLifetime
             LzUserId = "test-user-id",
             TenantId = "test-tenant"
         };
-        var chain = new CredentialProfileStoreChain();
-        if (chain.TryGetAWSCredentials("lzm-dev", out var credentials))
-        {
-            Amazon.Runtime.FallbackCredentialsFactory.Reset();
-            Amazon.Runtime.FallbackCredentialsFactory.CredentialsGenerators.Clear();
-            Amazon.Runtime.FallbackCredentialsFactory.CredentialsGenerators.Add(() => credentials);
-        }
 
-        _dynamoDbClient = new AmazonDynamoDBClient();
+        string? profile = null;
+        string region = "us-east-1"; // Default region
+        
+        // Search up the directory hierarchy for systemconfig.yaml
+        string? configPath = null;
+        var currentDir = new DirectoryInfo(Directory.GetCurrentDirectory());
+        
+        while (currentDir != null)
+        {
+            var potentialPath = Path.Combine(currentDir.FullName, "systemconfig.yaml");
+            if (File.Exists(potentialPath))
+            {
+                configPath = potentialPath;
+                Console.WriteLine($"Found systemconfig.yaml at: {configPath}");
+                break;
+            }
+            currentDir = currentDir.Parent;
+        }
+        
+        if (string.IsNullOrEmpty(configPath))
+        {
+            throw new FileNotFoundException(
+                "systemconfig.yaml not found. Searched up the directory hierarchy from: " + 
+                Directory.GetCurrentDirectory() + 
+                "\nPlease create a systemconfig.yaml file with 'Profile' and optionally 'Region' settings.");
+        }
+        
+        try
+        {
+            using (var reader = new StreamReader(configPath))
+            {
+                var yaml = new YamlStream();
+                yaml.Load(reader);
+
+                if (yaml.Documents.Count == 0)
+                {
+                    throw new InvalidOperationException("systemconfig.yaml is empty or invalid.");
+                }
+                
+                var mapping = yaml.Documents[0].RootNode as YamlMappingNode;
+                if (mapping == null)
+                {
+                    throw new InvalidOperationException("systemconfig.yaml does not contain a valid YAML mapping.");
+                }
+                
+                if (mapping.Children.TryGetValue(new YamlScalarNode("Profile"), out var profileNode))
+                {
+                    profile = ((YamlScalarNode)profileNode).Value;
+                }
+                else
+                {
+                    throw new InvalidOperationException("'Profile' not found in systemconfig.yaml. This field is required.");
+                }
+
+                if (mapping.Children.TryGetValue(new YamlScalarNode("Region"), out var regionNode))
+                {
+                    region = ((YamlScalarNode)regionNode).Value ?? "us-east-1";
+                }
+                
+                Console.WriteLine($"Using AWS Profile: {profile}, Region: {region}");
+            }
+            
+            // Create DynamoDB client with credentials from the specified profile
+            var chain = new CredentialProfileStoreChain();
+            if (chain.TryGetAWSCredentials(profile, out var credentials))
+            {
+                _dynamoDbClient = new AmazonDynamoDBClient(credentials, RegionEndpoint.GetBySystemName(region));
+                Console.WriteLine($"Successfully configured AWS credentials for profile: {profile}");
+            }
+            else
+            {
+                throw new InvalidOperationException($"AWS Profile '{profile}' not found in credential store. " +
+                    "Please ensure the profile exists in your AWS credentials file or use 'aws configure' to set it up.");
+            }
+        }
+        catch (Exception ex) when (!(ex is FileNotFoundException || ex is InvalidOperationException))
+        {
+            throw new InvalidOperationException($"Failed to load or parse systemconfig.yaml: {ex.Message}", ex);
+        }
+        
         Repository = new TestItemRepo(_dynamoDbClient);
 
         // Clean up any existing items in DynamoDB
@@ -66,16 +134,7 @@ public class DocumentRepoFixture : IAsyncLifetime
     }
 }
 
-public class MockDocumentRepoFixture : DocumentRepoFixture { }
 public class DynamoDBDocumentRepoFixture : DocumentRepoFixture { }
-
-[CollectionDefinition("MockRepo")]
-public class MockRepoCollection : ICollectionFixture<MockDocumentRepoFixture>
-{
-    // This class has no code, and is never created.
-    // Its purpose is to be the place to apply [CollectionDefinition]
-    // and all the ICollectionFixture<> interfaces.
-}
 
 [CollectionDefinition("DynamoDBRepo")]
 public class DynamoDBRepoCollection : ICollectionFixture<DynamoDBDocumentRepoFixture>
@@ -83,14 +142,6 @@ public class DynamoDBRepoCollection : ICollectionFixture<DynamoDBDocumentRepoFix
     // This class has no code, and is never created.
     // Its purpose is to be the place to apply [CollectionDefinition]
     // and all the ICollectionFixture<> interfaces.
-}
-
-[Collection("MockRepo")]
-public class MockDocumentRepoTests : DocumentRepoTestsBase
-{
-    public MockDocumentRepoTests(MockDocumentRepoFixture fixture) : base(fixture)
-    {
-    }
 }
 
 [Collection("DynamoDBRepo")]
@@ -156,7 +207,7 @@ public abstract class DocumentRepoTestsBase
         Assert.NotNull(result);
         Assert.NotNull(result.Result);
         Assert.Null(result.Value);
-        Assert.IsType<BadRequestResult>(result.Result);
+        Assert.IsType<ConflictResult>(result.Result);
 
         // Cleanup
         await _repo.DeleteAsync(_callerInfo, "test-id");
