@@ -19,6 +19,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\LazyMagic.OIDC.Base\LazyMagic.OIDC.Base.csproj" />
+		<ProjectReference Include="..\LazyMagic.Blazor\LazyMagic.Blazor.csproj" />
 	</ItemGroup>
 
 </Project>

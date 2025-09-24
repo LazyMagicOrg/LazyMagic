@@ -11,11 +11,13 @@ public class DynamicOidcConfigurationService
     /// <param name="baseAddress">Base address for the configuration endpoint</param>
     /// <param name="configUrl">Configuration endpoint path (defaults to "config")</param>
     /// <param name="defaultAuthConfig">Default auth config to select (defaults to "ConsumerAuth")</param>
+    /// <param name="logger">Logger instance for diagnostic output</param>
     /// <returns>Loaded OIDC configuration or null if failed</returns>
     public static async Task<OidcConfig?> LoadOidcConfigurationAsync(
         string baseAddress,
         string configUrl = "config",
-        string defaultAuthConfig = "ConsumerAuth")
+        string defaultAuthConfig = "ConsumerAuth",
+        ILogger? logger = null)
     {
         OidcConfig? oidcConfig = null;
 
@@ -25,7 +27,7 @@ public class DynamicOidcConfigurationService
             var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             var freshConfigUrl = $"{baseAddress}{configUrl}?v={timestamp}";
 
-            Console.WriteLine($"[DynamicOidcConfig] Attempting to fetch: {freshConfigUrl}");
+            logger?.LogInformation("[LoadOidcConfigurationAsync][{Timestamp}] Attempting to fetch: {FreshConfigUrl}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), freshConfigUrl);
 
             try
             {
@@ -33,79 +35,79 @@ public class DynamicOidcConfigurationService
                 // Set timeout for quick offline detection
                 using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
 
-                Console.WriteLine("[DynamicOidcConfig] Starting HTTP request...");
+                logger?.LogInformation("[LoadOidcConfigurationAsync][{Timestamp}] Starting HTTP request", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
                 var response = await httpClient.GetAsync(freshConfigUrl, cts.Token);
-                Console.WriteLine($"[DynamicOidcConfig] Response status: {response.StatusCode}");
+                logger?.LogInformation("[LoadOidcConfigurationAsync][{Timestamp}] Response status: {StatusCode}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), response.StatusCode);
 
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"[DynamicOidcConfig] Response content (first 200 chars): {json.Substring(0, Math.Min(200, json.Length))}");
-                    Console.WriteLine($"[DynamicOidcConfig] Response content type: {response.Content.Headers.ContentType}");
+                    logger?.LogInformation("[LoadOidcConfigurationAsync][{Timestamp}] Response content (first 200 chars): {ResponseContent}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), json.Substring(0, Math.Min(200, json.Length)));
+                    logger?.LogInformation("[LoadOidcConfigurationAsync][{Timestamp}] Response content type: {ContentType}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), response.Content.Headers.ContentType);
 
                     oidcConfig = JsonConvert.DeserializeObject<OidcConfig>(json);
                     if (oidcConfig != null)
                     {
                         oidcConfig.SelectedAuthConfig = defaultAuthConfig;
                     }
-                    Console.WriteLine("[DynamicOidcConfig] Loaded fresh OIDC config with cache-breaking");
+                    logger?.LogInformation("[LoadOidcConfigurationAsync][{Timestamp}] Loaded fresh OIDC config with cache-breaking", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
                 }
                 else
                 {
-                    Console.WriteLine($"[DynamicOidcConfig] Failed with status: {response.StatusCode}");
+                    logger?.LogWarning("[LoadOidcConfigurationAsync][{Timestamp}] Failed with status: {StatusCode}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), response.StatusCode);
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    Console.WriteLine($"[DynamicOidcConfig] Error response content (first 200 chars): {errorContent.Substring(0, Math.Min(200, errorContent.Length))}");
+                    logger?.LogWarning("[LoadOidcConfigurationAsync][{Timestamp}] Error response content (first 200 chars): {ErrorContent}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), errorContent.Substring(0, Math.Min(200, errorContent.Length)));
                 }
             }
             catch (Exception ex) when (ex is TaskCanceledException || ex is HttpRequestException)
             {
                 // Likely offline or network issue - fall back to cached version
-                Console.WriteLine("[DynamicOidcConfig] Failed to fetch fresh config, trying cached version");
+                logger?.LogWarning("[LoadOidcConfigurationAsync][{Timestamp}] Failed to fetch fresh config, trying cached version", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
 
                 try
                 {
                     using var fallbackClient = new HttpClient();
                     // Try without cache-breaking to hit service worker cache
                     var cachedConfigUrl = $"{baseAddress}{configUrl}";
-                    Console.WriteLine($"[DynamicOidcConfig] Trying cached URL: {cachedConfigUrl}");
+                    logger?.LogInformation("[LoadOidcConfigurationAsync][{Timestamp}] Trying cached URL: {CachedConfigUrl}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), cachedConfigUrl);
                     var cachedResponse = await fallbackClient.GetAsync(cachedConfigUrl);
 
                     if (cachedResponse.IsSuccessStatusCode)
                     {
                         var json = await cachedResponse.Content.ReadAsStringAsync();
-                        Console.WriteLine($"[DynamicOidcConfig] Cached response content (first 200 chars): {json.Substring(0, Math.Min(200, json.Length))}");
+                        logger?.LogInformation("[LoadOidcConfigurationAsync][{Timestamp}] Cached response content (first 200 chars): {CachedContent}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), json.Substring(0, Math.Min(200, json.Length)));
                         oidcConfig = JsonConvert.DeserializeObject<OidcConfig>(json);
                         if (oidcConfig != null)
                         {
                             oidcConfig.SelectedAuthConfig = defaultAuthConfig;
                         }
-                        Console.WriteLine("[DynamicOidcConfig] Loaded cached OIDC config");
+                        logger?.LogInformation("[LoadOidcConfigurationAsync][{Timestamp}] Loaded cached OIDC config", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
                     }
                     else
                     {
-                        Console.WriteLine($"[DynamicOidcConfig] Cached request failed with status: {cachedResponse.StatusCode}");
+                        logger?.LogWarning("[LoadOidcConfigurationAsync][{Timestamp}] Cached request failed with status: {CachedStatusCode}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), cachedResponse.StatusCode);
                         var errorContent = await cachedResponse.Content.ReadAsStringAsync();
-                        Console.WriteLine($"[DynamicOidcConfig] Cached error content (first 200 chars): {errorContent.Substring(0, Math.Min(200, errorContent.Length))}");
+                        logger?.LogWarning("[LoadOidcConfigurationAsync][{Timestamp}] Cached error content (first 200 chars): {CachedErrorContent}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), errorContent.Substring(0, Math.Min(200, errorContent.Length)));
                     }
                 }
                 catch (Exception fallbackEx)
                 {
-                    Console.WriteLine($"[DynamicOidcConfig] Failed to load cached config: {fallbackEx.Message}");
+                    logger?.LogError(fallbackEx, "[LoadOidcConfigurationAsync][{Timestamp}] Failed to load cached config: {ErrorMessage}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), fallbackEx.Message);
                 }
             }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[DynamicOidcConfig] Failed to load OIDC config: {ex.Message}");
+            logger?.LogError(ex, "[LoadOidcConfigurationAsync][{Timestamp}] Failed to load OIDC config: {ErrorMessage}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), ex.Message);
         }
 
         if (oidcConfig == null)
         {
-            Console.WriteLine("[DynamicOidcConfig] No configuration loaded - authentication will not be available");
+            logger?.LogWarning("[LoadOidcConfigurationAsync][{Timestamp}] No configuration loaded - authentication will not be available", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
         }
         else
         {
-            Console.WriteLine($"[DynamicOidcConfig] Successfully loaded configuration with {oidcConfig.AuthConfigs.Count} auth config(s)");
+            logger?.LogInformation("[LoadOidcConfigurationAsync][{Timestamp}] Successfully loaded configuration with {AuthConfigCount} auth config(s)", DateTime.UtcNow.ToString("HH:mm:ss.fff"), oidcConfig.AuthConfigs.Count);
         }
 
         return oidcConfig;
@@ -117,22 +119,24 @@ public class DynamicOidcConfigurationService
     /// <param name="oidcConfig">The loaded OIDC configuration</param>
     /// <param name="defaultAuthConfig">The auth config name to use</param>
     /// <param name="baseAddress">Base address for redirect URIs</param>
+    /// <param name="logger">Logger instance for diagnostic output</param>
     /// <returns>OIDC options configuration or null if not available</returns>
     public static OidcOptionsConfiguration? GetOidcOptions(
         OidcConfig? oidcConfig,
         string defaultAuthConfig,
-        string baseAddress)
+        string baseAddress,
+        ILogger? logger = null)
     {
         if (oidcConfig != null && oidcConfig.AuthConfigs.TryGetValue(defaultAuthConfig, out var authConfig))
         {
             var options = OidcOptionsConfiguration.FromAuthConfig(authConfig, baseAddress);
-            Console.WriteLine($"[DynamicOidcConfig] Configured OIDC with authority: {options.Authority}");
-            Console.WriteLine($"[DynamicOidcConfig] Client ID: {options.ClientId}");
-            Console.WriteLine($"[DynamicOidcConfig] Redirect URI: {options.RedirectUri}");
+            logger?.LogInformation("[GetOidcOptions][{Timestamp}] Configured OIDC with authority: {Authority}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), options.Authority);
+            logger?.LogInformation("[GetOidcOptions][{Timestamp}] Client ID: {ClientId}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), options.ClientId);
+            logger?.LogInformation("[GetOidcOptions][{Timestamp}] Redirect URI: {RedirectUri}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), options.RedirectUri);
             return options;
         }
 
-        Console.WriteLine($"[DynamicOidcConfig] No OIDC configuration available for auth config: {defaultAuthConfig}");
+        logger?.LogWarning("[GetOidcOptions][{Timestamp}] No OIDC configuration available for auth config: {DefaultAuthConfig}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), defaultAuthConfig);
         return null;
     }
 }

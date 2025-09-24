@@ -6,8 +6,15 @@ namespace LazyMagic.Blazor;
 public class LzJsUtilities : LzBaseJSModule, ILzJsUtilities
 {
     private DotNetObjectReference<LzJsUtilities> viewerInstance;
+
+    
     // ModuleFileName is the path to the JS file that will be loaded by the Blazor app.
     public override string ModuleFileName => $"./_content/LazyMagic.Blazor/lzJsUtilities.js";
+    
+    public LzJsUtilities(ILogger<LzJsUtilities>? logger = null)
+    {
+        _logger = logger;
+    }
 
     private bool _checkingAssetData;
     public bool CheckingAssetData
@@ -37,6 +44,12 @@ public class LzJsUtilities : LzBaseJSModule, ILzJsUtilities
     {
         base.SetJSRuntime(jsRuntime);
         viewerInstance = DotNetObjectReference.Create(this);
+    }
+    
+    public override void SetLogger(ILogger logger)
+    {
+        base.SetLogger(logger);
+        _logger = logger as ILogger<LzJsUtilities>;
     }
 
     public virtual async ValueTask Initialize()
@@ -117,54 +130,73 @@ public class LzJsUtilities : LzBaseJSModule, ILzJsUtilities
     public virtual async ValueTask<T> GetJSONCookie<T>(string name)
         => await InvokeSafeAsync<T>("getJSONCookie", name);
 
+    // Fast Authentication Cache Methods
+    public virtual async ValueTask<bool> InitializeFastAuth()
+        => await InvokeSafeAsync<bool>("initializeFastAuth");
+
+    public virtual async ValueTask<string> GetCachedAuthStateAsync()
+        => await InvokeSafeAsync<string>("getCachedAuthState");
+
+    public virtual async ValueTask SetCachedAuthStateAsync(string authStateJson, int cacheTimeoutMinutes = 5)
+        => await InvokeSafeVoidAsync("setCachedAuthState", authStateJson, cacheTimeoutMinutes);
+
+    public virtual async ValueTask ClearAuthCacheAsync()
+        => await InvokeSafeVoidAsync("clearAuthCache");
+
+    public virtual async ValueTask<bool> IsAuthCacheValidAsync()
+        => await InvokeSafeAsync<bool>("isAuthCacheValid");
+
+    public virtual async ValueTask<string> GetStoredTokensAsync()
+        => await InvokeSafeAsync<string>("getStoredTokens");
+
     // Callbacks. ie. [JSInvokable]
     [JSInvokable]
     public void AssetDataCheckStarted()
     {
-        Console.WriteLine("BaseAppJS.AssetDataCheckStarted");
+        _logger?.LogInformation("[AssetDataCheckStarted][{Timestamp}] Asset data check started", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
         CheckingAssetData = true;
     }
     [JSInvokable]
     public void AssetDataCheckComplete()
     {
-        Console.WriteLine("BaseAppJS.AssetDataCheckComplete");
+        _logger?.LogInformation("[AssetDataCheckComplete][{Timestamp}] Asset data check complete", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
         CheckingAssetData = false;
     }
     [JSInvokable]
     public void AssetDataUpdateStarted()
     {
-        Console.WriteLine("BaseAppJS.AssetDataUpdateStarted");
+        _logger?.LogInformation("[AssetDataUpdateStarted][{Timestamp}] Asset data update started", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
         UpdatingAssetData = true;
     }
     [JSInvokable]
     public void AssetDataUpdateComplete()
     {
-        Console.WriteLine("BaseAppJS.AssetDataUpdateComplete");
+        _logger?.LogInformation("[AssetDataUpdateComplete][{Timestamp}] Asset data update complete", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
         UpdatingAssetData = false;
     }
     [JSInvokable]
     public void ServiceWorkerUpdateStarted()
     {
-        Console.WriteLine("BaseAppJS.ServiceWorkerUpdateStarted");
+        _logger?.LogInformation("[ServiceWorkerUpdateStarted][{Timestamp}] Service worker update started", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
         UpdatingServiceWorker = true;
     }
     [JSInvokable]
     public void ServiceWorkerUpdateComplete()
     {
-        Console.WriteLine("BaseAppJS.ServiceWorkerUpdateComplete");
+        _logger?.LogInformation("[ServiceWorkerUpdateComplete][{Timestamp}] Service worker update complete", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
         UpdatingServiceWorker = false;
     }
     [JSInvokable]
     public void CacheMissAction(string url)
     {
-        Console.WriteLine($"BaseAppJS.CacheMiss: {url}");
+        _logger?.LogWarning("[CacheMissAction][{Timestamp}] Cache miss for URL: {Url}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), url);
         CacheMiss = url;
     }
 
     [JSInvokable]
     public void MessageSelected(string key, string value)
     {
-        Console.WriteLine($"BaseAppJS.MessageSelected: {key} = {value}");
+        _logger?.LogInformation("[MessageSelected][{Timestamp}] Message selected: {Key} = {Value}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), key, value);
     }
 
     protected bool RaiseAndSetIfChanged<T>(ref T field, T value, [CallerMemberName] string propertyName = null)

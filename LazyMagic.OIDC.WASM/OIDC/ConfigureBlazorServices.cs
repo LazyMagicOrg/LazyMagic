@@ -1,3 +1,8 @@
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
+using LazyMagic.OIDC.WASM.Services;
+
 namespace LazyMagic.OIDC.WASM;
 
 /// <summary>
@@ -63,6 +68,18 @@ public static class ConfigureBlazorServices
             }
             
         });
+
+        // Add authorization services that AuthorizeView components need
+        // This method is WASM-specific, so this ensures AuthorizeView works properly
+        builder.Services.AddAuthorizationCore();
+        
+        // Replace the AuthenticationStateProvider with our Cognito-optimized version
+        // This provides fast authentication while avoiding circular dependencies
+        builder.Services.Replace(ServiceDescriptor.Scoped<AuthenticationStateProvider, CognitoRemoteAuthenticationService>());
+
+        // Register our fast authentication service for optional use by components
+        // This provides cached authentication state queries while keeping Microsoft's architecture intact
+        builder.Services.TryAddScoped<IFastAuthenticationService, FastAuthenticationService>();
 
         return builder;
     }

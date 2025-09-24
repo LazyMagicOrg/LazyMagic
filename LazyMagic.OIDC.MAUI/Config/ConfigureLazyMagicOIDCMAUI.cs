@@ -1,9 +1,15 @@
-﻿namespace LazyMagic.OIDC.MAUI;
+﻿using LazyMagic.OIDC.Base.Services;
+using Microsoft.Maui.Hosting;
+
+namespace LazyMagic.OIDC.MAUI;
 
 public static class ConfigureLazyMagicOIDCMAUI
 {
     public static IServiceCollection AddLazyMagicOIDCMAUI(this IServiceCollection services)
     {
+        // Add authorization services that AuthorizeView components need
+        services.AddAuthorizationCore();
+        
         // We use TryAddSingleton to avoid overwriting existing registrations made to customize the UI
         services.TryAddSingleton<IAuthenticationUI,DefaultAuthenticationUI>();
         // Register token storage service
@@ -11,6 +17,9 @@ public static class ConfigureLazyMagicOIDCMAUI
 
         // Register WebView authentication provider
         services.TryAddTransient<IWebViewAuthenticationProvider, MauiWebViewAuthenticationProvider>();
+
+        // Register token refresh service for automatic token renewal
+        services.TryAddSingleton<ITokenRefreshService, Services.MauiTokenRefreshService>();
 
         // Register OIDC service (MAUI implementation)
         services.TryAddSingleton<IOIDCService, MauiOIDCService>();

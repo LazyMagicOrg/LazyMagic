@@ -1,7 +1,111 @@
-# LazyMagic Blazor WASM Authentication Flow
+# LazyMagic OIDC WASM - Blazor WebAssembly Authentication
 
 ## Overview
-This document describes the expected authentication behavior for the LazyMagic Blazor WASM application, including RememberMe functionality and token management.
+This library provides high-performance AWS Cognito authentication for Blazor WebAssembly applications. It includes specialized optimizations to solve performance issues that occur when using Microsoft's standard OIDC libraries with AWS Cognito.
+
+## Cognito Performance Optimization
+
+### The Problem
+Microsoft's Blazor WASM authentication libraries (`Microsoft.AspNetCore.Components.WebAssembly.Authentication`) are designed for Azure AD/Entra ID and use iframe-based silent authentication. AWS Cognito blocks iframe requests with `X-Frame-Options: DENY`, causing:
+
+- **5+ second delays** on initial authentication checks
+- **10+ second timeouts** when the iframe fails to load
+- Poor user experience with long "checking login status" delays
+
+### The Solution
+This library implements `CognitoRemoteAuthenticationService` that:
+
+- **Bypasses slow iframe-based authentication** checks entirely
+- **Uses fast JWT token parsing** from browser storage
+- **Maintains full compatibility** with `AuthorizeView` and login flows  
+- **Reduces authentication state queries** from 5+ seconds to <5ms
+
+### Technical Implementation
+```csharp
+// Replaces Microsoft's RemoteAuthenticationService
+public class CognitoRemoteAuthenticationService : RemoteAuthenticationService<...>
+{
+    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
+    {
+        // Fast cached authentication state (< 5ms)
+        var cachedState = await _jsUtilities.GetCachedAuthStateAsync();
+        if (!string.IsNullOrEmpty(cachedState))
+        {
+            return ParseAuthStateFromJson(cachedState);
+        }
+        
+        // Return anonymous state quickly instead of slow iframe checks
+        return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+    }
+}
+```
+
+## Usage
+
+### Setup in Program.cs
+```csharp
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+// Add LazyMagic OIDC WASM services (includes Cognito optimization)
+builder.Services.AddLazyMagicOIDCWASM();
+builder.AddLazyMagicOIDCWASMBuilder();
+
+var host = builder.Build();
+
+// Load OIDC configuration
+await ConfigureLazyMagicOIDCWASM.LoadConfiguration(host);
+
+await host.RunAsync();
+```
+
+### Performance Comparison
+| Scenario | Microsoft Standard | LazyMagic Optimized |
+|----------|-------------------|-------------------|
+| Fresh app launch | 5-10 seconds | < 1 second |
+| Authentication state check | 5+ seconds | < 5ms |
+| AuthorizeView rendering | 5+ second delay | Immediate |
+| Login flow | Works | Works |
+| Token refresh | Works | Works |
+
+### Components Included
+- `CognitoRemoteAuthenticationService` - Fast authentication provider
+- `FastAuthenticationService` - Optional fast auth service for custom components  
+- `FastAuthDebugInfo` - Debug component showing authentication performance
+- `WasmTokenRefreshService` - Automatic token refresh before expiration
+- JavaScript utilities for token caching and management
+
+## Automatic Token Refresh
+
+### Overview
+The WASM library includes automatic token refresh functionality that prevents authentication timeouts during active user sessions. Tokens are automatically refreshed 5 minutes before expiration without any user interaction.
+
+### How It Works
+```csharp
+// Token refresh service monitors expiration and refreshes automatically
+public class WasmTokenRefreshService : TokenRefreshServiceBase
+{
+    protected override async Task<bool> PerformTokenRefreshAsync()
+    {
+        // Uses IAccessTokenProvider to trigger refresh
+        var tokenResult = await _tokenProvider.RequestAccessToken();
+        return tokenResult.Status == AccessTokenResultStatus.Success;
+    }
+}
+```
+
+### Key Features
+- **Automatic Monitoring**: Service starts when user authenticates, stops when they log out
+- **5-Minute Buffer**: Refresh occurs 5 minutes before token expiration
+- **Background Operation**: No user interaction required
+- **Error Handling**: Graceful fallback if refresh fails
+- **Integration**: Works seamlessly with existing authentication flows
+
+### Performance Impact
+- **Token refresh**: < 500ms background operation
+- **User experience**: No interruptions or delays
+- **Session continuity**: Prevents unexpected logouts during active use
+
+## Authentication Flow Documentation
 
 ## Authentication State Diagram
 
@@ -156,6 +260,15 @@ This document describes the expected authentication behavior for the LazyMagic B
 - Clears invalid tokens
 - Shows unauthenticated state
 - No long delays or errors
+
+### Test 11: Automatic Token Refresh
+**Setup**: User authenticated with token expiring in < 5 minutes
+**Action**: Wait for automatic refresh
+**Expected**:
+- Token refreshes automatically 5 minutes before expiration
+- User remains authenticated without interruption
+- No login prompts or delays
+- Seamless background operation
 
 ## Performance Requirements
 

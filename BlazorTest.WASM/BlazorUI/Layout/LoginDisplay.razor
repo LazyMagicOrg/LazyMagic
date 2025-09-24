@@ -13,6 +13,7 @@
             <span class="me-3">Hello, @userName!</span>
             <a href="/ProfilePage" class="btn btn-link">Profile</a>
             <button class="btn btn-link" @onclick="async () => await BeginLogOut()">Log out</button>
+
         </div>
     }
     else
@@ -82,7 +83,6 @@ catch (Exception ex)
             var authState = await AuthService.GetAuthenticationStateAsync();
             isAuthenticated = authState.IsAuthenticated;
             userName = authState.UserName;
-            if (isAuthenticated) Navigation.NavigateTo("SessionPage");
         }
         catch (Exception ex)
         {

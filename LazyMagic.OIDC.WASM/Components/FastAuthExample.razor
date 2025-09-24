@@ -1,0 +1,179 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using LazyMagic.OIDC.WASM.Services
+@inject IFastAuthenticationService FastAuth
+@inject AuthenticationStateProvider StandardAuth
+@inject ILogger<FastAuthExample> Logger
+
+<div class="fast-auth-example">
+    <h3>Fast Authentication Example</h3>
+    
+    <div class="auth-buttons">
+        <button class="btn btn-primary" @onclick="CheckFastAuth">Check Fast Auth</button>
+        <button class="btn btn-secondary" @onclick="CheckStandardAuth">Check Standard Auth</button>
+        <button class="btn btn-warning" @onclick="InvalidateCache">Clear Cache</button>
+        <button class="btn btn-info" @onclick="CheckCacheStatus">Cache Status</button>
+    </div>
+
+    <div class="results mt-3">
+        <div class="row">
+            <div class="col-md-6">
+                <h5>Fast Auth Result (@fastAuthTime ms)</h5>
+                <div class="auth-result">
+                    <strong>Is Authenticated:</strong> @fastAuthResult?.User?.Identity?.IsAuthenticated<br/>
+                    <strong>Name:</strong> @fastAuthResult?.User?.Identity?.Name<br/>
+                    <strong>Auth Type:</strong> @fastAuthResult?.User?.Identity?.AuthenticationType<br/>
+                    <strong>Claims Count:</strong> @(fastAuthResult?.User?.Claims?.Count() ?? 0)
+                </div>
+            </div>
+            <div class="col-md-6">
+                <h5>Standard Auth Result (@standardAuthTime ms)</h5>
+                <div class="auth-result">
+                    <strong>Is Authenticated:</strong> @standardAuthResult?.User?.Identity?.IsAuthenticated<br/>
+                    <strong>Name:</strong> @standardAuthResult?.User?.Identity?.Name<br/>
+                    <strong>Auth Type:</strong> @standardAuthResult?.User?.Identity?.AuthenticationType<br/>
+                    <strong>Claims Count:</strong> @(standardAuthResult?.User?.Claims?.Count() ?? 0)
+                </div>
+            </div>
+        </div>
+        
+        @if (!string.IsNullOrEmpty(statusMessage))
+        {
+            <div class="alert alert-info mt-3">
+                @statusMessage
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+    .fast-auth-example {
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        margin: 10px 0;
+    }
+    
+    .auth-buttons {
+        margin-bottom: 15px;
+    }
+    
+    .auth-buttons button {
+        margin-right: 10px;
+        margin-bottom: 5px;
+    }
+    
+    .auth-result {
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-radius: 4px;
+        font-family: monospace;
+        font-size: 12px;
+    }
+    
+    .results h5 {
+        color: #495057;
+    }
+</style>
+
+@code {
+    private AuthenticationState? fastAuthResult;
+    private AuthenticationState? standardAuthResult;
+    private long fastAuthTime;
+    private long standardAuthTime;
+    private string statusMessage = "";
+    
+    protected override async Task OnInitializedAsync()
+    {
+        // Initialize fast auth on component load
+        try
+        {
+            var initialized = await FastAuth.InitializeAsync();
+            statusMessage = initialized 
+                ? "Fast authentication initialized successfully" 
+                : "Fast authentication initialization failed";
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fast authentication initialization error: {ex.Message}";
+            Logger.LogError(ex, "Error initializing fast auth");
+        }
+    }
+
+    private async Task CheckFastAuth()
+    {
+        try
+        {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            fastAuthResult = await FastAuth.GetFastAuthenticationStateAsync();
+            stopwatch.Stop();
+            fastAuthTime = stopwatch.ElapsedMilliseconds;
+            
+            statusMessage = $"Fast auth completed in {fastAuthTime}ms";
+            Logger.LogInformation("Fast auth check completed in {Time}ms", fastAuthTime);
+            
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Fast auth error: {ex.Message}";
+            Logger.LogError(ex, "Error during fast auth check");
+        }
+    }
+
+    private async Task CheckStandardAuth()
+    {
+        try
+        {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            standardAuthResult = await StandardAuth.GetAuthenticationStateAsync();
+            stopwatch.Stop();
+            standardAuthTime = stopwatch.ElapsedMilliseconds;
+            
+            statusMessage = $"Standard auth completed in {standardAuthTime}ms";
+            Logger.LogInformation("Standard auth check completed in {Time}ms", standardAuthTime);
+            
+            // Cache the result in fast auth for future use
+            await FastAuth.CacheAuthenticationStateAsync(standardAuthResult);
+            statusMessage += " (result cached for fast auth)";
+            
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Standard auth error: {ex.Message}";
+            Logger.LogError(ex, "Error during standard auth check");
+        }
+    }
+
+    private async Task InvalidateCache()
+    {
+        try
+        {
+            await FastAuth.InvalidateCacheAsync();
+            statusMessage = "Authentication cache cleared";
+            Logger.LogInformation("Authentication cache invalidated");
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Cache invalidation error: {ex.Message}";
+            Logger.LogError(ex, "Error invalidating cache");
+        }
+    }
+
+    private async Task CheckCacheStatus()
+    {
+        try
+        {
+            var isValid = await FastAuth.IsCacheValidAsync();
+            statusMessage = isValid 
+                ? "Cache is valid and active" 
+                : "Cache is invalid or expired";
+            Logger.LogInformation("Cache status check: {IsValid}", isValid);
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Cache status error: {ex.Message}";
+            Logger.LogError(ex, "Error checking cache status");
+        }
+    }
+}

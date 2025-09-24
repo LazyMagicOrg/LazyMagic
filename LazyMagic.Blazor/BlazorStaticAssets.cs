@@ -18,8 +18,7 @@ public class BlazorStaticAssets : IStaticAssets
         }
         catch (Exception ex)
         {
-           
-            _logger.LogDebug($"ReadAuthConfigAsync error reading: {url}, {ex.Message}");
+            _logger.LogDebug("[ReadAuthConfigAsync][{Timestamp}] Error reading: {Url}, {ErrorMessage}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), url, ex.Message);
             return string.Empty;
         }
     }
@@ -31,7 +30,7 @@ public class BlazorStaticAssets : IStaticAssets
             return text;
         } catch (Exception ex)
         {
-            _logger.LogDebug($"ReadTenancyConfigAsync error reading: {url}, {ex.Message}");
+            _logger.LogDebug("[ReadTenancyConfigAsync][{Timestamp}] Error reading: {Url}, {ErrorMessage}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), url, ex.Message);
             return string.Empty;
         }
     }
@@ -44,7 +43,7 @@ public class BlazorStaticAssets : IStaticAssets
         }
         catch (Exception ex)
         {
-            _logger.LogDebug($"ReadContentAsync error reading: {url}, {ex.Message}");
+            _logger.LogDebug("[ReadContentAsync][{Timestamp}] Error reading: {Url}, {ErrorMessage}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), url, ex.Message);
             return string.Empty;
         }
     }
@@ -58,7 +57,7 @@ public class BlazorStaticAssets : IStaticAssets
 
         catch (Exception ex)
         {
-            _logger.LogDebug($"HttpReadAsync error reading: {url}, {ex.Message}");
+            _logger.LogDebug("[HttpReadAsync][{Timestamp}] Error reading: {Url}, {ErrorMessage}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), url, ex.Message);
             return string.Empty;
         }
     }

@@ -18,12 +18,23 @@ export class ConnectivityService {
     }
     
     /**
+     * Standard logging with method name and timestamp
+     * @param {string} methodName - Name of the calling method
+     * @param {string} message - Log message
+     * @param {string} level - Log level (debug, info, warn, error)
+     */
+    log(methodName, message, level = 'info') {
+        const timestamp = new Date().toISOString().substr(11, 12); // HH:mm:ss.fff format
+        console[level](`[${methodName}][${timestamp}] ${message}`);
+    }
+    
+    /**
      * Set the assets URL for connectivity checks
      * @param {string} url - Base URL for assets from ILzHost
      */
     setAssetsUrl(url) {
         this.assetsUrl = url;
-        console.debug(`[ConnectivityService] Assets URL set to: ${url}`);
+        this.log('setAssetsUrl', `Assets URL set to: ${url}`, 'debug');
     }
 
     init() {
@@ -66,7 +77,7 @@ export class ConnectivityService {
     async isReallyOnline() {
         // First check navigator.onLine
         if (!navigator.onLine) {
-            console.debug('[ConnectivityService] navigator.onLine is false');
+            this.log('isReallyOnline', 'navigator.onLine is false', 'debug');
             return false;
         }
 
@@ -149,7 +160,7 @@ export class ConnectivityService {
             try {
                 callback(isOnline);
             } catch (error) {
-                console.error('Error in connectivity listener:', error);
+                this.log('notifyListeners', `Error in connectivity listener: ${error.message}`, 'error');
             }
         });
     }

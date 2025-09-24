@@ -211,7 +211,15 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
             };
             if (debug) Console.WriteLine($"ReadEAsync() GetItemAsync called");
             var response = await client.GetItemAsync(request);
+            if(response.Item == null || response.Item.Count == 0)
+            {
+                return new NotFoundResult();
+            }
             var data = response.Item["Data"].S; 
+            if(string.IsNullOrEmpty(data))
+            {
+                return new NotFoundResult();
+            }   
             return DeserializeJsonData(data);
         }
 
