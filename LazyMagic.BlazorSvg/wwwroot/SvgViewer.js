@@ -95,79 +95,6 @@ class SvgViewerInstance {
     // --------- OUTLINE GENERATION (smart concave, gap-aware) ---------
 
     // Generate tight-fitting concave outline for a set of paths.
-    // This ALWAYS returns a path (falls back to convex), so we always draw something.
-    //generateGroupOutline(pathIds, options = {}) {
-    //    if (!this.s || !pathIds || pathIds.length === 0) return null;
-
-    //    const {
-    //        gapHopPx = 8,
-    //        sampleStride = 1,
-    //        kStart = 4,
-    //        kMax = 24,
-    //        maxEdgePx = 200,
-    //        downsampleEveryN = 1,
-    //        minContainment = 0.75   // draw if at least 75% of sampled points are inside
-    //    } = options;
-
-    //    const scope = this.scope();
-    //    const groupPaths = [];
-    //    pathIds.forEach(id => {
-    //        const p = scope.select("#" + id);
-    //        if (p) groupPaths.push(p);
-    //    });
-    //    if (groupPaths.length === 0) return null;
-
-    //    const allBoundaryPoints = [];
-    //    const pathInfos = [];
-    //    groupPaths.forEach(p => {
-    //        const bbox = p.getBBox();
-    //        const center = { x: bbox.x + bbox.width / 2, y: bbox.y + bbox.height / 2 };
-    //        const raw = this.extractPathBoundaryPoints(p, bbox);
-    //        const sampled = sampleStride > 1 ? this._downsamplePoints(raw, sampleStride) : raw;
-
-    //        pathInfos.push({ bbox, center, boundaryPoints: sampled });
-    //        allBoundaryPoints.push(...sampled);
-    //    });
-
-    //    if (allBoundaryPoints.length < 3) {
-    //        // Last resort: triangle around union bbox
-    //        const union = this.unionTransformedBBoxes(groupPaths);
-    //        if (!union) return null;
-    //        const tri = [
-    //            { x: union.x, y: union.y },
-    //            { x: union.x + union.width, y: union.y },
-    //            { x: union.x + union.width, y: union.y + union.height }
-    //        ];
-    //        return `M ${tri[0].x} ${tri[0].y} L ${tri[1].x} ${tri[1].y} L ${tri[2].x} ${tri[2].y} Z`;
-    //    }
-
-    //    // Seed tiny bridges between selected shapes only
-    //    const bridges = this._seedBridgePoints(pathInfos, gapHopPx, Math.max(4, sampleStride * 2));
-    //    const cloud = (downsampleEveryN > 1)
-    //        ? this._downsamplePoints(allBoundaryPoints.concat(bridges), downsampleEveryN)
-    //        : allBoundaryPoints.concat(bridges);
-
-    //    // Try concave hull
-    //    let hull = this._concaveHull(cloud, kStart, kMax, maxEdgePx);
-    //    if (!hull || hull.length < 3) {
-    //        // Fallback to convex
-    //        hull = this.simpleConvexHull(cloud);
-    //    }
-
-    //    // Soft containment gate: draw anyway if threshold met; else convex fallback
-    //    const score = this._validateContainmentScore(hull, pathInfos);
-    //    if (score < minContainment) {
-    //        hull = this.simpleConvexHull(cloud);
-    //    }
-
-    //    if (!hull || hull.length < 3) return null;
-
-    //    let d = `M ${hull[0].x} ${hull[0].y}`;
-    //    for (let i = 1; i < hull.length; i++) d += ` L ${hull[i].x} ${hull[i].y}`;
-    //    d += " Z";
-    //    return d;
-    //}
-    // Generate tight-fitting concave outline for a set of paths.
     // Includes diagnostic logging to reveal whether concave or convex was used.
     generateGroupOutline(pathIds, options = {}) {
         if (!this.s || !pathIds || pathIds.length === 0) return null;
@@ -175,11 +102,11 @@ class SvgViewerInstance {
         const {
             gapHopPx = 3,
             kStart = 2,
-            kMax = 10,
-            maxEdgePx = 40,
+            kMax = 3,
+            maxEdgePx = 10,
             sampleStride = 1,
             downsampleEveryN = 1,
-            minContainment = 0.95
+            minContainment = 0.5
         } = options;
 
         const scope = this.scope();
@@ -262,54 +189,6 @@ class SvgViewerInstance {
         return d;
     }
 
-
-    // Extract boundary points that follow the actual path edges closely
-    // Uses native SVGPathElement APIs via path.node with solid fallbacks.
-    //extractPathBoundaryPoints(path, bbox) {
-    //    const pts = [];
-    //    try {
-    //        const node = path && path.node ? path.node : path;
-    //        if (node && typeof node.getTotalLength === "function" && typeof node.getPointAtLength === "function") {
-    //            const len = node.getTotalLength();
-    //            if (isFinite(len) && len > 0) {
-    //                // Sample ~every 3–8 px, capped for very long paths
-    //                const step = Math.max(3, Math.min(8, Math.floor(len / 250) || 4));
-    //                for (let d = 0; d <= len; d += step) {
-    //                    const p = node.getPointAtLength(d);
-    //                    if (isFinite(p.x) && isFinite(p.y)) pts.push({ x: p.x, y: p.y });
-    //                }
-    //            }
-    //        }
-    //    } catch (e) {
-    //        // ignore and fall back below
-    //    }
-
-    //    // If too few samples, add a light bbox “ring”
-    //    if (pts.length < 8 && bbox) {
-    //        const margin = 1.5;
-    //        const n = 16;
-    //        for (let i = 0; i < n; i++) {
-    //            const t = i / n;
-    //            // top
-    //            pts.push({ x: bbox.x + bbox.width * t, y: bbox.y - margin });
-    //            // right
-    //            pts.push({ x: bbox.x + bbox.width + margin, y: bbox.y + bbox.height * t });
-    //            // bottom
-    //            pts.push({ x: bbox.x + bbox.width * (1 - t), y: bbox.y + bbox.height + margin });
-    //            // left
-    //            pts.push({ x: bbox.x - margin, y: bbox.y + bbox.height * (1 - t) });
-    //        }
-    //    }
-
-    //    // Absolute last resort: the 4 corners
-    //    if (pts.length === 0 && bbox) {
-    //        pts.push({ x: bbox.x, y: bbox.y });
-    //        pts.push({ x: bbox.x + bbox.width, y: bbox.y });
-    //        pts.push({ x: bbox.x + bbox.width, y: bbox.y + bbox.height });
-    //        pts.push({ x: bbox.x, y: bbox.y + bbox.height });
-    //    }
-    //    return pts;
-    //}
     // Extract boundary points along the actual path outline,
     // then PROJECT them into the current scope's coordinate system
     // so the outline lands exactly where it should.
@@ -393,7 +272,6 @@ class SvgViewerInstance {
         // If we couldn't project, return what we have (may misalign if transforms exist)
         return localPts;
     }
-
 
     // Check if two line segments intersect
     doLinesIntersect(p1, p2, p3, p4) {
@@ -554,6 +432,32 @@ class SvgViewerInstance {
         return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
     }
 
+    // Fast-ish nearest distance from a point to a set of points (linear scan is fine for our sizes)
+    _minDistToSet(pt, set) {
+        let best = Infinity;
+        for (let i = 0; i < set.length; i++) {
+            const dx = set[i].x - pt.x, dy = set[i].y - pt.y;
+            const d = Math.hypot(dx, dy);
+            if (d < best) best = d;
+        }
+        return best;
+    }
+
+    // Ensure the edge stays close to actual geometry: sample the segment and require
+    // that *most* sample points lie within `maxAwayPx` of the boundary cloud.
+    _edgeHugsBoundary(a, b, boundaryCloud, maxAwayPx = 8, samples = 12, requireRatio = 0.75) {
+        if (!boundaryCloud || boundaryCloud.length === 0) return true; // nothing to judge against
+        let ok = 0;
+        for (let i = 0; i <= samples; i++) {
+            const t = i / samples;
+            const x = a.x + (b.x - a.x) * t;
+            const y = a.y + (b.y - a.y) * t;
+            const d = this._minDistToSet({ x, y }, boundaryCloud);
+            if (d <= maxAwayPx) ok++;
+        }
+        return (ok / (samples + 1)) >= requireRatio;
+    }
+
     // Downsample helper
     _downsamplePoints(points, everyN = 2) {
         if (everyN <= 1) return points;
@@ -593,8 +497,8 @@ class SvgViewerInstance {
         return bridgePts;
     }
 
-    // Concave hull (k-nearest) with self-intersection + max-edge guardrails
-    _concaveHull(points, kStart = 3, kMax = 20, maxEdge = Infinity) {
+    // Concave hull (k-nearest) with self-intersection + max-edge + edge-hug guardrails
+    _concaveHull(points, kStart = 3, kMax = 20, maxEdge = Infinity, edgeHugPx = 10) {
         if (!points || points.length < 3) return null;
 
         const pts = this.removeDuplicates(points, 0.5);
@@ -610,6 +514,9 @@ class SvgViewerInstance {
             if (ang > Math.PI) ang -= 2 * Math.PI;
             return ang;
         };
+
+        // Use the sampled boundary cloud itself as the geometry to "hug"
+        const boundaryCloud = pts;
 
         // lowest Y (then lowest X)
         let start = pts.reduce((acc, p) =>
@@ -638,24 +545,38 @@ class SvgViewerInstance {
 
                 let next = null;
                 for (const cand of neighbors) {
+                    // 1) Edge too long? (prevents big bridges)
                     if (this.calculateDistance(current, cand) > maxEdge) continue;
+
+                    // 2) Already used? (except for closing back to start)
                     const key = `${cand.x.toFixed(2)}_${cand.y.toFixed(2)}`;
                     if (used.has(key) && !(cand.x === start.x && cand.y === start.y)) continue;
 
+                    // 3) Would self-intersect?
                     const tmp = hull.concat([cand]);
                     if (tmp.length >= 4 && this.hasSelfintersection(tmp)) continue;
+
+                    // 4) NEW: Does the segment "hug" the actual boundary,
+                    // or does it cross empty space (like the inside of an L)?
+                    if (!this._edgeHugsBoundary(current, cand, boundaryCloud, edgeHugPx, 12, 0.7)) {
+                        continue;
+                    }
 
                     next = cand;
                     break;
                 }
 
                 if (!next) {
+                    // Try close to start if legal
                     if (hull.length > 2 && this.calculateDistance(current, start) <= maxEdge) {
-                        const tmp = hull.concat([start]);
-                        if (!this.hasSelfintersection(tmp)) {
-                            hull = tmp;
-                            closed = true;
-                            break;
+                        // also require the closing edge to hug
+                        if (this._edgeHugsBoundary(current, start, boundaryCloud, edgeHugPx, 12, 0.7)) {
+                            const tmp = hull.concat([start]);
+                            if (!this.hasSelfintersection(tmp)) {
+                                hull = tmp;
+                                closed = true;
+                                break;
+                            }
                         }
                     }
                     break;
@@ -703,11 +624,11 @@ class SvgViewerInstance {
             const selectionPathData = this.generateGroupOutline(selectedIds, {
                 gapHopPx: 3,          // only hop over hairline gaps
                 kStart: 2,            // start with very concave
-                kMax: 10,             // don’t go very convex
-                maxEdgePx: 40,        // forbid any long spans at all
+                kMax: 3,             // don’t go very convex
+                maxEdgePx: 10,        // forbid any long spans at all
                 sampleStride: 1,      // full-fidelity sampling
                 downsampleEveryN: 1,
-                minContainment: 0.95  // reject hulls that don’t cover 95% of points
+                minContainment: 0.5  // reject hulls that don’t cover 95% of points
             });
 
             if (selectionPathData) {
@@ -1156,4 +1077,3 @@ export function activateLayer(containerId, name) {
 export function disposeInstance(containerId) {
     instances.delete(containerId);
 }
-
