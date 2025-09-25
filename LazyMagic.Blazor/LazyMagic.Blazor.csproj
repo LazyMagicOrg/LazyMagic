@@ -5,33 +5,47 @@
 
 		<Description>LazyMagic Blazor Core</Description>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
-		
+
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 	</PropertyGroup>
+
 	<ItemGroup>
-	  <Content Remove="BlazorStaticAssets.cs" />
-	  <Content Remove="Components\Msg.cs" />
-	  <Content Remove="ConnectivityService.cs" />
+		<Content Remove="BlazorStaticAssets.cs" />
+		<Content Remove="BrowserFingerprintService.cs" />
+		<Content Remove="Components\Msg.cs" />
+		<Content Remove="Config\ConfigureLazyMagicBlazor.cs" />
+		<Content Remove="Config\ConfigureLazyMagicBlazorMessages.cs" />
+		<Content Remove="ConnectivityService.cs" />
+		<Content Remove="LzJsUtilities.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="wwwroot\lzserviceworker.js" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<SupportedPlatform Include="browser" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+		<PackageReference Include="BlazorPro.BlazorSize" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.Logging" />
 		<PackageReference Include="ReactiveUI.Blazor" />
 		<PackageReference Include="Microsoft.JSInterop" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" />
-	</ItemGroup>	
-	
-	<ItemGroup>
 		<ProjectReference Include="..\LazyMagic.Client.Base\LazyMagic.Client.Base.csproj" />
+		<ProjectReference Include="..\LazyMagic.Client.ViewModels\LazyMagic.Client.ViewModels.csproj" />
+		<ProjectReference Include="..\LazyMagic.OIDC.Base\LazyMagic.OIDC.Base.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="Oidc\" />
 	</ItemGroup>
 
 </Project>

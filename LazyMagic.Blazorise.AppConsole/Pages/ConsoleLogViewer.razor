@@ -1,0 +1,45 @@
+@namespace LazyMagic.Blazorise.Console
+@inject LzConsoleInterop ConsoleInterop
+
+<Flex Column Gap="2">
+    <Button Color="Color.Primary" Clicked="@ClearLogs">Clear Logs</Button>
+
+    <Table Striped Hoverable>
+        <TableHeader>
+            <TableRow>
+                <TableHeaderCell>Time</TableHeaderCell>
+                <TableHeaderCell>Type</TableHeaderCell>
+                <TableHeaderCell>Message</TableHeaderCell>
+            </TableRow>
+        </TableHeader>
+        <TableBody>
+            @if (Logs != null)
+            {
+                @foreach (var log in Logs)
+                {
+                    <TableRow>
+                        <TableCell>@log.Timestamp</TableCell>
+                        <TableCell>@log.Type</TableCell>
+                        <TableCell>@log.Message</TableCell>
+                    </TableRow>
+                }
+            }
+        </TableBody>
+    </Table>
+</Flex>
+
+@code {
+    private List<ConsoleLogEntry> Logs;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ConsoleInterop.ClearLogs(); // Auto clear logs on load
+        Logs = await ConsoleInterop.GetStoredLogsAsync(); // Load fresh logs
+    }
+
+    private async Task ClearLogs()
+    {
+        await ConsoleInterop.ClearLogs();
+        Logs = new();
+    }
+}

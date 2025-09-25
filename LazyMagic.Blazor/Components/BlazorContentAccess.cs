@@ -1,11 +1,12 @@
-﻿
-
-namespace LazyMagic.Blazor;
+﻿namespace LazyMagic.Blazor;
 
 public class BlazorContentAccess : IAsyncDisposable
 {
-    public BlazorContentAccess(IJSRuntime jsRuntime)
+    private readonly ILogger<BlazorContentAccess>? _logger;
+    
+    public BlazorContentAccess(IJSRuntime jsRuntime, ILogger<BlazorContentAccess>? logger = null)
     {
+        _logger = logger;
         try
         {
             moduleTask = new(() => jsRuntime.InvokeAsync<IJSObjectReference>(
@@ -13,7 +14,7 @@ public class BlazorContentAccess : IAsyncDisposable
         }
         catch (Exception ex)
         {
-            Console.WriteLine(ex.Message);
+            _logger?.LogError(ex, "[Constructor][{Timestamp}] Error initializing module: {ErrorMessage}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), ex.Message);
         }
     }
     private readonly Lazy<Task<IJSObjectReference>> moduleTask;
@@ -28,6 +29,7 @@ public class BlazorContentAccess : IAsyncDisposable
         }
         catch (Exception ex)
         {
+            _logger?.LogError(ex, "[GetBlazorContentAsync][{Timestamp}] Error getting content '{ContentName}': {ErrorMessage}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), contentName, ex.Message);
             return string.Empty;
         }   
 

@@ -1,0 +1,9 @@
+﻿global using Amazon;
+global using Amazon.DynamoDBv2;
+global using Amazon.Runtime;
+global using Amazon.Runtime.CredentialManagement;
+global using LazyMagic.Service.Shared;
+global using Microsoft.AspNetCore.Builder;
+global using Microsoft.AspNetCore.Mvc;
+global using Microsoft.Extensions.DependencyInjection;
+global using YamlDotNet.RepresentationModel;

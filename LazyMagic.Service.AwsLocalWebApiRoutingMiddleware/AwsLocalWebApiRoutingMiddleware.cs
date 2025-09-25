@@ -96,15 +96,13 @@ public class AwsLocalWebApiRoutingMiddleware
     {
         try
         {
-            var cloudFrontKvsClient = new AmazonCloudFrontKeyValueStoreClient();
-            
             var request = new GetKeyRequest
             {
                 KvsARN = _kvsArn,
                 Key = key
             };
 
-            var response = await cloudFrontKvsClient.GetKeyAsync(request);
+            var response = await _cloudFrontKeyValueStore.GetKeyAsync(request);
             
             if (response.Value == null)
             {

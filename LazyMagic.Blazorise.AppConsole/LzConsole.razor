@@ -1,0 +1,26 @@
+@inject LzConsoleInterop Interop
+
+<div id="lzConsoleContainer" style="border: 1px solid #ccc; height: 300px; width: 100%; padding: 10px;">
+    <!-- JS console will be injected here -->
+</div>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Interop.ConsoleEvent += HandleConsoleEvent;
+            await Interop.InitAsync("#lzConsoleContainer");
+        }
+    }
+
+    private void HandleConsoleEvent(string message)
+    {
+        Console.WriteLine($"[Blazor] JS Console Event: {message}");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await Interop.DisposeAsync();
+    }
+}

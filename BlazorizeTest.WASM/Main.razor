@@ -1,0 +1,76 @@
+﻿@namespace BlazorUI
+
+<CascadingAuthenticationState>
+    <Services />
+    <Blazorise.ThemeProvider Theme="@theme">
+        <Router AppAssembly="@typeof(Main).Assembly"
+                AdditionalAssemblies="new[] { typeof(MainLayout).Assembly }">
+            <Found Context="routeData">
+                <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+                <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+            </Found>
+            <NotFound>
+                <PageTitle>Not found</PageTitle>
+                <LayoutView Layout="@typeof(MainLayout)">
+                    <p role="alert">Sorry, there's nothing at this address.</p>
+                </LayoutView>
+            </NotFound>
+        </Router>
+    </Blazorise.ThemeProvider>
+</CascadingAuthenticationState>
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+
+    // Create theme with default values. These will be overwritten by the theme.json file
+    // if one is loaded, for the tenancy, in the OnInitializedAsync method.
+    private Theme theme = new()
+    {
+        BarOptions = new()
+        {
+            HorizontalHeight = "72px"
+        },
+        ColorOptions = new()
+        {
+            Primary = "#1a1a1a",    // Grey 10 (nearly black)
+            Secondary = "#ffffff",     // White
+            Success = "#4bbf73",    // Mainly Green
+            Info = "#1f9bcf",       // Mainly Blue
+            Warning = "#d47500",    // Mainly Red (looks kinda orange)
+            Danger = "#f0ad4e",     // Mainly Red (looks kinda gold)
+            Light = "#ffffff",         // White
+            Dark = "#343a40",       // Mainly Blue - pretty close to black
+            Link = "#1a1a1a"
+        },
+        BackgroundOptions = new()
+        {
+            Primary = "#1a1a1a",    // Grey 10 (nearly black)
+            Secondary = "#ffffff",     // White
+            Success = "#4bbf73",    // Mainly Green
+            Info = "#f2da94",       //
+            Warning = "#d47500",    // Mainly Red (looks kinda orange)
+            Danger = "#f0ad4e",     // Mainly Red (looks kinda gold)
+            Light = "#ffffff",         // White
+            Dark = "#343a40",       // Mainly Blue - pretty close to black
+        },
+        TextColorOptions = new()
+        {
+            Primary = "#1a1a1a",
+            Secondary = "#ffffff",
+            Success = "#4bbf73",
+            Info = "#1a1a1a",
+            Warning = "#d47500",
+            Danger = "#f0ad4e",
+            Light = "#ffffff",
+            Dark = "#343a40"
+        },
+        InputOptions = new()
+        {
+            CheckColor = "#0288D1",
+        },
+    };
+}

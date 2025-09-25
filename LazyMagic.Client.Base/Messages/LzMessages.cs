@@ -45,8 +45,10 @@ public enum LzMessageUnit { feet, squarefeet, inch, squareinch , meter, squareme
 /// </summary>
 public class LzMessages : NotifyBase, ILzMessages
 {
-    public LzMessages()
+    public LzMessages(ILzHost host, IStaticAssets staticAssets)
     {
+        AssetsUrl = host.AssetsUrl;
+        _staticAssets = staticAssets;
         // Set the defaults for culture and units
         // This doesn't load any message files so the message set is empty.
         MessageSet = new LzMessageSet(this, "en-US", LzMessageUnits.Imperial);
@@ -116,7 +118,7 @@ public class LzMessages : NotifyBase, ILzMessages
     public async Task SetMessageSetAsync(string culture, LzMessageUnits units)
     {
         if (_staticAssets == null)
-            throw new InvalidOperationException("SetOSAccess must be called before SetMessageSetAsync");
+            throw new InvalidOperationException("SetStaticsAssets must be called before SetMessageSetAsync");
        
         if (_MessageSets.TryGetValue(culture, out var existingSet))
         {
@@ -134,6 +136,7 @@ public class LzMessages : NotifyBase, ILzMessages
 
         DefaultMessageSet ??= MessageSet;
         MessageSet.AssetsUrl = AssetsUrl;
+        
         await MessageSet.LoadMessagesAsync(_staticAssets);
 	}
 

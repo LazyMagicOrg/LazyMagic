@@ -167,12 +167,14 @@ public abstract class LzAuthorization : ILzAuthorization
         if(header != null)
         {
             var handler = new JwtSecurityTokenHandler();
+            if(header.StartsWith("Bearer "))
+                header = header["Bearer ".Length..].Trim();
             if (handler.CanReadToken(header))
             {
                 var jwtToken = handler.ReadJwtToken(header);
                 var userIdClaim = jwtToken?.Claims.Where(x => x.Type.Equals("sub")).FirstOrDefault();
                 var lzUserId = userIdClaim?.Value ?? string.Empty;
-                var userNameClaim = jwtToken?.Claims.Where(x => x.Type.Equals("cognito:username")).FirstOrDefault();
+                var userNameClaim = jwtToken?.Claims.Where(x => x.Type.Equals("username")).FirstOrDefault();
                 var userName = userNameClaim?.Value ?? string.Empty;
                 return(lzUserId, userName);
             }

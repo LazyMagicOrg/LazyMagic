@@ -1,0 +1,18 @@
+﻿@namespace BlazorUI
+@page "/"
+@attribute [Authorize]
+@inherits LzComponentBaseInjectViewModel<ISessionViewModel>
+
+<PageTitle>Home</PageTitle>
+
+<AuthorizeView>
+    <Authorizing>
+        <h1>Checking authorization...</h1>
+    </Authorizing>
+    <Authorized>
+        <h1>Home Page</h1>
+    </Authorized>
+    <NotAuthorized>
+        <h1>You are not authorized to view this page. Please log in.</h1>
+    </NotAuthorized>
+</AuthorizeView>

@@ -1,14 +1,20 @@
 ﻿@inject IJSRuntime JSRuntime
 
-<div id="svg" class="svgviewer" @Style></div>
+<div id="@containerId" class="svgviewer" style="@Style"></div>
+@implements IAsyncDisposable
+
 @code {
     [Parameter] public string? SvgUrl { get; set; }
     [Parameter] public EventCallback<string> PathSelected { get; set; }
     [Parameter] public EventCallback<string> PathUnselected { get; set; }
+    [Parameter] public EventCallback<List<string>> PathsChanged { get; set; }
     [Parameter] public List<string> InitialPaths { get; set; } = new() { "" };  
     [Parameter] public string Style { get; set; } = "width: 100%; height: 100%;";
-    [Parameter] public int ChangeCount { get; set; } = 0;
+    [Parameter] public bool DisableSelection { get; set; } = false;
+    [Parameter] public bool AllInsideSelected { get; set; } = false;
+    [Parameter] public EventCallback<bool> AllInsideSelectedChanged { get; set; }
 
+    private string containerId = $"svg-{Guid.NewGuid():N}";
     private string style = "";
     private SvgViewerJS? svgViewerJS;
     private ElementReference svg;
@@ -19,11 +25,12 @@
 
     protected override async Task OnInitializedAsync()
     {
-
         await base.OnInitializedAsync();
         svgViewerJS ??= new SvgViewerJS(JSRuntime);
         svgViewerJS.PathSelectedEvent += OnPathSelected;
         svgViewerJS.PathUnselectedEvent += OnPathUnselected;
+        svgViewerJS.PathsChangedEvent += OnPathsChanged;
+        svgViewerJS.AllInsideSelectedChangedEvent += OnAllInsideSelectedChanged;
     }
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -31,32 +38,21 @@
         if (firstRender)
         {
             busy = true;
-            await svgViewerJS!.InitAsync();
+            await svgViewerJS!.InitAsync(containerId, DisableSelection);
             busy = false;
-
         }
         var svgChanged = !SvgUrl!.Equals(lastSvgUrl);
-        var newPaths = string.Join(",", InitialPaths);
-        var pathsChanged = newPaths != paths;
-        var changeCountChanged = ChangeCount != lastChangeCount;
-        if (!busy && ( svgChanged || pathsChanged || changeCountChanged ))
+        if (!busy && ( svgChanged ))
         {
-
             busy = true;
-            if (svgChanged)
-            {
-                lastSvgUrl = SvgUrl;
-                await svgViewerJS!.LoadSvgAsync(SvgUrl!);
-            }
-            if (pathsChanged || changeCountChanged)
-            {
-                paths = newPaths;
-                await svgViewerJS!.UnselectAllPaths();
-
-                foreach (var path in InitialPaths)
-                    await svgViewerJS!.SelectPath(path);
-            }
-            lastChangeCount = ChangeCount;  
+            lastSvgUrl = SvgUrl;
+            await svgViewerJS!.LoadSvgAsync(SvgUrl!);
+            busy = false;
+        }
+        if(firstRender)
+        {
+            busy = true;
+            await svgViewerJS!.SelectPaths(InitialPaths);
             busy = false;
         }
     }
@@ -73,12 +69,48 @@
 
     public void OnPathSelected(string pathId)
     {
+        return;
+        if (!InitialPaths.Contains(pathId))
+        {
+            InitialPaths.Add(pathId);
+        }
         PathSelected.InvokeAsync(pathId);
     }
-    public void OnPathUnselected(string pathId) => PathUnselected.InvokeAsync(pathId);    
+    public void OnPathUnselected(string pathId)
+    {
+        return;
+        InitialPaths.Remove(pathId);
+        PathUnselected.InvokeAsync(pathId);
+    }
+    public void OnPathsChanged(List<string> paths)
+    {
+        PathsChanged.InvokeAsync(paths);
+    }
     
+    public async void OnAllInsideSelectedChanged(bool allInsideSelected)
+    {
+        AllInsideSelected = allInsideSelected;
+        await AllInsideSelectedChanged.InvokeAsync(allInsideSelected);
+        await InvokeAsync(StateHasChanged);
+    }
     public async Task SelectPath(string pathId) => await svgViewerJS!.SelectPath(pathId);
     public async Task UnslectPath(string pathId) =>await svgViewerJS!.UnselectPath(pathId);
     public async Task UnselectAllPaths() => await svgViewerJS!.UnselectAllPaths();
-    // todo - dispose
+    public async Task SelectPaths(List<string> paths) {
+        await svgViewerJS!.UnselectAllPaths();
+        await svgViewerJS!.SelectPaths(paths);
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    public async ValueTask DisposeAsync()
+    {
+        if (svgViewerJS != null)
+        {
+            svgViewerJS.PathSelectedEvent -= OnPathSelected;
+            svgViewerJS.PathUnselectedEvent -= OnPathUnselected;
+            svgViewerJS.PathsChangedEvent -= OnPathsChanged;
+            svgViewerJS.AllInsideSelectedChangedEvent -= OnAllInsideSelectedChanged;
+            await svgViewerJS.DisposeAsync();
+        }
+    }
 }

@@ -6,28 +6,41 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MudBlazorTest.WASM</title>
     <base href="/" />
-    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
-    <link rel="stylesheet" href="css/app.css" />
-    <link rel="icon" type="image/png" href="favicon.png" />
-    <link href="MudBlazorTest.WASM.styles.css" rel="stylesheet" />
-</head>
-
+    <link rel="stylesheet" href="_content/LazyMagic.Blazor/bootstrap/bootstrap.min.css" />
+    <link rel="stylesheet" href="_content/LazyMagic.Blazor/css/app.css" />
+    <link rel="icon" href="favicon.png" type="image/png"/>
+    <link rel="stylesheet" href="MudBlazorTest.WASM.styles.css"  />
+    <!-- Load addLink(), addScript() functions -->
+    <script src="_content/LazyMagic.Blazor/indexconfig.js"></script>
+    <!-- indexhead.js uses addLink() and addHeadScript() to add required elements -->
+    <!-- Usually, indexhead.js would be in a BaseAppLib project. -->
+    <script src="indexhead.js"></script>
+ </head>
 <body>
-    <div id="app">
-        <svg class="loading-progress">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
-        <div class="loading-progress-text"></div>
+    <div class="status-bar-safe-area"></div>
+    <div id="main">
+        <div class="loading-progress" style="width: 9rem; height: 9rem; margin-left: 1rem; margin-top: 1rem;">
+            <svg viewBox="0 0 100 100">
+                <circle r="40" cx="50" cy="50" />
+                <circle r="40" cx="50" cy="50" />
+            </svg>
+            <div class="loading-progress-text"></div>
+            <div class="loading-message-text">Loading App</div>
+        </div>
     </div>
-
     <div id="blazor-error-ui">
         An unhandled error has occurred.
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
     </div>
+
+    <!-- indexbody.js uses addBodyScript() to add required elements -->
+    <!-- Usually, indexhead.js would be in a BaseAppLib project. -->
+    <script src="indexbody.js"></script>
+
     <script src="_framework/blazor.webassembly.js"></script>
-    <script src="_content/MudBlazor/MudBlazor.min.js"></script>
+    <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+
     <script type="module" src="indexinit.js"></script>
 </body>
 

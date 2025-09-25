@@ -1,15 +1,13 @@
-using Microsoft.JSInterop;
-using System.Diagnostics;
-
-namespace BlazorTest.WASM;
+namespace BlazorTest;
 
 public class Program
 {
     private static JObject? _appConfig;
+    private static LzHost? LzHost;
     public static async Task Main(string[] args)
     {
         var builder = WebAssemblyHostBuilder.CreateDefault(args);
-        builder.RootComponents.Add<App>("#app");
+        builder.RootComponents.Add<Main>("#main");
         builder.RootComponents.Add<HeadOutlet>("head::after");
 
         // We use the launchSettings.json profile ASPNETCORE_ENVIRONMENT environment variable
@@ -24,7 +22,6 @@ public class Program
         //  "ASPNETCORE_ENVIRONMENT": "Localhost"
         //  useLocalhostApi will be true else false
 
-
         var hostEnvironment = builder.HostEnvironment;
         var apiUrl = string.Empty;
         var assetsUrl = string.Empty;
@@ -33,10 +30,12 @@ public class Program
         switch (hostEnvironment.Environment)
         {
             case "Production":
-                Console.WriteLine("Production environment");
+                Console.WriteLine("Loaded from CloudFront");
+                builder.Logging.SetMinimumLevel(LogLevel.Warning);
                 break;
             default:
                 Console.WriteLine("Development environment");
+                builder.Logging.SetMinimumLevel(LogLevel.Information);
                 isLocal = true;
                 var envVar = hostEnvironment.Environment;
                 if (envVar.Contains("Localhost"))
@@ -44,31 +43,41 @@ public class Program
                 break;
         }
 
+        // Configure logging
+        builder.Logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Debug); // Set minimum log level
+        builder.Logging.AddFilter("Microsoft.AspNetCore",
+            LogLevel.Warning); // Only show Warning and above for ASP.NET Core
 
-        builder.Services
-        .AddSingleton<ILzMessages, LzMessages>()
-        .AddSingleton<ILzClientConfig, LzClientConfig>()
-        .AddSingleton(sp => new HttpClient { BaseAddress = new Uri((string)_appConfig!["assetsUrl"]!) })
-        .AddSingleton<IConnectivityService, ConnectivityService>()
-        .AddSingleton<ILzHost>(sp => new LzHost(
-            androidAppUrl: (string)_appConfig!["androidAppUrl"]!, // android app url 
-            remoteApiUrl: (string)_appConfig!["remoteApiUrl"]!,  // api url
-            localApiUrl: (string)_appConfig!["localApiUrl"]!, // local api url
-            assetsUrl: (string)_appConfig!["assetsUrl"]!, // tenancy assets url
-            isMAUI: false, // sets isWASM to true
-            isAndroid: false,
-            isLocal: isLocal,
-            useLocalhostApi: useLocalhostApi))
-        .AddSingleton<IOSAccess, BlazorOSAccess>()
-        .AddLazyMagicAuthCognito()
-        .AddSingleton<ISessionsViewModel, SessionsViewModel>();
+        builder.Services.AddSingleton(sp => new HttpClient { BaseAddress = new Uri((string)_appConfig!["assetsUrl"]!) });
 
-        BlazorTestViewModelsRegisterFactories.BlazorTestViewModelsRegister(builder.Services);
+        builder.Services.AddSingleton<IStaticAssets>(sp => new BlazorStaticAssets(
+                sp.GetRequiredService<ILoggerFactory>(),
+                new HttpClient { BaseAddress = new Uri((string)_appConfig!["assetsUrl"]!) }));
 
-        builder.Logging.SetMinimumLevel(LogLevel.Information);
+        builder.Services.AddSingleton<ILzHost>(sp => {
+            LzHost = new LzHost(
+                appUrl: (string)_appConfig!["appUrl"]!, // web app url
+                androidAppUrl: (string)_appConfig!["androidAppUrl"]!, // android app url 
+                remoteApiUrl: (string)_appConfig!["remoteApiUrl"]!,  // api url
+                localApiUrl: (string)_appConfig!["localApiUrl"]!, // local api url
+                assetsUrl: (string)_appConfig!["assetsUrl"]!, // tenancy assets url
+                authConfigName: (string)_appConfig!["authConfigName"]!, // auth config name 
+                isMAUI: false, // sets isWASM to true
+                isAndroid: false,
+                isLocal: isLocal,
+                useLocalhostApi: useLocalhostApi);
+            return LzHost;
+        });
 
+        builder.Services.AddApp();
+
+        // Add dynamic OIDC authentication with lazy-loaded configuration
+        // This doesn't block startup waiting for config to load
+        builder.Services.AddLazyMagicOIDCWASM(); // services
+        builder.AddLazyMagicOIDCWASMBuilder(); // builder config
 
         var host = builder.Build();
+
         // Wait for the page to fully load to finish up the Blazor app configuration
         var jsRuntime = host.Services.GetRequiredService<IJSRuntime>();
 
@@ -82,6 +91,8 @@ public class Program
             Console.WriteLine("Error loading app config. Exiting.");
             return;
         }
+
+        await ConfigureLazyMagicOIDCWASM.LoadConfiguration(host);
 
         await host.RunAsync();
 

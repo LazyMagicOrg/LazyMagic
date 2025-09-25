@@ -1,0 +1,20 @@
+﻿@namespace BlazorUI
+@page "/CameraPage"
+@inject IJSRuntime JSRuntime
+
+<Camera Style="@cameraStyle"
+        @ref="_camera"
+        MirrorImage="false"
+        CameraInitialized="@OnCameraInitialized" />
+
+@code {
+    private LazyMagic.Blazorise.Camera? _camera;
+    private string cameraStyle => $"width: {CanvasWidth}px;";
+    [Parameter] public int CanvasWidth { get; set; } = 640;
+
+    private Task OnCameraInitialized()
+    {
+        return Task.CompletedTask;
+    }
+
+}

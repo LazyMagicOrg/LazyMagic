@@ -16,7 +16,15 @@
 		<EmbeddedResource Remove="ClientConfig\**" />
 		<None Remove="ClientConfig\**" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Content Remove="Config\ConfigureLazyMagicClientViewModels.cs" />
+	</ItemGroup>
 
+	<ItemGroup>
+		<!--<ProjectReference Include="..\LazyMagic.Client.FactoryGenerator\LazyMagic.Client.FactoryGenerator.csproj" PrivateAssets="all" OutputItemType="Analyzer" />-->
+		<ProjectReference Include="..\LazyMagic.Client.FactoryGenerator\LazyMagic.Client.FactoryGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true"/>
+	</ItemGroup>
+	
 	<ItemGroup>
 		<PackageReference Include="DeepCloner" />
 		<PackageReference Include="DynamicData" />

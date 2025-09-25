@@ -142,7 +142,6 @@ public class LzMessageSet : NotifyBase
     }
     public void UpdateMsgs(LzMessageUnits? unitsArg = null, string? key = null)
     {
-        Console.WriteLine($"UpdateMsgs: Culture:{Culture}, unitsArg: {unitsArg.ToString()}, key:{key}");
         foreach (LzMessageUnits units in Enum.GetValues(typeof(LzMessageUnits)))
         {
             if (unitsArg != null && unitsArg != units)
@@ -155,7 +154,7 @@ public class LzMessageSet : NotifyBase
             try
             {
                 if (_staticAssets == null)
-                    throw new Exception("SetOSAccess must be called before SetMessageSetAsync.");
+                    throw new Exception("SetStaticAssets must be called before SetMessageSetAsync.");
                 foreach (var filePath in _messageFiles) // preserve the precidence order of the files
                 {
                     //Console.WriteLine($"UpdateMsgs: filePath: {filePath}"); 

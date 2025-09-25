@@ -1,0 +1,119 @@
+@namespace LazyMagic.Blazor
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+<div class="lz-blazor-loading-progress">
+    <svg viewBox="0 0 100 100">
+        <circle r="45" cx="50" cy="50" />
+        <circle r="45" cx="50" cy="50" />
+    </svg>
+    <div class="lz-blazor-loading-progress-text">@ProgressText</div>
+    <div class="lz-blazor-loading-message">@LoadingMessage</div>
+</div>
+
+@code {
+    private IJSObjectReference? module;
+    private string ProgressText => _percentage < 100 ? $"{Math.Round(_percentage)}%" : "Complete";
+    private double _percentage;
+    private bool _isAnimating;
+    private bool _isDisposed;
+    private double _accelerationFactor = 1.0;
+    private DateTime _animationStartTime;
+    private double _animationStartPercentage;
+
+    [Parameter]
+    public double AnimationDurationSeconds { get; set; } = 2.0;
+
+    [Parameter]
+    public string LoadingMessage { get; set; } = "Loading...";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_isDisposed)
+        {
+            module = await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./_content/LazyMagic.Blazor/lzAppLoading.js");
+            await SetPercentage(0);
+            await AnimateToCompletion();
+        }
+    }
+
+    public async Task SetPercentage(double percentage)
+    {
+        if (_isDisposed) return;
+
+        if (module is not null)
+        {
+            _percentage = percentage;
+            await module.InvokeVoidAsync("setBlazorLoadingPercentage", percentage);
+            if (!_isDisposed)
+            {
+                StateHasChanged();
+            }
+        }
+    }
+
+    public async Task AnimateToCompletion()
+    {
+        if (_isDisposed || _isAnimating || _percentage >= 100) return;
+        
+        try 
+        {
+            _isAnimating = true;
+            _animationStartTime = DateTime.Now;
+            _animationStartPercentage = _percentage;
+            _accelerationFactor = 1.0;
+
+            while (_isAnimating && !_isDisposed)
+            {
+                var elapsed = DateTime.Now - _animationStartTime;
+                var adjustedElapsed = TimeSpan.FromSeconds(elapsed.TotalSeconds * _accelerationFactor);
+                var progress = Math.Min(1.0, adjustedElapsed.TotalSeconds / AnimationDurationSeconds);
+                var currentPercentage = _animationStartPercentage + (100 - _animationStartPercentage) * progress;
+
+                await SetPercentage(currentPercentage);
+
+                if (progress >= 1.0)
+                {
+                    break;
+                }
+
+                await Task.Delay(16); // ~60fps
+            }
+        }
+        finally
+        {
+            _isAnimating = false;
+        }
+    }
+
+    public void AccelerateCompletion(double accelerationFactor)
+    {
+        if (!_isAnimating || accelerationFactor <= 0) return;
+
+        // Calculate how far we are through the current animation
+        var elapsed = DateTime.Now - _animationStartTime;
+        var currentProgress = elapsed.TotalSeconds / AnimationDurationSeconds;
+
+        // Adjust the start time to maintain visual continuity with the new speed
+        _animationStartTime = DateTime.Now - TimeSpan.FromSeconds((elapsed.TotalSeconds * _accelerationFactor) / accelerationFactor);
+        _accelerationFactor = accelerationFactor;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _isDisposed = true;
+        _isAnimating = false;
+
+        if (module is not null)
+        {
+            try
+            {
+                await module.DisposeAsync();
+            }
+            catch
+            {
+                // Ignore disposal errors
+            }
+            module = null;
+        }
+    }
+}

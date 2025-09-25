@@ -1,0 +1,199 @@
+@namespace LazyMagic.Blazor
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+@implements IDisposable
+@implements IAsyncDisposable
+
+<div class="fade-in @(isLoaded ? "loaded" : "")" id="@containerId" style="--fade-duration: @(FadeDuration)ms;">
+    @ChildContent
+</div>
+
+<style>
+    .fade-in {
+        opacity: 0;
+        transition: opacity var(--fade-duration) ease-in;
+    }
+
+    .fade-in.loaded {
+        opacity: 1;
+    }
+    
+    /* Hide content during resize to prevent flash of resized content */
+    .fade-in.resizing {
+        opacity: 0 !important;
+        transition: none !important;
+    }
+</style>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public int FadeDuration { get; set; } = 250; // milliseconds
+
+    private bool isLoaded = false;
+    private string containerId = $"fade-{Guid.NewGuid():N}";
+    private IJSObjectReference? jsModule;
+    private DotNetObjectReference<WindowFade>? dotNetRef;
+    private bool isDisposed = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        dotNetRef = DotNetObjectReference.Create(this);
+        
+        try
+        {
+            // Create a more manageable JavaScript module approach
+            jsModule = await JS.InvokeAsync<IJSObjectReference>("eval", $@"
+            (() => {{
+                const containerId = '{containerId}';
+                const fadeDuration = {FadeDuration};
+                let lastSize = {{ width: window.innerWidth, height: window.innerHeight }};
+                let resizeTimeout = null;
+                let isDisposed = false;
+                
+                const resizeHandler = () => {{
+                    if (isDisposed) return;
+                    
+                    const currentSize = {{ width: window.innerWidth, height: window.innerHeight }};
+                    if (currentSize.width !== lastSize.width || currentSize.height !== lastSize.height) {{
+                        const el = document.getElementById(containerId);
+                        if (el) {{
+                            el.style.opacity = '0';
+                            el.style.transition = 'none';
+                            el.classList.remove('loaded');
+                            el.classList.add('resizing');
+                            
+                            // Clear any existing timeout
+                            if (resizeTimeout) {{
+                                clearTimeout(resizeTimeout);
+                            }}
+                            
+                            // Trigger fade-in after delay
+                            resizeTimeout = setTimeout(() => {{
+                                if (isDisposed) return;
+                                const el = document.getElementById(containerId);
+                                if (el && el.classList.contains('resizing')) {{
+                                    el.style.transition = 'opacity ' + fadeDuration + 'ms ease-in';
+                                    el.style.opacity = '1';
+                                    el.classList.add('loaded');
+                                    el.classList.remove('resizing');
+                                }}
+                                resizeTimeout = null;
+                            }}, fadeDuration);
+                        }}
+                        lastSize = currentSize;
+                    }}
+                }};
+                
+                window.addEventListener('resize', resizeHandler, true);
+                
+                return {{
+                    dispose: () => {{
+                        isDisposed = true;
+                        window.removeEventListener('resize', resizeHandler, true);
+                        if (resizeTimeout) {{
+                            clearTimeout(resizeTimeout);
+                            resizeTimeout = null;
+                        }}
+                    }}
+                }};
+            }})()
+        ");
+        }
+        catch (JSException)
+        {
+            // JS initialization failed, component will work without fade effects
+            jsModule = null;
+        }
+        catch (InvalidOperationException)
+        {
+            // JS runtime not available
+            jsModule = null;
+        }
+        catch (Exception ex)
+        {
+            // Any other error, ignore
+            jsModule = null;
+        }   
+        
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !isDisposed)
+        {
+            await Task.Delay(50); // Initial delay before showing content
+            isLoaded = true;
+            await InvokeAsync(StateHasChanged);
+        }
+        
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (!isDisposed)
+        {
+            isDisposed = true;
+            
+            // Check if we're navigating away (logout scenario)
+            bool isNavigatingAway = false;
+            try
+            {
+                var currentUri = Navigation?.Uri;
+                isNavigatingAway = currentUri?.Contains("/LogoutPage", StringComparison.OrdinalIgnoreCase) ?? false;
+            }
+            catch
+            {
+                // Navigation might be disposed
+                isNavigatingAway = true;
+            }
+            
+            if (jsModule != null && !isNavigatingAway)
+            {
+                try
+                {
+                    // Only try to dispose JS module if we're not navigating away
+                    await jsModule.InvokeVoidAsync("dispose").ConfigureAwait(false);
+                    await jsModule.DisposeAsync().ConfigureAwait(false);
+                }
+                catch (JSDisconnectedException)
+                {
+                    // JS runtime is already disconnected, ignore
+                }
+                catch (ObjectDisposedException)
+                {
+                    // Object already disposed, ignore
+                }
+                catch (JSException)
+                {
+                    // Any JS error during disposal, ignore
+                }
+                catch (InvalidOperationException)
+                {
+                    // JS object already disposed or doesn't exist, ignore
+                }
+            }
+            
+            dotNetRef?.Dispose();
+            jsModule = null;
+        }
+    }
+
+    public void Dispose()
+    {
+        // Don't use fire-and-forget pattern
+        // Instead, mark as disposed synchronously and let GC handle cleanup
+        if (!isDisposed)
+        {
+            isDisposed = true;
+            
+            // Synchronously dispose what we can
+            dotNetRef?.Dispose();
+            
+            // Mark JS module for disposal but don't await
+            // This prevents the race condition
+            jsModule = null;
+        }
+    }
+}

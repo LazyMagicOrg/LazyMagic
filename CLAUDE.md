@@ -53,7 +53,7 @@ dotnet run --project MudBlazorTest.WASM/MudBlazorTest.WASM.csproj
 ```
 
 ### Package Management
-- Version is managed in CommonPackageHandling.targets (currently 1.5.0)
+- Version is managed in CommonPackageHandling.targets (currently 3.0.0)
 - Packages auto-build to ./Packages/ folder
 - All projects use Central Package Management via Directory.Packages.props
 
@@ -90,3 +90,41 @@ dotnet run --project MudBlazorTest.WASM/MudBlazorTest.WASM.csproj
 3. **Factory Generation**: Use [LzFactory] attribute to generate factory classes
 4. **Model Generation**: Use partial classes with [LzModel] for automatic model generation
 5. **JavaScript Modules**: Place .js files in wwwroot and create corresponding C# wrapper classes
+
+## Recent Additions (V3.0.0)
+
+### New Features
+1. **ConnectivityService**: Added IConnectivityService for network connectivity monitoring
+2. **Cookie Management**: New cookie handling methods in LzJsUtilities (GetCookie, SetCookie, DeleteCookie)
+3. **Window Management**: WindowFade and WindowResize components for responsive UI
+4. **Blazor Message Configuration**: AddLazyMagicBlazorMessages extension method for easier message setup
+5. **Browser Fingerprinting**: BrowserFingerprintService for device identification
+6. **Clipboard Service**: IClipboardService for clipboard operations
+7. **Static Assets Management**: IStaticAssets interface and BlazorStaticAssets implementation
+
+### Additional Source Generators
+1. **LazyMagic.LzItemViewModelGenerator**: Generates ViewModel boilerplate code
+2. **LazyMagic.Client.TreeViewModel**: Tree view model generation with ILzTreeNode support
+
+### Testing & Development
+- Three test applications demonstrating different UI frameworks:
+  - BlazorTest.WASM: Standard Blazor components
+  - BlazoriseTest.WASM: Blazorise framework integration (includes Camera component demo)
+  - MudBlazorTest.WASM: MudBlazor framework integration
+- All test apps share common ViewModels from BlazorTest.ViewModels project
+
+### JavaScript Interop Patterns
+- Base class: LzBaseJSModule for all JS module wrappers
+- Standard pattern: Override ModuleFileName property to specify JS file path
+- Initialization: Use Initialize() method with DotNetObjectReference for callbacks
+- Safe invocation: InvokeSafeAsync/InvokeSafeVoidAsync methods for error handling
+
+## LibrariesToDocument
+
+- LazyMagic.Blazor
+- LazyMagic.Client.Base
+- LazyMagic.Client.FactoryGenerator
+- LazyMagic.Client.ViewModels
+- LazyMagic.Service.DynamoDBRepo
+- LazyMagic.Service.Shared
+- LazyMagic.Shared

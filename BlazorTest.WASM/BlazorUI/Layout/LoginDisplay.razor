@@ -1,0 +1,143 @@
+@namespace BlazorUI
+@inject NavigationManager Navigation
+@inject IOIDCService AuthService
+@inject IRememberMeService RememberMe
+@inject IProfileManagementService ProfileService
+
+@try
+{
+    @if (isAuthenticated)
+    {
+        <div class="d-flex align-items-center">
+            <RememberMeToggle />
+            <span class="me-3">Hello, @userName!</span>
+            <a href="/ProfilePage" class="btn btn-link">Profile</a>
+            <button class="btn btn-link" @onclick="async () => await BeginLogOut()">Log out</button>
+
+        </div>
+    }
+    else
+    {
+        <div class="d-flex align-items-center">
+            @if (isCheckingAuthState)
+            {
+                <button class="btn btn-link" @onclick="BeginLogIn">Log in</button>
+                <span class="text-muted small ms-2">Checking login status...</span>
+            }
+            else
+            {
+                <button class="btn btn-link" @onclick="BeginLogIn">Log in</button>
+            }
+            <button class="btn btn-link text-muted" style="font-size: 0.875rem;" @onclick="HandleForgotPassword">Forgot password?</button>
+        </div>
+    }
+}
+catch (Exception ex)
+{
+    <div style="color: red; font-size: 0.8em;">
+        LoginDisplay Error: @ex.Message
+    </div>
+}
+
+@code {
+    private bool isAuthenticated = false;
+    private string? userName = null;
+    private bool isCheckingAuthState = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Show checking state and allow user interaction
+            isCheckingAuthState = true;
+            StateHasChanged();
+
+            // Check initial authentication state (this may take 10+ seconds)
+            await UpdateAuthenticationState();
+
+            // Hide checking state
+            isCheckingAuthState = false;
+            StateHasChanged();
+
+            // Subscribe to authentication changes
+            AuthService.AuthenticationStateChanged += OnAuthenticationStateChanged;
+        }
+        catch (Exception ex)
+        {
+            // Initialization failed - authentication state will remain false
+            isCheckingAuthState = false;
+            StateHasChanged();
+        }
+    }
+
+    private async void OnAuthenticationStateChanged(object? sender, OIDCAuthenticationStateChangedEventArgs e)
+    {
+        await UpdateAuthenticationState();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task UpdateAuthenticationState()
+    {
+        try
+        {
+            var authState = await AuthService.GetAuthenticationStateAsync();
+            isAuthenticated = authState.IsAuthenticated;
+            userName = authState.UserName;
+        }
+        catch (Exception ex)
+        {
+            // Failed to update auth state
+            isAuthenticated = false;
+            userName = null;
+        }
+    }
+
+    private async void BeginLogIn()
+    {
+        try
+        {
+            await AuthService.LoginAsync();
+        }
+        catch (Exception ex)
+        {
+            // Handle error silently for now
+        }
+    }
+
+    private async Task BeginLogOut()
+    {
+        try
+        {
+            // Call the OIDC service logout directly
+            // This handles token clearing and Cognito logout navigation
+            await AuthService.LogoutAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[LoginDisplay] Error during logout: {ex.Message}");
+            // Fallback to local navigation if logout fails
+            Navigation.NavigateTo("/", forceLoad: true);
+        }
+    }
+
+    private async void HandleForgotPassword()
+    {
+        try
+        {
+            await ProfileService.GetPasswordResetUrlAsync();
+        }
+        catch (Exception ex)
+        {
+            // Handle error silently for now
+            Console.WriteLine($"[LoginDisplay] Error during forgot password: {ex.Message}");
+        }
+    }
+
+    public void Dispose()
+    {
+        if (AuthService != null)
+        {
+            AuthService.AuthenticationStateChanged -= OnAuthenticationStateChanged;
+        }
+    }
+}

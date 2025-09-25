@@ -1,6 +1,6 @@
 ﻿namespace LazyMagic.Client.Base;
 
-public class LzClientConfig : ILzClientConfig
+public class LzClientConfig : OidcConfig, ILzClientConfig
 {
     public LzClientConfig(ILzHost host, HttpClient httpClient)
     {
@@ -8,12 +8,11 @@ public class LzClientConfig : ILzClientConfig
         _httpClient = httpClient;
 
     }
-    public Dictionary<string,JObject> AuthConfigs { get; set; } = new();
+ 
     public JObject TenancyConfig { get; set; } = JObject.Parse("{}");
     public string TenantKey { get; set; } = "";
     public string Type { get; set; } = "";
     public string Region { get; set; } = "";
-  
 
     protected ILzHost _host;
     protected HttpClient _httpClient;

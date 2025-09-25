@@ -1,33 +1,60 @@
 <!DOCTYPE html>
+<!-- We have modified the standard Blazor WASM Index.hmtl file to rely on assets
+    in the BlazorUI razor library project where the App UI lives. The intent is to
+    have the skinniest WASMApp possible so all App level UI code lives in the
+    BlazorUI library. -->
 <html lang="en">
 
 <head>
+    <!-- We use no-cache because we implement our own caching strategy for all assets. -->
+    <meta http-equiv="Cache-Control" content="no-cache">
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>BlazorTest.WASM</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <base href="/" />
-    <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
-    <link rel="stylesheet" href="css/app.css" />
-    <link rel="icon" type="image/png" href="favicon.png" />
-    <link href="BlazorTest.WASM.styles.css" rel="stylesheet" />
+    <link href="WASMApp.styles.css" rel="stylesheet" />
+    <link href="_content/LazyMagic.Blazor/css/app.css" rel="stylesheet" />
+    <link href="_content/LazyMagic.Blazor/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="manifest.json" rel="manifest" />
+
+    <!-- Load addLink(), addScript() functions -->
+    <script src="_content/LazyMagic.Blazor/indexconfig.js"></script>
+    <!-- indexhead.js uses addLink() and addHeadScript() to add required elements -->
+    <!--<script src="_content/BlazorUI/indexhead.js"></script>-->
+    <script src="indexhead.js"></script>
 </head>
 
 <body>
-    <div id="app">
-        <svg class="loading-progress">
-            <circle r="40%" cx="50%" cy="50%" />
-            <circle r="40%" cx="50%" cy="50%" />
-        </svg>
-        <div class="loading-progress-text"></div>
+    <div class="status-bar-safe-area"></div>
+    <div id="main">
+        <div class="loading-progress" style="width: 9rem; height: 9rem; margin-left: 1rem; margin-top: 1rem;">
+            <svg viewBox="0 0 100 100">
+                <circle r="40" cx="50" cy="50" />
+                <circle r="40" cx="50" cy="50" />
+            </svg>
+            <div class="loading-progress-text"></div>
+            <div class="loading-message-text">Loading App</div>
+        </div>
     </div>
-
     <div id="blazor-error-ui">
         An unhandled error has occurred.
         <a href="" class="reload">Reload</a>
         <a class="dismiss">🗙</a>
     </div>
+
+    <!-- indexbody.js uses addBodyScript() to add required elements -->
+    <!--<script src="_content/BlazorUI/indexbody.js"></script>-->
+    <script src="indexbody.js"></script>
+
     <script src="_framework/blazor.webassembly.js"></script>
+    <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+
+    <!-- The indexinit.js registers the service worker. We do this to avoid
+        cors issues with inline scripts. Note that the service-worker.js is
+        different for local dev and published content. See service-worker.js
+        and service-worker-published.js. Specifically, MSBuild publish copies
+        service-worker-published.js to service-worker.js. -->
     <script type="module" src="indexinit.js"></script>
 </body>
+
 
 </html>

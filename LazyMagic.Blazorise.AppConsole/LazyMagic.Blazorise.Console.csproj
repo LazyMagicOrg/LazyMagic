@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+	<!-- do not publish this package as it is not complete -->
+	<!--<Import Project="$(SolutionDir)CommonPackageHandling.targets" />-->
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<Description>LazyMagic Blazor Console</Description>
+		
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<SupportedPlatform Include="browser" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<PackageReference Include="TG.Blazor.IndexedDB" />
+		<PackageReference Include="Blazorise" />
+		<PackageReference Include="Blazorise.Bootstrap5" />
+		<PackageReference Include="Blazorise.Icons.FontAwesome" />
+	</ItemGroup>
+
+	<!-- Include CSS files -->
+	<ItemGroup>
+		<Content Update="**\*.razor.css" />
+	</ItemGroup>
+	
+</Project>

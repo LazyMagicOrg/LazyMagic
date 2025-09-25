@@ -2,6 +2,7 @@
 global using Newtonsoft.Json.Linq;
 global using System.ComponentModel;
 global using System.Runtime.CompilerServices;
+global using System.Security.Claims;
 global using System.Text.RegularExpressions;
 global using System.Reactive.Linq;
 global using ReactiveUI;
