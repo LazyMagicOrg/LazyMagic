@@ -13,6 +13,10 @@ class SvgViewerInstance {
         this.selectedPaths = null;
         this.layers = {};
         this.activeLayerKey = null;
+
+        // Visual configuration
+        this.showOutlines = false;  // Toggle for orange selection outlines
+        this.showBoundingBox = false;  // Toggle for blue bounding box
     }
 
     // Return the inner <svg> if present, otherwise the paper itself
@@ -748,75 +752,1014 @@ class SvgViewerInstance {
 
         console.debug(`[outline] Multi-path merge: Created unified path from ${groupPaths.length} paths in ${(performance.now() - startTime).toFixed(1)}ms`);
 
-        // Step 2: Extract boundary points from the single unified path (much more efficient)
-        const unifiedBBox = unifiedPath.getBBox();
-        const boundaryPoints = this.extractPathBoundaryPoints(unifiedPath, unifiedBBox);
-        const sampledPoints = sampleStride > 1 ? this._downsamplePoints(boundaryPoints, sampleStride) : boundaryPoints;
+        // Step 2: Use the unified path directly as it already represents the correct combined shape
+        console.debug('[outline] Multi-path: Using unified path directly without hull algorithms to preserve true shape');
+
+        const unifiedPathData = unifiedPath.attr('d');
 
         // Only remove the unified path if not in debug mode (debug mode keeps it visible)
         if (!debugShowUnifiedPath) {
             unifiedPath.remove();
         }
 
-        console.debug(`[outline] Multi-path unified boundary: ${sampledPoints.length} points from unified path in ${(performance.now() - startTime).toFixed(1)}ms total`);
+        console.debug(`[outline] Multi-path direct path: Using original unified path data in ${(performance.now() - startTime).toFixed(1)}ms total`);
 
-        if (sampledPoints.length < 3) {
-            const unionBBox = this.unionTransformedBBoxes(groupPaths);
-            if (!unionBBox) return null;
-            const tri = [
-                { x: unionBBox.x, y: unionBBox.y },
-                { x: unionBBox.x + unionBBox.width, y: unionBBox.y },
-                { x: unionBBox.x + unionBBox.width, y: unionBBox.y + unionBBox.height }
-            ];
-            const dTri = `M ${tri[0].x} ${tri[0].y} L ${tri[1].x} ${tri[1].y} L ${tri[2].x} ${tri[2].y} Z`;
-            console.debug('[outline] Multi-path fallback triangle');
-            return dTri;
+        if (!unifiedPathData) {
+            console.warn('[outline] Unified path has no data');
+            return null;
         }
 
-        // Step 3: Run concave hull on the unified boundary to create detailed outline
-        // Use the original parameters since we now have a guaranteed complete coverage base
-        const hullStartTime = performance.now();
-        let hull = this._concaveHull(sampledPoints, kStart, kMax, maxEdgePx);
-        let hullType = 'concave';
-
-        if (!hull || hull.length < 3) {
-            console.debug('[outline] Concave hull failed on unified boundary, using convex hull');
-            hull = this.simpleConvexHull(sampledPoints);
-            hullType = 'convex_fallback';
-        }
-
-        console.debug('[outline] Multi-path: Running full concave hull on unified boundary');
-
-        console.debug(`[outline] Multi-path hull generation: ${(performance.now() - hullStartTime).toFixed(1)}ms`);
-
-        // Step 4: Validate containment using original path bboxes for compatibility
-        let score = 1;
-        try {
-            const pathInfos = groupPaths.map(p => ({
-                bbox: p.getBBox(),
-                center: { x: p.getBBox().x + p.getBBox().width / 2, y: p.getBBox().y + p.getBBox().height / 2 },
-                boundaryPoints: [] // Not needed for containment validation
-            }));
-
-            score = this._validateContainmentScore(hull, pathInfos);
-            if (typeof minContainment === 'number' && score < minContainment) {
-                hull = this.simpleConvexHull(sampledPoints);
-                hullType = 'convex_fallback_containment';
-            }
-        } catch (e) {
-            console.warn('[outline] Multi-path containment scoring error:', e);
-        }
-
-        console.debug('[outline] Multi-path unified result:', hullType, 'hullVerts:', hull ? hull.length : 0, 'containmentScore:', score.toFixed ? score.toFixed(3) : score, `total: ${(performance.now() - startTime).toFixed(1)}ms`);
-
-        if (!hull || hull.length < 3) return null;
-
-        let d = `M ${hull[0].x} ${hull[0].y}`;
-        for (let i = 1; i < hull.length; i++) d += ` L ${hull[i].x} ${hull[i].y}`;
-        d += " Z";
-        console.debug(`[outline] Returning multi-path outline SVG data: ${d.substring(0, 100)}...`);
-        return d;
+        // Return the unified path data directly - it already represents the exact shape we want
+        console.debug('[outline] Multi-path unified result: direct_path', `total: ${(performance.now() - startTime).toFixed(1)}ms`);
+        console.debug(`[outline] Returning unified path SVG data: ${unifiedPathData.substring(0, 100)}...`);
+        return unifiedPathData;
     }
+
+    // Merge path boundaries by making coincident points and removing internal segments
+    _mergePathBoundaries(groupPaths, allBoundaryPoints) {
+        try {
+            console.debug('[merge] Starting geometric path boundary merging');
+
+            // Step 1: Extract individual path segments with path association
+            const pathSegments = [];
+            let segmentId = 0;
+            const originalPathData = [];
+
+            for (let pathIdx = 0; pathIdx < groupPaths.length; pathIdx++) {
+                const path = groupPaths[pathIdx];
+                const bbox = path.getBBox();
+                const pathPoints = this.extractPathBoundaryPoints(path, bbox);
+
+                // Store original path data for debugging
+                originalPathData.push({
+                    pathIdx: pathIdx,
+                    pointCount: pathPoints.length,
+                    bounds: {
+                        minX: Math.min(...pathPoints.map(p => p.x)).toFixed(1),
+                        maxX: Math.max(...pathPoints.map(p => p.x)).toFixed(1),
+                        minY: Math.min(...pathPoints.map(p => p.y)).toFixed(1),
+                        maxY: Math.max(...pathPoints.map(p => p.y)).toFixed(1)
+                    },
+                    samplePoints: pathPoints.slice(0, 5).map(p => `(${p.x.toFixed(1)}, ${p.y.toFixed(1)})`).join(', ') + '...'
+                });
+
+                // Create segments for this path (connecting consecutive points)
+                for (let i = 0; i < pathPoints.length; i++) {
+                    const nextIdx = (i + 1) % pathPoints.length; // Wrap around for closed path
+                    pathSegments.push({
+                        id: segmentId++,
+                        pathIdx: pathIdx,
+                        start: { ...pathPoints[i] },
+                        end: { ...pathPoints[nextIdx] },
+                        removed: false
+                    });
+                }
+            }
+
+            console.debug(`[merge] Original path data:`, originalPathData);
+            console.debug(`[merge] Created ${pathSegments.length} path segments from ${groupPaths.length} paths`);
+
+            // Step 2: Make coincident points - smarter connection detection
+            let coincidentPairCount = 0;
+            const processedPairs = new Set(); // Avoid duplicate processing
+
+            // Find the closest point pairs between different paths
+            const connectionCandidates = [];
+
+            for (let i = 0; i < pathSegments.length; i++) {
+                for (let j = i + 1; j < pathSegments.length; j++) {
+                    const seg1 = pathSegments[i];
+                    const seg2 = pathSegments[j];
+
+                    // Skip if same path (they should already be connected)
+                    if (seg1.pathIdx === seg2.pathIdx) continue;
+
+                    // Check all endpoint combinations
+                    const combinations = [
+                        { dist: this.calculateDistance(seg1.start, seg2.start), p1: seg1.start, p2: seg2.start, desc: 'start-start' },
+                        { dist: this.calculateDistance(seg1.start, seg2.end), p1: seg1.start, p2: seg2.end, desc: 'start-end' },
+                        { dist: this.calculateDistance(seg1.end, seg2.start), p1: seg1.end, p2: seg2.start, desc: 'end-start' },
+                        { dist: this.calculateDistance(seg1.end, seg2.end), p1: seg1.end, p2: seg2.end, desc: 'end-end' }
+                    ];
+
+                    // Find closest pair between these two segments
+                    const closest = combinations.reduce((min, curr) => curr.dist < min.dist ? curr : min);
+
+                    connectionCandidates.push({
+                        pathPair: `${seg1.pathIdx}-${seg2.pathIdx}`,
+                        distance: closest.dist,
+                        p1: closest.p1,
+                        p2: closest.p2,
+                        desc: closest.desc
+                    });
+                }
+            }
+
+            // Sort by distance and take only the closest connections between each path pair
+            connectionCandidates.sort((a, b) => a.distance - b.distance);
+
+            const pathPairConnections = new Map();
+            const strictThreshold = 8.0; // Allow slightly larger gaps for genuine connections
+
+            for (const candidate of connectionCandidates) {
+                if (candidate.distance <= strictThreshold) {
+                    if (!pathPairConnections.has(candidate.pathPair)) {
+                        pathPairConnections.set(candidate.pathPair, candidate);
+                    }
+                }
+            }
+
+            console.debug(`[merge] Found ${pathPairConnections.size} potential path pair connections`);
+
+            // Make the closest points between each path pair coincident
+            for (const connection of pathPairConnections.values()) {
+                // Create unique key to avoid processing same point pair multiple times
+                const pairKey = `${Math.min(connection.p1.x, connection.p2.x)}_${Math.min(connection.p1.y, connection.p2.y)}_${Math.max(connection.p1.x, connection.p2.x)}_${Math.max(connection.p1.y, connection.p2.y)}`;
+
+                if (!processedPairs.has(pairKey)) {
+                    processedPairs.add(pairKey);
+
+                    // Make points coincident at midpoint
+                    const midpoint = {
+                        x: (connection.p1.x + connection.p2.x) / 2,
+                        y: (connection.p1.y + connection.p2.y) / 2
+                    };
+
+                    console.debug(`[merge] Connecting paths ${connection.pathPair}: (${connection.p1.x.toFixed(1)}, ${connection.p1.y.toFixed(1)}) and (${connection.p2.x.toFixed(1)}, ${connection.p2.y.toFixed(1)}) -> (${midpoint.x.toFixed(1)}, ${midpoint.y.toFixed(1)}) [dist: ${connection.distance.toFixed(1)}px]`);
+
+                    // Update both points to midpoint
+                    connection.p1.x = midpoint.x;
+                    connection.p1.y = midpoint.y;
+                    connection.p2.x = midpoint.x;
+                    connection.p2.y = midpoint.y;
+
+                    coincidentPairCount++;
+                }
+            }
+
+            console.debug(`[merge] Made ${coincidentPairCount} point pairs coincident`);
+            console.debug(`[merge] Connection threshold: ${strictThreshold}px`);
+
+            // Step 3: Simplified approach - only remove segments between touching paths
+            let removedCount = 0;
+
+            console.debug('[merge] Using simplified internal segment removal');
+
+            // Only remove segments that are very close to other paths (truly internal)
+            for (let i = 0; i < pathSegments.length; i++) {
+                const segment = pathSegments[i];
+                if (segment.removed) continue;
+
+                // Check if this segment is very close to other paths
+                let isInternal = false;
+                for (let pathIdx = 0; pathIdx < groupPaths.length; pathIdx++) {
+                    if (pathIdx === segment.pathIdx) continue;
+
+                    const otherPath = groupPaths[pathIdx];
+                    const otherBBox = otherPath.getBBox();
+                    const otherPoints = this.extractPathBoundaryPoints(otherPath, otherBBox);
+
+                    // Check distance from segment midpoint to other path
+                    const midpoint = {
+                        x: (segment.start.x + segment.end.x) / 2,
+                        y: (segment.start.y + segment.end.y) / 2
+                    };
+
+                    const distToOtherPath = this._minDistToSet(midpoint, otherPoints);
+
+                    // Only remove if very close (truly between paths)
+                    if (distToOtherPath < 2.0) {
+                        isInternal = true;
+                        console.debug(`[merge] Removed internal segment at (${midpoint.x.toFixed(1)}, ${midpoint.y.toFixed(1)}) from path ${segment.pathIdx}, dist to other path: ${distToOtherPath.toFixed(1)}px`);
+                        break;
+                    }
+                }
+
+                if (isInternal) {
+                    segment.removed = true;
+                    removedCount++;
+                }
+            }
+
+            console.debug(`[merge] Removed ${removedCount} internal segments`);
+
+            // Step 4: Build unified boundary from remaining segments
+            const remainingSegments = pathSegments.filter(seg => !seg.removed);
+
+            if (remainingSegments.length === 0) {
+                console.warn('[merge] No segments remaining after internal removal');
+                return null;
+            }
+
+            console.debug(`[merge] Attempting to build boundary from ${remainingSegments.length} remaining segments`);
+
+            // Group remaining segments by path
+            const segmentsByPath = new Map();
+            for (const segment of remainingSegments) {
+                if (!segmentsByPath.has(segment.pathIdx)) {
+                    segmentsByPath.set(segment.pathIdx, []);
+                }
+                segmentsByPath.get(segment.pathIdx).push(segment);
+            }
+
+            console.debug(`[merge] Segments by path:`, Array.from(segmentsByPath.entries()).map(([pathIdx, segs]) => `Path${pathIdx}: ${segs.length} segments`));
+
+            // Start with first segment from first path
+            const unifiedBoundary = [remainingSegments[0].start, remainingSegments[0].end];
+            remainingSegments[0].used = true;
+            console.debug(`[merge] Starting boundary with segment from path ${remainingSegments[0].pathIdx}: (${remainingSegments[0].start.x.toFixed(1)}, ${remainingSegments[0].start.y.toFixed(1)}) -> (${remainingSegments[0].end.x.toFixed(1)}, ${remainingSegments[0].end.y.toFixed(1)})`);
+
+            // Try to connect segments into a continuous boundary
+            let attempts = 0;
+            const maxAttempts = remainingSegments.length * 2; // Prevent infinite loops
+
+            while (attempts < maxAttempts) {
+                attempts++;
+                const lastPoint = unifiedBoundary[unifiedBoundary.length - 1];
+                let foundConnection = false;
+
+                // Look for closest unused segment endpoint
+                let bestMatch = null;
+                let bestDistance = Infinity;
+
+                for (const segment of remainingSegments) {
+                    if (segment.used) continue;
+
+                    const distToStart = this.calculateDistance(lastPoint, segment.start);
+                    const distToEnd = this.calculateDistance(lastPoint, segment.end);
+
+                    if (distToStart < bestDistance) {
+                        bestDistance = distToStart;
+                        bestMatch = { segment, useStart: true, distance: distToStart };
+                    }
+                    if (distToEnd < bestDistance) {
+                        bestDistance = distToEnd;
+                        bestMatch = { segment, useStart: false, distance: distToEnd };
+                    }
+                }
+
+                // Use best match if it's close enough
+                const connectionTolerance = 5.0; // Allow some gap for connections
+                if (bestMatch && bestMatch.distance <= connectionTolerance) {
+                    const nextPoint = bestMatch.useStart ? bestMatch.segment.end : bestMatch.segment.start;
+                    unifiedBoundary.push(nextPoint);
+                    bestMatch.segment.used = true;
+                    foundConnection = true;
+
+                    console.debug(`[merge] Connected to path ${bestMatch.segment.pathIdx} segment at distance ${bestMatch.distance.toFixed(1)}px -> (${nextPoint.x.toFixed(1)}, ${nextPoint.y.toFixed(1)})`);
+                } else {
+                    console.debug(`[merge] No close connections found (best: ${bestMatch ? bestMatch.distance.toFixed(1) : 'none'}px), stopping boundary building`);
+                }
+
+                if (!foundConnection) break;
+            }
+
+            console.debug(`[merge] Boundary building completed after ${attempts} attempts`);
+
+            console.debug(`[merge] Built unified boundary with ${unifiedBoundary.length} points`);
+
+            // Debug: Final unified boundary data
+            if (unifiedBoundary.length > 0) {
+                const finalBounds = {
+                    minX: Math.min(...unifiedBoundary.map(p => p.x)).toFixed(1),
+                    maxX: Math.max(...unifiedBoundary.map(p => p.x)).toFixed(1),
+                    minY: Math.min(...unifiedBoundary.map(p => p.y)).toFixed(1),
+                    maxY: Math.max(...unifiedBoundary.map(p => p.y)).toFixed(1),
+                    width: (Math.max(...unifiedBoundary.map(p => p.x)) - Math.min(...unifiedBoundary.map(p => p.x))).toFixed(1),
+                    height: (Math.max(...unifiedBoundary.map(p => p.y)) - Math.min(...unifiedBoundary.map(p => p.y))).toFixed(1)
+                };
+
+                const sampleFinalPoints = unifiedBoundary.slice(0, 8).map(p => `(${p.x.toFixed(1)}, ${p.y.toFixed(1)})`).join(', ');
+
+                console.debug(`[merge] Final unified boundary bounds:`, finalBounds);
+                console.debug(`[merge] Final boundary sample points: ${sampleFinalPoints}${unifiedBoundary.length > 8 ? '...' : ''}`);
+
+                // Compare original vs final coverage
+                console.debug(`[merge] COMPARISON:`);
+                console.debug(`[merge]   Original total bounds: ${originalPathData.map(p => `Path${p.pathIdx}: ${p.bounds.width}x${p.bounds.height}`).join(', ')}`);
+                console.debug(`[merge]   Final unified bounds: ${finalBounds.width}x${finalBounds.height}`);
+                console.debug(`[merge]   Original total points: ${originalPathData.reduce((sum, p) => sum + p.pointCount, 0)} -> Final points: ${unifiedBoundary.length}`);
+            }
+
+            return unifiedBoundary;
+
+        } catch (error) {
+            console.warn('[merge] Error in geometric boundary merging:', error);
+            return null;
+        }
+    }
+
+    // Create outer edge path using line segments and winding algorithm
+    _createOverlappingPathMerge(groupPaths, allBoundaryPoints) {
+        try {
+            console.debug('[winding] Creating outer edge path using winding algorithm');
+
+            // Step 1: Convert all paths to line segments only (no curves)
+            const lineSegmentPaths = this._convertPathsToLineSegments(groupPaths);
+
+            // Step 2: Join coincident points using 100px tolerance (only between different paths)
+            const joinedPaths = this._joinCoincidentPoints(lineSegmentPaths, 100.0);
+
+            // Step 3: Join the paths together into a network
+            const pathNetwork = this._joinPathsIntoNetwork(joinedPaths);
+
+            // Step 4: Use winding algorithm to traverse outer edge
+            const outerEdgePoints = this._traverseOuterEdge(pathNetwork);
+
+            console.debug(`[winding] Created outer edge with ${outerEdgePoints.length} points`);
+
+            return outerEdgePoints;
+
+        } catch (error) {
+            console.warn('[winding] Error in winding algorithm merge:', error);
+            return null;
+        }
+    }
+
+    // Step 1: Convert paths to line segments only (no curves)
+    _convertPathsToLineSegments(groupPaths) {
+        console.debug('[winding] Converting paths to line segments only');
+
+        const lineSegmentPaths = [];
+
+        for (let i = 0; i < groupPaths.length; i++) {
+            const path = groupPaths[i];
+            const pathData = path.attr('d');
+
+            if (!pathData) {
+                console.warn(`[winding] Path ${i} has no 'd' attribute`);
+                continue;
+            }
+
+            // Parse path data and convert curves to line segments
+            const lineSegments = this._parsePathToLineSegments(pathData, path, i);
+            lineSegmentPaths.push({
+                pathIdx: i,
+                segments: lineSegments,
+                originalPath: path
+            });
+
+            console.debug(`[winding] Path ${i}: converted to ${lineSegments.length} line segments`);
+        }
+
+        return lineSegmentPaths;
+    }
+
+    // Convert path to simple polygon using boundary point extraction
+    _parsePathToLineSegments(pathData, path, pathIdx) {
+        const segments = [];
+
+        try {
+            // Extract only the actual SVG command points (4 points per path)
+            const boundaryPoints = this._extractPathPoints(pathData);
+
+            console.debug(`[winding] Path ${pathIdx} original points: ${boundaryPoints.map(p => `(${p.x.toFixed(1)}, ${p.y.toFixed(1)})`).join(', ')}`);
+
+            if (boundaryPoints.length < 2) {
+                console.warn(`[winding] Path ${pathIdx} has insufficient boundary points: ${boundaryPoints.length}`);
+                return segments;
+            }
+
+            // Create line segments between consecutive boundary points
+            for (let i = 1; i < boundaryPoints.length; i++) {
+                segments.push({
+                    start: { x: boundaryPoints[i-1].x, y: boundaryPoints[i-1].y },
+                    end: { x: boundaryPoints[i].x, y: boundaryPoints[i].y },
+                    pathIdx: pathIdx,
+                    segmentIdx: segments.length
+                });
+            }
+
+        } catch (error) {
+            console.warn(`[winding] Error parsing path ${pathIdx}:`, error);
+        }
+
+        return segments;
+    }
+
+    // Extract actual points from SVG path data (preserves sharp corners)
+    _extractPathPoints(pathData) {
+        const points = [];
+
+        console.debug(`[winding] Parsing path data: ${pathData}`);
+
+        // Simple regex-based parser for common SVG commands
+        const commands = pathData.match(/[MmLlHhVvCcSsQqTtAaZz][^MmLlHhVvCcSsQqTtAaZz]*/g) || [];
+
+        let currentPoint = { x: 0, y: 0 };
+
+        for (const cmdStr of commands) {
+            const cmd = cmdStr[0];
+            const params = cmdStr.slice(1).trim().split(/[\s,]+/).map(Number).filter(n => !isNaN(n));
+
+            console.debug(`[winding] Processing command: ${cmd} with params: [${params.join(', ')}]`);
+
+            switch (cmd.toLowerCase()) {
+                case 'm': // Move to
+                    if (cmd === 'M') {
+                        currentPoint = { x: params[0], y: params[1] };
+                    } else {
+                        currentPoint = { x: currentPoint.x + params[0], y: currentPoint.y + params[1] };
+                    }
+                    points.push({ ...currentPoint });
+
+                    // Handle implicit line commands after move (extra coordinate pairs)
+                    for (let i = 2; i < params.length; i += 2) {
+                        if (i + 1 < params.length) {
+                            if (cmd === 'M') {
+                                currentPoint = { x: params[i], y: params[i + 1] };
+                            } else {
+                                currentPoint = { x: currentPoint.x + params[i], y: currentPoint.y + params[i + 1] };
+                            }
+                            points.push({ ...currentPoint });
+                        }
+                    }
+                    break;
+
+                case 'l': // Line to
+                    if (cmd === 'L') {
+                        currentPoint = { x: params[0], y: params[1] };
+                    } else {
+                        currentPoint = { x: currentPoint.x + params[0], y: currentPoint.y + params[1] };
+                    }
+                    points.push({ ...currentPoint });
+                    break;
+
+                case 'h': // Horizontal line
+                    if (cmd === 'H') {
+                        currentPoint.x = params[0];
+                    } else {
+                        currentPoint.x += params[0];
+                    }
+                    points.push({ ...currentPoint });
+                    break;
+
+                case 'v': // Vertical line
+                    if (cmd === 'V') {
+                        currentPoint.y = params[0];
+                    } else {
+                        currentPoint.y += params[0];
+                    }
+                    points.push({ ...currentPoint });
+                    break;
+
+                case 'c': // Cubic Bezier curve - extract end point only
+                    if (cmd === 'C') {
+                        currentPoint = { x: params[4], y: params[5] };
+                    } else {
+                        currentPoint = { x: currentPoint.x + params[4], y: currentPoint.y + params[5] };
+                    }
+                    points.push({ ...currentPoint });
+                    break;
+
+                case 'q': // Quadratic Bezier curve - extract end point only
+                    if (cmd === 'Q') {
+                        currentPoint = { x: params[2], y: params[3] };
+                    } else {
+                        currentPoint = { x: currentPoint.x + params[2], y: currentPoint.y + params[3] };
+                    }
+                    points.push({ ...currentPoint });
+                    break;
+
+                case 'z': // Close path
+                    // Don't add duplicate point for close
+                    break;
+            }
+        }
+
+        return points;
+    }
+
+    // Step 2: Join coincident points using tolerance
+    _joinCoincidentPoints(lineSegmentPaths, tolerance) {
+        console.debug(`[winding] Joining coincident points with ${tolerance}px tolerance`);
+
+        // Create a flat list of all segments with unique IDs
+        const allSegments = [];
+        for (const pathData of lineSegmentPaths) {
+            for (const segment of pathData.segments) {
+                allSegments.push({
+                    ...segment,
+                    id: `${segment.pathIdx}_${segment.segmentIdx}`
+                });
+            }
+        }
+
+        console.debug(`[winding] Processing ${allSegments.length} total segments`);
+
+        // Find coincident points and merge them
+        const mergedSegments = this._mergeCoincidentPoints(allSegments, tolerance);
+
+        console.debug(`[winding] After coincident point merging: ${mergedSegments.length} segments`);
+
+        return mergedSegments;
+    }
+
+    // Merge adjacent points between different paths only (Rules 5-9)
+    _mergeCoincidentPoints(allSegments, tolerance) {
+        console.debug(`[winding] Merging adjacent points with ${tolerance}px tolerance (different paths only)`);
+
+        // First, find ALL potential connections within tolerance
+        const potentialConnections = [];
+
+        // Find adjacent point pairs between different paths only (Rule 5, 6)
+        for (let i = 0; i < allSegments.length; i++) {
+            const seg1 = allSegments[i];
+            for (let j = i + 1; j < allSegments.length; j++) {
+                const seg2 = allSegments[j];
+
+                // Rule 5: NEVER merge points from the same path
+                if (seg1.pathIdx === seg2.pathIdx) {
+                    continue;
+                }
+
+                // Check all endpoint combinations
+                const combinations = [
+                    { point1: seg1.start, point2: seg2.start, seg1, seg2, end1: 'start', end2: 'start' },
+                    { point1: seg1.start, point2: seg2.end, seg1, seg2, end1: 'start', end2: 'end' },
+                    { point1: seg1.end, point2: seg2.start, seg1, seg2, end1: 'end', end2: 'start' },
+                    { point1: seg1.end, point2: seg2.end, seg1, seg2, end1: 'end', end2: 'end' }
+                ];
+
+                for (const combo of combinations) {
+                    // Rule 6: 50px tolerance for adjacency
+                    const distance = this.calculateDistance(combo.point1, combo.point2);
+
+                    console.debug(`[winding] - Checking seg${seg1.pathIdx}_${seg1.segmentIdx}.${combo.end1} (${combo.point1.x.toFixed(1)}, ${combo.point1.y.toFixed(1)}) vs seg${seg2.pathIdx}_${seg2.segmentIdx}.${combo.end2} (${combo.point2.x.toFixed(1)}, ${combo.point2.y.toFixed(1)}) = ${distance.toFixed(1)}px`);
+
+                    if (distance <= tolerance) {
+                        const point1Key = `${seg1.pathIdx}_${seg1.segmentIdx}_${combo.end1}`;
+                        const point2Key = `${seg2.pathIdx}_${seg2.segmentIdx}_${combo.end2}`;
+
+                        // Create a geometric key to deduplicate same point pairs
+                        const geomKey1 = `${combo.point1.x.toFixed(2)}_${combo.point1.y.toFixed(2)}`;
+                        const geomKey2 = `${combo.point2.x.toFixed(2)}_${combo.point2.y.toFixed(2)}`;
+                        const pairKey = geomKey1 < geomKey2 ? `${geomKey1}-${geomKey2}` : `${geomKey2}-${geomKey1}`;
+
+                        // Only add if we haven't seen this geometric point pair before
+                        if (!potentialConnections.some(conn => {
+                            const connGeomKey1 = `${conn.point1.x.toFixed(2)}_${conn.point1.y.toFixed(2)}`;
+                            const connGeomKey2 = `${conn.point2.x.toFixed(2)}_${conn.point2.y.toFixed(2)}`;
+                            const connPairKey = connGeomKey1 < connGeomKey2 ? `${connGeomKey1}-${connGeomKey2}` : `${connGeomKey2}-${connGeomKey1}`;
+                            return connPairKey === pairKey;
+                        })) {
+                            console.debug(`[winding] - POTENTIAL CONNECTION: ${distance.toFixed(1)}px (new geometric pair)`);
+                            potentialConnections.push({
+                                distance,
+                                seg1: combo.seg1,
+                                seg2: combo.seg2,
+                                end1: combo.end1,
+                                end2: combo.end2,
+                                point1: combo.point1,
+                                point2: combo.point2,
+                                point1Key,
+                                point2Key
+                            });
+                        } else {
+                            console.debug(`[winding] - DUPLICATE geometric pair: ${distance.toFixed(1)}px (skipping)`);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Sort potential connections by distance (closest first)
+        potentialConnections.sort((a, b) => a.distance - b.distance);
+        console.debug(`[winding] Found ${potentialConnections.length} potential connections, sorted by distance: ${potentialConnections.map(p => `${p.distance.toFixed(1)}px`).join(', ')}`);
+
+        // Now apply Rule 7: each point can only be merged once, starting with closest connections
+        const adjacentPairs = [];
+        const mergedPoints = new Set();
+
+        for (const connection of potentialConnections) {
+            if (!mergedPoints.has(connection.point1Key) && !mergedPoints.has(connection.point2Key)) {
+                console.debug(`[winding] - ACCEPTING CONNECTION: ${connection.distance.toFixed(1)}px`);
+                adjacentPairs.push(connection);
+                mergedPoints.add(connection.point1Key);
+                mergedPoints.add(connection.point2Key);
+            } else {
+                console.debug(`[winding] - SKIPPING CONNECTION: ${connection.distance.toFixed(1)}px (point already merged)`);
+            }
+        }
+
+        console.debug(`[winding] Final connections: ${adjacentPairs.length} pairs`);
+
+        // Rule 10: Preserve segment count, update endpoints only
+        const modifiedSegments = allSegments.map(seg => ({
+            ...seg,
+            start: { ...seg.start },
+            end: { ...seg.end }
+        }));
+
+        // Rule 8: Replace both points with their midpoint
+        for (const pair of adjacentPairs) {
+            const midpoint = {
+                x: (pair.point1.x + pair.point2.x) / 2,
+                y: (pair.point1.y + pair.point2.y) / 2
+            };
+
+            console.debug(`[winding] - Merging (${pair.point1.x.toFixed(1)}, ${pair.point1.y.toFixed(1)}) and (${pair.point2.x.toFixed(1)}, ${pair.point2.y.toFixed(1)}) to (${midpoint.x.toFixed(1)}, ${midpoint.y.toFixed(1)})`);
+
+            // Update ALL segments that touch either of the merged points
+            for (const segment of modifiedSegments) {
+                // Check if segment start point matches either merged point
+                if (this.calculateDistance(segment.start, pair.point1) < 0.1 ||
+                    this.calculateDistance(segment.start, pair.point2) < 0.1) {
+                    segment.start = midpoint;
+                }
+                // Check if segment end point matches either merged point
+                if (this.calculateDistance(segment.end, pair.point1) < 0.1 ||
+                    this.calculateDistance(segment.end, pair.point2) < 0.1) {
+                    segment.end = midpoint;
+                }
+            }
+        }
+
+        return modifiedSegments;
+    }
+
+    // Create overlapping regions where paths are adjacent
+    _createPathOverlaps(lineSegmentPaths, tolerance) {
+        console.debug(`[winding] Creating path overlaps with ${tolerance}px tolerance`);
+
+        // Group segments by path for easier processing
+        const pathSegments = new Map();
+        for (const pathData of lineSegmentPaths) {
+            pathSegments.set(pathData.pathIdx, pathData.segments);
+        }
+
+        console.debug(`[winding] Processing ${pathSegments.size} paths`);
+
+        // Find adjacent regions between different paths
+        const adjacentRegions = this._findAdjacentRegions(pathSegments, tolerance);
+
+        // Create geometric overlaps in adjacent regions
+        const overlappingPaths = this._extendPathsIntoOverlaps(pathSegments, adjacentRegions, tolerance);
+
+        console.debug(`[winding] Created overlapping paths with ${adjacentRegions.length} adjacent regions`);
+
+        return overlappingPaths;
+    }
+
+    // Find regions where different paths are close to each other
+    _findAdjacentRegions(pathSegments, tolerance) {
+        console.debug(`[winding] Finding adjacent regions between paths`);
+
+        const pathIds = Array.from(pathSegments.keys());
+
+        // Find the single closest segment pair between each pair of paths
+        let closestRegion = null;
+        let closestDistance = Infinity;
+
+        for (let i = 0; i < pathIds.length; i++) {
+            for (let j = i + 1; j < pathIds.length; j++) {
+                const path1Id = pathIds[i];
+                const path2Id = pathIds[j];
+                const path1Segs = pathSegments.get(path1Id);
+                const path2Segs = pathSegments.get(path2Id);
+
+                // Find the single closest segment pair between these paths
+                for (let seg1Idx = 0; seg1Idx < path1Segs.length; seg1Idx++) {
+                    const seg1 = path1Segs[seg1Idx];
+
+                    for (let seg2Idx = 0; seg2Idx < path2Segs.length; seg2Idx++) {
+                        const seg2 = path2Segs[seg2Idx];
+
+                        // Check if these segments are within tolerance
+                        const distance = this._segmentDistance(seg1, seg2);
+
+                        if (distance < closestDistance) {
+                            closestDistance = distance;
+                            closestRegion = {
+                                path1Id: path1Id,
+                                path2Id: path2Id,
+                                seg1Idx: seg1Idx,
+                                seg2Idx: seg2Idx,
+                                seg1: seg1,
+                                seg2: seg2,
+                                distance: distance
+                            };
+                        }
+                    }
+                }
+            }
+        }
+
+        const adjacentRegions = [];
+        if (closestRegion && closestDistance <= tolerance) {
+            adjacentRegions.push(closestRegion);
+            console.debug(`[winding] Found single closest region: ${closestDistance.toFixed(1)}px between paths ${closestRegion.path1Id} and ${closestRegion.path2Id}`);
+        } else {
+            console.debug(`[winding] No adjacent regions found within ${tolerance}px tolerance (closest: ${closestDistance.toFixed(1)}px)`);
+        }
+
+        return adjacentRegions;
+    }
+
+    // Calculate minimum distance between two line segments
+    _segmentDistance(seg1, seg2) {
+        // Calculate distance between all point combinations and return minimum
+        const distances = [
+            this.calculateDistance(seg1.start, seg2.start),
+            this.calculateDistance(seg1.start, seg2.end),
+            this.calculateDistance(seg1.end, seg2.start),
+            this.calculateDistance(seg1.end, seg2.end)
+        ];
+
+        return Math.min(...distances);
+    }
+
+    // Extend paths to create geometric overlaps in adjacent regions
+    _extendPathsIntoOverlaps(pathSegments, adjacentRegions, tolerance) {
+        console.debug(`[winding] Extending paths to create overlaps`);
+
+        // Start with original segments
+        const allSegments = [];
+        for (const [pathId, segments] of pathSegments) {
+            for (const segment of segments) {
+                allSegments.push({
+                    ...segment,
+                    pathIdx: pathId,
+                    original: true
+                });
+            }
+        }
+
+        // Add overlap extensions for adjacent regions
+        for (const region of adjacentRegions) {
+            // Create overlap segments by extending toward the adjacent path
+            const overlapSegments = this._createOverlapSegments(region, tolerance / 2);
+
+            for (const overlapSeg of overlapSegments) {
+                allSegments.push({
+                    ...overlapSeg,
+                    original: false,
+                    overlapping: true
+                });
+            }
+        }
+
+        console.debug(`[winding] Created ${allSegments.length} total segments (${allSegments.filter(s => !s.original).length} overlap segments)`);
+
+        return allSegments;
+    }
+
+    // Create overlap segments between two adjacent path segments
+    _createOverlapSegments(region, extensionDistance) {
+        const overlapSegments = [];
+
+        // Calculate direction vector from seg1 toward seg2
+        const seg1Center = {
+            x: (region.seg1.start.x + region.seg1.end.x) / 2,
+            y: (region.seg1.start.y + region.seg1.end.y) / 2
+        };
+        const seg2Center = {
+            x: (region.seg2.start.x + region.seg2.end.x) / 2,
+            y: (region.seg2.start.y + region.seg2.end.y) / 2
+        };
+
+        const directionX = seg2Center.x - seg1Center.x;
+        const directionY = seg2Center.y - seg1Center.y;
+        const distance = Math.sqrt(directionX * directionX + directionY * directionY);
+
+        if (distance === 0) return overlapSegments;
+
+        const normalizedX = directionX / distance;
+        const normalizedY = directionY / distance;
+
+        // Extend seg1 toward seg2
+        const seg1Extended = {
+            start: {
+                x: region.seg1.start.x + normalizedX * extensionDistance,
+                y: region.seg1.start.y + normalizedY * extensionDistance
+            },
+            end: {
+                x: region.seg1.end.x + normalizedX * extensionDistance,
+                y: region.seg1.end.y + normalizedY * extensionDistance
+            },
+            pathIdx: region.path1Id,
+            segmentIdx: `${region.seg1Idx}_overlap`,
+            id: `${region.path1Id}_${region.seg1Idx}_overlap`
+        };
+
+        // Extend seg2 toward seg1
+        const seg2Extended = {
+            start: {
+                x: region.seg2.start.x - normalizedX * extensionDistance,
+                y: region.seg2.start.y - normalizedY * extensionDistance
+            },
+            end: {
+                x: region.seg2.end.x - normalizedX * extensionDistance,
+                y: region.seg2.end.y - normalizedY * extensionDistance
+            },
+            pathIdx: region.path2Id,
+            segmentIdx: `${region.seg2Idx}_overlap`,
+            id: `${region.path2Id}_${region.seg2Idx}_overlap`
+        };
+
+        overlapSegments.push(seg1Extended, seg2Extended);
+        return overlapSegments;
+    }
+
+    // Merge overlapping paths into unified segment list
+    _mergeOverlappingPaths(overlappingSegments) {
+        console.debug(`[winding] Merging ${overlappingSegments.length} overlapping segments`);
+
+        // For now, simply return all segments - the overlap extensions create the unified shape
+        // The winding algorithm will naturally traverse the outer boundary
+        return overlappingSegments;
+    }
+
+    // Step 3: Join paths into a single network
+    _joinPathsIntoNetwork(segments) {
+        console.debug('[winding] Joining paths into network');
+
+        // Create adjacency map: point -> [segments that touch this point]
+        const pointToSegments = new Map();
+
+        for (const segment of segments) {
+            const startKey = `${segment.start.x.toFixed(2)}_${segment.start.y.toFixed(2)}`;
+            const endKey = `${segment.end.x.toFixed(2)}_${segment.end.y.toFixed(2)}`;
+
+            if (!pointToSegments.has(startKey)) {
+                pointToSegments.set(startKey, []);
+            }
+            if (!pointToSegments.has(endKey)) {
+                pointToSegments.set(endKey, []);
+            }
+
+            pointToSegments.get(startKey).push({ segment, isStart: true });
+            pointToSegments.get(endKey).push({ segment, isStart: false });
+        }
+
+        console.debug(`[winding] Created network with ${pointToSegments.size} nodes and ${segments.length} edges`);
+
+        // Debug: show all points in the network
+        for (const [pointKey, connections] of pointToSegments) {
+            const [x, y] = pointKey.split('_').map(Number);
+            console.debug(`[winding] Network point (${x.toFixed(1)}, ${y.toFixed(1)}) connects to ${connections.length} segments: ${connections.map(c => c.segment.id).join(', ')}`);
+        }
+
+        return {
+            segments: segments,
+            pointToSegments: pointToSegments
+        };
+    }
+
+    // Step 4: Traverse outer edge using winding algorithm
+    _traverseOuterEdge(pathNetwork) {
+        console.debug('[winding] Traversing outer edge with winding algorithm');
+
+        const { segments, pointToSegments } = pathNetwork;
+
+        if (segments.length === 0) {
+            console.warn('[winding] No segments to traverse');
+            return [];
+        }
+
+        // Find the leftmost point as starting point (guaranteed to be on outer edge)
+        let startPoint = null;
+        let startKey = null;
+        for (const [pointKey, _] of pointToSegments) {
+            const [x, y] = pointKey.split('_').map(Number);
+            const point = { x, y };
+
+            if (!startPoint || x < startPoint.x || (x === startPoint.x && y < startPoint.y)) {
+                startPoint = point;
+                startKey = pointKey;
+            }
+        }
+
+        console.debug(`[winding] Starting traversal from leftmost point: (${startPoint.x.toFixed(1)}, ${startPoint.y.toFixed(1)})`);
+
+        // Traverse the outer edge by always taking the most clockwise turn (rightmost/outward)
+        const outerEdgePoints = [startPoint];
+        const visitedSegments = new Set();
+        let currentPoint = startPoint;
+        let currentKey = startKey;
+        let incomingAngle = null; // Angle we came from
+
+        const maxIterations = segments.length * 2; // Prevent infinite loops
+        let iterations = 0;
+
+        while (iterations < maxIterations) {
+            iterations++;
+
+            const connectedSegments = pointToSegments.get(currentKey) || [];
+            const availableSegments = connectedSegments.filter(conn => !visitedSegments.has(conn.segment.id));
+
+            console.debug(`[winding] Iteration ${iterations}: At point (${currentPoint.x.toFixed(1)}, ${currentPoint.y.toFixed(1)})`);
+            console.debug(`[winding] - Connected segments: ${connectedSegments.length}, Available: ${availableSegments.length}`);
+            console.debug(`[winding] - Visited segments: [${Array.from(visitedSegments).join(', ')}]`);
+
+            if (availableSegments.length === 0) {
+                console.debug('[winding] No more available segments, traversal complete');
+                console.debug(`[winding] - Total segments in network: ${segments.length}`);
+                console.debug(`[winding] - Segments visited: ${visitedSegments.size}`);
+                break;
+            }
+
+            // Choose the segment that represents the most clockwise turn (smallest angle = most outward)
+            let bestSegment = null;
+            let bestAngle = null;
+            let bestConn = null;
+
+            for (const conn of availableSegments) {
+                const segment = conn.segment;
+                const nextPoint = conn.isStart ? segment.end : segment.start;
+                const outgoingAngle = Math.atan2(nextPoint.y - currentPoint.y, nextPoint.x - currentPoint.x);
+
+                // Calculate the turn angle relative to incoming direction
+                let turnAngle = outgoingAngle;
+                if (incomingAngle !== null) {
+                    turnAngle = outgoingAngle - incomingAngle;
+                    // Normalize to [0, 2π)
+                    while (turnAngle < 0) turnAngle += 2 * Math.PI;
+                    while (turnAngle >= 2 * Math.PI) turnAngle -= 2 * Math.PI;
+                }
+
+                console.debug(`[winding] - Candidate segment ${segment.id}: to (${nextPoint.x.toFixed(1)}, ${nextPoint.y.toFixed(1)}), turn angle: ${(turnAngle * 180 / Math.PI).toFixed(1)}°`);
+
+                // For outer edge, we want the SMALLEST turn angle (most clockwise = most outward)
+                if (bestSegment === null || turnAngle < bestAngle) {
+                    bestSegment = segment;
+                    bestAngle = turnAngle;
+                    bestConn = conn;
+                }
+            }
+
+            if (!bestSegment) {
+                console.debug('[winding] No best segment found, stopping traversal');
+                break;
+            }
+
+            // Move to next point
+            console.debug(`[winding] - Selected segment ${bestSegment.id} with turn angle ${(bestAngle * 180 / Math.PI).toFixed(1)}°`);
+            visitedSegments.add(bestSegment.id);
+            const nextPoint = bestConn.isStart ? bestSegment.end : bestSegment.start;
+            console.debug(`[winding] - Moving to next point: (${nextPoint.x.toFixed(1)}, ${nextPoint.y.toFixed(1)})`);
+
+            // Update incoming angle for next iteration
+            incomingAngle = Math.atan2(nextPoint.y - currentPoint.y, nextPoint.x - currentPoint.x);
+            const nextKey = `${nextPoint.x.toFixed(2)}_${nextPoint.y.toFixed(2)}`;
+
+            // Check if we've returned to start
+            if (nextKey === startKey && outerEdgePoints.length > 2) {
+                console.debug('[winding] Returned to start point, outer edge complete');
+                break;
+            }
+
+            outerEdgePoints.push(nextPoint);
+            incomingAngle = Math.atan2(nextPoint.y - currentPoint.y, nextPoint.x - currentPoint.x);
+            currentPoint = nextPoint;
+            currentKey = nextKey;
+        }
+
+        console.debug(`[winding] Traversal completed in ${iterations} iterations, found ${outerEdgePoints.length} outer edge points`);
+
+        return outerEdgePoints;
+    }
+
+    // Combine original SVG path data from multiple paths
+    _combineOriginalPathData(groupPaths) {
+        try {
+            console.debug('[overlap] Combining original SVG path data from paths');
+
+            let combinedData = '';
+
+            for (let i = 0; i < groupPaths.length; i++) {
+                const path = groupPaths[i];
+                const pathData = path.attr('d');
+
+                if (!pathData) {
+                    console.warn(`[overlap] Path ${i} has no 'd' attribute`);
+                    continue;
+                }
+
+                console.debug(`[overlap] Path ${i} data: ${pathData.substring(0, 50)}...`);
+
+                // Add path data to combined string
+                if (combinedData.length > 0) {
+                    // Ensure proper spacing between path data
+                    combinedData += ' ';
+                }
+                combinedData += pathData;
+            }
+
+            if (combinedData.length === 0) {
+                console.warn('[overlap] No valid path data found');
+                return null;
+            }
+
+            console.debug(`[overlap] Combined path data length: ${combinedData.length} characters`);
+            return combinedData;
+
+        } catch (error) {
+            console.warn('[overlap] Error combining path data:', error);
+            return null;
+        }
+    }
+
 
     // Clean up any existing debug unified paths
     _cleanupDebugPaths(scope) {
@@ -863,17 +1806,27 @@ class SvgViewerInstance {
 
             console.debug(`[outline] Total extracted boundary points: ${allBoundaryPoints.length}`);
 
-            // Create a convex hull around all boundary points to create a single unified shape
-            const hull = this.simpleConvexHull(allBoundaryPoints);
+            // Create unified path by modifying paths to overlap and then merging
+            const unifiedBoundary = this._createOverlappingPathMerge(groupPaths, allBoundaryPoints);
 
-            // Convert hull to SVG path data
-            let pathData = `M ${hull[0].x} ${hull[0].y}`;
-            for (let i = 1; i < hull.length; i++) {
-                pathData += ` L ${hull[i].x} ${hull[i].y}`;
+            if (!unifiedBoundary || unifiedBoundary.length < 3) {
+                console.warn('[outline] Overlapping path merge failed, falling back to convex hull');
+                const hull = this.simpleConvexHull(allBoundaryPoints);
+                var pathData = `M ${hull[0].x} ${hull[0].y}`;
+                for (let i = 1; i < hull.length; i++) {
+                    pathData += ` L ${hull[i].x} ${hull[i].y}`;
+                }
+                pathData += ' Z';
+                console.debug(`[outline] Fallback: Created convex hull unified path from ${hull.length} hull points`);
+            } else {
+                // Convert merged boundary to SVG path data
+                var pathData = `M ${unifiedBoundary[0].x} ${unifiedBoundary[0].y}`;
+                for (let i = 1; i < unifiedBoundary.length; i++) {
+                    pathData += ` L ${unifiedBoundary[i].x} ${unifiedBoundary[i].y}`;
+                }
+                pathData += ' Z';
+                console.debug(`[outline] Created overlapping merge unified path from ${unifiedBoundary.length} boundary points`);
             }
-            pathData += ' Z';
-
-            console.debug(`[outline] Created unified path from ${hull.length} hull points`);
 
             // Create the merged path element
             const unifiedPath = scope.path(pathData);
@@ -883,8 +1836,7 @@ class SvgViewerInstance {
                 unifiedPath.attr({
                     fill: 'rgba(255, 0, 255, 0.3)',     // Semi-transparent magenta fill
                     stroke: '#FF00FF',                   // Magenta border
-                    strokeWidth: 2,
-                    'stroke-dasharray': '5 5',           // Dashed line
+                    strokeWidth: 1,
                     'fill-opacity': 0.3,
                     'stroke-opacity': 0.8,
                     'pointer-events': 'none',            // Allow clicks to pass through
@@ -999,6 +1951,7 @@ class SvgViewerInstance {
         this.getPaths();
         const selectedIds = Array.from(this.selectedIds || []);
         if (selectedIds.length > 0) {
+            // Always generate the outline path data to create the unified path (purple)
             const selectionPathData = this.generateGroupOutline(selectedIds, {
                 gapHopPx: 3,          // only hop over hairline gaps
                 kStart: 10,           // start with more neighbor options to avoid trapping
@@ -1012,13 +1965,13 @@ class SvgViewerInstance {
 
             console.debug(`[visualize] generateGroupOutline returned:`, selectionPathData ? `${selectionPathData.substring(0, 100)}...` : 'null');
 
-            if (selectionPathData) {
+            // Only show the orange outline if showOutlines is enabled
+            if (selectionPathData && this.showOutlines) {
                 const selectionOutline = scope.path(selectionPathData);
                 selectionOutline.attr({
                     stroke: '#FFA500',              // orange for live selection
-                    strokeWidth: 3,
+                    strokeWidth: 1,
                     fill: 'none',
-                    strokeDasharray: '10 5',
                     'stroke-opacity': .9,
                     'vector-effect': 'non-scaling-stroke',
                     'pointer-events': 'none'
@@ -1219,16 +2172,18 @@ class SvgViewerInstance {
                 return;
             }
 
-            this.boundingBoxRect = layer.rect(bbox.x, bbox.y, bbox.width, bbox.height);
-            this.boundingBoxRect.attr({
-                stroke: '#00F',
-                strokeWidth: 2,
-                fill: 'none',
-                strokeDasharray: '4 2',
-                'vector-effect': 'non-scaling-stroke',
-                "pointer-events": "none"
-            });
-            layer.append(this.boundingBoxRect);
+            if (this.showBoundingBox) {
+                this.boundingBoxRect = layer.rect(bbox.x, bbox.y, bbox.width, bbox.height);
+                this.boundingBoxRect.attr({
+                    stroke: '#00F',
+                    strokeWidth: 2,
+                    fill: 'none',
+                    strokeDasharray: '4 2',
+                    'vector-effect': 'non-scaling-stroke',
+                    "pointer-events": "none"
+                });
+                layer.append(this.boundingBoxRect);
+            }
 
             this.boundingBoxPathIds = this.computeIdsInsideBoundingBox(0.5);
 
@@ -1453,6 +2408,20 @@ export function activateLayer(containerId, name) {
     const instance = instances.get(containerId);
     if (!instance) return false;
     return instance.activateLayer(name);
+}
+
+export function setShowOutlines(containerId, show) {
+    const instance = instances.get(containerId);
+    if (!instance) return false;
+    instance.showOutlines = show;
+    return true;
+}
+
+export function setShowBoundingBox(containerId, show) {
+    const instance = instances.get(containerId);
+    if (!instance) return false;
+    instance.showBoundingBox = show;
+    return true;
 }
 
 export function disposeInstance(containerId) {
