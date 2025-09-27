@@ -1057,8 +1057,8 @@ class SvgViewerInstance {
             // Step 1: Convert all paths to line segments only (no curves)
             const lineSegmentPaths = this._convertPathsToLineSegments(groupPaths);
 
-            // Step 2: Join coincident points using 100px tolerance (only between different paths)
-            const joinedPaths = this._joinCoincidentPoints(lineSegmentPaths, 100.0);
+            // Step 2: Join coincident points using 20px tolerance (only between different paths)
+            const joinedPaths = this._joinCoincidentPoints(lineSegmentPaths, 20.0);
 
             // Step 3: Join the paths together into a network
             const pathNetwork = this._joinPathsIntoNetwork(joinedPaths);
@@ -1125,6 +1125,16 @@ class SvgViewerInstance {
                 segments.push({
                     start: { x: boundaryPoints[i-1].x, y: boundaryPoints[i-1].y },
                     end: { x: boundaryPoints[i].x, y: boundaryPoints[i].y },
+                    pathIdx: pathIdx,
+                    segmentIdx: segments.length
+                });
+            }
+
+            // Add closing segment back to start point (complete the polygon)
+            if (boundaryPoints.length > 2) {
+                segments.push({
+                    start: { x: boundaryPoints[boundaryPoints.length-1].x, y: boundaryPoints[boundaryPoints.length-1].y },
+                    end: { x: boundaryPoints[0].x, y: boundaryPoints[0].y },
                     pathIdx: pathIdx,
                     segmentIdx: segments.length
                 });
@@ -1282,7 +1292,7 @@ class SvgViewerInstance {
                 ];
 
                 for (const combo of combinations) {
-                    // Rule 6: 50px tolerance for adjacency
+                    // Rule 6: 20px tolerance for adjacency
                     const distance = this.calculateDistance(combo.point1, combo.point2);
 
                     console.debug(`[winding] - Checking seg${seg1.pathIdx}_${seg1.segmentIdx}.${combo.end1} (${combo.point1.x.toFixed(1)}, ${combo.point1.y.toFixed(1)}) vs seg${seg2.pathIdx}_${seg2.segmentIdx}.${combo.end2} (${combo.point2.x.toFixed(1)}, ${combo.point2.y.toFixed(1)}) = ${distance.toFixed(1)}px`);
@@ -1328,15 +1338,34 @@ class SvgViewerInstance {
         console.debug(`[winding] Found ${potentialConnections.length} potential connections, sorted by distance: ${potentialConnections.map(p => `${p.distance.toFixed(1)}px`).join(', ')}`);
 
         // Now apply Rule 7: each point can only be merged once, starting with closest connections
+        // ENHANCED: Also prevent multiple merges at the same geometric location (prevents super-nodes)
         const adjacentPairs = [];
         const mergedPoints = new Set();
+        const mergedLocations = new Map(); // Track geometric locations that have been merged
 
         for (const connection of potentialConnections) {
             if (!mergedPoints.has(connection.point1Key) && !mergedPoints.has(connection.point2Key)) {
+                // Calculate the potential merged location
+                const potentialMergeLocation = {
+                    x: (connection.point1.x + connection.point2.x) / 2,
+                    y: (connection.point1.y + connection.point2.y) / 2
+                };
+
+                // Check if this geometric location already has a merge
+                const locationKey = `${potentialMergeLocation.x.toFixed(2)}_${potentialMergeLocation.y.toFixed(2)}`;
+
+                if (mergedLocations.has(locationKey)) {
+                    console.debug(`[winding] - SKIPPING CONNECTION: ${connection.distance.toFixed(1)}px (location already has merge at ${locationKey} - preventing super-node)`);
+                    continue;
+                }
+
+                console.debug(`[winding] - NEW MERGE LOCATION: ${locationKey} for ${connection.distance.toFixed(1)}px connection`);
+
                 console.debug(`[winding] - ACCEPTING CONNECTION: ${connection.distance.toFixed(1)}px`);
                 adjacentPairs.push(connection);
                 mergedPoints.add(connection.point1Key);
                 mergedPoints.add(connection.point2Key);
+                mergedLocations.set(locationKey, potentialMergeLocation);
             } else {
                 console.debug(`[winding] - SKIPPING CONNECTION: ${connection.distance.toFixed(1)}px (point already merged)`);
             }
@@ -1351,7 +1380,11 @@ class SvgViewerInstance {
             end: { ...seg.end }
         }));
 
+        // Track which points have been merged/moved
+        const processedPoints = new Set();
+
         // Rule 8: Replace both points with their midpoint
+        const mergedLocationsList = [];
         for (const pair of adjacentPairs) {
             const midpoint = {
                 x: (pair.point1.x + pair.point2.x) / 2,
@@ -1359,6 +1392,13 @@ class SvgViewerInstance {
             };
 
             console.debug(`[winding] - Merging (${pair.point1.x.toFixed(1)}, ${pair.point1.y.toFixed(1)}) and (${pair.point2.x.toFixed(1)}, ${pair.point2.y.toFixed(1)}) to (${midpoint.x.toFixed(1)}, ${midpoint.y.toFixed(1)})`);
+
+            // Track this merged location for additional point moving
+            mergedLocationsList.push(midpoint);
+
+            // Mark these points as processed
+            processedPoints.add(pair.point1Key);
+            processedPoints.add(pair.point2Key);
 
             // Update ALL segments that touch either of the merged points
             for (const segment of modifiedSegments) {
@@ -1372,6 +1412,58 @@ class SvgViewerInstance {
                     this.calculateDistance(segment.end, pair.point2) < 0.1) {
                     segment.end = midpoint;
                 }
+            }
+        }
+
+        // Additional pass: Move unprocessed points to existing merged locations (for 3+ shape corners)
+        // For each merged location, find the closest unprocessed point and move only that one
+        for (const mergedLoc of mergedLocationsList) {
+            const candidatePoints = [];
+
+            // Collect all unprocessed points within tolerance of this merged location
+            for (const segment of modifiedSegments) {
+                const startKey = `${segment.pathIdx}_${segment.segmentIdx}_start`;
+                if (!processedPoints.has(startKey)) {
+                    const startDist = this.calculateDistance(segment.start, mergedLoc);
+                    if (startDist <= tolerance) {
+                        candidatePoints.push({
+                            point: segment.start,
+                            segment: segment,
+                            isStart: true,
+                            key: startKey,
+                            distance: startDist
+                        });
+                    }
+                }
+
+                const endKey = `${segment.pathIdx}_${segment.segmentIdx}_end`;
+                if (!processedPoints.has(endKey)) {
+                    const endDist = this.calculateDistance(segment.end, mergedLoc);
+                    if (endDist <= tolerance) {
+                        candidatePoints.push({
+                            point: segment.end,
+                            segment: segment,
+                            isStart: false,
+                            key: endKey,
+                            distance: endDist
+                        });
+                    }
+                }
+            }
+
+            // Sort by distance and pick only the closest one
+            if (candidatePoints.length > 0) {
+                candidatePoints.sort((a, b) => a.distance - b.distance);
+                const closest = candidatePoints[0];
+
+                console.debug(`[winding] - Moving closest unmerged point (${closest.point.x.toFixed(1)}, ${closest.point.y.toFixed(1)}) at distance ${closest.distance.toFixed(2)} to existing merged location (${mergedLoc.x.toFixed(1)}, ${mergedLoc.y.toFixed(1)})`);
+
+                if (closest.isStart) {
+                    closest.segment.start = mergedLoc;
+                } else {
+                    closest.segment.end = mergedLoc;
+                }
+                processedPoints.add(closest.key);
             }
         }
 
@@ -1617,6 +1709,17 @@ class SvgViewerInstance {
             return [];
         }
 
+        // Calculate centroid of all points for outer-facing detection
+        let centroidX = 0, centroidY = 0, pointCount = 0;
+        for (const [pointKey, _] of pointToSegments) {
+            const [x, y] = pointKey.split('_').map(Number);
+            centroidX += x;
+            centroidY += y;
+            pointCount++;
+        }
+        const centroid = { x: centroidX / pointCount, y: centroidY / pointCount };
+        console.debug(`[winding] Shape centroid: (${centroid.x.toFixed(1)}, ${centroid.y.toFixed(1)})`);
+
         // Find the leftmost point as starting point (guaranteed to be on outer edge)
         let startPoint = null;
         let startKey = null;
@@ -1652,6 +1755,21 @@ class SvgViewerInstance {
             console.debug(`[winding] - Connected segments: ${connectedSegments.length}, Available: ${availableSegments.length}`);
             console.debug(`[winding] - Visited segments: [${Array.from(visitedSegments).join(', ')}]`);
 
+            // FAILURE DETECTION: Check if we're being forced into a potentially internal path
+            if (availableSegments.length === 1) {
+                const forcedSegment = availableSegments[0].segment;
+                const nextPoint = availableSegments[0].isStart ? forcedSegment.end : forcedSegment.start;
+                const nextKey = `${nextPoint.x.toFixed(2)}_${nextPoint.y.toFixed(2)}`;
+                const nextConnections = pointToSegments.get(nextKey) || [];
+
+                console.debug(`[winding] - FORCED CHOICE: Only 1 segment available, going to (${nextPoint.x.toFixed(1)}, ${nextPoint.y.toFixed(1)}) with ${nextConnections.length} connections`);
+
+                // Flag potential internal segment: going to a high-degree vertex (merge point)
+                if (nextConnections.length >= 3) {
+                    console.debug(`[winding] - ⚠️  POTENTIAL INTERNAL SEGMENT: Forced to high-degree vertex (${nextConnections.length} connections)`);
+                }
+            }
+
             if (availableSegments.length === 0) {
                 console.debug('[winding] No more available segments, traversal complete');
                 console.debug(`[winding] - Total segments in network: ${segments.length}`);
@@ -1678,10 +1796,57 @@ class SvgViewerInstance {
                     while (turnAngle >= 2 * Math.PI) turnAngle -= 2 * Math.PI;
                 }
 
-                console.debug(`[winding] - Candidate segment ${segment.id}: to (${nextPoint.x.toFixed(1)}, ${nextPoint.y.toFixed(1)}), turn angle: ${(turnAngle * 180 / Math.PI).toFixed(1)}°`);
+                // Check if this segment leads away from centroid (outer-facing)
+                const fromCentroidX = currentPoint.x - centroid.x;
+                const fromCentroidY = currentPoint.y - centroid.y;
+                const toNextX = nextPoint.x - currentPoint.x;
+                const toNextY = nextPoint.y - currentPoint.y;
+
+                // Dot product: positive means pointing away from centroid (outer-facing)
+                const dotProduct = fromCentroidX * toNextX + fromCentroidY * toNextY;
+                const isOuterFacing = dotProduct > 0;
+
+                console.debug(`[winding] - Candidate segment ${segment.id}: to (${nextPoint.x.toFixed(1)}, ${nextPoint.y.toFixed(1)}), turn angle: ${(turnAngle * 180 / Math.PI).toFixed(1)}°, outer-facing: ${isOuterFacing}`);
 
                 // For outer edge, we want the SMALLEST turn angle (most clockwise = most outward)
-                if (bestSegment === null || turnAngle < bestAngle) {
+                // Treat angles near 360° as small angles (e.g., 350° -> 10°)
+                let normalizedAngle = turnAngle;
+                if (turnAngle > Math.PI) {
+                    normalizedAngle = 2 * Math.PI - turnAngle;
+                }
+
+                // For outer edge, we want the SMALLEST turn angle (most clockwise = most outward)
+                // Treat angles near 360° as small angles (e.g., 350° -> 10°)
+                let priority = normalizedAngle;
+
+
+                // CRITICAL: At high-degree vertices, strongly prefer outer-facing segments
+                const currentPointKey = `${currentPoint.x.toFixed(2)}_${currentPoint.y.toFixed(2)}`;
+                const currentConnections = pointToSegments.get(currentPointKey) || [];
+                if (currentConnections.length >= 4 && isOuterFacing) {
+                    priority = -3; // Even higher priority than collinear for outer-facing at high-degree vertices
+                    console.debug(`[winding] - HIGH-DEGREE VERTEX: Prioritizing outer-facing segment at ${currentConnections.length}-connection vertex`);
+                }
+
+                // Special case: If this is a straight continuation (collinear), give it highest priority
+                // Only check if the turn angle is close to 0° (true straight continuation)
+                // Note: 360° is NOT straight - it's a full circle back, which is a sharp inward turn
+                if (incomingAngle !== null) {
+                    const isNearZero = Math.abs(turnAngle) < 0.1; // Close to 0° (< ~6 degrees)
+
+                    if (isNearZero) { // Only true straight continuation
+                        priority = -2; // Higher priority than even sharp turns
+                        console.debug(`[winding] - COLLINEAR: Straight continuation detected (turn angle: ${(turnAngle * 180 / Math.PI).toFixed(1)}°), highest priority`);
+                    }
+                }
+
+                let bestPriority = bestAngle !== null ?
+                    (bestAngle > Math.PI ? 2 * Math.PI - bestAngle : bestAngle) : Infinity;
+                if (Math.abs(bestAngle) < 0.1 || Math.abs(bestAngle - 2 * Math.PI) < 0.1) {
+                    bestPriority = -1;
+                }
+
+                if (bestSegment === null || priority < bestPriority) {
                     bestSegment = segment;
                     bestAngle = turnAngle;
                     bestConn = conn;
