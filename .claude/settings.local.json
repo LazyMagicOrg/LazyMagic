@@ -4,7 +4,11 @@
       "Bash(ls:*)",
       "Bash(find:*)",
       "WebSearch",
-      "Read(/mnt/c/Users/TimothyMay/OneDrive - Insight Sciences Corporation/Pictures/Screenshots/**)"
+      "Read(/mnt/c/Users/TimothyMay/OneDrive - Insight Sciences Corporation/Pictures/Screenshots/**)",
+      "Bash(for func in _createPathOverlaps _findAdjacentRegions _extendPathsIntoOverlaps _createOverlapSegments _mergeOverlappingPaths)",
+      "Bash(do echo \"=== $func ===\")",
+      "Bash(grep:*)",
+      "Bash(done)"
     ],
     "deny": []
   }
