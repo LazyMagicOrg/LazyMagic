@@ -430,6 +430,456 @@ class SvgViewerInstance {
         return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
     }
 
+    // Find the largest inscribed rectangle that fits inside a polygon
+    // Tests multiple rotation angles to find optimal orientation
+    findLargestInscribedRectangle(polygon, options = {}) {
+        const {
+            gridSize = 20,           // Number of grid divisions per axis
+            minArea = 100,           // Minimum rectangle area to consider
+            debugLog = false         // Enable debug logging
+        } = options;
+
+        if (!polygon || polygon.length < 3) {
+            console.warn('[rectangle] Invalid polygon for rectangle fitting');
+            return null;
+        }
+
+        // Calculate polygon centroid for rotation center
+        const centroid = {
+            x: polygon.reduce((sum, p) => sum + p.x, 0) / polygon.length,
+            y: polygon.reduce((sum, p) => sum + p.y, 0) / polygon.length
+        };
+
+        let bestRectangle = null;
+        let bestArea = minArea;
+        let bestAngle = 0;
+
+        // PASS 1: Coarse scan at 5-degree increments
+        const coarseStep = 5;
+        for (let angleDeg = 0; angleDeg < 180; angleDeg += coarseStep) {
+            const angleRad = (angleDeg * Math.PI) / 180;
+            
+            // Rotate polygon to test axis-aligned rectangle at this angle
+            const rotatedPolygon = polygon.map(p => this._rotatePoint(p, centroid, -angleRad));
+            
+            // Find best axis-aligned rectangle in rotated space
+            const rotatedRect = this._findAxisAlignedRectangle(rotatedPolygon, gridSize, minArea, false);
+            
+            if (rotatedRect && rotatedRect.area > bestArea) {
+                // Rotate rectangle corners back to original coordinate system
+                const corners = [
+                    { x: rotatedRect.x, y: rotatedRect.y },
+                    { x: rotatedRect.x + rotatedRect.width, y: rotatedRect.y },
+                    { x: rotatedRect.x + rotatedRect.width, y: rotatedRect.y + rotatedRect.height },
+                    { x: rotatedRect.x, y: rotatedRect.y + rotatedRect.height }
+                ];
+                
+                const originalCorners = corners.map(c => this._rotatePoint(c, centroid, angleRad));
+                
+                // Validate that all corners are inside the original polygon
+                const allCornersInside = originalCorners.every(corner => 
+                    this.isPointInPolygon({x: corner.x, y: corner.y}, polygon)
+                );
+                
+                if (allCornersInside) {
+                    bestArea = rotatedRect.area;
+                    bestAngle = angleDeg;
+                    
+                    bestRectangle = {
+                        corners: originalCorners,
+                        area: rotatedRect.area,
+                        angle: angleDeg,
+                        width: rotatedRect.width,
+                        height: rotatedRect.height
+                    };
+                    
+                    if (debugLog) {
+                        console.debug(`[rectangle] Coarse scan - new best at ${angleDeg}°: ${rotatedRect.width.toFixed(1)}x${rotatedRect.height.toFixed(1)} = ${rotatedRect.area.toFixed(0)}`);
+                    }
+                } else if (debugLog) {
+                    console.debug(`[rectangle] Coarse scan - rejected ${angleDeg}°: rectangle extends outside polygon`);
+                }
+            }
+        }
+
+        // PASS 2: Fine scan at 1-degree increments around the best angle
+        const fineStep = 1;
+        const fineStart = Math.max(0, bestAngle - coarseStep);
+        const fineEnd = Math.min(180, bestAngle + coarseStep);
+        
+        if (debugLog) {
+            console.debug(`[rectangle] Fine scan from ${fineStart}° to ${fineEnd}°`);
+        }
+
+        for (let angleDeg = fineStart; angleDeg <= fineEnd; angleDeg += fineStep) {
+            const angleRad = (angleDeg * Math.PI) / 180;
+            
+            // Rotate polygon to test axis-aligned rectangle at this angle
+            const rotatedPolygon = polygon.map(p => this._rotatePoint(p, centroid, -angleRad));
+            
+            // Find best axis-aligned rectangle in rotated space
+            const rotatedRect = this._findAxisAlignedRectangle(rotatedPolygon, gridSize, minArea, false);
+            
+            if (rotatedRect && rotatedRect.area > bestArea) {
+                // Rotate rectangle corners back to original coordinate system
+                const corners = [
+                    { x: rotatedRect.x, y: rotatedRect.y },
+                    { x: rotatedRect.x + rotatedRect.width, y: rotatedRect.y },
+                    { x: rotatedRect.x + rotatedRect.width, y: rotatedRect.y + rotatedRect.height },
+                    { x: rotatedRect.x, y: rotatedRect.y + rotatedRect.height }
+                ];
+                
+                const originalCorners = corners.map(c => this._rotatePoint(c, centroid, angleRad));
+                
+                // Validate that all corners are inside the original polygon
+                const allCornersInside = originalCorners.every(corner => 
+                    this.isPointInPolygon({x: corner.x, y: corner.y}, polygon)
+                );
+                
+                if (allCornersInside) {
+                    bestRectangle = {
+                        corners: originalCorners,
+                        area: rotatedRect.area,
+                        angle: angleDeg,
+                        width: rotatedRect.width,
+                        height: rotatedRect.height
+                    };
+                    bestArea = rotatedRect.area;
+                    
+                    if (debugLog) {
+                        console.debug(`[rectangle] Fine scan - new best at ${angleDeg}°: ${rotatedRect.width.toFixed(1)}x${rotatedRect.height.toFixed(1)} = ${rotatedRect.area.toFixed(0)}`);
+                    }
+                } else if (debugLog) {
+                    console.debug(`[rectangle] Fine scan - rejected ${angleDeg}°: rectangle extends outside polygon`);
+                }
+            }
+        }
+
+        if (bestRectangle) {
+            if (debugLog) {
+                console.debug(`[rectangle] Final best: ${bestRectangle.width.toFixed(1)}x${bestRectangle.height.toFixed(1)} = ${bestRectangle.area.toFixed(0)} at ${bestRectangle.angle}°`);
+                console.debug(`[rectangle] Rectangle corners:`, bestRectangle.corners);
+            }
+        } else if (debugLog) {
+            console.warn(`[rectangle] No valid rectangle found`);
+        }
+
+        return bestRectangle;
+    }
+
+    // Helper: Rotate a point around a center by an angle (radians)
+    _rotatePoint(point, center, angle) {
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        const dx = point.x - center.x;
+        const dy = point.y - center.y;
+        return {
+            x: center.x + dx * cos - dy * sin,
+            y: center.y + dx * sin + dy * cos
+        };
+    }
+
+    // Find the largest axis-aligned rectangle in a polygon (internal helper)
+    _findAxisAlignedRectangle(polygon, gridSize, minArea, debugLog) {
+        if (!polygon || polygon.length < 3) {
+            return null;
+        }
+
+        // Calculate bounding box of polygon
+        const minX = Math.min(...polygon.map(p => p.x));
+        const maxX = Math.max(...polygon.map(p => p.x));
+        const minY = Math.min(...polygon.map(p => p.y));
+        const maxY = Math.max(...polygon.map(p => p.y));
+        
+        const width = maxX - minX;
+        const height = maxY - minY;
+        const stepX = width / gridSize;
+        const stepY = height / gridSize;
+
+        if (debugLog) {
+            console.debug(`[rectangle] Polygon bounds: (${minX.toFixed(1)}, ${minY.toFixed(1)}) to (${maxX.toFixed(1)}, ${maxY.toFixed(1)})`);
+            console.debug(`[rectangle] Grid: ${gridSize}x${gridSize}, step: ${stepX.toFixed(1)}x${stepY.toFixed(1)}`);
+        }
+
+        let bestRectangle = null;
+        let bestArea = minArea;
+        let testedPoints = 0;
+        let expandedRectangles = 0;
+
+        // Strategy 1: Sample grid points as potential top-left corners
+        for (let ix = 0; ix <= gridSize; ix++) {
+            for (let iy = 0; iy <= gridSize; iy++) {
+                const x = minX + ix * stepX;
+                const y = minY + iy * stepY;
+                const startPoint = { x, y };
+
+                testedPoints++;
+
+                // Check if this point is inside the polygon
+                if (!this.isPointInPolygon(startPoint, polygon)) {
+                    continue;
+                }
+
+                expandedRectangles++;
+
+                // Try to expand a rectangle from this point
+                const rect = this._expandRectangleFromPoint(startPoint, polygon, maxX, maxY, stepX, stepY);
+                
+                if (rect && rect.area > bestArea) {
+                    bestArea = rect.area;
+                    bestRectangle = rect;
+                    
+                    if (debugLog) {
+                        console.debug(`[rectangle] New best: ${rect.width.toFixed(1)}x${rect.height.toFixed(1)} = ${rect.area.toFixed(0)} at (${rect.x.toFixed(1)}, ${rect.y.toFixed(1)})`);
+                    }
+                }
+            }
+        }
+
+        // Strategy 2: Try polygon vertices slightly inset (often optimal for edge-aligned rectangles)
+        const INSET = Math.min(stepX, stepY) * 0.1; // Small inset to avoid boundary issues
+        for (const vertex of polygon) {
+            // Try the vertex slightly inset from edges
+            const insetsToTry = [
+                { x: vertex.x + INSET, y: vertex.y + INSET },       // Inset from top-left
+                { x: vertex.x - INSET, y: vertex.y + INSET },       // Inset from top-right
+                { x: vertex.x + INSET, y: vertex.y - INSET },       // Inset from bottom-left
+                { x: vertex.x - INSET, y: vertex.y - INSET }        // Inset from bottom-right
+            ];
+
+            for (const startPoint of insetsToTry) {
+                testedPoints++;
+
+                if (!this.isPointInPolygon(startPoint, polygon)) {
+                    continue;
+                }
+
+                expandedRectangles++;
+
+                const rect = this._expandRectangleFromPoint(startPoint, polygon, maxX, maxY, stepX, stepY);
+                
+                if (rect && rect.area > bestArea) {
+                    bestArea = rect.area;
+                    bestRectangle = rect;
+                    
+                    if (debugLog) {
+                        console.debug(`[rectangle] New best from vertex: ${rect.width.toFixed(1)}x${rect.height.toFixed(1)} = ${rect.area.toFixed(0)} at (${rect.x.toFixed(1)}, ${rect.y.toFixed(1)})`);
+                    }
+                }
+            }
+        }
+
+        // Strategy 3: Sample points along polygon edges (helps find rectangles aligned with straight edges)
+        const edgeSamples = 5; // Number of samples per edge
+        for (let i = 0; i < polygon.length; i++) {
+            const v1 = polygon[i];
+            const v2 = polygon[(i + 1) % polygon.length];
+            
+            // Sample points along this edge
+            for (let s = 1; s < edgeSamples; s++) {
+                const t = s / edgeSamples;
+                const edgePoint = {
+                    x: v1.x + t * (v2.x - v1.x),
+                    y: v1.y + t * (v2.y - v1.y)
+                };
+                
+                // Try insets from this edge point
+                const insetsToTry = [
+                    { x: edgePoint.x + INSET, y: edgePoint.y + INSET },
+                    { x: edgePoint.x - INSET, y: edgePoint.y + INSET },
+                    { x: edgePoint.x + INSET, y: edgePoint.y - INSET },
+                    { x: edgePoint.x - INSET, y: edgePoint.y - INSET }
+                ];
+
+                for (const startPoint of insetsToTry) {
+                    testedPoints++;
+
+                    if (!this.isPointInPolygon(startPoint, polygon)) {
+                        continue;
+                    }
+
+                    expandedRectangles++;
+
+                    const rect = this._expandRectangleFromPoint(startPoint, polygon, maxX, maxY, stepX, stepY);
+                    
+                    if (rect && rect.area > bestArea) {
+                        bestArea = rect.area;
+                        bestRectangle = rect;
+                        
+                        if (debugLog) {
+                            console.debug(`[rectangle] New best from edge: ${rect.width.toFixed(1)}x${rect.height.toFixed(1)} = ${rect.area.toFixed(0)} at (${rect.x.toFixed(1)}, ${rect.y.toFixed(1)})`);
+                        }
+                    }
+                }
+            }
+        }
+
+        if (debugLog) {
+            console.debug(`[rectangle] Tested ${testedPoints} total points (grid + vertices + edges), expanded ${expandedRectangles} rectangles`);
+            if (bestRectangle) {
+                console.debug(`[rectangle] Best rectangle: ${bestRectangle.width.toFixed(1)}x${bestRectangle.height.toFixed(1)} = ${bestRectangle.area.toFixed(0)}`);
+            } else {
+                console.debug(`[rectangle] No rectangle found with area >= ${minArea}`);
+            }
+        }
+
+        return bestRectangle;
+    }
+
+    // Expand a rectangle from a given top-left point until it hits polygon boundary
+    _expandRectangleFromPoint(topLeft, polygon, maxX, maxY, stepX, stepY) {
+        let bestRect = null;
+        let bestArea = 0;
+
+        // Try different expansion strategies
+        // Strategy 1: Expand width first, then height
+        const rect1 = this._expandRectangle(topLeft, polygon, maxX, maxY, stepX, stepY, 'width-first');
+        if (rect1 && rect1.area > bestArea) {
+            bestArea = rect1.area;
+            bestRect = rect1;
+        }
+
+        // Strategy 2: Expand height first, then width
+        const rect2 = this._expandRectangle(topLeft, polygon, maxX, maxY, stepX, stepY, 'height-first');
+        if (rect2 && rect2.area > bestArea) {
+            bestArea = rect2.area;
+            bestRect = rect2;
+        }
+
+        // Strategy 3: Expand both simultaneously (balanced)
+        const rect3 = this._expandRectangle(topLeft, polygon, maxX, maxY, stepX, stepY, 'balanced');
+        if (rect3 && rect3.area > bestArea) {
+            bestArea = rect3.area;
+            bestRect = rect3;
+        }
+
+        return bestRect;
+    }
+
+    // Expand rectangle using specified strategy with binary search
+    _expandRectangle(topLeft, polygon, maxX, maxY, stepX, stepY, strategy) {
+        let x = topLeft.x;
+        let y = topLeft.y;
+        let width = stepX;
+        let height = stepY;
+
+        const PRECISION = 0.1;
+
+        if (strategy === 'width-first') {
+            // Binary search for maximum width
+            width = this._binarySearchDimension(x, y, 'width', stepX, maxX - x, height, polygon, PRECISION);
+            
+            // Then binary search for maximum height with that width
+            height = this._binarySearchDimension(x, y, 'height', stepY, maxY - y, width, polygon, PRECISION);
+        } else if (strategy === 'height-first') {
+            // Binary search for maximum height
+            height = this._binarySearchDimension(x, y, 'height', stepY, maxY - y, width, polygon, PRECISION);
+            
+            // Then binary search for maximum width with that height
+            width = this._binarySearchDimension(x, y, 'width', stepX, maxX - x, height, polygon, PRECISION);
+        } else { // 'balanced'
+            // Iteratively expand both dimensions
+            let improved = true;
+            let iterations = 0;
+            const maxIterations = 10;
+            
+            while (improved && iterations < maxIterations) {
+                improved = false;
+                iterations++;
+                
+                // Try to expand width
+                const newWidth = this._binarySearchDimension(x, y, 'width', width, maxX - x, height, polygon, PRECISION);
+                if (newWidth > width) {
+                    width = newWidth;
+                    improved = true;
+                }
+                
+                // Try to expand height
+                const newHeight = this._binarySearchDimension(x, y, 'height', height, maxY - y, width, polygon, PRECISION);
+                if (newHeight > height) {
+                    height = newHeight;
+                    improved = true;
+                }
+            }
+        }
+
+        // Ensure minimum size
+        if (width < stepX || height < stepY) {
+            return null;
+        }
+
+        return {
+            x: x,
+            y: y,
+            width: width,
+            height: height,
+            area: width * height
+        };
+    }
+
+    // Binary search to find maximum dimension (width or height) that fits in polygon
+    _binarySearchDimension(x, y, dimension, minVal, maxVal, otherDimVal, polygon, precision) {
+        let low = minVal;
+        let high = maxVal;
+        let best = minVal;
+        
+        while (high - low > precision) {
+            const mid = (low + high) / 2;
+            
+            let isValid;
+            if (dimension === 'width') {
+                isValid = this._isRectangleInPolygon(x, y, mid, otherDimVal, polygon);
+            } else {
+                isValid = this._isRectangleInPolygon(x, y, otherDimVal, mid, polygon);
+            }
+            
+            if (isValid) {
+                best = mid;
+                low = mid;
+            } else {
+                high = mid;
+            }
+        }
+        
+        return best;
+    }
+
+    // Check if a rectangle is fully inside the polygon
+    // Tests corners AND edge midpoints to catch cases where edges cross outside
+    _isRectangleInPolygon(x, y, width, height, polygon) {
+        const pointsToCheck = [
+            // Four corners
+            { x: x, y: y },                    // Top-left
+            { x: x + width, y: y },            // Top-right
+            { x: x + width, y: y + height },  // Bottom-right
+            { x: x, y: y + height },           // Bottom-left
+            
+            // Edge midpoints
+            { x: x + width / 2, y: y },                    // Top edge middle
+            { x: x + width, y: y + height / 2 },          // Right edge middle
+            { x: x + width / 2, y: y + height },          // Bottom edge middle
+            { x: x, y: y + height / 2 },                  // Left edge middle
+            
+            // Additional points along edges for better accuracy
+            { x: x + width / 4, y: y },                   // Top edge quarter
+            { x: x + 3 * width / 4, y: y },               // Top edge 3/4
+            { x: x + width, y: y + height / 4 },          // Right edge quarter
+            { x: x + width, y: y + 3 * height / 4 },      // Right edge 3/4
+            { x: x + width / 4, y: y + height },          // Bottom edge quarter
+            { x: x + 3 * width / 4, y: y + height },      // Bottom edge 3/4
+            { x: x, y: y + height / 4 },                  // Left edge quarter
+            { x: x, y: y + 3 * height / 4 }               // Left edge 3/4
+        ];
+
+        for (const point of pointsToCheck) {
+            if (!this.isPointInPolygon(point, polygon)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     // Calculate distance from a point to a line segment
     _distanceToLineSegment(point, segStart, segEnd) {
         const A = point.x - segStart.x;
@@ -1825,14 +2275,19 @@ class SvgViewerInstance {
     }
 
 
-    // Clean up any existing debug unified paths
+    // Clean up any existing debug unified paths and inscribed rectangles
     _cleanupDebugPaths(scope) {
         console.debug('[cleanup] Starting debug path cleanup');
 
-        // Remove by class
+        // Remove unified paths by class
         const classPaths = scope.selectAll(".debug-unified-path");
         console.debug(`[cleanup] Found ${classPaths.length} paths with debug-unified-path class`);
         classPaths.remove();
+
+        // Remove inscribed rectangles by class
+        const classRects = scope.selectAll(".debug-inscribed-rectangle");
+        console.debug(`[cleanup] Found ${classRects.length} rectangles with debug-inscribed-rectangle class`);
+        classRects.remove();
 
         // Also remove any leftover debug paths by color attributes
         const allPaths = scope.selectAll("path");
@@ -1892,6 +2347,17 @@ class SvgViewerInstance {
                 console.debug(`[outline] Created overlapping merge unified path from ${unifiedBoundary.length} boundary points`);
             }
 
+            // Find largest inscribed rectangle
+            const polygon = unifiedBoundary || hull;
+            let largestRect = null;
+            if (polygon && polygon.length >= 3) {
+                largestRect = this.findLargestInscribedRectangle(polygon, {
+                    gridSize: 20,
+                    minArea: 100,
+                    debugLog: debugVisible
+                });
+            }
+
             // Create the merged path element
             const unifiedPath = scope.path(pathData);
 
@@ -1912,6 +2378,39 @@ class SvgViewerInstance {
                 const parentScope = unifiedPath.node.parentNode;
                 parentScope.appendChild(unifiedPath.node);
                 console.debug('[outline] Debug mode: Merged SVG path made visible with magenta styling (non-interactive)');
+
+                // Visualize the largest inscribed rectangle if found
+                if (largestRect) {
+                    let rectPath;
+                    
+                    if (largestRect.corners) {
+                        // Rotated rectangle - create a polygon from corners
+                        const corners = largestRect.corners;
+                        const pathData = `M ${corners[0].x} ${corners[0].y} ` +
+                                       `L ${corners[1].x} ${corners[1].y} ` +
+                                       `L ${corners[2].x} ${corners[2].y} ` +
+                                       `L ${corners[3].x} ${corners[3].y} Z`;
+                        rectPath = scope.path(pathData);
+                        console.debug(`[outline] Debug mode: Visualized ROTATED inscribed rectangle (${largestRect.width.toFixed(1)}x${largestRect.height.toFixed(1)}) at ${largestRect.angle}°`);
+                        console.debug(`[outline] Rectangle path data:`, pathData);
+                    } else {
+                        // Axis-aligned rectangle (fallback for old format)
+                        rectPath = scope.rect(largestRect.x, largestRect.y, largestRect.width, largestRect.height);
+                        console.debug(`[outline] Debug mode: Visualized AXIS-ALIGNED inscribed rectangle (${largestRect.width.toFixed(1)}x${largestRect.height.toFixed(1)})`);
+                    }
+                    
+                    rectPath.attr({
+                        fill: 'rgba(0, 255, 0, 0.2)',      // Semi-transparent green fill
+                        stroke: '#00FF00',                  // Green border
+                        strokeWidth: 2,
+                        'fill-opacity': 0.2,
+                        'stroke-opacity': 0.8,
+                        'pointer-events': 'none',
+                        'stroke-dasharray': '5,5'          // Dashed border
+                    });
+                    rectPath.addClass("debug-inscribed-rectangle");
+                    parentScope.appendChild(rectPath.node);
+                }
             } else {
                 // Normal mode: Hidden
                 unifiedPath.attr({
@@ -1999,17 +2498,9 @@ class SvgViewerInstance {
 
         const scope = this.scope();
 
-        // Remove existing outlines (selection + groups + debug paths)
+        // Remove existing outlines (selection + groups + debug paths including rectangles)
         scope.selectAll(".group-outline").remove();
-        scope.selectAll(".debug-unified-path").remove();
-
-        // Also remove any leftover debug unified paths that didn't get the class
-        scope.selectAll("path").forEach(path => {
-            const fill = path.attr("fill");
-            if (fill && (fill.includes("255, 0, 255") || fill.includes("255, 255, 0"))) {
-                path.remove();
-            }
-        });
+        this._cleanupDebugPaths(scope);
 
         // 1) Live selection perimeter (even when not grouped)
         this.getPaths();
