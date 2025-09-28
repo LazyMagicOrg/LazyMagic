@@ -999,8 +999,8 @@ class SvgViewerInstance {
                 }
 
                 // Use best match if it's close enough
-                const connectionTolerance = 5.0; // Allow some gap for connections
-                if (bestMatch && bestMatch.distance <= connectionTolerance) {
+                const POINT_MERGE_TOLERANCE = 5.0;
+                if (bestMatch && bestMatch.distance <= POINT_MERGE_TOLERANCE) {
                     const nextPoint = bestMatch.useStart ? bestMatch.segment.end : bestMatch.segment.start;
                     unifiedBoundary.push(nextPoint);
                     bestMatch.segment.used = true;
@@ -1057,11 +1057,12 @@ class SvgViewerInstance {
             // Step 1: Convert all paths to line segments only (no curves)
             const lineSegmentPaths = this._convertPathsToLineSegments(groupPaths);
 
-            // Step 2: Join coincident points using 5px tolerance (only between different paths)
-            const joinedPaths = this._joinCoincidentPoints(lineSegmentPaths, 5.0);
+            // Step 2: Join coincident points using tolerance (only between different paths)
+            const POINT_MERGE_TOLERANCE = 5.0;
+            const joinedPaths = this._joinCoincidentPoints(lineSegmentPaths, POINT_MERGE_TOLERANCE);
 
             // Step 2.5: Mark shared/internal segments (segments that overlap between paths)
-            const markedPaths = this._markSharedSegments(joinedPaths, 5.0);
+            const markedPaths = this._markSharedSegments(joinedPaths, POINT_MERGE_TOLERANCE);
 
             // Debug: Print complete segment list after merging and marking
             console.debug('[winding] === COMPLETE SEGMENT LIST AFTER MERGING ===');
@@ -1307,7 +1308,7 @@ class SvgViewerInstance {
                 ];
 
                 for (const combo of combinations) {
-                    // Rule 6: 20px tolerance for adjacency
+                    // Check distance for potential connection
                     const distance = this.calculateDistance(combo.point1, combo.point2);
 
                     console.debug(`[winding] - Checking seg${seg1.pathIdx}_${seg1.segmentIdx}.${combo.end1} (${combo.point1.x.toFixed(1)}, ${combo.point1.y.toFixed(1)}) vs seg${seg2.pathIdx}_${seg2.segmentIdx}.${combo.end2} (${combo.point2.x.toFixed(1)}, ${combo.point2.y.toFixed(1)}) = ${distance.toFixed(1)}px`);
@@ -1348,139 +1349,139 @@ class SvgViewerInstance {
             }
         }
 
-        // Sort potential connections by distance (closest first)
-        potentialConnections.sort((a, b) => a.distance - b.distance);
         console.debug(`[winding] Found ${potentialConnections.length} potential connections, sorted by distance: ${potentialConnections.map(p => `${p.distance.toFixed(1)}px`).join(', ')}`);
 
-        // Now apply Rule 7: each point can only be merged once, starting with closest connections
-        // ENHANCED: Also prevent multiple merges at the same geometric location (prevents super-nodes)
-        const adjacentPairs = [];
-        const mergedPoints = new Set();
-        const mergedLocations = new Map(); // Track geometric locations that have been merged
+        // NEW APPROACH: Cluster all points within tolerance using union-find
+        // This allows 3+ points to merge into a single super-node
+        console.debug(`[winding] Clustering points using union-find algorithm`);
+        
+        // Create a map of all unique points
+        const pointMap = new Map();
+        for (const segment of allSegments) {
+            const startKey = `${segment.pathIdx}_${segment.segmentIdx}_start`;
+            const endKey = `${segment.pathIdx}_${segment.segmentIdx}_end`;
+            pointMap.set(startKey, { point: segment.start, key: startKey });
+            pointMap.set(endKey, { point: segment.end, key: endKey });
+        }
 
-        for (const connection of potentialConnections) {
-            if (!mergedPoints.has(connection.point1Key) && !mergedPoints.has(connection.point2Key)) {
-                // Calculate the potential merged location
-                const potentialMergeLocation = {
-                    x: (connection.point1.x + connection.point2.x) / 2,
-                    y: (connection.point1.y + connection.point2.y) / 2
-                };
+        // Union-Find data structure
+        const parent = new Map();
+        const rank = new Map();
+        
+        for (const key of pointMap.keys()) {
+            parent.set(key, key);
+            rank.set(key, 0);
+        }
 
-                // Check if this geometric location already has a merge
-                const locationKey = `${potentialMergeLocation.x.toFixed(2)}_${potentialMergeLocation.y.toFixed(2)}`;
+        function find(x) {
+            if (parent.get(x) !== x) {
+                parent.set(x, find(parent.get(x)));
+            }
+            return parent.get(x);
+        }
 
-                if (mergedLocations.has(locationKey)) {
-                    console.debug(`[winding] - SKIPPING CONNECTION: ${connection.distance.toFixed(1)}px (location already has merge at ${locationKey} - preventing super-node)`);
-                    continue;
-                }
-
-                console.debug(`[winding] - NEW MERGE LOCATION: ${locationKey} for ${connection.distance.toFixed(1)}px connection`);
-
-                console.debug(`[winding] - ACCEPTING CONNECTION: ${connection.distance.toFixed(1)}px`);
-                adjacentPairs.push(connection);
-                mergedPoints.add(connection.point1Key);
-                mergedPoints.add(connection.point2Key);
-                mergedLocations.set(locationKey, potentialMergeLocation);
+        function union(x, y) {
+            const rootX = find(x);
+            const rootY = find(y);
+            
+            if (rootX === rootY) return;
+            
+            const rankX = rank.get(rootX);
+            const rankY = rank.get(rootY);
+            
+            if (rankX < rankY) {
+                parent.set(rootX, rootY);
+            } else if (rankX > rankY) {
+                parent.set(rootY, rootX);
             } else {
-                console.debug(`[winding] - SKIPPING CONNECTION: ${connection.distance.toFixed(1)}px (point already merged)`);
+                parent.set(rootY, rootX);
+                rank.set(rootX, rankX + 1);
             }
         }
 
-        console.debug(`[winding] Final connections: ${adjacentPairs.length} pairs`);
+        // Union all points that are within tolerance and from different paths
+        let connectionsApplied = 0;
+        for (const connection of potentialConnections) {
+            // Get the segments these points belong to
+            const seg1Path = connection.point1Key.split('_')[0];
+            const seg2Path = connection.point2Key.split('_')[0];
+            
+            if (seg1Path !== seg2Path) {
+                union(connection.point1Key, connection.point2Key);
+                connectionsApplied++;
+                console.debug(`[winding] - Unioning ${connection.point1Key} and ${connection.point2Key} (${connection.distance.toFixed(1)}px)`);
+            }
+        }
 
-        // Rule 10: Preserve segment count, update endpoints only
-        const modifiedSegments = allSegments.map(seg => ({
-            ...seg,
-            start: { ...seg.start },
-            end: { ...seg.end }
-        }));
+        console.debug(`[winding] Applied ${connectionsApplied} unions`);
 
-        // Track which points have been merged/moved
-        const processedPoints = new Set();
+        // Group points by their root (cluster)
+        const clusters = new Map();
+        for (const [key, pointData] of pointMap) {
+            const root = find(key);
+            if (!clusters.has(root)) {
+                clusters.set(root, []);
+            }
+            clusters.get(root).push(pointData);
+        }
 
-        // Rule 8: Replace both points with their midpoint
-        const mergedLocationsList = [];
-        for (const pair of adjacentPairs) {
-            const midpoint = {
-                x: (pair.point1.x + pair.point2.x) / 2,
-                y: (pair.point1.y + pair.point2.y) / 2
+        console.debug(`[winding] Created ${clusters.size} clusters from ${pointMap.size} points`);
+
+        // For each cluster with 2+ points, create a super-node at their average position
+        const superNodeMap = new Map(); // Maps original point key to super-node location
+        
+        for (const [root, clusterPoints] of clusters) {
+            if (clusterPoints.length > 1) {
+                // Check if cluster has points from multiple paths
+                const paths = new Set(clusterPoints.map(p => p.key.split('_')[0]));
+                if (paths.size > 1) {
+                    const superNode = {
+                        x: clusterPoints.reduce((sum, p) => sum + p.point.x, 0) / clusterPoints.length,
+                        y: clusterPoints.reduce((sum, p) => sum + p.point.y, 0) / clusterPoints.length
+                    };
+                    console.debug(`[winding] - Super-node at (${superNode.x.toFixed(1)}, ${superNode.y.toFixed(1)}) from ${clusterPoints.length} points: ${clusterPoints.map(p => p.key).join(', ')}`);
+                    
+                    for (const pointData of clusterPoints) {
+                        superNodeMap.set(pointData.key, superNode);
+                    }
+                }
+            }
+        }
+
+        console.debug(`[winding] Created ${superNodeMap.size} point mappings to super-nodes`);
+
+        // Additional pass: Map same-path points that share coordinates with super-node points
+        // This handles cases where segment endpoints from the same path have the same coordinates
+        // as points that were merged across paths (e.g., 1_1_start at same location as 1_0_end)
+        const EXACT_MATCH_TOLERANCE = 0.1;
+        for (const [mappedKey, superNode] of superNodeMap) {
+            const mappedPoint = pointMap.get(mappedKey).point;
+            
+            // Find all other points at the same location
+            for (const [otherKey, otherData] of pointMap) {
+                if (!superNodeMap.has(otherKey)) {
+                    const dist = this.calculateDistance(mappedPoint, otherData.point);
+                    if (dist < EXACT_MATCH_TOLERANCE) {
+                        superNodeMap.set(otherKey, superNode);
+                        console.debug(`[winding] - Including same-path point ${otherKey} in super-node (distance: ${dist.toFixed(2)}px)`);
+                    }
+                }
+            }
+        }
+
+        console.debug(`[winding] Final super-node mappings: ${superNodeMap.size}`);
+
+        // Rule 10: Preserve segment count, update endpoints to super-nodes
+        const modifiedSegments = allSegments.map(seg => {
+            const startKey = `${seg.pathIdx}_${seg.segmentIdx}_start`;
+            const endKey = `${seg.pathIdx}_${seg.segmentIdx}_end`;
+            
+            return {
+                ...seg,
+                start: superNodeMap.has(startKey) ? superNodeMap.get(startKey) : { ...seg.start },
+                end: superNodeMap.has(endKey) ? superNodeMap.get(endKey) : { ...seg.end }
             };
-
-            console.debug(`[winding] - Merging (${pair.point1.x.toFixed(1)}, ${pair.point1.y.toFixed(1)}) and (${pair.point2.x.toFixed(1)}, ${pair.point2.y.toFixed(1)}) to (${midpoint.x.toFixed(1)}, ${midpoint.y.toFixed(1)})`);
-
-            // Track this merged location for additional point moving
-            mergedLocationsList.push(midpoint);
-
-            // Mark these points as processed
-            processedPoints.add(pair.point1Key);
-            processedPoints.add(pair.point2Key);
-
-            // Update ALL segments that touch either of the merged points
-            for (const segment of modifiedSegments) {
-                // Check if segment start point matches either merged point
-                if (this.calculateDistance(segment.start, pair.point1) < 0.1 ||
-                    this.calculateDistance(segment.start, pair.point2) < 0.1) {
-                    segment.start = midpoint;
-                }
-                // Check if segment end point matches either merged point
-                if (this.calculateDistance(segment.end, pair.point1) < 0.1 ||
-                    this.calculateDistance(segment.end, pair.point2) < 0.1) {
-                    segment.end = midpoint;
-                }
-            }
-        }
-
-        // Additional pass: Move unprocessed points to existing merged locations (for 3+ shape corners)
-        // For each merged location, find the closest unprocessed point and move only that one
-        for (const mergedLoc of mergedLocationsList) {
-            const candidatePoints = [];
-
-            // Collect all unprocessed points within tolerance of this merged location
-            for (const segment of modifiedSegments) {
-                const startKey = `${segment.pathIdx}_${segment.segmentIdx}_start`;
-                if (!processedPoints.has(startKey)) {
-                    const startDist = this.calculateDistance(segment.start, mergedLoc);
-                    if (startDist <= tolerance) {
-                        candidatePoints.push({
-                            point: segment.start,
-                            segment: segment,
-                            isStart: true,
-                            key: startKey,
-                            distance: startDist
-                        });
-                    }
-                }
-
-                const endKey = `${segment.pathIdx}_${segment.segmentIdx}_end`;
-                if (!processedPoints.has(endKey)) {
-                    const endDist = this.calculateDistance(segment.end, mergedLoc);
-                    if (endDist <= tolerance) {
-                        candidatePoints.push({
-                            point: segment.end,
-                            segment: segment,
-                            isStart: false,
-                            key: endKey,
-                            distance: endDist
-                        });
-                    }
-                }
-            }
-
-            // Sort by distance and pick only the closest one
-            if (candidatePoints.length > 0) {
-                candidatePoints.sort((a, b) => a.distance - b.distance);
-                const closest = candidatePoints[0];
-
-                console.debug(`[winding] - Moving closest unmerged point (${closest.point.x.toFixed(1)}, ${closest.point.y.toFixed(1)}) at distance ${closest.distance.toFixed(2)} to existing merged location (${mergedLoc.x.toFixed(1)}, ${mergedLoc.y.toFixed(1)})`);
-
-                if (closest.isStart) {
-                    closest.segment.start = mergedLoc;
-                } else {
-                    closest.segment.end = mergedLoc;
-                }
-                processedPoints.add(closest.key);
-            }
-        }
+        });
 
         return modifiedSegments;
     }
@@ -1920,7 +1921,8 @@ class SvgViewerInstance {
                 // Only check if the turn angle is close to 0° (true straight continuation)
                 // Note: 360° is NOT straight - it's a full circle back, which is a sharp inward turn
                 if (incomingAngle !== null) {
-                    const isNearZero = Math.abs(turnAngle) < 0.1; // Close to 0° (< ~6 degrees)
+                    const COLLINEAR_THRESHOLD = 0.1; // Close to 0° (< ~6 degrees)
+                    const isNearZero = Math.abs(turnAngle) < COLLINEAR_THRESHOLD;
 
                     if (isNearZero) { // Only true straight continuation
                         priority = -2; // Higher priority than even sharp turns
@@ -1930,7 +1932,8 @@ class SvgViewerInstance {
 
                 let bestPriority = bestAngle !== null ?
                     (bestAngle > Math.PI ? 2 * Math.PI - bestAngle : bestAngle) : Infinity;
-                if (Math.abs(bestAngle) < 0.1 || Math.abs(bestAngle - 2 * Math.PI) < 0.1) {
+                const COLLINEAR_THRESHOLD = 0.1; // ~6 degrees
+                if (Math.abs(bestAngle) < COLLINEAR_THRESHOLD || Math.abs(bestAngle - 2 * Math.PI) < COLLINEAR_THRESHOLD) {
                     bestPriority = -1;
                 }
 
