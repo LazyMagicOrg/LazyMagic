@@ -1057,11 +1057,21 @@ class SvgViewerInstance {
             // Step 1: Convert all paths to line segments only (no curves)
             const lineSegmentPaths = this._convertPathsToLineSegments(groupPaths);
 
-            // Step 2: Join coincident points using 20px tolerance (only between different paths)
-            const joinedPaths = this._joinCoincidentPoints(lineSegmentPaths, 20.0);
+            // Step 2: Join coincident points using 5px tolerance (only between different paths)
+            const joinedPaths = this._joinCoincidentPoints(lineSegmentPaths, 5.0);
+
+            // Step 2.5: Mark shared/internal segments (segments that overlap between paths)
+            const markedPaths = this._markSharedSegments(joinedPaths, 5.0);
+
+            // Debug: Print complete segment list after merging and marking
+            console.debug('[winding] === COMPLETE SEGMENT LIST AFTER MERGING ===');
+            for (const seg of markedPaths) {
+                console.debug(`[winding]   Segment ${seg.pathIdx}_${seg.segmentIdx}: (${seg.start.x.toFixed(1)}, ${seg.start.y.toFixed(1)}) → (${seg.end.x.toFixed(1)}, ${seg.end.y.toFixed(1)}) [internal: ${seg.isInternal}]`);
+            }
+            console.debug('[winding] === END SEGMENT LIST ===');
 
             // Step 3: Join the paths together into a network
-            const pathNetwork = this._joinPathsIntoNetwork(joinedPaths);
+            const pathNetwork = this._joinPathsIntoNetwork(markedPaths);
 
             // Step 4: Use winding algorithm to traverse outer edge
             const outerEdgePoints = this._traverseOuterEdge(pathNetwork);
@@ -1187,12 +1197,17 @@ class SvgViewerInstance {
                     break;
 
                 case 'l': // Line to
-                    if (cmd === 'L') {
-                        currentPoint = { x: params[0], y: params[1] };
-                    } else {
-                        currentPoint = { x: currentPoint.x + params[0], y: currentPoint.y + params[1] };
+                    // Handle multiple coordinate pairs (each pair is a line segment)
+                    for (let i = 0; i < params.length; i += 2) {
+                        if (i + 1 < params.length) {
+                            if (cmd === 'L') {
+                                currentPoint = { x: params[i], y: params[i + 1] };
+                            } else {
+                                currentPoint = { x: currentPoint.x + params[i], y: currentPoint.y + params[i + 1] };
+                            }
+                            points.push({ ...currentPoint });
+                        }
                     }
-                    points.push({ ...currentPoint });
                     break;
 
                 case 'h': // Horizontal line
@@ -1468,6 +1483,67 @@ class SvgViewerInstance {
         }
 
         return modifiedSegments;
+    }
+
+    // Mark shared/internal segments that should not be part of the outer boundary
+    // A segment is "shared" if it overlaps with a segment from a different path going in the opposite direction
+    // NOTE: This should use exact coordinate matching (0.01px) because we only want to mark segments
+    // whose endpoints were actually merged to the same location in the point merging step
+    _markSharedSegments(allSegments, tolerance = 0.01) {
+        console.debug(`[winding] Marking shared/internal segments with exact coordinate matching (tolerance ${tolerance}px)`);
+
+        // Create a copy of segments with isInternal flag
+        const markedSegments = allSegments.map(seg => ({
+            ...seg,
+            isInternal: false
+        }));
+
+        let sharedCount = 0;
+
+        // Compare all segment pairs from different paths
+        for (let i = 0; i < markedSegments.length; i++) {
+            const seg1 = markedSegments[i];
+            
+            for (let j = i + 1; j < markedSegments.length; j++) {
+                const seg2 = markedSegments[j];
+
+                // Only check segments from different paths
+                if (seg1.pathIdx === seg2.pathIdx) continue;
+
+                // Check if segments overlap (same endpoints, opposite directions)
+                const sameDirection = 
+                    this._pointsMatch(seg1.start, seg2.start, tolerance) &&
+                    this._pointsMatch(seg1.end, seg2.end, tolerance);
+
+                const oppositeDirection = 
+                    this._pointsMatch(seg1.start, seg2.end, tolerance) &&
+                    this._pointsMatch(seg1.end, seg2.start, tolerance);
+
+                if (sameDirection || oppositeDirection) {
+                    // Mark both segments as internal (shared edge)
+                    if (!seg1.isInternal) {
+                        seg1.isInternal = true;
+                        sharedCount++;
+                        console.debug(`[winding] - Segment ${seg1.pathIdx}_${seg1.segmentIdx} marked as INTERNAL (shared with ${seg2.pathIdx}_${seg2.segmentIdx})`);
+                    }
+                    if (!seg2.isInternal) {
+                        seg2.isInternal = true;
+                        sharedCount++;
+                        console.debug(`[winding] - Segment ${seg2.pathIdx}_${seg2.segmentIdx} marked as INTERNAL (shared with ${seg1.pathIdx}_${seg1.segmentIdx})`);
+                    }
+                }
+            }
+        }
+
+        console.debug(`[winding] Marked ${sharedCount} segments as internal (shared between paths)`);
+        return markedSegments;
+    }
+
+    // Helper: check if two points match within tolerance
+    _pointsMatch(p1, p2, tolerance) {
+        const dx = p1.x - p2.x;
+        const dy = p1.y - p2.y;
+        return Math.sqrt(dx * dx + dy * dy) <= tolerance;
     }
 
     // Create overlapping regions where paths are adjacent
@@ -1749,11 +1825,23 @@ class SvgViewerInstance {
             iterations++;
 
             const connectedSegments = pointToSegments.get(currentKey) || [];
-            const availableSegments = connectedSegments.filter(conn => !visitedSegments.has(conn.segment.id));
+            const internalSegments = connectedSegments.filter(conn => conn.segment.isInternal);
+            const availableSegments = connectedSegments.filter(conn => 
+                !visitedSegments.has(conn.segment.id) && !conn.segment.isInternal
+            );
 
             console.debug(`[winding] Iteration ${iterations}: At point (${currentPoint.x.toFixed(1)}, ${currentPoint.y.toFixed(1)})`);
-            console.debug(`[winding] - Connected segments: ${connectedSegments.length}, Available: ${availableSegments.length}`);
+            console.debug(`[winding] - Connected segments: ${connectedSegments.length}, Internal: ${internalSegments.length}, Available: ${availableSegments.length}`);
+            if (internalSegments.length > 0) {
+                console.debug(`[winding] - Excluding internal segments: ${internalSegments.map(conn => conn.segment.id).join(', ')}`);
+            }
             console.debug(`[winding] - Visited segments: [${Array.from(visitedSegments).join(', ')}]`);
+            if (availableSegments.length > 0) {
+                console.debug(`[winding] - Available segment destinations: ${availableSegments.map(conn => {
+                    const nextPt = conn.isStart ? conn.segment.end : conn.segment.start;
+                    return `${conn.segment.id}→(${nextPt.x.toFixed(1)},${nextPt.y.toFixed(1)})`;
+                }).join(', ')}`);
+            }
 
             // FAILURE DETECTION: Check if we're being forced into a potentially internal path
             if (availableSegments.length === 1) {
