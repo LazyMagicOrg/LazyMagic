@@ -1354,21 +1354,21 @@ function tryRectangleAtAngle(polygon, angleDeg, centroid, debugMode = false) {
     // Use the larger dimension as base to ensure we can capture elongated shapes
     const baseDimension = Math.max(maxWidth, maxHeight);
 
-    // Debug logging for critical angles
-    if (debugMode) {
-        console.log(`🔷 [RECT-DEBUG] >> Angle ${angleDeg}° rotated bounds: size ${polygonWidth.toFixed(1)}×${polygonHeight.toFixed(1)}`);
-        console.log(`🔷 [RECT-DEBUG] >> Directional distances: min=${dirDistances.minDistance.toFixed(1)}, max=${dirDistances.maxDistance.toFixed(1)}, H=${dirDistances.horizontal.toFixed(1)}, V=${dirDistances.vertical.toFixed(1)}`);
-        console.log(`🔷 [RECT-DEBUG] >> All directions:`, Object.entries(dirDistances.distances).map(([k,v]) => `${k}=${v.toFixed(1)}`).join(', '));
-        console.log(`🔷 [RECT-DEBUG] >> maxWidth=${maxWidth.toFixed(1)} (E+W), maxHeight=${maxHeight.toFixed(1)} (N+S), baseDim=${baseDimension.toFixed(1)}`);
-        console.log(`🔷 [RECT-DEBUG] >> Starting binary search with ${aspectRatios.length} aspect ratios`);
-    }
-
     // OPTIMIZED: Test multiple strategic aspect ratios for better results
     let bestArea = 0;
     let bestResult = null;
 
     // ENHANCED: Test wider range of aspect ratios for parallelogram shapes
     const aspectRatios = [0.5, 0.7, 1.0, 1.4, 2.0, 2.5, 3.0]; // Much wider range including very wide rectangles
+
+    // Debug logging for critical angles
+    if (debugMode && (angleDeg === 9 || angleDeg === 22)) {
+        console.log(`🔷 [RECT-DEBUG] >> Angle ${angleDeg}° rotated bounds: size ${polygonWidth.toFixed(1)}×${polygonHeight.toFixed(1)}`);
+        console.log(`🔷 [RECT-DEBUG] >> Directional distances: min=${dirDistances.minDistance.toFixed(1)}, max=${dirDistances.maxDistance.toFixed(1)}, H=${dirDistances.horizontal.toFixed(1)}, V=${dirDistances.vertical.toFixed(1)}`);
+        console.log(`🔷 [RECT-DEBUG] >> All directions:`, Object.entries(dirDistances.distances).map(([k,v]) => `${k}=${v.toFixed(1)}`).join(', '));
+        console.log(`🔷 [RECT-DEBUG] >> maxWidth=${maxWidth.toFixed(1)} (E+W), maxHeight=${maxHeight.toFixed(1)} (N+S), baseDim=${baseDimension.toFixed(1)}`);
+        console.log(`🔷 [RECT-DEBUG] >> Starting binary search with ${aspectRatios.length} aspect ratios`);
+    }
 
     for (const aspectRatio of aspectRatios) {
         let validScale = 0;
