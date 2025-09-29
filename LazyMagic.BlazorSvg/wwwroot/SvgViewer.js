@@ -628,7 +628,7 @@ class SvgViewerInstance {
         const result = fastInscribedRectangle(polygon, {
             angleStep: 10,
             refinementStep: 2,
-            maxTime: 2000,
+            maxTime: 5000,  // Increased to allow fixed-grid search to complete
             debugMode: true
         });
 

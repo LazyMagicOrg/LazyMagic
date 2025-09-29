@@ -1,6 +1,177 @@
 // Optimized SVG processing functions for SvgViewer
 // Uses spatial hashing and early exit strategies for better performance
 
+// ============================================================================
+// POLYLABEL - Pole of Inaccessibility Algorithm
+// Finds the point inside a polygon that is furthest from all edges
+// Based on Mapbox's polylabel: https://github.com/mapbox/polylabel
+// ============================================================================
+
+class PolylabelCell {
+    constructor(x, y, h, polygon) {
+        this.x = x; // cell center x
+        this.y = y; // cell center y
+        this.h = h; // half the cell size
+
+        // Distance from cell center to polygon outline
+        this.d = pointToPolygonDist(x, y, polygon);
+
+        // Maximum distance from any point in the cell to polygon outline
+        this.max = this.d + this.h * Math.SQRT2;
+    }
+}
+
+// Calculate distance from point to polygon outline (signed)
+function pointToPolygonDist(x, y, polygon) {
+    let inside = false;
+    let minDistSq = Infinity;
+
+    for (let i = 0, len = polygon.length, j = len - 1; i < len; j = i++) {
+        const a = polygon[i];
+        const b = polygon[j];
+
+        if ((a.y > y) !== (b.y > y) &&
+            (x < (b.x - a.x) * (y - a.y) / (b.y - a.y) + a.x)) {
+            inside = !inside;
+        }
+
+        minDistSq = Math.min(minDistSq, getSegDistSq(x, y, a, b));
+    }
+
+    return (inside ? 1 : -1) * Math.sqrt(minDistSq);
+}
+
+// Get squared distance from point to a segment
+function getSegDistSq(px, py, a, b) {
+    let x = a.x;
+    let y = a.y;
+    let dx = b.x - x;
+    let dy = b.y - y;
+
+    if (dx !== 0 || dy !== 0) {
+        const t = ((px - x) * dx + (py - y) * dy) / (dx * dx + dy * dy);
+
+        if (t > 1) {
+            x = b.x;
+            y = b.y;
+        } else if (t > 0) {
+            x += dx * t;
+            y += dy * t;
+        }
+    }
+
+    dx = px - x;
+    dy = py - y;
+
+    return dx * dx + dy * dy;
+}
+
+// Main polylabel function
+function polylabel(polygon, precision = 1.0, debug = false) {
+    // Find bounding box
+    let minX = Infinity, minY = Infinity;
+    let maxX = -Infinity, maxY = -Infinity;
+
+    for (let i = 0; i < polygon.length; i++) {
+        const p = polygon[i];
+        if (p.x < minX) minX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y > maxY) maxY = p.y;
+    }
+
+    const width = maxX - minX;
+    const height = maxY - minY;
+    const cellSize = Math.min(width, height);
+    let h = cellSize / 2;
+
+    if (cellSize === 0) {
+        return { x: minX, y: minY, distance: 0 };
+    }
+
+    // Priority queue of cells in order of their "potential" (max distance to polygon edge)
+    const cellQueue = [];
+
+    // Cover polygon with initial cells
+    for (let x = minX; x < maxX; x += cellSize) {
+        for (let y = minY; y < maxY; y += cellSize) {
+            cellQueue.push(new PolylabelCell(x + h, y + h, h, polygon));
+        }
+    }
+
+    // Take centroid as initial best guess
+    let bestCell = getCentroidCell(polygon);
+
+    // Special case for rectangular-ish polygons
+    const bboxCell = new PolylabelCell(minX + width / 2, minY + height / 2, 0, polygon);
+    if (bboxCell.d > bestCell.d) bestCell = bboxCell;
+
+    let numProbes = cellQueue.length;
+
+    while (cellQueue.length) {
+        // Pick the most promising cell
+        const cell = cellQueue.shift();
+
+        // Update the best cell if we found a better one
+        if (cell.d > bestCell.d) {
+            bestCell = cell;
+            if (debug) console.debug(`[polylabel] Found better cell: distance ${cell.d.toFixed(2)} at (${cell.x.toFixed(1)}, ${cell.y.toFixed(1)})`);
+        }
+
+        // If this cell can't possibly have a better solution, skip it
+        if (cell.max - bestCell.d <= precision) continue;
+
+        // Split the cell into four cells
+        h = cell.h / 2;
+        if (h === 0) continue;
+
+        cellQueue.push(new PolylabelCell(cell.x - h, cell.y - h, h, polygon));
+        cellQueue.push(new PolylabelCell(cell.x + h, cell.y - h, h, polygon));
+        cellQueue.push(new PolylabelCell(cell.x - h, cell.y + h, h, polygon));
+        cellQueue.push(new PolylabelCell(cell.x + h, cell.y + h, h, polygon));
+        numProbes += 4;
+
+        // Sort queue by max potential distance
+        cellQueue.sort((a, b) => b.max - a.max);
+    }
+
+    if (debug) {
+        console.debug(`[polylabel] Num probes: ${numProbes}`);
+        console.debug(`[polylabel] Best distance: ${bestCell.d.toFixed(2)}`);
+    }
+
+    return {
+        x: bestCell.x,
+        y: bestCell.y,
+        distance: bestCell.d
+    };
+}
+
+function getCentroidCell(polygon) {
+    let area = 0;
+    let x = 0;
+    let y = 0;
+
+    for (let i = 0, len = polygon.length, j = len - 1; i < len; j = i++) {
+        const a = polygon[i];
+        const b = polygon[j];
+        const f = a.x * b.y - b.x * a.y;
+        x += (a.x + b.x) * f;
+        y += (a.y + b.y) * f;
+        area += f * 3;
+    }
+
+    if (area === 0) {
+        return new PolylabelCell(polygon[0].x, polygon[0].y, 0, polygon);
+    }
+
+    return new PolylabelCell(x / area, y / area, 0, polygon);
+}
+
+// ============================================================================
+// END POLYLABEL
+// ============================================================================
+
 // Spatial hash for fast point lookups
 class SpatialHash {
     constructor(cellSize = 10) {
@@ -477,7 +648,8 @@ function getPolygonAreaCentroid(polygon, minX, maxX, minY, maxY) {
     return { x: cx, y: cy };
 }
 
-// Get centroids using systematic grid search to find global maximum
+// Get centroids using hybrid approach: Polylabel + strategic sampling
+// Polylabel finds the deepest interior point, but we need more coverage for optimal rectangles
 function getMultipleCentroids(polygon, minX, maxX, minY, maxY, options = {}) {
     const { debugMode = false } = options;
     const centroids = [];
@@ -485,67 +657,25 @@ function getMultipleCentroids(polygon, minX, maxX, minY, maxY, options = {}) {
     const width = maxX - minX;
     const height = maxY - minY;
 
-    // ENHANCED: Use ultra-dense grid search for optimal coverage
-    // Maximum resolution to ensure we find optimal centroids in all extended shapes
-    const gridResolution = 50; // 50x50 = 2500 potential centroids (comprehensive)
-    const stepX = width / (gridResolution + 1);
-    const stepY = height / (gridResolution + 1);
+    // 1. Use Polylabel to find THE pole of inaccessibility (deepest interior point)
+    const precision = 1.0;
+    const pole = polylabel(polygon, precision, debugMode);
 
-    if (debugMode) console.debug(`[multi-centroid] Performing ${gridResolution}x${gridResolution} systematic grid search`);
-
-    // Sample every grid point inside the polygon
-    for (let i = 1; i <= gridResolution; i++) {
-        for (let j = 1; j <= gridResolution; j++) {
-            const candidate = {
-                x: minX + i * stepX,
-                y: minY + j * stepY
-            };
-
-            if (isPointInPolygonSlow(candidate, polygon)) {
-                centroids.push(candidate);
-            }
-        }
+    if (debugMode) {
+        console.debug(`[multi-centroid] Polylabel found pole at (${pole.x.toFixed(1)}, ${pole.y.toFixed(1)}) with distance ${pole.distance.toFixed(1)}`);
     }
 
-    // ADDITIONAL: Add finer grid sampling in the center regions
-    // Extended shapes might have optimal centroids in transition areas
-    const fineGridSize = 10;
-    const centerMargin = 0.2; // Focus on central 60% of the shape
-    const centerMinX = minX + width * centerMargin;
-    const centerMaxX = maxX - width * centerMargin;
-    const centerMinY = minY + height * centerMargin;
-    const centerMaxY = maxY - height * centerMargin;
+    // Always add the pole first
+    centroids.push({ x: pole.x, y: pole.y });
 
-    if (centerMaxX > centerMinX && centerMaxY > centerMinY) {
-        const centerWidth = centerMaxX - centerMinX;
-        const centerHeight = centerMaxY - centerMinY;
-        const fineStepX = centerWidth / (fineGridSize + 1);
-        const fineStepY = centerHeight / (fineGridSize + 1);
-
-        for (let i = 1; i <= fineGridSize; i++) {
-            for (let j = 1; j <= fineGridSize; j++) {
-                const candidate = {
-                    x: centerMinX + i * fineStepX,
-                    y: centerMinY + j * fineStepY
-                };
-
-                if (isPointInPolygonSlow(candidate, polygon)) {
-                    // Check if this point is significantly different from existing centroids
-                    const minDistance = 2.0; // Minimum distance to avoid duplicates
-                    const isDuplicate = centroids.some(existing =>
-                        Math.sqrt(Math.pow(existing.x - candidate.x, 2) + Math.pow(existing.y - candidate.y, 2)) < minDistance
-                    );
-
-                    if (!isDuplicate) {
-                        centroids.push(candidate);
-                    }
-                }
-            }
-        }
-    }
-
-    // Always include standard centroids as additional candidates
+    // 2. Add standard geometric centroids
     const standardCentroids = [];
+
+    // Area-weighted centroid
+    const areaCentroid = getPolygonAreaCentroid(polygon, minX, maxX, minY, maxY);
+    if (isPointInPolygonSlow(areaCentroid, polygon)) {
+        standardCentroids.push(areaCentroid);
+    }
 
     // Vertex centroid
     let vertexCentroidX = 0, vertexCentroidY = 0;
@@ -561,71 +691,118 @@ function getMultipleCentroids(polygon, minX, maxX, minY, maxY, options = {}) {
         standardCentroids.push(vertexCentroid);
     }
 
-    // Area-weighted centroid
-    const areaCentroid = getPolygonAreaCentroid(polygon, minX, maxX, minY, maxY);
-    if (isPointInPolygonSlow(areaCentroid, polygon)) {
-        standardCentroids.push(areaCentroid);
-    }
-
     // Bounding box center
     const bboxCenter = { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
     if (isPointInPolygonSlow(bboxCenter, polygon)) {
         standardCentroids.push(bboxCenter);
     }
 
-    // ENHANCED: Strategic centroid patterns optimized for different shape types
-    const strategicPatterns = [
-        { x: 0.50, y: 0.48, name: "optimal pattern" },
-        { x: 0.33, y: 0.33, name: "lower-left focus" },
-        { x: 0.67, y: 0.33, name: "lower-right focus" },
-        { x: 0.33, y: 0.67, name: "upper-left focus" },
-        { x: 0.67, y: 0.67, name: "upper-right focus" },
-        { x: 0.40, y: 0.60, name: "off-center pattern" },
-        { x: 0.60, y: 0.40, name: "diagonal pattern" },
-        // Additional patterns for parallelogram shapes
-        { x: 0.45, y: 0.50, name: "left-center bias" },
-        { x: 0.55, y: 0.50, name: "right-center bias" },
-        { x: 0.50, y: 0.35, name: "lower-center bias" },
-        { x: 0.50, y: 0.65, name: "upper-center bias" },
-        { x: 0.35, y: 0.45, name: "lower-left offset" },
-        { x: 0.65, y: 0.55, name: "upper-right offset" }
-    ];
+    // 3. Add strategic grid sampling with FIXED step size and ALIGNED origins
+    // Use fixed pixel spacing with grid aligned to absolute coordinates
+    // This ensures Shape 1, 2, 3 all test the SAME grid points in overlapping regions
+    const stepSize = 12.0; // Fixed 12-pixel step balances coverage with performance
 
-    for (const pattern of strategicPatterns) {
-        const candidate = {
-            x: minX + width * pattern.x,
-            y: minY + height * pattern.y
-        };
-        if (isPointInPolygonSlow(candidate, polygon)) {
-            standardCentroids.push(candidate);
-            if (debugMode) console.debug(`[multi-centroid] Added ${pattern.name} centroid (${(pattern.x*100).toFixed(0)}%, ${(pattern.y*100).toFixed(0)}%) at (${candidate.x.toFixed(1)}, ${candidate.y.toFixed(1)})`);
+    // Start grid from multiples of stepSize (aligned to origin 0,0)
+    const gridStartX = Math.ceil(minX / stepSize) * stepSize;
+    const gridStartY = Math.ceil(minY / stepSize) * stepSize;
+    const gridEndX = Math.floor(maxX / stepSize) * stepSize;
+    const gridEndY = Math.floor(maxY / stepSize) * stepSize;
+
+    for (let x = gridStartX; x <= gridEndX; x += stepSize) {
+        for (let y = gridStartY; y <= gridEndY; y += stepSize) {
+            const candidate = { x, y };
+
+            if (isPointInPolygonSlow(candidate, polygon)) {
+                standardCentroids.push(candidate);
+            }
         }
     }
 
-    // Add standard centroids to the front of the list
-    centroids.unshift(...standardCentroids);
+    const gridCountX = Math.floor((gridEndX - gridStartX) / stepSize) + 1;
+    const gridCountY = Math.floor((gridEndY - gridStartY) / stepSize) + 1;
 
-    // Remove duplicates (standard centroids might overlap with grid points)
-    const uniqueCentroids = [];
-    const tolerance = Math.min(stepX, stepY) / 2;
+    // 4. Add strategic offset patterns from pole and other key points
+    // Sample points around the pole to handle cases where rectangle center isn't at pole
+    const offsets = [
+        { dx: 0.1, dy: 0 },
+        { dx: -0.1, dy: 0 },
+        { dx: 0, dy: 0.1 },
+        { dx: 0, dy: -0.1 },
+        { dx: 0.2, dy: 0 },
+        { dx: -0.2, dy: 0 },
+        { dx: 0, dy: 0.2 },
+        { dx: 0, dy: -0.2 },
+        { dx: 0.15, dy: 0.15 },
+        { dx: -0.15, dy: 0.15 },
+        { dx: 0.15, dy: -0.15 },
+        { dx: -0.15, dy: -0.15 },
+        { dx: 0.1, dy: 0.1 },
+        { dx: -0.1, dy: 0.1 },
+        { dx: 0.1, dy: -0.1 },
+        { dx: -0.1, dy: -0.1 }
+    ];
 
-    for (const centroid of centroids) {
-        const isDuplicate = uniqueCentroids.some(existing =>
-            Math.abs(existing.x - centroid.x) < tolerance &&
-            Math.abs(existing.y - centroid.y) < tolerance
+    // Add offsets from pole
+    for (const offset of offsets) {
+        const candidate = {
+            x: pole.x + offset.dx * width,
+            y: pole.y + offset.dy * height
+        };
+        if (isPointInPolygonSlow(candidate, polygon)) {
+            standardCentroids.push(candidate);
+        }
+    }
+
+    // Also add offsets from area centroid if it's different from pole
+    if (isPointInPolygonSlow(areaCentroid, polygon)) {
+        const dist = Math.sqrt(
+            Math.pow(areaCentroid.x - pole.x, 2) +
+            Math.pow(areaCentroid.y - pole.y, 2)
         );
-        if (!isDuplicate) {
+        if (dist > 10) {
+            for (const offset of offsets) {
+                const candidate = {
+                    x: areaCentroid.x + offset.dx * width,
+                    y: areaCentroid.y + offset.dy * height
+                };
+                if (isPointInPolygonSlow(candidate, polygon)) {
+                    standardCentroids.push(candidate);
+                }
+            }
+        }
+    }
+
+    // Add all standard centroids
+    centroids.push(...standardCentroids);
+
+    // Snap all centroids to match the base grid for consistency across shape extensions
+    // This ensures Shape 1, 2, 3 test EXACTLY the same centroid coordinates
+    // CRITICAL: snap size must equal grid step size for perfect alignment
+    const snapSize = stepSize; // Use same 12-pixel snap as grid step
+    const snappedCentroids = centroids.map(c => ({
+        x: Math.round(c.x / snapSize) * snapSize,
+        y: Math.round(c.y / snapSize) * snapSize
+    }));
+
+    // Remove duplicates after snapping
+    const uniqueCentroids = [];
+    const seenKeys = new Set();
+
+    for (const centroid of snappedCentroids) {
+        const key = `${centroid.x},${centroid.y}`;
+        if (!seenKeys.has(key)) {
+            seenKeys.add(key);
             uniqueCentroids.push(centroid);
         }
     }
 
-    if (debugMode) console.debug(`[multi-centroid] Generated ${uniqueCentroids.length} unique centroids from systematic search`);
+    if (debugMode) console.debug(`[multi-centroid] Using ${uniqueCentroids.length} centroids (pole + ${standardCentroids.length} strategic)`);
 
-    // DEBUG: Log polygon characteristics for comparison between shapes
-    // width and height already declared above
-    console.log(`[polygon-debug] Polygon: ${polygon.length} vertices, bounds: (${minX.toFixed(1)}, ${minY.toFixed(1)}) to (${maxX.toFixed(1)}, ${maxY.toFixed(1)}), size: ${width.toFixed(1)}x${height.toFixed(1)}`);
-    console.log(`[polygon-debug] First 3 vertices: (${polygon[0].x.toFixed(1)}, ${polygon[0].y.toFixed(1)}), (${polygon[1]?.x.toFixed(1)}, ${polygon[1]?.y.toFixed(1)}), (${polygon[2]?.x.toFixed(1)}, ${polygon[2]?.y.toFixed(1)})`);
-    console.log(`[polygon-debug] Final centroids: ${uniqueCentroids.length} points`);
+    // DEBUG: Log polygon characteristics with RECT-DEBUG prefix for easy filtering
+    console.log(`🔷 [RECT-DEBUG] Polygon: ${polygon.length} vertices, bounds: (${minX.toFixed(1)}, ${minY.toFixed(1)}) to (${maxX.toFixed(1)}, ${maxY.toFixed(1)}), size: ${width.toFixed(1)}x${height.toFixed(1)}`);
+    console.log(`🔷 [RECT-DEBUG] Grid: ${stepSize.toFixed(1)}px step, aligned from (${gridStartX.toFixed(1)}, ${gridStartY.toFixed(1)}) to (${gridEndX.toFixed(1)}, ${gridEndY.toFixed(1)}), snap=${snapSize.toFixed(1)}px`);
+    console.log(`🔷 [RECT-DEBUG] Centroids: ${uniqueCentroids.length} total (grid: ${gridCountX}x${gridCountY})`);
+    console.log(`🔷 [RECT-DEBUG] Pole: (${pole.x.toFixed(1)}, ${pole.y.toFixed(1)}), Area centroid: (${areaCentroid.x.toFixed(1)}, ${areaCentroid.y.toFixed(1)})`);
 
     return uniqueCentroids;
 }
@@ -837,6 +1014,11 @@ function fastInscribedRectangle(polygon, options = {}) {
         const centroid = centroids[i];
         if (performance.now() - startTime > maxTime) break;
 
+        // Log when we test the critical centroid
+        if (centroid.x === 552 && centroid.y === 228) {
+            console.log(`🔷 [RECT-DEBUG] *** Testing critical centroid (552, 228) for ${polygon.length}-vertex polygon ***`);
+        }
+
         // DETERMINISTIC: Test ALL centroids for truly optimal result
         // Early exit disabled to ensure consistent results
 
@@ -879,13 +1061,30 @@ function fastInscribedRectangle(polygon, options = {}) {
                 return a - b;
             });
 
-        if (debugMode) console.debug(`[fast-rectangle] Natural edge angles: ${uniqueAngles.join(', ')}°, testing ${strategicAngles.length} total angles`);
+        // Special debug flag for critical centroid - use exact comparison since we're snapping to grid
+        const isCriticalCentroid = (centroid.x === 552 && centroid.y === 228);
+
+        if (isCriticalCentroid) {
+            console.log(`🔷 [RECT-DEBUG] Testing ${strategicAngles.length} angles at (552, 228), angle list: [${strategicAngles.slice(0, 15).join(', ')}...]`);
+        }
 
         // First pass: Test strategic angles
         for (const angle of strategicAngles) {
             if (performance.now() - startTime > maxTime) break;
 
-            const rect = tryRectangleAtAngle(polygon, angle, centroid, false);
+            // Special debug logging for angle 22° at centroid (552, 228)
+            const isCriticalTest = isCriticalCentroid && angle === 22;
+
+            const rect = tryRectangleAtAngle(polygon, angle, centroid, isCriticalTest);
+
+            if (isCriticalTest) {
+                if (rect) {
+                    console.log(`🔷 [RECT-DEBUG] Angle 22° result: ${polygon.length}-vertex polygon: Found ${rect.width.toFixed(1)}×${rect.height.toFixed(1)}, AREA=${rect.area.toFixed(0)}, current best: ${bestAreaForCentroid.toFixed(0)}`);
+                } else {
+                    console.log(`🔷 [RECT-DEBUG] Angle 22° result: ${polygon.length}-vertex polygon: NO VALID RECTANGLE FOUND`);
+                }
+            }
+
             if (rect && rect.area > bestAreaForCentroid) {
                 bestAreaForCentroid = rect.area;
                 bestAngleForCentroid = angle;
@@ -914,10 +1113,8 @@ function fastInscribedRectangle(polygon, options = {}) {
             bestArea = bestAreaForCentroid;
             bestRect = bestRectForCentroid;
             bestCentroid = centroid;
-        }
 
-        if (debugMode && bestRectForCentroid) {
-            console.debug(`[fast-rectangle] Centroid (${centroid.x.toFixed(1)}, ${centroid.y.toFixed(1)}) produced area ${bestAreaForCentroid.toFixed(1)} at angle ${bestAngleForCentroid}°`);
+            console.log(`🔷 [RECT-DEBUG] New best: centroid (${centroid.x.toFixed(1)}, ${centroid.y.toFixed(1)}) → area ${bestAreaForCentroid.toFixed(0)} at angle ${bestAngleForCentroid}°`);
         }
     }
 
@@ -956,7 +1153,7 @@ function fastInscribedRectangle(polygon, options = {}) {
 
     // ALWAYS show timing information regardless of debug mode
     if (bestRect && bestCentroid) {
-        console.log(`✅ [fast-rectangle] Found rectangle in ${elapsed.toFixed(1)}ms: ${bestRect.width.toFixed(1)}x${bestRect.height.toFixed(1)} (area ${bestRect.area.toFixed(0)}) at ${bestRect.angle}° using centroid (${bestCentroid.x.toFixed(1)}, ${bestCentroid.y.toFixed(1)}) after testing ${centroids.length} centroids`);
+        console.log(`🔷 [RECT-DEBUG] Result: ${bestRect.width.toFixed(1)}x${bestRect.height.toFixed(1)}, AREA=${bestRect.area.toFixed(0)}, angle=${bestRect.angle}°, centroid=(${bestCentroid.x.toFixed(1)}, ${bestCentroid.y.toFixed(1)}), time=${elapsed.toFixed(1)}ms, tested=${centroids.length} centroids`);
 
         // FINAL DEBUG: Show polygon characteristics after area calculation
         console.log(`🔍 [SHAPE-DEBUG] FINAL: ${polygon.length} vertices, bounds (${minX.toFixed(1)}, ${minY.toFixed(1)}) to (${maxX.toFixed(1)}, ${maxY.toFixed(1)}), size ${polygonWidth.toFixed(1)}x${polygonHeight.toFixed(1)}, AREA: ${bestRect.area.toFixed(0)}, TIME: ${elapsed.toFixed(1)}ms`);
@@ -976,11 +1173,75 @@ function fastInscribedRectangle(polygon, options = {}) {
     return bestRect;
 }
 
+// Helper: Calculate point to line segment distance
+function pointToSegmentDistance(point, p1, p2) {
+    const dx = p2.x - p1.x;
+    const dy = p2.y - p1.y;
+    const lengthSq = dx * dx + dy * dy;
+
+    if (lengthSq === 0) return Math.hypot(point.x - p1.x, point.y - p1.y);
+
+    // Project point onto line segment
+    let t = ((point.x - p1.x) * dx + (point.y - p1.y) * dy) / lengthSq;
+    t = Math.max(0, Math.min(1, t)); // Clamp to segment
+
+    const projX = p1.x + t * dx;
+    const projY = p1.y + t * dy;
+
+    return Math.hypot(point.x - projX, point.y - projY);
+}
+
+// Calculate minimum distance from centroid to any polygon edge
+function getMinDistanceToEdge(polygon, centroid) {
+    // Build spatial hash of polygon edges
+    const spatialHash = new SpatialHash(20); // 20px cells
+
+    // Add edge midpoints to spatial hash for fast lookup
+    for (let i = 0; i < polygon.length; i++) {
+        const p1 = polygon[i];
+        const p2 = polygon[(i + 1) % polygon.length];
+        const midpoint = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+        spatialHash.add(midpoint, { edge: { p1, p2 }, index: i });
+    }
+
+    // Start with a conservative search radius
+    let searchRadius = 150; // Larger initial radius to catch edges
+    let minDistance = Infinity;
+
+    // Find nearby edges using spatial hash
+    const nearbyEdges = spatialHash.findNear(centroid, searchRadius);
+
+    // If we found edges, calculate precise distance to each
+    for (const item of nearbyEdges) {
+        const { p1, p2 } = item.data.edge;
+        const dist = pointToSegmentDistance(centroid, p1, p2);
+        minDistance = Math.min(minDistance, dist);
+    }
+
+    // If no edges found in initial radius, expand search (fallback)
+    if (nearbyEdges.length === 0) {
+        // Brute force fallback - check all edges
+        for (let i = 0; i < polygon.length; i++) {
+            const p1 = polygon[i];
+            const p2 = polygon[(i + 1) % polygon.length];
+            const dist = pointToSegmentDistance(centroid, p1, p2);
+            minDistance = Math.min(minDistance, dist);
+        }
+    }
+
+    return minDistance;
+}
+
 // Try to fit a rectangle at a specific angle
 function tryRectangleAtAngle(polygon, angleDeg, centroid, debugMode = false) {
     const angleRad = (angleDeg * Math.PI) / 180;
     const cos = Math.cos(angleRad);
     const sin = Math.sin(angleRad);
+
+    // Enhanced debug logging for angle 22°
+    if (debugMode && angleDeg === 22) {
+        console.log(`🔷 [RECT-DEBUG] >> Starting angle 22° test for ${polygon.length}-vertex polygon at centroid (${centroid.x.toFixed(1)}, ${centroid.y.toFixed(1)})`);
+    }
 
     // Debug rotation matrix validation for critical angles
     if (debugMode && (angleDeg === 0 || angleDeg === 90 || angleDeg === 160)) {
@@ -1009,7 +1270,7 @@ function tryRectangleAtAngle(polygon, angleDeg, centroid, debugMode = false) {
         };
     });
 
-    // Find axis-aligned bounds
+    // Find axis-aligned bounds (keep for reference/debugging)
     let minX = Infinity, maxX = -Infinity;
     let minY = Infinity, maxY = -Infinity;
 
@@ -1020,11 +1281,18 @@ function tryRectangleAtAngle(polygon, angleDeg, centroid, debugMode = false) {
         maxY = Math.max(maxY, p.y);
     }
 
-    // ADAPTIVE: Use bounding box to determine appropriate base size
-    // Calculate polygon bounds for adaptive sizing
     const polygonWidth = maxX - minX;
     const polygonHeight = maxY - minY;
-    const polygonDiagonal = Math.sqrt(polygonWidth * polygonWidth + polygonHeight * polygonHeight);
+
+    // NEW: Use distance to edge for scaling (monotonic approach)
+    // Calculate minimum distance from centroid to any edge in rotated space
+    const distanceToEdge = getMinDistanceToEdge(rotated, centroid);
+    const baseDimension = distanceToEdge * 1.8; // Diameter with conservative factor
+
+    // Debug logging for angle 22°
+    if (debugMode && angleDeg === 22) {
+        console.log(`🔷 [RECT-DEBUG] >> Angle 22° rotated bounds: size ${polygonWidth.toFixed(1)}×${polygonHeight.toFixed(1)}, distToEdge=${distanceToEdge.toFixed(1)}, baseDim=${baseDimension.toFixed(1)}`);
+    }
 
     // OPTIMIZED: Test multiple strategic aspect ratios for better results
     let bestArea = 0;
@@ -1044,9 +1312,9 @@ function tryRectangleAtAngle(polygon, angleDeg, centroid, debugMode = false) {
         for (let iter = 0; iter < maxIterations && (high - low) > precision; iter++) {
             const scale = Math.round((low + high) * 500) / 1000; // Round to 3 decimal places for determinism
 
-            // CONSERVATIVE: Scale based on actual polygon bounds
-            let testWidth = polygonWidth * scale;
-            let testHeight = polygonHeight * scale;
+            // NEW: Scale based on distance to edge (monotonic approach)
+            let testWidth = baseDimension * scale;
+            let testHeight = baseDimension * scale;
 
             // Adjust for aspect ratio
             if (aspectRatio > 1.0) {
@@ -1090,8 +1358,8 @@ function tryRectangleAtAngle(polygon, angleDeg, centroid, debugMode = false) {
 
         // Check if this aspect ratio produced a better result
         if (validScale > 0) {
-            let finalWidth = polygonWidth * validScale;
-            let finalHeight = polygonHeight * validScale;
+            let finalWidth = baseDimension * validScale;
+            let finalHeight = baseDimension * validScale;
 
             // Apply aspect ratio to final dimensions
             if (aspectRatio > 1.0) {
@@ -1130,15 +1398,30 @@ function tryRectangleAtAngle(polygon, angleDeg, centroid, debugMode = false) {
                     angle: angleDeg
                 };
 
-                if (debugMode) console.debug(`[fast-rectangle] Angle ${angleDeg}°: Better result found with aspect ${aspectRatio.toFixed(1)}, scale ${validScale.toFixed(3)}, area ${area.toFixed(1)}`);
+                if (debugMode) {
+                    if (angleDeg === 22) {
+                        console.log(`🔷 [RECT-DEBUG] >> Angle 22° better result: aspect ${aspectRatio.toFixed(1)}, dims ${finalWidth.toFixed(1)}×${finalHeight.toFixed(1)}, AREA=${area.toFixed(0)}`);
+                    } else {
+                        console.debug(`[fast-rectangle] Angle ${angleDeg}°: Better result found with aspect ${aspectRatio.toFixed(1)}, scale ${validScale.toFixed(3)}, area ${area.toFixed(1)}`);
+                    }
+                }
             }
         }
     }
 
     if (bestResult) {
+        if (debugMode && angleDeg === 22) {
+            console.log(`🔷 [RECT-DEBUG] >> Angle 22° FINAL: Returning ${bestResult.width.toFixed(1)}×${bestResult.height.toFixed(1)}, AREA=${bestResult.area.toFixed(0)}`);
+        }
         return bestResult;
     } else {
-        if (debugMode) console.debug(`[fast-rectangle] Angle ${angleDeg}°: No valid rectangle found`);
+        if (debugMode) {
+            if (angleDeg === 22) {
+                console.log(`🔷 [RECT-DEBUG] >> Angle 22° FINAL: No valid rectangle found`);
+            } else {
+                console.debug(`[fast-rectangle] Angle ${angleDeg}°: No valid rectangle found`);
+            }
+        }
         return null;
     }
 }
