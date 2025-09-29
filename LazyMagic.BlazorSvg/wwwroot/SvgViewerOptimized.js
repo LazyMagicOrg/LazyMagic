@@ -1072,8 +1072,8 @@ function fastInscribedRectangle(polygon, options = {}) {
         for (const angle of strategicAngles) {
             if (performance.now() - startTime > maxTime) break;
 
-            // Special debug logging for angle 22° at centroid (552, 228)
-            const isCriticalTest = isCriticalCentroid && angle === 22;
+            // Special debug logging for angle 22° at centroid (552, 228) OR angle 9° for all
+            const isCriticalTest = (isCriticalCentroid && angle === 22) || (angle === 9);
 
             const rect = tryRectangleAtAngle(polygon, angle, centroid, isCriticalTest);
 
@@ -1191,12 +1191,13 @@ function pointToSegmentDistance(point, p1, p2) {
     return Math.hypot(point.x - projX, point.y - projY);
 }
 
-// Calculate minimum distance from centroid to any polygon edge
-function getMinDistanceToEdge(polygon, centroid) {
-    // Build spatial hash of polygon edges
+// Calculate distance from centroid to polygon edge in multiple directions
+// Returns { minDistance, maxDistance, horizontal, vertical } for better rectangle sizing
+function getDirectionalDistancesToEdge(polygon, centroid) {
+    // Build spatial hash of polygon edges for efficient lookup
     const spatialHash = new SpatialHash(20); // 20px cells
 
-    // Add edge midpoints to spatial hash for fast lookup
+    // Add edge midpoints to spatial hash
     for (let i = 0; i < polygon.length; i++) {
         const p1 = polygon[i];
         const p2 = polygon[(i + 1) % polygon.length];
@@ -1204,32 +1205,89 @@ function getMinDistanceToEdge(polygon, centroid) {
         spatialHash.add(midpoint, { edge: { p1, p2 }, index: i });
     }
 
-    // Start with a conservative search radius
-    let searchRadius = 150; // Larger initial radius to catch edges
+    // Test distances in 8 cardinal/diagonal directions
+    const directions = [
+        { dx: 1, dy: 0, name: 'E' },    // East
+        { dx: -1, dy: 0, name: 'W' },   // West
+        { dx: 0, dy: 1, name: 'S' },    // South
+        { dx: 0, dy: -1, name: 'N' },   // North
+        { dx: 1, dy: 1, name: 'SE' },   // Southeast
+        { dx: -1, dy: 1, name: 'SW' },  // Southwest
+        { dx: 1, dy: -1, name: 'NE' },  // Northeast
+        { dx: -1, dy: -1, name: 'NW' }  // Northwest
+    ];
+
+    const distances = {};
     let minDistance = Infinity;
+    let maxDistance = 0;
 
-    // Find nearby edges using spatial hash
-    const nearbyEdges = spatialHash.findNear(centroid, searchRadius);
+    for (const dir of directions) {
+        // Cast a ray from centroid in this direction
+        // Use a large distance to ensure we hit an edge
+        const rayLength = 1000;
+        const rayEnd = {
+            x: centroid.x + dir.dx * rayLength,
+            y: centroid.y + dir.dy * rayLength
+        };
 
-    // If we found edges, calculate precise distance to each
-    for (const item of nearbyEdges) {
-        const { p1, p2 } = item.data.edge;
-        const dist = pointToSegmentDistance(centroid, p1, p2);
-        minDistance = Math.min(minDistance, dist);
-    }
+        let closestIntersection = Infinity;
 
-    // If no edges found in initial radius, expand search (fallback)
-    if (nearbyEdges.length === 0) {
-        // Brute force fallback - check all edges
+        // Check intersection with all edges
         for (let i = 0; i < polygon.length; i++) {
             const p1 = polygon[i];
             const p2 = polygon[(i + 1) % polygon.length];
-            const dist = pointToSegmentDistance(centroid, p1, p2);
-            minDistance = Math.min(minDistance, dist);
+
+            // Find intersection of ray with edge segment
+            const intersection = raySegmentIntersection(centroid, rayEnd, p1, p2);
+            if (intersection !== null) {
+                const dist = Math.hypot(intersection.x - centroid.x, intersection.y - centroid.y);
+                closestIntersection = Math.min(closestIntersection, dist);
+            }
+        }
+
+        if (closestIntersection < Infinity) {
+            distances[dir.name] = closestIntersection;
+            minDistance = Math.min(minDistance, closestIntersection);
+            maxDistance = Math.max(maxDistance, closestIntersection);
         }
     }
 
-    return minDistance;
+    // Calculate horizontal and vertical extents (useful for axis-aligned sizing)
+    const horizontal = Math.min(distances['E'] || Infinity, distances['W'] || Infinity);
+    const vertical = Math.min(distances['N'] || Infinity, distances['S'] || Infinity);
+
+    return {
+        minDistance,
+        maxDistance,
+        horizontal,
+        vertical,
+        distances  // Full directional data for debugging
+    };
+}
+
+// Helper: Find intersection point of ray (from p1 to p2) with line segment (from p3 to p4)
+function raySegmentIntersection(rayStart, rayEnd, segStart, segEnd) {
+    const x1 = rayStart.x, y1 = rayStart.y;
+    const x2 = rayEnd.x, y2 = rayEnd.y;
+    const x3 = segStart.x, y3 = segStart.y;
+    const x4 = segEnd.x, y4 = segEnd.y;
+
+    const denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+
+    if (Math.abs(denom) < 1e-10) return null; // Parallel or coincident
+
+    const t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denom;
+    const u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / denom;
+
+    // Check if intersection is on the ray (t >= 0) and on the segment (0 <= u <= 1)
+    if (t >= 0 && u >= 0 && u <= 1) {
+        return {
+            x: x1 + t * (x2 - x1),
+            y: y1 + t * (y2 - y1)
+        };
+    }
+
+    return null;
 }
 
 // Try to fit a rectangle at a specific angle
@@ -1284,14 +1342,25 @@ function tryRectangleAtAngle(polygon, angleDeg, centroid, debugMode = false) {
     const polygonWidth = maxX - minX;
     const polygonHeight = maxY - minY;
 
-    // NEW: Use distance to edge for scaling (monotonic approach)
-    // Calculate minimum distance from centroid to any edge in rotated space
-    const distanceToEdge = getMinDistanceToEdge(rotated, centroid);
-    const baseDimension = distanceToEdge * 1.8; // Diameter with conservative factor
+    // NEW: Use directional distances for better sizing (monotonic approach)
+    // Calculate distances to edges in multiple directions
+    const dirDistances = getDirectionalDistancesToEdge(rotated, centroid);
 
-    // Debug logging for angle 22°
-    if (debugMode && angleDeg === 22) {
-        console.log(`🔷 [RECT-DEBUG] >> Angle 22° rotated bounds: size ${polygonWidth.toFixed(1)}×${polygonHeight.toFixed(1)}, distToEdge=${distanceToEdge.toFixed(1)}, baseDim=${baseDimension.toFixed(1)}`);
+    // FIXED: Calculate maximum width/height based on opposite direction pairs
+    // For a rotated rectangle, we need to sum distances in opposite directions
+    const maxWidth = (dirDistances.distances['E'] || 0) + (dirDistances.distances['W'] || 0);
+    const maxHeight = (dirDistances.distances['N'] || 0) + (dirDistances.distances['S'] || 0);
+
+    // Use the larger dimension as base to ensure we can capture elongated shapes
+    const baseDimension = Math.max(maxWidth, maxHeight);
+
+    // Debug logging for critical angles
+    if (debugMode) {
+        console.log(`🔷 [RECT-DEBUG] >> Angle ${angleDeg}° rotated bounds: size ${polygonWidth.toFixed(1)}×${polygonHeight.toFixed(1)}`);
+        console.log(`🔷 [RECT-DEBUG] >> Directional distances: min=${dirDistances.minDistance.toFixed(1)}, max=${dirDistances.maxDistance.toFixed(1)}, H=${dirDistances.horizontal.toFixed(1)}, V=${dirDistances.vertical.toFixed(1)}`);
+        console.log(`🔷 [RECT-DEBUG] >> All directions:`, Object.entries(dirDistances.distances).map(([k,v]) => `${k}=${v.toFixed(1)}`).join(', '));
+        console.log(`🔷 [RECT-DEBUG] >> maxWidth=${maxWidth.toFixed(1)} (E+W), maxHeight=${maxHeight.toFixed(1)} (N+S), baseDim=${baseDimension.toFixed(1)}`);
+        console.log(`🔷 [RECT-DEBUG] >> Starting binary search with ${aspectRatios.length} aspect ratios`);
     }
 
     // OPTIMIZED: Test multiple strategic aspect ratios for better results
@@ -1303,7 +1372,7 @@ function tryRectangleAtAngle(polygon, angleDeg, centroid, debugMode = false) {
 
     for (const aspectRatio of aspectRatios) {
         let validScale = 0;
-        let low = 0, high = 1.5; // Conservative but reasonable scaling limit
+        let low = 0, high = 1.0; // Scale from 0 to 1 (100% of max dimensions)
 
         // CONSERVATIVE: Use polygon bounds with moderate scaling
         const maxIterations = 15;
@@ -1312,17 +1381,19 @@ function tryRectangleAtAngle(polygon, angleDeg, centroid, debugMode = false) {
         for (let iter = 0; iter < maxIterations && (high - low) > precision; iter++) {
             const scale = Math.round((low + high) * 500) / 1000; // Round to 3 decimal places for determinism
 
-            // NEW: Scale based on distance to edge (monotonic approach)
-            let testWidth = baseDimension * scale;
-            let testHeight = baseDimension * scale;
+            // FIXED: Scale width and height independently based on actual directional distances
+            // Start with the maximum possible dimensions, then scale down together
+            let testWidth = maxWidth * scale;
+            let testHeight = maxHeight * scale;
 
-            // Adjust for aspect ratio
-            if (aspectRatio > 1.0) {
-                // Wider rectangle
-                testWidth = testWidth * aspectRatio;
-            } else {
-                // Taller rectangle
-                testHeight = testHeight / aspectRatio;
+            // Adjust for aspect ratio while respecting directional constraints (NEVER exceed max dimensions)
+            const currentAspect = testWidth / testHeight;
+            if (aspectRatio > currentAspect) {
+                // Want wider: increase width but cap at maxWidth
+                testWidth = Math.min(testHeight * aspectRatio, maxWidth);
+            } else if (aspectRatio < currentAspect) {
+                // Want taller: increase height but cap at maxHeight
+                testHeight = Math.min(testWidth / aspectRatio, maxHeight);
             }
 
             const testMinX = centroid.x - testWidth / 2;
@@ -1358,17 +1429,22 @@ function tryRectangleAtAngle(polygon, angleDeg, centroid, debugMode = false) {
 
         // Check if this aspect ratio produced a better result
         if (validScale > 0) {
-            let finalWidth = baseDimension * validScale;
-            let finalHeight = baseDimension * validScale;
+            let finalWidth = maxWidth * validScale;
+            let finalHeight = maxHeight * validScale;
 
-            // Apply aspect ratio to final dimensions
-            if (aspectRatio > 1.0) {
-                finalWidth = finalWidth * aspectRatio;
-            } else {
-                finalHeight = finalHeight / aspectRatio;
+            // Apply aspect ratio to final dimensions (cap at max dimensions)
+            const currentAspect = finalWidth / finalHeight;
+            if (aspectRatio > currentAspect) {
+                finalWidth = Math.min(finalHeight * aspectRatio, maxWidth);
+            } else if (aspectRatio < currentAspect) {
+                finalHeight = Math.min(finalWidth / aspectRatio, maxHeight);
             }
 
             const area = finalWidth * finalHeight;
+
+            if (debugMode && validScale > 0.5) {
+                console.log(`🔷 [RECT-DEBUG] >> Aspect ${aspectRatio.toFixed(1)}: validScale=${validScale.toFixed(3)}, dims=${finalWidth.toFixed(1)}×${finalHeight.toFixed(1)}, area=${area.toFixed(0)}`);
+            }
 
             if (area > bestArea) {
                 bestArea = area;
@@ -1399,8 +1475,8 @@ function tryRectangleAtAngle(polygon, angleDeg, centroid, debugMode = false) {
                 };
 
                 if (debugMode) {
-                    if (angleDeg === 22) {
-                        console.log(`🔷 [RECT-DEBUG] >> Angle 22° better result: aspect ${aspectRatio.toFixed(1)}, dims ${finalWidth.toFixed(1)}×${finalHeight.toFixed(1)}, AREA=${area.toFixed(0)}`);
+                    if (angleDeg === 9 || angleDeg === 22) {
+                        console.log(`🔷 [RECT-DEBUG] >> Angle ${angleDeg}° better result: aspect ${aspectRatio.toFixed(1)}, scale ${validScale.toFixed(3)}, dims ${finalWidth.toFixed(1)}×${finalHeight.toFixed(1)}, AREA=${area.toFixed(0)}`);
                     } else {
                         console.debug(`[fast-rectangle] Angle ${angleDeg}°: Better result found with aspect ${aspectRatio.toFixed(1)}, scale ${validScale.toFixed(3)}, area ${area.toFixed(1)}`);
                     }
