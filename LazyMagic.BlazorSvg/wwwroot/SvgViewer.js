@@ -309,6 +309,91 @@ class SvgViewerInstance {
         return inside;
     }
 
+    // Robust rectangle validation: tests corners + points along each edge
+    _validateRectangleInPolygon(corners, polygon) {
+        console.debug(`[rectangle] Validating rectangle with corners: ${corners.map(c => `(${c.x.toFixed(1)},${c.y.toFixed(1)})`).join(', ')}`);
+        
+        // Test all 4 corners
+        for (const corner of corners) {
+            if (!this.isPointInPolygon({x: corner.x, y: corner.y}, polygon)) {
+                console.debug(`[rectangle] Validation failed - corner (${corner.x.toFixed(1)}, ${corner.y.toFixed(1)}) outside polygon`);
+                return false;
+            }
+        }
+        console.debug(`[rectangle] All corners passed validation`);
+        
+        // Test points along each edge to catch boundary crossings
+        const edgeTestPoints = 5; // Moderate number of points for boundary checking
+        for (let i = 0; i < corners.length; i++) {
+            const start = corners[i];
+            const end = corners[(i + 1) % corners.length];
+            
+            // Test points along this edge
+            for (let j = 1; j <= edgeTestPoints; j++) {
+                const t = j / (edgeTestPoints + 1); // t from ~0.05 to ~0.95 in small steps
+                const testPoint = {
+                    x: start.x + t * (end.x - start.x),
+                    y: start.y + t * (end.y - start.y)
+                };
+                
+                if (!this.isPointInPolygon(testPoint, polygon)) {
+                    console.debug(`[rectangle] Validation failed - edge point (${testPoint.x.toFixed(1)}, ${testPoint.y.toFixed(1)}) outside polygon`);
+                    return false;
+                }
+            }
+        }
+        console.debug(`[rectangle] All edge points passed validation`);
+        
+        // Test center point
+        const centerX = corners.reduce((sum, c) => sum + c.x, 0) / corners.length;
+        const centerY = corners.reduce((sum, c) => sum + c.y, 0) / corners.length;
+        if (!this.isPointInPolygon({x: centerX, y: centerY}, polygon)) {
+            console.debug(`[rectangle] Validation failed - center (${centerX.toFixed(1)}, ${centerY.toFixed(1)}) outside polygon`);
+            return false;
+        }
+        
+        // DISABLED: Additional validation for edge intersections (causing false positives)
+        // if (!this._checkRectangleEdgeIntersections(corners, polygon)) {
+        //     console.debug(`[rectangle] Validation failed - rectangle edges intersect polygon boundary`);
+        //     return false;
+        // }
+        
+        console.debug(`[rectangle] Rectangle validation PASSED - all ${4 + edgeTestPoints * 4 + 1} points inside polygon`);
+        return true;
+    }
+    
+    // Check if rectangle edges intersect with polygon boundary edges
+    _checkRectangleEdgeIntersections(corners, polygon) {
+        // Create rectangle edges
+        const rectEdges = [];
+        for (let i = 0; i < corners.length; i++) {
+            rectEdges.push({
+                start: corners[i],
+                end: corners[(i + 1) % corners.length]
+            });
+        }
+        
+        // Create polygon edges
+        const polyEdges = [];
+        for (let i = 0; i < polygon.length; i++) {
+            polyEdges.push({
+                start: polygon[i],
+                end: polygon[(i + 1) % polygon.length]
+            });
+        }
+        
+        // Check for intersections
+        for (const rectEdge of rectEdges) {
+            for (const polyEdge of polyEdges) {
+                if (this.doLinesIntersect(rectEdge.start, rectEdge.end, polyEdge.start, polyEdge.end)) {
+                    return false; // Intersection found
+                }
+            }
+        }
+        
+        return true; // No intersections
+    }
+
     // Check for self-intersection in hull
     hasSelfintersection(hull) {
         for (let i = 0; i < hull.length; i++) {
@@ -476,12 +561,10 @@ class SvgViewerInstance {
                 
                 const originalCorners = corners.map(c => this._rotatePoint(c, centroid, angleRad));
                 
-                // Validate that all corners are inside the original polygon
-                const allCornersInside = originalCorners.every(corner => 
-                    this.isPointInPolygon({x: corner.x, y: corner.y}, polygon)
-                );
+                // Robust validation: test corners + multiple points along each edge
+                const allPointsInside = this._validateRectangleInPolygon(originalCorners, polygon);
                 
-                if (allCornersInside) {
+                if (allPointsInside) {
                     bestArea = rotatedRect.area;
                     bestAngle = angleDeg;
                     
@@ -531,12 +614,10 @@ class SvgViewerInstance {
                 
                 const originalCorners = corners.map(c => this._rotatePoint(c, centroid, angleRad));
                 
-                // Validate that all corners are inside the original polygon
-                const allCornersInside = originalCorners.every(corner => 
-                    this.isPointInPolygon({x: corner.x, y: corner.y}, polygon)
-                );
+                // Robust validation: test corners + multiple points along each edge
+                const allPointsInside = this._validateRectangleInPolygon(originalCorners, polygon);
                 
-                if (allCornersInside) {
+                if (allPointsInside) {
                     bestRectangle = {
                         corners: originalCorners,
                         area: rotatedRect.area,
