@@ -1,4 +1,97 @@
-﻿// SvgViewer class to handle multiple instances
+﻿// Load optimization libraries if available
+let KDTree, SpatialGrid;
+let SpatialHash, fastWindingAlgorithm, fastRectangleValidation, fastInscribedRectangle;
+
+// Function to dynamically load optimization libraries
+async function loadOptimizationLibraries() {
+    const loadPromises = [];
+
+    // Load KD-Tree library
+    if (typeof window.KDTree === 'undefined') {
+        const kdScript = document.createElement('script');
+        kdScript.src = './_content/LazyMagic.BlazorSvg/kdtree.js';
+        const kdPromise = new Promise((resolve) => {
+            kdScript.onload = () => {
+                KDTree = window.KDTree;
+                SpatialGrid = window.SpatialGrid;
+                console.log('[kdtree] Library loaded successfully');
+                resolve(true);
+            };
+            kdScript.onerror = () => {
+                console.warn('[kdtree] Failed to load library');
+                resolve(false);
+            };
+        });
+        document.head.appendChild(kdScript);
+        loadPromises.push(kdPromise);
+    } else {
+        KDTree = window.KDTree;
+        SpatialGrid = window.SpatialGrid;
+    }
+
+    // Load optimized algorithms
+    if (typeof window.SpatialHash === 'undefined') {
+        const optScript = document.createElement('script');
+        optScript.src = './_content/LazyMagic.BlazorSvg/SvgViewerOptimized.js';
+        const optPromise = new Promise((resolve) => {
+            optScript.onload = () => {
+                SpatialHash = window.SpatialHash;
+                fastWindingAlgorithm = window.fastWindingAlgorithm;
+                fastRectangleValidation = window.fastRectangleValidation;
+                fastInscribedRectangle = window.fastInscribedRectangle;
+                console.log('[optimized] Fast algorithms with adaptive centroid loaded successfully');
+                resolve(true);
+            };
+            optScript.onerror = () => {
+                console.warn('[optimized] Failed to load fast algorithms');
+                resolve(false);
+            };
+        });
+        document.head.appendChild(optScript);
+        loadPromises.push(optPromise);
+    } else {
+        SpatialHash = window.SpatialHash;
+        fastWindingAlgorithm = window.fastWindingAlgorithm;
+        fastRectangleValidation = window.fastRectangleValidation;
+        fastInscribedRectangle = window.fastInscribedRectangle;
+    }
+
+    if (loadPromises.length > 0) {
+        await Promise.all(loadPromises);
+    }
+    return true;
+}
+
+// Initialize optimization libraries
+loadOptimizationLibraries().then(() => {
+    console.log('[optimization] Library loading complete');
+    console.log('[optimization] fastInscribedRectangle:', typeof window.fastInscribedRectangle !== 'undefined' ? '✅ Available' : '❌ Not available');
+});
+
+// Global debug function to check optimization status
+window.checkSvgOptimizationStatus = function() {
+    console.log('=== SVG Optimization Status ===');
+    console.log('fastWindingAlgorithm:', typeof window.fastWindingAlgorithm !== 'undefined' ? '✅ Loaded' : '❌ Not loaded');
+    console.log('fastInscribedRectangle:', typeof window.fastInscribedRectangle !== 'undefined' ? '✅ Loaded' : '❌ Not loaded');
+    console.log('SpatialHash:', typeof window.SpatialHash !== 'undefined' ? '✅ Loaded' : '❌ Not loaded');
+    console.log('KDTree:', typeof window.KDTree !== 'undefined' ? '✅ Loaded' : '❌ Not loaded');
+    console.log('SpatialGrid:', typeof window.SpatialGrid !== 'undefined' ? '✅ Loaded' : '❌ Not loaded');
+
+    // Check if SvgViewer instances exist
+    if (typeof window.svgViewerInstances !== 'undefined' && window.svgViewerInstances.size > 0) {
+        console.log('\nSvgViewer Instances:');
+        window.svgViewerInstances.forEach((instance, id) => {
+            console.log(`  Instance ${id}:`, {
+                useFastMode: instance.useFastMode,
+                verboseLogging: instance.verboseLogging,
+                useKDTree: instance.useKDTree
+            });
+        });
+    }
+    console.log('================================');
+};
+
+// SvgViewer class to handle multiple instances
 class SvgViewerInstance {
     constructor(containerId, dotNetObjectReference, disableSelection = false) {
         this.containerId = containerId;
@@ -17,11 +110,40 @@ class SvgViewerInstance {
         // Visual configuration
         this.showOutlines = false;  // Toggle for orange selection outlines
         this.showBoundingBox = false;  // Toggle for blue bounding box
+
+        // Spatial acceleration structures
+        this.boundaryKDTree = null;  // KD-Tree for boundary points
+        this.spatialGrid = null;  // Spatial grid for point-in-polygon tests
+        this.useKDTree = typeof KDTree !== 'undefined';  // Enable if library is loaded
+
+        // Performance mode - use fast algorithms when available
+        this.useFastMode = true;  // Enable fast algorithms by default
+        this.verboseLogging = false;  // Reduce logging in fast mode
     }
 
     // Return the inner <svg> if present, otherwise the paper itself
     rootSvg() {
         return this.s ? (this.s.select("svg") || this.s) : null;
+    }
+
+    // Check and load optimization libraries
+    async ensureOptimizationsLoaded() {
+        if (typeof window.fastWindingAlgorithm === 'undefined') {
+            console.log('[optimization] Loading optimization libraries...');
+            await loadOptimizationLibraries();
+
+            // Update local references
+            if (typeof window.fastWindingAlgorithm !== 'undefined') {
+                console.log('[optimization] Fast algorithms now available');
+                this.useFastMode = true;
+                return true;
+            } else {
+                console.warn('[optimization] Fast algorithms could not be loaded');
+                this.useFastMode = false;
+                return false;
+            }
+        }
+        return true;
     }
 
     // Active scope = current layer group (or inner <svg>/paper if none detected)
@@ -120,8 +242,13 @@ class SvgViewerInstance {
 
         // Performance optimization: Create unified path for multiple selections
         if (groupPaths.length > 1) {
-            console.debug('[outline] Multi-path optimization: Creating unified path from', groupPaths.length, 'paths');
-            return this._generateOptimizedMultiPathOutline(groupPaths, options);
+            const multiPathStartTime = performance.now();
+            const debugOutline = false; // Set to true to debug outline generation
+            if (debugOutline) console.debug('[outline] Multi-path optimization: Creating unified path from', groupPaths.length, 'paths');
+            const result = this._generateOptimizedMultiPathOutline(groupPaths, options);
+            const multiPathTime = performance.now() - multiPathStartTime;
+            if (debugOutline) console.debug(`[outline] Multi-path processing completed in ${multiPathTime.toFixed(1)}ms`);
+            return result;
         }
 
         // Single path - use original algorithm
@@ -289,8 +416,12 @@ class SvgViewerInstance {
         return false; // No intersection
     }
 
-    // Point-in-polygon test using ray casting algorithm
-    isPointInPolygon(point, polygon) {
+    // Point-in-polygon test using ray casting algorithm with spatial grid acceleration
+    isPointInPolygon(point, polygon, useGrid = true) {
+        // Use spatial grid if available and enabled
+        if (useGrid && this.spatialGrid && polygon === this.spatialGrid.polygon) {
+            return this.spatialGrid.containsPoint(point);
+        }
         let inside = false;
         const x = point.x;
         const y = point.y;
@@ -309,10 +440,23 @@ class SvgViewerInstance {
         return inside;
     }
 
-    // Robust rectangle validation: tests corners + points along each edge
+    // Robust rectangle validation with spatial grid acceleration
     _validateRectangleInPolygon(corners, polygon) {
+        // If we have a spatial grid for this polygon, use it for fast validation
+        if (this.spatialGrid && polygon === this.spatialGrid.polygon) {
+            const minX = Math.min(...corners.map(c => c.x));
+            const maxX = Math.max(...corners.map(c => c.x));
+            const minY = Math.min(...corners.map(c => c.y));
+            const maxY = Math.max(...corners.map(c => c.y));
+
+            const isContained = this.spatialGrid.containsRectangle(minX, minY, maxX, maxY);
+            console.debug(`[rectangle] Spatial grid validation: ${isContained ? 'PASSED' : 'FAILED'}`);
+            return isContained;
+        }
+
         console.debug(`[rectangle] Validating rectangle with corners: ${corners.map(c => `(${c.x.toFixed(1)},${c.y.toFixed(1)})`).join(', ')}`);
-        
+
+        // Fallback to detailed validation
         // Test all 4 corners
         for (const corner of corners) {
             if (!this.isPointInPolygon({x: corner.x, y: corner.y}, polygon)) {
@@ -515,9 +659,45 @@ class SvgViewerInstance {
         return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
     }
 
+    // Initialize spatial acceleration structures for a polygon
+    initializeSpatialStructures(polygon) {
+        if (!this.useKDTree || !polygon || polygon.length < 3) {
+            return;
+        }
+
+        console.time('[spatial] Structure initialization');
+
+        // Create KD-Tree for boundary points (for nearest neighbor queries)
+        if (typeof KDTree !== 'undefined') {
+            this.boundaryKDTree = new KDTree(polygon);
+            console.debug(`[spatial] KD-Tree created with ${polygon.length} boundary points`);
+        }
+
+        // Create spatial grid for point-in-polygon tests
+        if (typeof SpatialGrid !== 'undefined') {
+            // Calculate appropriate cell size based on polygon bounds
+            let minX = Infinity, maxX = -Infinity;
+            let minY = Infinity, maxY = -Infinity;
+            for (const p of polygon) {
+                minX = Math.min(minX, p.x);
+                maxX = Math.max(maxX, p.x);
+                minY = Math.min(minY, p.y);
+                maxY = Math.max(maxY, p.y);
+            }
+
+            // Use 50x50 grid approximately
+            const cellSize = Math.max((maxX - minX) / 50, (maxY - minY) / 50);
+            this.spatialGrid = new SpatialGrid(polygon, cellSize);
+            console.debug(`[spatial] Spatial grid created with cell size ${cellSize.toFixed(1)}`);
+        }
+
+        console.timeEnd('[spatial] Structure initialization');
+    }
+
     // Find the largest inscribed rectangle that fits inside a polygon
     // Tests multiple rotation angles to find optimal orientation
     findLargestInscribedRectangle(polygon, options = {}) {
+        const rectangleStartTime = performance.now();
         const {
             gridSize = 20,           // Number of grid divisions per axis
             minArea = 100,           // Minimum rectangle area to consider
@@ -529,6 +709,31 @@ class SvgViewerInstance {
             return null;
         }
 
+        // Use fast algorithm with adaptive centroid for concave polygons
+        if (this.useFastMode && typeof window.fastInscribedRectangle !== 'undefined') {
+            const debugRect = debugLog; // Use debugLog parameter to control rectangle debug output
+            if (debugRect) console.debug('[rectangle] Using FAST inscribed rectangle algorithm');
+
+            const fastInscribedRectangle = window.fastInscribedRectangle;
+            const result = fastInscribedRectangle(polygon, {
+                angleStep: 10,
+                refinementStep: 2,
+                maxTime: 2000,  // Even more time for 75x75 grid
+                debugMode: true  // Enable debug to diagnose simple shape failure
+            });
+
+            if (debugRect) console.debug(`[rectangle] Fast algorithm result:`, result);
+            if (result) {
+                if (debugRect) console.log(`[rectangle] Fast algorithm found ${result.width.toFixed(1)}x${result.height.toFixed(1)} rectangle at ${result.angle}°`);
+                return result;
+            } else {
+                if (debugRect) console.warn(`[rectangle] Fast algorithm returned null, falling back to slow algorithm`);
+            }
+        }
+
+        // Initialize spatial structures for this polygon (one-time setup)
+        this.initializeSpatialStructures(polygon);
+
         // Calculate polygon centroid for rotation center
         const centroid = {
             x: polygon.reduce((sum, p) => sum + p.x, 0) / polygon.length,
@@ -539,8 +744,8 @@ class SvgViewerInstance {
         let bestArea = minArea;
         let bestAngle = 0;
 
-        // PASS 1: Coarse scan at 5-degree increments
-        const coarseStep = 5;
+        // PASS 1: Coarse scan at 10-degree increments (optimized for speed)
+        const coarseStep = 10;
         for (let angleDeg = 0; angleDeg < 180; angleDeg += coarseStep) {
             const angleRad = (angleDeg * Math.PI) / 180;
             
@@ -585,8 +790,8 @@ class SvgViewerInstance {
             }
         }
 
-        // PASS 2: Fine scan at 1-degree increments around the best angle
-        const fineStep = 1;
+        // PASS 2: Fine scan at 2-degree increments around the best angle (optimized)
+        const fineStep = 2;
         const fineStart = Math.max(0, bestAngle - coarseStep);
         const fineEnd = Math.min(180, bestAngle + coarseStep);
         
@@ -636,13 +841,19 @@ class SvgViewerInstance {
             }
         }
 
+        const rectangleTime = performance.now() - rectangleStartTime;
+
         if (bestRectangle) {
             if (debugLog) {
                 console.debug(`[rectangle] Final best: ${bestRectangle.width.toFixed(1)}x${bestRectangle.height.toFixed(1)} = ${bestRectangle.area.toFixed(0)} at ${bestRectangle.angle}°`);
                 console.debug(`[rectangle] Rectangle corners:`, bestRectangle.corners);
             }
-        } else if (debugLog) {
-            console.warn(`[rectangle] No valid rectangle found`);
+            console.debug(`[rectangle] Rectangle finding completed in ${rectangleTime.toFixed(1)}ms`);
+        } else {
+            if (debugLog) {
+                console.warn(`[rectangle] No valid rectangle found`);
+            }
+            console.debug(`[rectangle] Rectangle finding failed in ${rectangleTime.toFixed(1)}ms`);
         }
 
         return bestRectangle;
@@ -1281,10 +1492,11 @@ class SvgViewerInstance {
             return null;
         }
 
-        console.debug(`[outline] Multi-path merge: Created unified path from ${groupPaths.length} paths in ${(performance.now() - startTime).toFixed(1)}ms`);
+        const debugOutline = false; // Set to true to debug outline generation
+        if (debugOutline) console.debug(`[outline] Multi-path merge: Created unified path from ${groupPaths.length} paths in ${(performance.now() - startTime).toFixed(1)}ms`);
 
         // Step 2: Use the unified path directly as it already represents the correct combined shape
-        console.debug('[outline] Multi-path: Using unified path directly without hull algorithms to preserve true shape');
+        if (debugOutline) console.debug('[outline] Multi-path: Using unified path directly without hull algorithms to preserve true shape');
 
         const unifiedPathData = unifiedPath.attr('d');
 
@@ -1293,7 +1505,7 @@ class SvgViewerInstance {
             unifiedPath.remove();
         }
 
-        console.debug(`[outline] Multi-path direct path: Using original unified path data in ${(performance.now() - startTime).toFixed(1)}ms total`);
+        if (debugOutline) console.debug(`[outline] Multi-path direct path: Using original unified path data in ${(performance.now() - startTime).toFixed(1)}ms total`);
 
         if (!unifiedPathData) {
             console.warn('[outline] Unified path has no data');
@@ -1301,8 +1513,8 @@ class SvgViewerInstance {
         }
 
         // Return the unified path data directly - it already represents the exact shape we want
-        console.debug('[outline] Multi-path unified result: direct_path', `total: ${(performance.now() - startTime).toFixed(1)}ms`);
-        console.debug(`[outline] Returning unified path SVG data: ${unifiedPathData.substring(0, 100)}...`);
+        if (debugOutline) console.debug('[outline] Multi-path unified result: direct_path', `total: ${(performance.now() - startTime).toFixed(1)}ms`);
+        if (debugOutline) console.debug(`[outline] Returning unified path SVG data: ${unifiedPathData.substring(0, 100)}...`);
         return unifiedPathData;
     }
 
@@ -1582,33 +1794,54 @@ class SvgViewerInstance {
 
     // Create outer edge path using line segments and winding algorithm
     _createOverlappingPathMerge(groupPaths, allBoundaryPoints) {
+        const overallStartTime = performance.now();
         try {
-            console.debug('[winding] Creating outer edge path using winding algorithm');
+            // Use original working winding algorithm
+            const debugWinding = false; // Set to true to debug winding algorithm
+        if (debugWinding) console.debug('[winding] Creating outer edge path using winding algorithm');
 
             // Step 1: Convert all paths to line segments only (no curves)
+            const step1StartTime = performance.now();
             const lineSegmentPaths = this._convertPathsToLineSegments(groupPaths);
+            const step1Time = performance.now() - step1StartTime;
+            if (debugWinding) console.debug(`[winding] Step 1 (convert to line segments): ${step1Time.toFixed(1)}ms`);
 
             // Step 2: Join coincident points using tolerance (only between different paths)
+            const step2StartTime = performance.now();
             const POINT_MERGE_TOLERANCE = 5.0;
             const joinedPaths = this._joinCoincidentPoints(lineSegmentPaths, POINT_MERGE_TOLERANCE);
+            const step2Time = performance.now() - step2StartTime;
+            if (debugWinding) console.debug(`[winding] Step 2 (join coincident points): ${step2Time.toFixed(1)}ms`);
 
             // Step 2.5: Mark shared/internal segments (segments that overlap between paths)
+            const step25StartTime = performance.now();
             const markedPaths = this._markSharedSegments(joinedPaths, POINT_MERGE_TOLERANCE);
+            const step25Time = performance.now() - step25StartTime;
+            if (debugWinding) console.debug(`[winding] Step 2.5 (mark shared segments): ${step25Time.toFixed(1)}ms`);
 
-            // Debug: Print complete segment list after merging and marking
-            console.debug('[winding] === COMPLETE SEGMENT LIST AFTER MERGING ===');
-            for (const seg of markedPaths) {
-                console.debug(`[winding]   Segment ${seg.pathIdx}_${seg.segmentIdx}: (${seg.start.x.toFixed(1)}, ${seg.start.y.toFixed(1)}) → (${seg.end.x.toFixed(1)}, ${seg.end.y.toFixed(1)}) [internal: ${seg.isInternal}]`);
+            // Debug: Print complete segment list after merging and marking (only if verbose logging enabled)
+            if (this.verboseLogging) {
+                console.debug('[winding] === COMPLETE SEGMENT LIST AFTER MERGING ===');
+                for (const seg of markedPaths) {
+                    console.debug(`[winding]   Segment ${seg.pathIdx}_${seg.segmentIdx}: (${seg.start.x.toFixed(1)}, ${seg.start.y.toFixed(1)}) → (${seg.end.x.toFixed(1)}, ${seg.end.y.toFixed(1)}) [internal: ${seg.isInternal}]`);
+                }
+                console.debug('[winding] === END SEGMENT LIST ===');
             }
-            console.debug('[winding] === END SEGMENT LIST ===');
 
             // Step 3: Join the paths together into a network
+            const step3StartTime = performance.now();
             const pathNetwork = this._joinPathsIntoNetwork(markedPaths);
+            const step3Time = performance.now() - step3StartTime;
+            if (debugWinding) console.debug(`[winding] Step 3 (join paths into network): ${step3Time.toFixed(1)}ms`);
 
             // Step 4: Use winding algorithm to traverse outer edge
+            const step4StartTime = performance.now();
             const outerEdgePoints = this._traverseOuterEdge(pathNetwork);
+            const step4Time = performance.now() - step4StartTime;
+            if (debugWinding) console.debug(`[winding] Step 4 (traverse outer edge): ${step4Time.toFixed(1)}ms`);
 
-            console.debug(`[winding] Created outer edge with ${outerEdgePoints.length} points`);
+            const overallTime = performance.now() - overallStartTime;
+            if (debugWinding) console.debug(`[winding] Created outer edge with ${outerEdgePoints.length} points in ${overallTime.toFixed(1)}ms total`);
 
             return outerEdgePoints;
 
@@ -1804,9 +2037,16 @@ class SvgViewerInstance {
 
         console.debug(`[winding] Processing ${allSegments.length} total segments`);
 
-        // Find coincident points and merge them
-        const mergedSegments = this._mergeCoincidentPoints(allSegments, tolerance);
+        // Use optimized spatial hash approach if available
+        if (typeof window.SpatialHash !== 'undefined' && this.useFastMode) {
+            // Optimized spatial hash algorithm in use
+            const mergedSegments = this._mergeCoincidentPointsOptimized(allSegments, tolerance);
+            // After optimized merging: ${mergedSegments.length} segments
+            return mergedSegments;
+        }
 
+        // Fall back to original algorithm
+        const mergedSegments = this._mergeCoincidentPoints(allSegments, tolerance);
         console.debug(`[winding] After coincident point merging: ${mergedSegments.length} segments`);
 
         return mergedSegments;
@@ -1970,7 +2210,7 @@ class SvgViewerInstance {
                         x: clusterPoints.reduce((sum, p) => sum + p.point.x, 0) / clusterPoints.length,
                         y: clusterPoints.reduce((sum, p) => sum + p.point.y, 0) / clusterPoints.length
                     };
-                    console.debug(`[winding] - Super-node at (${superNode.x.toFixed(1)}, ${superNode.y.toFixed(1)}) from ${clusterPoints.length} points: ${clusterPoints.map(p => p.key).join(', ')}`);
+                    // Super-node created
                     
                     for (const pointData of clusterPoints) {
                         superNodeMap.set(pointData.key, superNode);
@@ -1979,7 +2219,7 @@ class SvgViewerInstance {
             }
         }
 
-        console.debug(`[winding] Created ${superNodeMap.size} point mappings to super-nodes`);
+        // Created point mappings to super-nodes
 
         // Additional pass: Map same-path points that share coordinates with super-node points
         // This handles cases where segment endpoints from the same path have the same coordinates
@@ -2015,6 +2255,199 @@ class SvgViewerInstance {
         });
 
         return modifiedSegments;
+    }
+
+    // Optimized merge using spatial hash for O(n log n) performance instead of O(n²)
+    _mergeCoincidentPointsOptimized(allSegments, tolerance) {
+        // Timing: Spatial hash merge
+        // Using optimized spatial hash merging
+
+        // Create spatial hash for fast point lookup
+        const spatialHash = new window.SpatialHash(tolerance * 2);
+        const pointIndex = new Map(); // Maps point key to point data
+
+        // Build spatial index of all segment endpoints
+        for (const segment of allSegments) {
+            const startKey = `${segment.pathIdx}_${segment.segmentIdx}_start`;
+            const endKey = `${segment.pathIdx}_${segment.segmentIdx}_end`;
+
+            const startData = {
+                point: segment.start,
+                segment,
+                end: 'start',
+                key: startKey
+            };
+
+            const endData = {
+                point: segment.end,
+                segment,
+                end: 'end',
+                key: endKey
+            };
+
+            pointIndex.set(startKey, startData);
+            pointIndex.set(endKey, endData);
+
+            spatialHash.add(segment.start, startData);
+            spatialHash.add(segment.end, endData);
+        }
+
+        // Built spatial index
+
+        // Find potential connections using spatial indexing
+        const potentialConnections = [];
+        const processedPairs = new Set();
+
+        for (const [pointKey, pointData] of pointIndex) {
+            const neighbors = spatialHash.findNear(pointData.point, tolerance);
+
+            for (const neighbor of neighbors) {
+                if (pointKey === neighbor.data.key) continue;
+
+                // Skip same path (Rule 5)
+                if (pointData.segment.pathIdx === neighbor.data.segment.pathIdx) {
+                    continue;
+                }
+
+                // Create consistent pair key to avoid duplicates
+                const pairKey = pointKey < neighbor.data.key ?
+                    `${pointKey}:${neighbor.data.key}` :
+                    `${neighbor.data.key}:${pointKey}`;
+
+                if (processedPairs.has(pairKey)) continue;
+                processedPairs.add(pairKey);
+
+                if (neighbor.distance <= tolerance) {
+                    potentialConnections.push({
+                        distance: neighbor.distance,
+                        seg1: pointData.segment,
+                        seg2: neighbor.data.segment,
+                        end1: pointData.end,
+                        end2: neighbor.data.end,
+                        point1: pointData.point,
+                        point2: neighbor.data.point,
+                        point1Key: pointKey,
+                        point2Key: neighbor.data.key
+                    });
+                }
+            }
+        }
+
+        // Found potential connections using spatial hash
+        // Spatial hash merge completed
+
+        // Use existing union-find clustering logic
+        return this._clusterAndMergePoints(allSegments, potentialConnections);
+    }
+
+    // Union-find clustering logic extracted for reuse
+    _clusterAndMergePoints(allSegments, potentialConnections) {
+        // Timing: Union-find clustering
+
+        // Create union-find data structure for clustering
+        const unionFind = new Map();
+        const pointCoords = new Map();
+
+        // Initialize each point as its own cluster
+        for (const segment of allSegments) {
+            const startKey = `${segment.pathIdx}_${segment.segmentIdx}_start`;
+            const endKey = `${segment.pathIdx}_${segment.segmentIdx}_end`;
+
+            unionFind.set(startKey, startKey);
+            unionFind.set(endKey, endKey);
+            pointCoords.set(startKey, segment.start);
+            pointCoords.set(endKey, segment.end);
+        }
+
+        // Union-find helper functions
+        const find = (key) => {
+            if (unionFind.get(key) !== key) {
+                unionFind.set(key, find(unionFind.get(key))); // Path compression
+            }
+            return unionFind.get(key);
+        };
+
+        const union = (key1, key2) => {
+            const root1 = find(key1);
+            const root2 = find(key2);
+            if (root1 !== root2) {
+                unionFind.set(root2, root1);
+                return true;
+            }
+            return false;
+        };
+
+        // Apply unions for all potential connections
+        let unionsApplied = 0;
+        for (const connection of potentialConnections) {
+            if (union(connection.point1Key, connection.point2Key)) {
+                unionsApplied++;
+            }
+        }
+
+        // Applied unions
+
+        // Group points by their root cluster
+        const clusters = new Map();
+        for (const [pointKey, _] of unionFind) {
+            const root = find(pointKey);
+            if (!clusters.has(root)) {
+                clusters.set(root, []);
+            }
+            clusters.get(root).push(pointKey);
+        }
+
+        // Created clusters from points
+
+        // Create super-nodes for clusters with multiple points
+        const superNodes = new Map();
+        const pointToSuperNode = new Map();
+
+        for (const [root, pointKeys] of clusters) {
+            if (pointKeys.length > 1) {
+                // Calculate centroid for super-node
+                let sumX = 0, sumY = 0;
+                for (const pointKey of pointKeys) {
+                    const coords = pointCoords.get(pointKey);
+                    sumX += coords.x;
+                    sumY += coords.y;
+                }
+                const centroid = { x: sumX / pointKeys.length, y: sumY / pointKeys.length };
+
+                superNodes.set(root, { point: centroid, members: pointKeys });
+
+                for (const pointKey of pointKeys) {
+                    pointToSuperNode.set(pointKey, root);
+                }
+
+                // Super-node created
+            }
+        }
+
+        // Created point mappings to super-nodes
+        // Union-find clustering completed
+
+        // Apply super-node coordinates to segments
+        const mergedSegments = allSegments.map(segment => {
+            const startKey = `${segment.pathIdx}_${segment.segmentIdx}_start`;
+            const endKey = `${segment.pathIdx}_${segment.segmentIdx}_end`;
+
+            const newSegment = { ...segment };
+
+            if (pointToSuperNode.has(startKey)) {
+                const superNode = superNodes.get(pointToSuperNode.get(startKey));
+                newSegment.start = superNode.point;
+            }
+
+            if (pointToSuperNode.has(endKey)) {
+                const superNode = superNodes.get(pointToSuperNode.get(endKey));
+                newSegment.end = superNode.point;
+            }
+
+            return newSegment;
+        });
+
+        return mergedSegments;
     }
 
     // Mark shared/internal segments that should not be part of the outer boundary
@@ -2358,31 +2791,32 @@ class SvgViewerInstance {
 
     // Clean up any existing debug unified paths and inscribed rectangles
     _cleanupDebugPaths(scope) {
-        console.debug('[cleanup] Starting debug path cleanup');
+        const debugCleanup = false; // Set to true to debug cleanup operations
+        if (debugCleanup) console.debug('[cleanup] Starting debug path cleanup');
 
         // Remove unified paths by class
         const classPaths = scope.selectAll(".debug-unified-path");
-        console.debug(`[cleanup] Found ${classPaths.length} paths with debug-unified-path class`);
+        if (debugCleanup) console.debug(`[cleanup] Found ${classPaths.length} paths with debug-unified-path class`);
         classPaths.remove();
 
         // Remove inscribed rectangles by class
         const classRects = scope.selectAll(".debug-inscribed-rectangle");
-        console.debug(`[cleanup] Found ${classRects.length} rectangles with debug-inscribed-rectangle class`);
+        if (debugCleanup) console.debug(`[cleanup] Found ${classRects.length} rectangles with debug-inscribed-rectangle class`);
         classRects.remove();
 
         // Also remove any leftover debug paths by color attributes
         const allPaths = scope.selectAll("path");
-        console.debug(`[cleanup] Checking ${allPaths.length} total paths for magenta colors`);
+        if (debugCleanup) console.debug(`[cleanup] Checking ${allPaths.length} total paths for magenta colors`);
         let removedCount = 0;
         allPaths.forEach(path => {
             const fill = path.attr("fill");
             if (fill && (fill.includes("255, 0, 255") || fill.includes("magenta"))) {
-                console.debug(`[cleanup] Removing path with fill: ${fill}`);
+                if (debugCleanup) console.debug(`[cleanup] Removing path with fill: ${fill}`);
                 path.remove();
                 removedCount++;
             }
         });
-        console.debug(`[cleanup] Removed ${removedCount} paths by color attributes`);
+        if (debugCleanup) console.debug(`[cleanup] Removed ${removedCount} paths by color attributes`);
     }
 
     // Create a single merged SVG path by combining all selected path data
@@ -2408,10 +2842,11 @@ class SvgViewerInstance {
 
             // Create unified path by modifying paths to overlap and then merging
             const unifiedBoundary = this._createOverlappingPathMerge(groupPaths, allBoundaryPoints);
+            let hull = null;
 
             if (!unifiedBoundary || unifiedBoundary.length < 3) {
                 console.warn('[outline] Overlapping path merge failed, falling back to convex hull');
-                const hull = this.simpleConvexHull(allBoundaryPoints);
+                hull = this.simpleConvexHull(allBoundaryPoints);
                 var pathData = `M ${hull[0].x} ${hull[0].y}`;
                 for (let i = 1; i < hull.length; i++) {
                     pathData += ` L ${hull[i].x} ${hull[i].y}`;
