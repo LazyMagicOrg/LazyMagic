@@ -192,3 +192,49 @@ The optimized algorithm is production-ready:
 - ✅ Handles complex concave polygons with rotation
 
 The 247ms performance, while not as fast as hoped, represents the computational reality of this complex geometric problem and is acceptable for production use.
+
+---
+
+# CRITICAL: Shape Extension Logic - DO NOT FORGET THIS CONTEXT
+
+## Shape Relationships
+- **Shape 1**: Base shape
+- **Shape 2**: Extension of Shape 1 (Shape 1 ⊆ Shape 2)
+- **Shape 3**: Extension of Shape 2 (Shape 2 ⊆ Shape 3, therefore Shape 1 ⊆ Shape 3)
+
+## Fundamental Rectangle Area Logic
+Since each shape is an extension (superset) of the previous shape:
+
+1. **Any rectangle that fits in Shape 1 MUST also fit in Shape 2 and Shape 3**
+2. **Any rectangle that fits in Shape 2 MUST also fit in Shape 3**
+3. **Therefore: Area(Shape 1) ≤ Area(Shape 2) ≤ Area(Shape 3)**
+
+## Expected Algorithm Behavior
+- If Shape 1 finds a rectangle with area X, then:
+  - Shape 2 should find AT MINIMUM the same rectangle (area ≥ X)
+  - Shape 3 should find AT MINIMUM Shape 2's rectangle (area ≥ Shape 2's area)
+- The algorithm should find progressively larger or equal rectangles as shapes extend
+
+## Current Problem Status
+- Shape 1: 39687 area ✓ (baseline)
+- Shape 2: 39169 area ❌ (should be ≥ 39687 - VIOLATION)
+- Shape 3: 39653 area ❌ (should be ≥ 39169, preferably ≥ 39687 - VIOLATION + boundary violations)
+
+## Root Causes
+1. **Algorithm inconsistency**: Fast algorithm not running, falling back to slow algorithm
+2. **Insufficient optimization**: Algorithm not finding rectangles that definitely fit in extended shapes
+3. **Boundary validation failure**: Shape 3 allows rectangles that violate boundaries
+4. **Missing guarantee**: Algorithm lacks logic to ensure extended shapes find at least the previous shape's solution
+
+## Critical Requirements for Fix
+1. **Guarantee minimum area**: Extended shapes MUST find at least the area of their parent shape
+2. **Fix boundary validation**: No shape should allow boundary-violating rectangles
+3. **Consistent algorithm usage**: Same algorithm should run for all shapes
+4. **Progressive improvement**: Area should increase or stay equal with each extension
+
+## Shape Characteristics (Current)
+- Shape 1: 11 vertices → 39687 area
+- Shape 2: 13 vertices → 39169 area (WRONG - should be ≥ 39687)
+- Shape 3: 15 vertices → 39653 area (WRONG - should be ≥ 39687, has boundary violations)
+
+**REMEMBER**: This is not about "different shapes giving different results" - this is about extended shapes failing to find solutions that are guaranteed to exist.

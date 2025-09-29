@@ -176,59 +176,103 @@ function fastWindingAlgorithm(segments, tolerance = 5) {
     return boundary;
 }
 
-// ENHANCED rectangle validation with dense edge sampling for complex polygons
-function fastRectangleValidation(corners, polygon, samples = 32) {
-    // CRITICAL: Use much higher sampling density to prevent boundary violations
+// Create spatial grid for polygon validation (cached)
+let polygonSpatialGridCache = new WeakMap();
+
+function getSpatialGridForPolygon(polygon) {
+    if (polygonSpatialGridCache.has(polygon)) {
+        return polygonSpatialGridCache.get(polygon);
+    }
+
+    // Calculate polygon bounds for better cell size estimation
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const point of polygon) {
+        minX = Math.min(minX, point.x);
+        minY = Math.min(minY, point.y);
+        maxX = Math.max(maxX, point.x);
+        maxY = Math.max(maxY, point.y);
+    }
+
+    const width = maxX - minX;
+    const height = maxY - minY;
+    const avgDimension = (width + height) / 2;
+
+    // Use much smaller cell size for higher precision (2-3% of average dimension)
+    const cellSize = Math.max(2, Math.min(8, avgDimension * 0.025));
+
+    const spatialGrid = new SpatialGrid(polygon, cellSize);
+    polygonSpatialGridCache.set(polygon, spatialGrid);
+    return spatialGrid;
+}
+
+// ENHANCED validation using SpatialGrid from KDTree (SILENT - no logging during search)
+function fastRectangleValidation(corners, polygon, samples = 16) {
+    const spatialGrid = getSpatialGridForPolygon(polygon);
 
     // Test all 4 corners
     for (const corner of corners) {
-        if (!isPointInPolygonSlow(corner, polygon)) {
+        if (!spatialGrid.containsPoint(corner)) {
             return false;
-        }
-    }
-
-    // ENHANCED: Test many more points along each edge for complex polygons
-    const pointsPerEdge = Math.max(8, Math.floor(samples / 4)); // Minimum 8 points per edge
-    for (let edgeIdx = 0; edgeIdx < 4; edgeIdx++) {
-        const start = corners[edgeIdx];
-        const end = corners[(edgeIdx + 1) % 4];
-
-        // Test points including endpoints to catch edge cases
-        for (let i = 0; i <= pointsPerEdge; i++) {
-            const t = i / pointsPerEdge;
-            const testPoint = {
-                x: start.x + t * (end.x - start.x),
-                y: start.y + t * (end.y - start.y)
-            };
-
-            if (!isPointInPolygonSlow(testPoint, polygon)) {
-                return false;
-            }
         }
     }
 
     // Test center point
     const centerX = (corners[0].x + corners[1].x + corners[2].x + corners[3].x) / 4;
     const centerY = (corners[0].y + corners[1].y + corners[2].y + corners[3].y) / 4;
-
-    if (!isPointInPolygonSlow({x: centerX, y: centerY}, polygon)) {
+    if (!spatialGrid.containsPoint({x: centerX, y: centerY})) {
         return false;
     }
 
-    // ENHANCED: Test additional interior points for better coverage
-    const interiorSamples = 4;
-    for (let i = 1; i <= interiorSamples; i++) {
-        for (let j = 1; j <= interiorSamples; j++) {
-            const u = i / (interiorSamples + 1);
-            const v = j / (interiorSamples + 1);
+    // Use SpatialGrid's rectangle validation for ultimate accuracy
+    const minX = Math.min(corners[0].x, corners[1].x, corners[2].x, corners[3].x);
+    const maxX = Math.max(corners[0].x, corners[1].x, corners[2].x, corners[3].x);
+    const minY = Math.min(corners[0].y, corners[1].y, corners[2].y, corners[3].y);
+    const maxY = Math.max(corners[0].y, corners[1].y, corners[2].y, corners[3].y);
 
-            // Bilinear interpolation within rectangle
-            const x = (1 - u) * (1 - v) * corners[0].x + u * (1 - v) * corners[1].x +
-                      u * v * corners[2].x + (1 - u) * v * corners[3].x;
-            const y = (1 - u) * (1 - v) * corners[0].y + u * (1 - v) * corners[1].y +
-                      u * v * corners[2].y + (1 - u) * v * corners[3].y;
+    // For axis-aligned rectangles, use the optimized rectangle test
+    const isAxisAligned = (
+        Math.abs(corners[0].y - corners[1].y) < 0.01 &&
+        Math.abs(corners[2].y - corners[3].y) < 0.01 &&
+        Math.abs(corners[0].x - corners[3].x) < 0.01 &&
+        Math.abs(corners[1].x - corners[2].x) < 0.01
+    );
 
-            if (!isPointInPolygonSlow({x, y}, polygon)) {
+    if (isAxisAligned) {
+        return spatialGrid.containsRectangle(minX, minY, maxX, maxY);
+    }
+
+    // For rotated rectangles, test edge points more carefully
+    const pointsPerEdge = 16; // Increased density for better accuracy
+    for (let edgeIdx = 0; edgeIdx < 4; edgeIdx++) {
+        const start = corners[edgeIdx];
+        const end = corners[(edgeIdx + 1) % 4];
+
+        for (let i = 1; i < pointsPerEdge; i++) {
+            const t = i / pointsPerEdge;
+            const testPoint = {
+                x: start.x + t * (end.x - start.x),
+                y: start.y + t * (end.y - start.y)
+            };
+
+            if (!spatialGrid.containsPoint(testPoint)) {
+                return false;
+            }
+        }
+    }
+
+    // Additional validation: Test interior points for rotated rectangles
+    for (let i = 1; i <= 3; i++) {
+        for (let j = 1; j <= 3; j++) {
+            const u = i / 4; // 0.25, 0.5, 0.75
+            const v = j / 4;
+
+            // Bilinear interpolation within the quadrilateral
+            const interiorPoint = {
+                x: (1-u)*(1-v)*corners[0].x + u*(1-v)*corners[1].x + u*v*corners[2].x + (1-u)*v*corners[3].x,
+                y: (1-u)*(1-v)*corners[0].y + u*(1-v)*corners[1].y + u*v*corners[2].y + (1-u)*v*corners[3].y
+            };
+
+            if (!spatialGrid.containsPoint(interiorPoint)) {
                 return false;
             }
         }
@@ -237,24 +281,58 @@ function fastRectangleValidation(corners, polygon, samples = 32) {
     return true;
 }
 
-// EXACT copy of the working point-in-polygon from slow algorithm
+// ENHANCED point-in-polygon test using SpatialGrid when available, fallback to winding number
 function isPointInPolygonSlow(point, polygon) {
-    let inside = false;
+    if (!point || !polygon || polygon.length < 3) {
+        return false;
+    }
+
+    // Try to use cached SpatialGrid for better accuracy
+    if (polygonSpatialGridCache.has(polygon)) {
+        const spatialGrid = polygonSpatialGridCache.get(polygon);
+        return spatialGrid.containsPoint(point);
+    }
+
+    // Fallback to winding number algorithm for backwards compatibility
     const x = point.x;
     const y = point.y;
+    let windingNumber = 0;
 
-    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    for (let i = 0; i < polygon.length; i++) {
+        const j = (i + 1) % polygon.length;
         const xi = polygon[i].x;
         const yi = polygon[i].y;
         const xj = polygon[j].x;
         const yj = polygon[j].y;
 
-        if (((yi > y) !== (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi)) {
-            inside = !inside;
+        // Check if point is exactly on a vertex (with tolerance)
+        const tolerance = 0.1; // Small tolerance for floating point
+        if ((Math.abs(xi - x) <= tolerance && Math.abs(yi - y) <= tolerance) ||
+            (Math.abs(xj - x) <= tolerance && Math.abs(yj - y) <= tolerance)) {
+            return false; // Conservative: point on vertex = outside
+        }
+
+        // Check for upward crossing
+        if (yi <= y) {
+            if (yj > y) { // Upward crossing
+                const crossProduct = (xj - xi) * (y - yi) - (x - xi) * (yj - yi);
+                if (crossProduct > 0) { // Point is left of edge
+                    windingNumber++;
+                }
+            }
+        } else {
+            // Downward crossing
+            if (yj <= y) {
+                const crossProduct = (xj - xi) * (y - yi) - (x - xi) * (yj - yi);
+                if (crossProduct < 0) { // Point is right of edge
+                    windingNumber--;
+                }
+            }
         }
     }
 
-    return inside;
+    // Point is inside if winding number is non-zero
+    return windingNumber !== 0;
 }
 
 // Line segment intersection test
@@ -407,9 +485,9 @@ function getMultipleCentroids(polygon, minX, maxX, minY, maxY, options = {}) {
     const width = maxX - minX;
     const height = maxY - minY;
 
-    // OPTIMIZED: Use strategic multi-resolution grid search
-    // Start with coarser grid but add high-density samples around promising areas
-    const gridResolution = 25; // 25x25 = 625 potential centroids (much faster)
+    // ENHANCED: Use ultra-dense grid search for optimal coverage
+    // Maximum resolution to ensure we find optimal centroids in all extended shapes
+    const gridResolution = 50; // 50x50 = 2500 potential centroids (comprehensive)
     const stepX = width / (gridResolution + 1);
     const stepY = height / (gridResolution + 1);
 
@@ -425,6 +503,43 @@ function getMultipleCentroids(polygon, minX, maxX, minY, maxY, options = {}) {
 
             if (isPointInPolygonSlow(candidate, polygon)) {
                 centroids.push(candidate);
+            }
+        }
+    }
+
+    // ADDITIONAL: Add finer grid sampling in the center regions
+    // Extended shapes might have optimal centroids in transition areas
+    const fineGridSize = 10;
+    const centerMargin = 0.2; // Focus on central 60% of the shape
+    const centerMinX = minX + width * centerMargin;
+    const centerMaxX = maxX - width * centerMargin;
+    const centerMinY = minY + height * centerMargin;
+    const centerMaxY = maxY - height * centerMargin;
+
+    if (centerMaxX > centerMinX && centerMaxY > centerMinY) {
+        const centerWidth = centerMaxX - centerMinX;
+        const centerHeight = centerMaxY - centerMinY;
+        const fineStepX = centerWidth / (fineGridSize + 1);
+        const fineStepY = centerHeight / (fineGridSize + 1);
+
+        for (let i = 1; i <= fineGridSize; i++) {
+            for (let j = 1; j <= fineGridSize; j++) {
+                const candidate = {
+                    x: centerMinX + i * fineStepX,
+                    y: centerMinY + j * fineStepY
+                };
+
+                if (isPointInPolygonSlow(candidate, polygon)) {
+                    // Check if this point is significantly different from existing centroids
+                    const minDistance = 2.0; // Minimum distance to avoid duplicates
+                    const isDuplicate = centroids.some(existing =>
+                        Math.sqrt(Math.pow(existing.x - candidate.x, 2) + Math.pow(existing.y - candidate.y, 2)) < minDistance
+                    );
+
+                    if (!isDuplicate) {
+                        centroids.push(candidate);
+                    }
+                }
             }
         }
     }
@@ -505,6 +620,13 @@ function getMultipleCentroids(polygon, minX, maxX, minY, maxY, options = {}) {
     }
 
     if (debugMode) console.debug(`[multi-centroid] Generated ${uniqueCentroids.length} unique centroids from systematic search`);
+
+    // DEBUG: Log polygon characteristics for comparison between shapes
+    // width and height already declared above
+    console.log(`[polygon-debug] Polygon: ${polygon.length} vertices, bounds: (${minX.toFixed(1)}, ${minY.toFixed(1)}) to (${maxX.toFixed(1)}, ${maxY.toFixed(1)}), size: ${width.toFixed(1)}x${height.toFixed(1)}`);
+    console.log(`[polygon-debug] First 3 vertices: (${polygon[0].x.toFixed(1)}, ${polygon[0].y.toFixed(1)}), (${polygon[1]?.x.toFixed(1)}, ${polygon[1]?.y.toFixed(1)}), (${polygon[2]?.x.toFixed(1)}, ${polygon[2]?.y.toFixed(1)})`);
+    console.log(`[polygon-debug] Final centroids: ${uniqueCentroids.length} points`);
+
     return uniqueCentroids;
 }
 
@@ -536,7 +658,7 @@ function findBestCentroid(polygon, minX, maxX, minY, maxY, options = {}) {
         const scaledMaxY = maxY - (maxY - minY) * margin;
 
         if (scaledMaxX > scaledMinX && scaledMaxY > scaledMinY) {
-            const gridSize = scale === 0.8 ? 5 : 3; // Denser grid for larger scale
+            const gridSize = scale === 0.8 ? 15 : 10; // Much denser grid for better coverage
             const stepX = (scaledMaxX - scaledMinX) / (gridSize + 1);
             const stepY = (scaledMaxY - scaledMinY) / (gridSize + 1);
 
@@ -643,6 +765,25 @@ function findBestCentroid(polygon, minX, maxX, minY, maxY, options = {}) {
 // Fast inscribed rectangle finder with adaptive centroid selection
 function fastInscribedRectangle(polygon, options = {}) {
     const startTime = performance.now();
+
+    // DEBUG: Show polygon characteristics IMMEDIATELY
+    if (!polygon || polygon.length < 3) {
+        console.error('[polygon-debug] Invalid polygon data');
+        return null;
+    }
+
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const point of polygon) {
+        minX = Math.min(minX, point.x);
+        minY = Math.min(minY, point.y);
+        maxX = Math.max(maxX, point.x);
+        maxY = Math.max(maxY, point.y);
+    }
+
+    const polygonWidth = maxX - minX;
+    const polygonHeight = maxY - minY;
+    console.log(`🔍 [POLYGON-DEBUG] ${polygon.length} vertices, bounds (${minX.toFixed(1)}, ${minY.toFixed(1)}) to (${maxX.toFixed(1)}, ${maxY.toFixed(1)}), size ${polygonWidth.toFixed(1)}x${polygonHeight.toFixed(1)}`);
+
     const {
         angleStep = 12,        // OPTIMIZED: Slightly finer initial angle step
         refinementStep = 2,    // OPTIMIZED: Finer refinement step
@@ -650,16 +791,7 @@ function fastInscribedRectangle(polygon, options = {}) {
         debugMode = false      // Enable debug logging
     } = options;
 
-    // Calculate bounds
-    let minX = Infinity, maxX = -Infinity;
-    let minY = Infinity, maxY = -Infinity;
-
-    for (const p of polygon) {
-        minX = Math.min(minX, p.x);
-        maxX = Math.max(maxX, p.x);
-        minY = Math.min(minY, p.y);
-        maxY = Math.max(maxY, p.y);
-    }
+    // Bounds already calculated above
 
     // Adaptive centroid selection based on polygon shape
     const isConvex = isPolygonConvex(polygon);
@@ -680,24 +812,33 @@ function fastInscribedRectangle(polygon, options = {}) {
     let bestRect = null;
     let bestArea = 0;
     let bestCentroid = null;
+    let previousBestArea = 0;
 
     // Sort centroids by distance from polygon center for better early candidates
+    // Use stable sorting with coordinate tiebreaker for deterministic results
     const polygonCenter = { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
     centroids.sort((a, b) => {
         const distA = Math.sqrt(Math.pow(a.x - polygonCenter.x, 2) + Math.pow(a.y - polygonCenter.y, 2));
         const distB = Math.sqrt(Math.pow(b.x - polygonCenter.x, 2) + Math.pow(b.y - polygonCenter.y, 2));
-        return distA - distB;
+
+        // Primary sort: distance from center
+        if (Math.abs(distA - distB) > 0.1) {
+            return distA - distB;
+        }
+
+        // Tiebreaker: x coordinate, then y coordinate for stable sorting
+        if (Math.abs(a.x - b.x) > 0.1) {
+            return a.x - b.x;
+        }
+        return a.y - b.y;
     });
 
     for (let i = 0; i < centroids.length; i++) {
         const centroid = centroids[i];
         if (performance.now() - startTime > maxTime) break;
 
-        // OPTIMIZED: Early exit only after testing sufficient centroids for parallelogram shapes
-        if (i > 50 && bestArea > 0) {
-            if (debugMode) console.debug(`[fast-rectangle] Early exit after testing ${i} centroids with area ${bestArea.toFixed(1)}`);
-            break;
-        }
+        // DETERMINISTIC: Test ALL centroids for truly optimal result
+        // Early exit disabled to ensure consistent results
 
         let bestAngleForCentroid = 0;
         let bestRectForCentroid = null;
@@ -713,16 +854,30 @@ function fastInscribedRectangle(polygon, options = {}) {
             edgeAngles.push(normalizedAngle);
         }
 
-        // Get unique edge angles and their perpendiculars
-        const uniqueAngles = [...new Set(edgeAngles.map(a => Math.round(a)))];
-        const perpAngles = uniqueAngles.map(a => (a + 90) % 180);
-        const naturalAngles = [...uniqueAngles, ...perpAngles];
+        // Get unique edge angles and their perpendiculars - DETERMINISTIC ORDER
+        const uniqueAngles = edgeAngles
+            .map(a => Math.round(a))
+            .filter((angle, index, array) => array.indexOf(angle) === index) // Remove duplicates while preserving order
+            .sort((a, b) => a - b); // Sort for consistent ordering
+
+        const perpAngles = uniqueAngles.map(a => (a + 90) % 180).sort((a, b) => a - b);
 
         // ENHANCED: Strategic angles with natural parallelogram angles prioritized
-        const strategicAngles = [
-            ...naturalAngles, // Natural angles first (highest priority)
-            0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 76, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176
-        ].filter((angle, index, array) => array.indexOf(angle) === index); // Remove duplicates
+        // Use deterministic ordering by combining and sorting all angles
+        const baseStrategicAngles = [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 76, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176];
+
+        const allAngles = [...uniqueAngles, ...perpAngles, ...baseStrategicAngles];
+        const strategicAngles = allAngles
+            .filter((angle, index, array) => array.indexOf(angle) === index) // Remove duplicates
+            .sort((a, b) => {
+                // Prioritize natural angles, then sort by value
+                const aIsNatural = uniqueAngles.includes(a) || perpAngles.includes(a);
+                const bIsNatural = uniqueAngles.includes(b) || perpAngles.includes(b);
+
+                if (aIsNatural && !bIsNatural) return -1;
+                if (!aIsNatural && bIsNatural) return 1;
+                return a - b;
+            });
 
         if (debugMode) console.debug(`[fast-rectangle] Natural edge angles: ${uniqueAngles.join(', ')}°, testing ${strategicAngles.length} total angles`);
 
@@ -768,24 +923,54 @@ function fastInscribedRectangle(polygon, options = {}) {
 
     const elapsed = performance.now() - startTime;
 
-    // TESTING: Reduced final validation to see if it allows larger rectangles
+    // FINAL CHECK: Test the winning rectangle for boundary violations
     let rejectedByValidation = false;
     if (bestRect && bestRect.corners) {
-        const finalValidation = fastRectangleValidation(bestRect.corners, polygon, 20); // Reduced validation for testing
-        if (!finalValidation) {
-            console.warn(`[fast-rectangle] REJECTED: Final validation failed for rectangle ${bestRect.width.toFixed(1)}x${bestRect.height.toFixed(1)} - boundary violation detected`);
-            rejectedByValidation = true;
+        // Test if ANY point violates boundaries
+        let violationFound = false;
+        const testPoints = [...bestRect.corners];
+
+        // Add center point
+        const centerX = (bestRect.corners[0].x + bestRect.corners[1].x + bestRect.corners[2].x + bestRect.corners[3].x) / 4;
+        const centerY = (bestRect.corners[0].y + bestRect.corners[1].y + bestRect.corners[2].y + bestRect.corners[3].y) / 4;
+        testPoints.push({x: centerX, y: centerY});
+
+        for (const point of testPoints) {
+            if (!isPointInPolygonSlow(point, polygon)) {
+                console.error(`🚨 FINAL CHECK: Rectangle has boundary violation at (${point.x.toFixed(1)}, ${point.y.toFixed(1)})`);
+                violationFound = true;
+                break;
+            }
+        }
+
+        if (violationFound) {
+            console.error(`🚨 BOUNDARY VIOLATION: Rectangle ${bestRect.width.toFixed(1)}x${bestRect.height.toFixed(1)} rejected`);
             bestRect = null;
+            rejectedByValidation = true;
         }
     }
 
+    // DEBUG: Show polygon characteristics first
+    // polygonWidth and polygonHeight already declared above
+    console.log(`[polygon-debug] Shape: ${polygon.length} vertices, bounds (${minX.toFixed(1)}, ${minY.toFixed(1)}) to (${maxX.toFixed(1)}, ${maxY.toFixed(1)}), size ${polygonWidth.toFixed(1)}x${polygonHeight.toFixed(1)}`);
+
     // ALWAYS show timing information regardless of debug mode
     if (bestRect && bestCentroid) {
-        console.log(`✅ [fast-rectangle] Found rectangle in ${elapsed.toFixed(1)}ms: ${bestRect.width.toFixed(1)}x${bestRect.height.toFixed(1)} at ${bestRect.angle}° using centroid (${bestCentroid.x.toFixed(1)}, ${bestCentroid.y.toFixed(1)})`);
+        console.log(`✅ [fast-rectangle] Found rectangle in ${elapsed.toFixed(1)}ms: ${bestRect.width.toFixed(1)}x${bestRect.height.toFixed(1)} (area ${bestRect.area.toFixed(0)}) at ${bestRect.angle}° using centroid (${bestCentroid.x.toFixed(1)}, ${bestCentroid.y.toFixed(1)}) after testing ${centroids.length} centroids`);
+
+        // FINAL DEBUG: Show polygon characteristics after area calculation
+        console.log(`🔍 [SHAPE-DEBUG] FINAL: ${polygon.length} vertices, bounds (${minX.toFixed(1)}, ${minY.toFixed(1)}) to (${maxX.toFixed(1)}, ${maxY.toFixed(1)}), size ${polygonWidth.toFixed(1)}x${polygonHeight.toFixed(1)}, AREA: ${bestRect.area.toFixed(0)}, TIME: ${elapsed.toFixed(1)}ms`);
     } else if (rejectedByValidation) {
         console.warn(`❌ [fast-rectangle] No valid rectangle found in ${elapsed.toFixed(1)}ms (rejected by boundary validation)`);
+        console.log(`🔍 [SHAPE-DEBUG] FAILED: ${polygon.length} vertices, bounds (${minX.toFixed(1)}, ${minY.toFixed(1)}) to (${maxX.toFixed(1)}, ${maxY.toFixed(1)}), size ${polygonWidth.toFixed(1)}x${polygonHeight.toFixed(1)}, AREA: 0, TIME: ${elapsed.toFixed(1)}ms`);
     } else {
         console.warn(`❌ [fast-rectangle] No valid rectangle found in ${elapsed.toFixed(1)}ms`);
+        console.log(`🔍 [SHAPE-DEBUG] FAILED: ${polygon.length} vertices, bounds (${minX.toFixed(1)}, ${minY.toFixed(1)}) to (${maxX.toFixed(1)}, ${maxY.toFixed(1)}), size ${polygonWidth.toFixed(1)}x${polygonHeight.toFixed(1)}, AREA: 0, TIME: ${elapsed.toFixed(1)}ms`);
+    }
+
+    // Add elapsed time to result
+    if (bestRect) {
+        bestRect.elapsed = elapsed;
     }
 
     return bestRect;
@@ -835,10 +1020,11 @@ function tryRectangleAtAngle(polygon, angleDeg, centroid, debugMode = false) {
         maxY = Math.max(maxY, p.y);
     }
 
-    // CRITICAL FIX: Use the rotated polygon bounds for proper scaling
-    // The rotated bounds give the correct available space for the rectangle
-    const rotatedWidth = maxX - minX;
-    const rotatedHeight = maxY - minY;
+    // ADAPTIVE: Use bounding box to determine appropriate base size
+    // Calculate polygon bounds for adaptive sizing
+    const polygonWidth = maxX - minX;
+    const polygonHeight = maxY - minY;
+    const polygonDiagonal = Math.sqrt(polygonWidth * polygonWidth + polygonHeight * polygonHeight);
 
     // OPTIMIZED: Test multiple strategic aspect ratios for better results
     let bestArea = 0;
@@ -849,18 +1035,18 @@ function tryRectangleAtAngle(polygon, angleDeg, centroid, debugMode = false) {
 
     for (const aspectRatio of aspectRatios) {
         let validScale = 0;
-        let low = 0, high = 5.0; // AGGRESSIVE: Start with much larger potential rectangles
+        let low = 0, high = 1.5; // Conservative but reasonable scaling limit
 
-        // ENHANCED: More iterations for better precision
-        const maxIterations = 20;
-        for (let iter = 0; iter < maxIterations; iter++) {
-            const scale = (low + high) / 2;
+        // CONSERVATIVE: Use polygon bounds with moderate scaling
+        const maxIterations = 15;
+        const precision = 0.001; // Binary search precision
 
-            // RADICAL NEW APPROACH: Scale based on polygon's maximum extents, not just bounding box
-            // For parallelograms, the optimal rectangle can be much larger than the simple bounds
-            const maxDimension = Math.max(rotatedWidth, rotatedHeight);
-            let testWidth = maxDimension * scale;
-            let testHeight = maxDimension * scale;
+        for (let iter = 0; iter < maxIterations && (high - low) > precision; iter++) {
+            const scale = Math.round((low + high) * 500) / 1000; // Round to 3 decimal places for determinism
+
+            // CONSERVATIVE: Scale based on actual polygon bounds
+            let testWidth = polygonWidth * scale;
+            let testHeight = polygonHeight * scale;
 
             // Adjust for aspect ratio
             if (aspectRatio > 1.0) {
@@ -892,8 +1078,8 @@ function tryRectangleAtAngle(polygon, angleDeg, centroid, debugMode = false) {
                 };
             });
 
-            // TESTING: Use lower validation density to see if it allows larger rectangles
-            const validationSamples = 12; // Reduced density for testing
+            // MINIMAL: Use basic validation only
+            const validationSamples = 8; // Minimal for testing
             if (fastRectangleValidation(originalCorners, polygon, validationSamples)) {
                 validScale = scale;
                 low = scale;
@@ -904,9 +1090,8 @@ function tryRectangleAtAngle(polygon, angleDeg, centroid, debugMode = false) {
 
         // Check if this aspect ratio produced a better result
         if (validScale > 0) {
-            const maxDimension = Math.max(rotatedWidth, rotatedHeight);
-            let finalWidth = maxDimension * validScale;
-            let finalHeight = maxDimension * validScale;
+            let finalWidth = polygonWidth * validScale;
+            let finalHeight = polygonHeight * validScale;
 
             // Apply aspect ratio to final dimensions
             if (aspectRatio > 1.0) {

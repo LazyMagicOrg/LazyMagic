@@ -9,7 +9,8 @@
       "Bash(do echo \"=== $func ===\")",
       "Bash(grep:*)",
       "Bash(done)",
-      "Read(//mnt/c/Users/TimothyMay/OneDrive - Insight Sciences Corporation/Pictures/Screenshots/**)"
+      "Read(//mnt/c/Users/TimothyMay/OneDrive - Insight Sciences Corporation/Pictures/Screenshots/**)",
+      "Bash(sed:*)"
     ],
     "deny": []
   }

@@ -31,8 +31,10 @@ async function loadOptimizationLibraries() {
 
     // Load optimized algorithms
     if (typeof window.SpatialHash === 'undefined') {
+        console.warn('[LOADING-DEBUG] Attempting to load SvgViewerOptimized.js...');
         const optScript = document.createElement('script');
         optScript.src = './_content/LazyMagic.BlazorSvg/SvgViewerOptimized.js';
+        console.warn('[LOADING-DEBUG] Script src set to:', optScript.src);
         const optPromise = new Promise((resolve) => {
             optScript.onload = () => {
                 SpatialHash = window.SpatialHash;
@@ -42,7 +44,8 @@ async function loadOptimizationLibraries() {
                 console.log('[optimized] Fast algorithms with adaptive centroid loaded successfully');
                 resolve(true);
             };
-            optScript.onerror = () => {
+            optScript.onerror = (error) => {
+                console.warn('[LOADING-DEBUG] Failed to load SvgViewerOptimized.js, error:', error);
                 console.warn('[optimized] Failed to load fast algorithms');
                 resolve(false);
             };
@@ -440,104 +443,6 @@ class SvgViewerInstance {
         return inside;
     }
 
-    // Robust rectangle validation with spatial grid acceleration
-    _validateRectangleInPolygon(corners, polygon) {
-        // If we have a spatial grid for this polygon, use it for fast validation
-        if (this.spatialGrid && polygon === this.spatialGrid.polygon) {
-            const minX = Math.min(...corners.map(c => c.x));
-            const maxX = Math.max(...corners.map(c => c.x));
-            const minY = Math.min(...corners.map(c => c.y));
-            const maxY = Math.max(...corners.map(c => c.y));
-
-            const isContained = this.spatialGrid.containsRectangle(minX, minY, maxX, maxY);
-            console.debug(`[rectangle] Spatial grid validation: ${isContained ? 'PASSED' : 'FAILED'}`);
-            return isContained;
-        }
-
-        console.debug(`[rectangle] Validating rectangle with corners: ${corners.map(c => `(${c.x.toFixed(1)},${c.y.toFixed(1)})`).join(', ')}`);
-
-        // Fallback to detailed validation
-        // Test all 4 corners
-        for (const corner of corners) {
-            if (!this.isPointInPolygon({x: corner.x, y: corner.y}, polygon)) {
-                console.debug(`[rectangle] Validation failed - corner (${corner.x.toFixed(1)}, ${corner.y.toFixed(1)}) outside polygon`);
-                return false;
-            }
-        }
-        console.debug(`[rectangle] All corners passed validation`);
-        
-        // Test points along each edge to catch boundary crossings
-        const edgeTestPoints = 5; // Moderate number of points for boundary checking
-        for (let i = 0; i < corners.length; i++) {
-            const start = corners[i];
-            const end = corners[(i + 1) % corners.length];
-            
-            // Test points along this edge
-            for (let j = 1; j <= edgeTestPoints; j++) {
-                const t = j / (edgeTestPoints + 1); // t from ~0.05 to ~0.95 in small steps
-                const testPoint = {
-                    x: start.x + t * (end.x - start.x),
-                    y: start.y + t * (end.y - start.y)
-                };
-                
-                if (!this.isPointInPolygon(testPoint, polygon)) {
-                    console.debug(`[rectangle] Validation failed - edge point (${testPoint.x.toFixed(1)}, ${testPoint.y.toFixed(1)}) outside polygon`);
-                    return false;
-                }
-            }
-        }
-        console.debug(`[rectangle] All edge points passed validation`);
-        
-        // Test center point
-        const centerX = corners.reduce((sum, c) => sum + c.x, 0) / corners.length;
-        const centerY = corners.reduce((sum, c) => sum + c.y, 0) / corners.length;
-        if (!this.isPointInPolygon({x: centerX, y: centerY}, polygon)) {
-            console.debug(`[rectangle] Validation failed - center (${centerX.toFixed(1)}, ${centerY.toFixed(1)}) outside polygon`);
-            return false;
-        }
-        
-        // DISABLED: Additional validation for edge intersections (causing false positives)
-        // if (!this._checkRectangleEdgeIntersections(corners, polygon)) {
-        //     console.debug(`[rectangle] Validation failed - rectangle edges intersect polygon boundary`);
-        //     return false;
-        // }
-        
-        console.debug(`[rectangle] Rectangle validation PASSED - all ${4 + edgeTestPoints * 4 + 1} points inside polygon`);
-        return true;
-    }
-    
-    // Check if rectangle edges intersect with polygon boundary edges
-    _checkRectangleEdgeIntersections(corners, polygon) {
-        // Create rectangle edges
-        const rectEdges = [];
-        for (let i = 0; i < corners.length; i++) {
-            rectEdges.push({
-                start: corners[i],
-                end: corners[(i + 1) % corners.length]
-            });
-        }
-        
-        // Create polygon edges
-        const polyEdges = [];
-        for (let i = 0; i < polygon.length; i++) {
-            polyEdges.push({
-                start: polygon[i],
-                end: polygon[(i + 1) % polygon.length]
-            });
-        }
-        
-        // Check for intersections
-        for (const rectEdge of rectEdges) {
-            for (const polyEdge of polyEdges) {
-                if (this.doLinesIntersect(rectEdge.start, rectEdge.end, polyEdge.start, polyEdge.end)) {
-                    return false; // Intersection found
-                }
-            }
-        }
-        
-        return true; // No intersections
-    }
-
     // Check for self-intersection in hull
     hasSelfintersection(hull) {
         for (let i = 0; i < hull.length; i++) {
@@ -697,6 +602,7 @@ class SvgViewerInstance {
     // Find the largest inscribed rectangle that fits inside a polygon
     // Tests multiple rotation angles to find optimal orientation
     findLargestInscribedRectangle(polygon, options = {}) {
+        console.warn(`🔍 [FUNCTION-DEBUG] findLargestInscribedRectangle CALLED with ${polygon?.length || 0} vertices`);
         const rectangleStartTime = performance.now();
         const {
             gridSize = 20,           // Number of grid divisions per axis
@@ -709,467 +615,36 @@ class SvgViewerInstance {
             return null;
         }
 
-        // Use fast algorithm with adaptive centroid for concave polygons
-        if (this.useFastMode && typeof window.fastInscribedRectangle !== 'undefined') {
-            const debugRect = debugLog; // Use debugLog parameter to control rectangle debug output
-            if (debugRect) console.debug('[rectangle] Using FAST inscribed rectangle algorithm');
-
-            const fastInscribedRectangle = window.fastInscribedRectangle;
-            const result = fastInscribedRectangle(polygon, {
-                angleStep: 10,
-                refinementStep: 2,
-                maxTime: 2000,  // Even more time for 75x75 grid
-                debugMode: true  // Enable debug to diagnose simple shape failure
-            });
-
-            if (debugRect) console.debug(`[rectangle] Fast algorithm result:`, result);
-            if (result) {
-                if (debugRect) console.log(`[rectangle] Fast algorithm found ${result.width.toFixed(1)}x${result.height.toFixed(1)} rectangle at ${result.angle}°`);
-                return result;
-            } else {
-                if (debugRect) console.warn(`[rectangle] Fast algorithm returned null, falling back to slow algorithm`);
-            }
-        }
-
-        // Initialize spatial structures for this polygon (one-time setup)
-        this.initializeSpatialStructures(polygon);
-
-        // Calculate polygon centroid for rotation center
-        const centroid = {
-            x: polygon.reduce((sum, p) => sum + p.x, 0) / polygon.length,
-            y: polygon.reduce((sum, p) => sum + p.y, 0) / polygon.length
-        };
-
-        let bestRectangle = null;
-        let bestArea = minArea;
-        let bestAngle = 0;
-
-        // PASS 1: Coarse scan at 10-degree increments (optimized for speed)
-        const coarseStep = 10;
-        for (let angleDeg = 0; angleDeg < 180; angleDeg += coarseStep) {
-            const angleRad = (angleDeg * Math.PI) / 180;
-            
-            // Rotate polygon to test axis-aligned rectangle at this angle
-            const rotatedPolygon = polygon.map(p => this._rotatePoint(p, centroid, -angleRad));
-            
-            // Find best axis-aligned rectangle in rotated space
-            const rotatedRect = this._findAxisAlignedRectangle(rotatedPolygon, gridSize, minArea, false);
-            
-            if (rotatedRect && rotatedRect.area > bestArea) {
-                // Rotate rectangle corners back to original coordinate system
-                const corners = [
-                    { x: rotatedRect.x, y: rotatedRect.y },
-                    { x: rotatedRect.x + rotatedRect.width, y: rotatedRect.y },
-                    { x: rotatedRect.x + rotatedRect.width, y: rotatedRect.y + rotatedRect.height },
-                    { x: rotatedRect.x, y: rotatedRect.y + rotatedRect.height }
-                ];
-                
-                const originalCorners = corners.map(c => this._rotatePoint(c, centroid, angleRad));
-                
-                // Robust validation: test corners + multiple points along each edge
-                const allPointsInside = this._validateRectangleInPolygon(originalCorners, polygon);
-                
-                if (allPointsInside) {
-                    bestArea = rotatedRect.area;
-                    bestAngle = angleDeg;
-                    
-                    bestRectangle = {
-                        corners: originalCorners,
-                        area: rotatedRect.area,
-                        angle: angleDeg,
-                        width: rotatedRect.width,
-                        height: rotatedRect.height
-                    };
-                    
-                    if (debugLog) {
-                        console.debug(`[rectangle] Coarse scan - new best at ${angleDeg}°: ${rotatedRect.width.toFixed(1)}x${rotatedRect.height.toFixed(1)} = ${rotatedRect.area.toFixed(0)}`);
-                    }
-                } else if (debugLog) {
-                    console.debug(`[rectangle] Coarse scan - rejected ${angleDeg}°: rectangle extends outside polygon`);
-                }
-            }
-        }
-
-        // PASS 2: Fine scan at 2-degree increments around the best angle (optimized)
-        const fineStep = 2;
-        const fineStart = Math.max(0, bestAngle - coarseStep);
-        const fineEnd = Math.min(180, bestAngle + coarseStep);
-        
-        if (debugLog) {
-            console.debug(`[rectangle] Fine scan from ${fineStart}° to ${fineEnd}°`);
-        }
-
-        for (let angleDeg = fineStart; angleDeg <= fineEnd; angleDeg += fineStep) {
-            const angleRad = (angleDeg * Math.PI) / 180;
-            
-            // Rotate polygon to test axis-aligned rectangle at this angle
-            const rotatedPolygon = polygon.map(p => this._rotatePoint(p, centroid, -angleRad));
-            
-            // Find best axis-aligned rectangle in rotated space
-            const rotatedRect = this._findAxisAlignedRectangle(rotatedPolygon, gridSize, minArea, false);
-            
-            if (rotatedRect && rotatedRect.area > bestArea) {
-                // Rotate rectangle corners back to original coordinate system
-                const corners = [
-                    { x: rotatedRect.x, y: rotatedRect.y },
-                    { x: rotatedRect.x + rotatedRect.width, y: rotatedRect.y },
-                    { x: rotatedRect.x + rotatedRect.width, y: rotatedRect.y + rotatedRect.height },
-                    { x: rotatedRect.x, y: rotatedRect.y + rotatedRect.height }
-                ];
-                
-                const originalCorners = corners.map(c => this._rotatePoint(c, centroid, angleRad));
-                
-                // Robust validation: test corners + multiple points along each edge
-                const allPointsInside = this._validateRectangleInPolygon(originalCorners, polygon);
-                
-                if (allPointsInside) {
-                    bestRectangle = {
-                        corners: originalCorners,
-                        area: rotatedRect.area,
-                        angle: angleDeg,
-                        width: rotatedRect.width,
-                        height: rotatedRect.height
-                    };
-                    bestArea = rotatedRect.area;
-                    
-                    if (debugLog) {
-                        console.debug(`[rectangle] Fine scan - new best at ${angleDeg}°: ${rotatedRect.width.toFixed(1)}x${rotatedRect.height.toFixed(1)} = ${rotatedRect.area.toFixed(0)}`);
-                    }
-                } else if (debugLog) {
-                    console.debug(`[rectangle] Fine scan - rejected ${angleDeg}°: rectangle extends outside polygon`);
-                }
-            }
-        }
-
-        const rectangleTime = performance.now() - rectangleStartTime;
-
-        if (bestRectangle) {
-            if (debugLog) {
-                console.debug(`[rectangle] Final best: ${bestRectangle.width.toFixed(1)}x${bestRectangle.height.toFixed(1)} = ${bestRectangle.area.toFixed(0)} at ${bestRectangle.angle}°`);
-                console.debug(`[rectangle] Rectangle corners:`, bestRectangle.corners);
-            }
-            console.debug(`[rectangle] Rectangle finding completed in ${rectangleTime.toFixed(1)}ms`);
-        } else {
-            if (debugLog) {
-                console.warn(`[rectangle] No valid rectangle found`);
-            }
-            console.debug(`[rectangle] Rectangle finding failed in ${rectangleTime.toFixed(1)}ms`);
-        }
-
-        return bestRectangle;
-    }
-
-    // Helper: Rotate a point around a center by an angle (radians)
-    _rotatePoint(point, center, angle) {
-        const cos = Math.cos(angle);
-        const sin = Math.sin(angle);
-        const dx = point.x - center.x;
-        const dy = point.y - center.y;
-        return {
-            x: center.x + dx * cos - dy * sin,
-            y: center.y + dx * sin + dy * cos
-        };
-    }
-
-    // Find the largest axis-aligned rectangle in a polygon (internal helper)
-    _findAxisAlignedRectangle(polygon, gridSize, minArea, debugLog) {
-        if (!polygon || polygon.length < 3) {
+        // Use fast algorithm
+        if (typeof window.fastInscribedRectangle === 'undefined') {
+            console.error('❌ Fast inscribed rectangle algorithm not loaded');
             return null;
         }
 
-        // Calculate bounding box of polygon
-        const minX = Math.min(...polygon.map(p => p.x));
-        const maxX = Math.max(...polygon.map(p => p.x));
-        const minY = Math.min(...polygon.map(p => p.y));
-        const maxY = Math.max(...polygon.map(p => p.y));
-        
-        const width = maxX - minX;
-        const height = maxY - minY;
-        const stepX = width / gridSize;
-        const stepY = height / gridSize;
+        const debugRect = debugLog;
+        if (debugRect) console.debug('[rectangle] Using fast inscribed rectangle algorithm');
 
-        if (debugLog) {
-            console.debug(`[rectangle] Polygon bounds: (${minX.toFixed(1)}, ${minY.toFixed(1)}) to (${maxX.toFixed(1)}, ${maxY.toFixed(1)})`);
-            console.debug(`[rectangle] Grid: ${gridSize}x${gridSize}, step: ${stepX.toFixed(1)}x${stepY.toFixed(1)}`);
+        const fastInscribedRectangle = window.fastInscribedRectangle;
+        const result = fastInscribedRectangle(polygon, {
+            angleStep: 10,
+            refinementStep: 2,
+            maxTime: 2000,
+            debugMode: true
+        });
+
+        if (debugRect) console.debug(`[rectangle] Fast algorithm result:`, result);
+        if (result) {
+            if (debugRect) console.log(`[rectangle] Fast algorithm found ${result.width.toFixed(1)}x${result.height.toFixed(1)} rectangle at ${result.angle}°`);
+
+            // FINAL DEBUG: Show polygon characteristics after area calculation
+            const timeInfo = result.elapsed ? `${result.elapsed.toFixed(1)}ms` : 'N/A';
+            console.log(`🔍 [SHAPE-DEBUG] FINAL: ${polygon.length} vertices, AREA: ${result.area.toFixed(0)}, TIME: ${timeInfo}`);
+
+            return result;
         }
 
-        let bestRectangle = null;
-        let bestArea = minArea;
-        let testedPoints = 0;
-        let expandedRectangles = 0;
-
-        // Strategy 1: Sample grid points as potential top-left corners
-        for (let ix = 0; ix <= gridSize; ix++) {
-            for (let iy = 0; iy <= gridSize; iy++) {
-                const x = minX + ix * stepX;
-                const y = minY + iy * stepY;
-                const startPoint = { x, y };
-
-                testedPoints++;
-
-                // Check if this point is inside the polygon
-                if (!this.isPointInPolygon(startPoint, polygon)) {
-                    continue;
-                }
-
-                expandedRectangles++;
-
-                // Try to expand a rectangle from this point
-                const rect = this._expandRectangleFromPoint(startPoint, polygon, maxX, maxY, stepX, stepY);
-                
-                if (rect && rect.area > bestArea) {
-                    bestArea = rect.area;
-                    bestRectangle = rect;
-                    
-                    if (debugLog) {
-                        console.debug(`[rectangle] New best: ${rect.width.toFixed(1)}x${rect.height.toFixed(1)} = ${rect.area.toFixed(0)} at (${rect.x.toFixed(1)}, ${rect.y.toFixed(1)})`);
-                    }
-                }
-            }
-        }
-
-        // Strategy 2: Try polygon vertices slightly inset (often optimal for edge-aligned rectangles)
-        const INSET = Math.min(stepX, stepY) * 0.1; // Small inset to avoid boundary issues
-        for (const vertex of polygon) {
-            // Try the vertex slightly inset from edges
-            const insetsToTry = [
-                { x: vertex.x + INSET, y: vertex.y + INSET },       // Inset from top-left
-                { x: vertex.x - INSET, y: vertex.y + INSET },       // Inset from top-right
-                { x: vertex.x + INSET, y: vertex.y - INSET },       // Inset from bottom-left
-                { x: vertex.x - INSET, y: vertex.y - INSET }        // Inset from bottom-right
-            ];
-
-            for (const startPoint of insetsToTry) {
-                testedPoints++;
-
-                if (!this.isPointInPolygon(startPoint, polygon)) {
-                    continue;
-                }
-
-                expandedRectangles++;
-
-                const rect = this._expandRectangleFromPoint(startPoint, polygon, maxX, maxY, stepX, stepY);
-                
-                if (rect && rect.area > bestArea) {
-                    bestArea = rect.area;
-                    bestRectangle = rect;
-                    
-                    if (debugLog) {
-                        console.debug(`[rectangle] New best from vertex: ${rect.width.toFixed(1)}x${rect.height.toFixed(1)} = ${rect.area.toFixed(0)} at (${rect.x.toFixed(1)}, ${rect.y.toFixed(1)})`);
-                    }
-                }
-            }
-        }
-
-        // Strategy 3: Sample points along polygon edges (helps find rectangles aligned with straight edges)
-        const edgeSamples = 5; // Number of samples per edge
-        for (let i = 0; i < polygon.length; i++) {
-            const v1 = polygon[i];
-            const v2 = polygon[(i + 1) % polygon.length];
-            
-            // Sample points along this edge
-            for (let s = 1; s < edgeSamples; s++) {
-                const t = s / edgeSamples;
-                const edgePoint = {
-                    x: v1.x + t * (v2.x - v1.x),
-                    y: v1.y + t * (v2.y - v1.y)
-                };
-                
-                // Try insets from this edge point
-                const insetsToTry = [
-                    { x: edgePoint.x + INSET, y: edgePoint.y + INSET },
-                    { x: edgePoint.x - INSET, y: edgePoint.y + INSET },
-                    { x: edgePoint.x + INSET, y: edgePoint.y - INSET },
-                    { x: edgePoint.x - INSET, y: edgePoint.y - INSET }
-                ];
-
-                for (const startPoint of insetsToTry) {
-                    testedPoints++;
-
-                    if (!this.isPointInPolygon(startPoint, polygon)) {
-                        continue;
-                    }
-
-                    expandedRectangles++;
-
-                    const rect = this._expandRectangleFromPoint(startPoint, polygon, maxX, maxY, stepX, stepY);
-                    
-                    if (rect && rect.area > bestArea) {
-                        bestArea = rect.area;
-                        bestRectangle = rect;
-                        
-                        if (debugLog) {
-                            console.debug(`[rectangle] New best from edge: ${rect.width.toFixed(1)}x${rect.height.toFixed(1)} = ${rect.area.toFixed(0)} at (${rect.x.toFixed(1)}, ${rect.y.toFixed(1)})`);
-                        }
-                    }
-                }
-            }
-        }
-
-        if (debugLog) {
-            console.debug(`[rectangle] Tested ${testedPoints} total points (grid + vertices + edges), expanded ${expandedRectangles} rectangles`);
-            if (bestRectangle) {
-                console.debug(`[rectangle] Best rectangle: ${bestRectangle.width.toFixed(1)}x${bestRectangle.height.toFixed(1)} = ${bestRectangle.area.toFixed(0)}`);
-            } else {
-                console.debug(`[rectangle] No rectangle found with area >= ${minArea}`);
-            }
-        }
-
-        return bestRectangle;
-    }
-
-    // Expand a rectangle from a given top-left point until it hits polygon boundary
-    _expandRectangleFromPoint(topLeft, polygon, maxX, maxY, stepX, stepY) {
-        let bestRect = null;
-        let bestArea = 0;
-
-        // Try different expansion strategies
-        // Strategy 1: Expand width first, then height
-        const rect1 = this._expandRectangle(topLeft, polygon, maxX, maxY, stepX, stepY, 'width-first');
-        if (rect1 && rect1.area > bestArea) {
-            bestArea = rect1.area;
-            bestRect = rect1;
-        }
-
-        // Strategy 2: Expand height first, then width
-        const rect2 = this._expandRectangle(topLeft, polygon, maxX, maxY, stepX, stepY, 'height-first');
-        if (rect2 && rect2.area > bestArea) {
-            bestArea = rect2.area;
-            bestRect = rect2;
-        }
-
-        // Strategy 3: Expand both simultaneously (balanced)
-        const rect3 = this._expandRectangle(topLeft, polygon, maxX, maxY, stepX, stepY, 'balanced');
-        if (rect3 && rect3.area > bestArea) {
-            bestArea = rect3.area;
-            bestRect = rect3;
-        }
-
-        return bestRect;
-    }
-
-    // Expand rectangle using specified strategy with binary search
-    _expandRectangle(topLeft, polygon, maxX, maxY, stepX, stepY, strategy) {
-        let x = topLeft.x;
-        let y = topLeft.y;
-        let width = stepX;
-        let height = stepY;
-
-        const PRECISION = 0.1;
-
-        if (strategy === 'width-first') {
-            // Binary search for maximum width
-            width = this._binarySearchDimension(x, y, 'width', stepX, maxX - x, height, polygon, PRECISION);
-            
-            // Then binary search for maximum height with that width
-            height = this._binarySearchDimension(x, y, 'height', stepY, maxY - y, width, polygon, PRECISION);
-        } else if (strategy === 'height-first') {
-            // Binary search for maximum height
-            height = this._binarySearchDimension(x, y, 'height', stepY, maxY - y, width, polygon, PRECISION);
-            
-            // Then binary search for maximum width with that height
-            width = this._binarySearchDimension(x, y, 'width', stepX, maxX - x, height, polygon, PRECISION);
-        } else { // 'balanced'
-            // Iteratively expand both dimensions
-            let improved = true;
-            let iterations = 0;
-            const maxIterations = 10;
-            
-            while (improved && iterations < maxIterations) {
-                improved = false;
-                iterations++;
-                
-                // Try to expand width
-                const newWidth = this._binarySearchDimension(x, y, 'width', width, maxX - x, height, polygon, PRECISION);
-                if (newWidth > width) {
-                    width = newWidth;
-                    improved = true;
-                }
-                
-                // Try to expand height
-                const newHeight = this._binarySearchDimension(x, y, 'height', height, maxY - y, width, polygon, PRECISION);
-                if (newHeight > height) {
-                    height = newHeight;
-                    improved = true;
-                }
-            }
-        }
-
-        // Ensure minimum size
-        if (width < stepX || height < stepY) {
-            return null;
-        }
-
-        return {
-            x: x,
-            y: y,
-            width: width,
-            height: height,
-            area: width * height
-        };
-    }
-
-    // Binary search to find maximum dimension (width or height) that fits in polygon
-    _binarySearchDimension(x, y, dimension, minVal, maxVal, otherDimVal, polygon, precision) {
-        let low = minVal;
-        let high = maxVal;
-        let best = minVal;
-        
-        while (high - low > precision) {
-            const mid = (low + high) / 2;
-            
-            let isValid;
-            if (dimension === 'width') {
-                isValid = this._isRectangleInPolygon(x, y, mid, otherDimVal, polygon);
-            } else {
-                isValid = this._isRectangleInPolygon(x, y, otherDimVal, mid, polygon);
-            }
-            
-            if (isValid) {
-                best = mid;
-                low = mid;
-            } else {
-                high = mid;
-            }
-        }
-        
-        return best;
-    }
-
-    // Check if a rectangle is fully inside the polygon
-    // Tests corners AND edge midpoints to catch cases where edges cross outside
-    _isRectangleInPolygon(x, y, width, height, polygon) {
-        const pointsToCheck = [
-            // Four corners
-            { x: x, y: y },                    // Top-left
-            { x: x + width, y: y },            // Top-right
-            { x: x + width, y: y + height },  // Bottom-right
-            { x: x, y: y + height },           // Bottom-left
-            
-            // Edge midpoints
-            { x: x + width / 2, y: y },                    // Top edge middle
-            { x: x + width, y: y + height / 2 },          // Right edge middle
-            { x: x + width / 2, y: y + height },          // Bottom edge middle
-            { x: x, y: y + height / 2 },                  // Left edge middle
-            
-            // Additional points along edges for better accuracy
-            { x: x + width / 4, y: y },                   // Top edge quarter
-            { x: x + 3 * width / 4, y: y },               // Top edge 3/4
-            { x: x + width, y: y + height / 4 },          // Right edge quarter
-            { x: x + width, y: y + 3 * height / 4 },      // Right edge 3/4
-            { x: x + width / 4, y: y + height },          // Bottom edge quarter
-            { x: x + 3 * width / 4, y: y + height },      // Bottom edge 3/4
-            { x: x, y: y + height / 4 },                  // Left edge quarter
-            { x: x, y: y + 3 * height / 4 }               // Left edge 3/4
-        ];
-
-        for (const point of pointsToCheck) {
-            if (!this.isPointInPolygon(point, polygon)) {
-                return false;
-            }
-        }
-
-        return true;
+        console.error('❌ Fast algorithm returned null');
+        return null;
     }
 
     // Calculate distance from a point to a line segment
