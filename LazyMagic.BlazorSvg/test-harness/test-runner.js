@@ -3,7 +3,7 @@
 import fs from 'fs';
 import path from 'path';
 import { testCases, config } from './test-config.js';
-import { calculateInscribedRectangle } from './algorithms.js';
+import { calculateInscribedRectangle } from './svgviewer-algorithms-extracted.js';
 
 // Color codes for console output
 const colors = {

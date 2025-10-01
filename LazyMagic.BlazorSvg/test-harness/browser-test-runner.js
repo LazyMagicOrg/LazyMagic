@@ -3,9 +3,12 @@
 import puppeteer from 'puppeteer';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { spawn } from 'child_process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const HTTP_PORT = 8765;
 
 // Color codes for console output
 const colors = {
@@ -27,7 +30,20 @@ async function main() {
     log('='.repeat(60), 'cyan');
 
     let browser;
+    let httpServer;
+
     try {
+        // Start HTTP server from the parent directory to serve all files
+        log('\nStarting HTTP server...', 'blue');
+        const serverRoot = path.resolve(__dirname, '..');
+        httpServer = spawn('npx', ['http-server', serverRoot, '-p', HTTP_PORT.toString(), '--cors', '-s'], {
+            shell: true
+        });
+
+        // Wait for server to start
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        log(`HTTP server running at http://localhost:${HTTP_PORT}`, 'green');
+
         // Launch browser
         log('\nLaunching browser...', 'blue');
         browser = await puppeteer.launch({
@@ -52,7 +68,7 @@ async function main() {
         });
 
         // Load the test page
-        const testPagePath = `file://${path.resolve(__dirname, 'test-page.html')}`;
+        const testPagePath = `http://localhost:${HTTP_PORT}/test-harness/test-page.html`;
         log(`Loading test page: ${testPagePath}`, 'blue');
 
         await page.goto(testPagePath, {
@@ -85,9 +101,17 @@ async function main() {
         let passed = 0;
         let failed = 0;
 
+        if (!results.tests || results.tests.length === 0) {
+            log('\nNo test results found!', 'red');
+            log('Check browser console for errors', 'yellow');
+            process.exit(1);
+        }
+
         for (const test of results.tests) {
-            log(`\nTest: ${test.name}`, test.success ? 'green' : 'red');
-            log(`Paths: ${test.paths.join(', ')}`, 'blue');
+            if (!test) continue;
+
+            log(`\nTest: ${test.name || 'Unknown'}`, test.success ? 'green' : 'red');
+            log(`Paths: ${(test.paths || []).join(', ')}`, 'blue');
 
             if (test.success) {
                 passed++;
@@ -130,6 +154,9 @@ async function main() {
     } finally {
         if (browser) {
             await browser.close();
+        }
+        if (httpServer) {
+            httpServer.kill();
         }
     }
 }

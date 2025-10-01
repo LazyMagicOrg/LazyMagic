@@ -44,10 +44,10 @@
     <div id="test-results"></div>
 
     <!-- Load Snap.svg -->
-    <script src="../wwwroot/snap.svg-min.js"></script>
+    <script src="/wwwroot/snap.svg-min.js"></script>
 
     <!-- Load SvgViewer.js -->
-    <script src="../wwwroot/SvgViewer.js"></script>
+    <script src="/wwwroot/SvgViewer.js"></script>
 
     <script>
         // Test configuration
@@ -76,7 +76,7 @@
         async function runTests() {
             try {
                 // Load the SVG
-                const response = await fetch('../../BlazorTest.WASM/wwwroot/Level1.svg');
+                const response = await fetch('/BlazorTest.WASM/wwwroot/Level1.svg');
                 const svgText = await response.text();
 
                 // Insert SVG into container
@@ -86,12 +86,9 @@
                 const svg = container.querySelector('svg');
                 const snap = Snap(svg);
 
-                // Initialize SvgViewer
-                const svgViewer = new SvgViewerInstance();
-                svgViewer.init(snap, {
-                    debugMode: true,
-                    highlightColor: '#FF8800'
-                });
+                // Initialize SvgViewer (minimal initialization for testing)
+                // SvgViewerInstance expects (containerId, dotNetObjectReference, disableSelection)
+                const svgViewer = new SvgViewerInstance('svg-container', null, false);
 
                 document.getElementById('test-status').textContent = 'Running tests...';
 

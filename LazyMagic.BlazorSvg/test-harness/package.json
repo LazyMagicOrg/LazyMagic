@@ -9,10 +9,15 @@
     "test:watch": "node --watch test-runner.js",
     "test:browser": "node browser-test-runner.js"
   },
-  "keywords": ["svg", "geometry", "testing"],
+  "keywords": [
+    "svg",
+    "geometry",
+    "testing"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "http-server": "^14.1.1",
     "puppeteer": "^23.0.0"
   }
 }
