@@ -8,8 +8,8 @@
    version="1.1"
    id="svg5"
    xml:space="preserve"
-   inkscape:version="1.2.1 (9c6d41e410, 2022-07-14)"
-   sodipodi:docname="Level1_rotated.svg"
+   inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
+   sodipodi:docname="Level1.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -27,12 +27,12 @@
      showgrid="false"
      showguides="false"
      inkscape:zoom="0.049930061"
-     inkscape:cx="16963.729"
-     inkscape:cy="9022.6207"
+     inkscape:cx="16973.743"
+     inkscape:cy="9012.6067"
      inkscape:window-width="2285"
      inkscape:window-height="1360"
      inkscape:window-x="1139"
-     inkscape:window-y="713"
+     inkscape:window-y="718"
      inkscape:window-maximized="0"
      inkscape:current-layer="layer1" /><defs
      id="defs2"><linearGradient
@@ -129,7 +129,7 @@
        inkscape:label="Aisle 34"
        inkscape:transform-center-x="-1.4399478"
        inkscape:transform-center-y="-1.0241399"
-       d="m 454.50174,174.36438 -3.29676,19.86522 -105.73478,-17.83122 3.25093,-19.589 z"
+       d="m 454.50174,174.36438 -3.25105,19.58817 -105.78049,-17.55417 3.25093,-19.589 z"
        sodipodi:nodetypes="ccccc"><title
          id="title6482-6-2">Aisle 34</title></path><path
        id="Ballroom_Aisle_56"
@@ -161,7 +161,7 @@
        inkscape:label="Aisle 3456"
        inkscape:transform-center-x="-0.34709581"
        inkscape:transform-center-y="-1.0213389"
-       d="m 474.09075,177.61531 -3.25093,19.58901 -19.589,-3.25093 3.25092,-19.58901 z"
+       d="m 474.09075,177.61531 -3.25093,19.58901 -19.58913,-3.25177 3.25105,-19.58817 z"
        sodipodi:nodetypes="ccccc"><title
          id="title6482-6-0">Aisle 3456</title></path></g><g
      inkscape:groupmode="layer"

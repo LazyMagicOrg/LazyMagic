@@ -1,0 +1,18 @@
+{
+  "name": "svgviewer-test-harness",
+  "version": "1.0.0",
+  "description": "Test harness for SVG inscribed rectangle algorithms",
+  "type": "module",
+  "main": "test-runner.js",
+  "scripts": {
+    "test": "node test-runner.js",
+    "test:watch": "node --watch test-runner.js",
+    "test:browser": "node browser-test-runner.js"
+  },
+  "keywords": ["svg", "geometry", "testing"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "puppeteer": "^23.0.0"
+  }
+}

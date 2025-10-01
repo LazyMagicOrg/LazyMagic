@@ -625,12 +625,23 @@ class SvgViewerInstance {
         if (debugRect) console.debug('[rectangle] Using fast inscribed rectangle algorithm');
 
         const fastInscribedRectangle = window.fastInscribedRectangle;
-        const result = fastInscribedRectangle(polygon, {
-            angleStep: 10,
-            refinementStep: 2,
-            maxTime: 5000,  // Increased to allow fixed-grid search to complete
+
+        // If a hint angle is provided, test angles around it with higher precision
+        const algorithmOptions = {
+            angleStep: options.hintAngle !== undefined ? 1 : 10,  // Use 1° steps if we have a hint
+            refinementStep: 0.5,  // Finer refinement for better precision
+            maxTime: 5000,
             debugMode: true
-        });
+        };
+
+        // If hint angle provided, also test angles around the hint
+        if (options.hintAngle !== undefined) {
+            console.debug(`[rectangle] Using hint angle: ${options.hintAngle.toFixed(1)}°`);
+            algorithmOptions.startAngle = options.hintAngle - 5;  // Test ±5° around hint
+            algorithmOptions.endAngle = options.hintAngle + 5;
+        }
+
+        const result = fastInscribedRectangle(polygon, algorithmOptions);
 
         if (debugRect) console.debug(`[rectangle] Fast algorithm result:`, result);
         if (result) {
@@ -2220,7 +2231,843 @@ class SvgViewerInstance {
 
         console.debug(`[winding] Traversal completed in ${iterations} iterations, found ${outerEdgePoints.length} outer edge points`);
 
-        return outerEdgePoints;
+        // VALIDATION: Basic polygon cleanup before returning
+        const validatedPoints = this._basicPolygonCleanup(outerEdgePoints);
+        console.debug(`[winding] Polygon validation: ${outerEdgePoints.length} → ${validatedPoints.length} points`);
+
+        return validatedPoints;
+    }
+
+    // Minimal polygon cleanup - detect corrupted results and force failure
+    _basicPolygonCleanup(points) {
+        if (!points || points.length < 3) {
+            return points;
+        }
+
+        // Step 1: Remove duplicate consecutive points
+        const cleaned = [];
+        const tolerance = 0.1;
+
+        for (let i = 0; i < points.length; i++) {
+            const current = points[i];
+            const next = points[(i + 1) % points.length];
+
+            // Only add if not duplicate of next point
+            if (Math.abs(current.x - next.x) > tolerance || Math.abs(current.y - next.y) > tolerance) {
+                cleaned.push(current);
+            }
+        }
+
+        console.debug(`[winding] Removed ${points.length - cleaned.length} duplicate points`);
+
+        // Step 2: Detect corrupted polygon structures
+        if (cleaned.length === 6) {
+            // For simple rectangular arrangements, 6 vertices often indicates corruption
+            // Calculate polygon area vs bounding box area to detect issues
+            const bounds = this._getPolygonBounds(cleaned);
+            const boundingArea = (bounds.maxX - bounds.minX) * (bounds.maxY - bounds.minY);
+            const polygonArea = this._calculatePolygonArea(cleaned);
+            const areaRatio = polygonArea / boundingArea;
+
+            if (areaRatio < 0.8) {
+                console.warn(`[winding] Detected corrupted 6-vertex polygon (area ratio: ${areaRatio.toFixed(3)}), forcing failure to trigger convex hull`);
+                return null; // Force failure to trigger convex hull fallback
+            }
+        }
+
+        return cleaned;
+    }
+
+    // Calculate polygon area using shoelace formula
+    _calculatePolygonArea(points) {
+        let area = 0;
+        for (let i = 0; i < points.length; i++) {
+            const current = points[i];
+            const next = points[(i + 1) % points.length];
+            area += current.x * next.y - next.x * current.y;
+        }
+        return Math.abs(area) / 2;
+    }
+
+    // Get polygon bounding box
+    _getPolygonBounds(points) {
+        let minX = Infinity, maxX = -Infinity;
+        let minY = Infinity, maxY = -Infinity;
+
+        for (const point of points) {
+            minX = Math.min(minX, point.x);
+            maxX = Math.max(maxX, point.x);
+            minY = Math.min(minY, point.y);
+            maxY = Math.max(maxY, point.y);
+        }
+
+        return { minX, maxX, minY, maxY };
+    }
+
+    // Calculate exact inscribed rectangle for a 4-vertex parallelogram
+    _calculateParallelogramRectangle(polygon, angle) {
+        console.warn(`🔍 [PARALLELOGRAM-ENTRY] Function called with angle parameter = ${angle}°`);
+        if (polygon.length !== 4) return null;
+
+        // Calculate edge lengths
+        const edges = [];
+        for (let i = 0; i < 4; i++) {
+            const p1 = polygon[i];
+            const p2 = polygon[(i + 1) % 4];
+            const dx = p2.x - p1.x;
+            const dy = p2.y - p1.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const edgeAngle = Math.atan2(dy, dx) * 180 / Math.PI;
+            edges.push({ length, angle: edgeAngle });
+        }
+
+        console.debug(`[parallelogram] Edge lengths: ${edges.map(e => e.length.toFixed(1)).join(', ')}`);
+        console.debug(`[parallelogram] Edge angles: ${edges.map(e => e.angle.toFixed(1)).join(', ')}°`);
+        console.warn(`🔍 [PARALLELOGRAM-ANGLE] Input angle param = ${angle}°, will use for rectangle rotation`);
+
+        // For a parallelogram, opposite edges should be roughly equal
+        const isParallelogram =
+            Math.abs(edges[0].length - edges[2].length) < 5 &&
+            Math.abs(edges[1].length - edges[3].length) < 5;
+
+        if (!isParallelogram) {
+            console.debug(`[parallelogram] Not a parallelogram - edges don't match`);
+            return null;
+        }
+
+        // The inscribed rectangle at the parallelogram's angle should have dimensions
+        // equal to the parallelogram's edge lengths
+        // Determine which edges align with the width (orientation angle) vs height (perpendicular)
+
+        // Normalize angles to 0-180 for comparison
+        const normalizeAngle = (a) => {
+            let normalized = a;
+            while (normalized < 0) normalized += 180;
+            while (normalized >= 180) normalized -= 180;
+            return normalized;
+        };
+
+        const targetAngle = normalizeAngle(angle);
+        const perpAngle = normalizeAngle(angle + 90);
+
+        // Find which edge pair is closest to the target angle (those become width)
+        const edge0Angle = normalizeAngle(edges[0].angle);
+        const edge1Angle = normalizeAngle(edges[1].angle);
+
+        const diff0 = Math.min(Math.abs(edge0Angle - targetAngle), Math.abs(edge0Angle - targetAngle + 180), Math.abs(edge0Angle - targetAngle - 180));
+        const diff1 = Math.min(Math.abs(edge1Angle - targetAngle), Math.abs(edge1Angle - targetAngle + 180), Math.abs(edge1Angle - targetAngle - 180));
+
+        let width, height;
+        if (diff0 < diff1) {
+            // Edges 0 and 2 align with the orientation angle (width)
+            // Check if opposite edges differ significantly (trapezoid-like)
+            const widthDiff = Math.abs(edges[0].length - edges[2].length);
+            const heightDiff = Math.abs(edges[1].length - edges[3].length);
+
+            if (widthDiff > 1) {
+                // Use minimum of opposite edges for trapezoid-like shapes
+                width = Math.min(edges[0].length, edges[2].length);
+                console.debug(`[parallelogram] Width edges differ by ${widthDiff.toFixed(1)}px, using minimum (${width.toFixed(1)}px) for safe fit`);
+            } else {
+                width = (edges[0].length + edges[2].length) / 2;
+            }
+
+            if (heightDiff > 1) {
+                height = Math.min(edges[1].length, edges[3].length);
+                console.debug(`[parallelogram] Height edges differ by ${heightDiff.toFixed(1)}px, using minimum (${height.toFixed(1)}px) for safe fit`);
+            } else {
+                height = (edges[1].length + edges[3].length) / 2;
+            }
+
+            console.debug(`[parallelogram] Edges 0,2 (${edges[0].angle.toFixed(1)}°) align with width direction`);
+        } else {
+            // Edges 1 and 3 align with the orientation angle (width)
+            const widthDiff = Math.abs(edges[1].length - edges[3].length);
+            const heightDiff = Math.abs(edges[0].length - edges[2].length);
+
+            if (widthDiff > 1) {
+                width = Math.min(edges[1].length, edges[3].length);
+                console.debug(`[parallelogram] Width edges differ by ${widthDiff.toFixed(1)}px, using minimum (${width.toFixed(1)}px) for safe fit`);
+            } else {
+                width = (edges[1].length + edges[3].length) / 2;
+            }
+
+            if (heightDiff > 1) {
+                height = Math.min(edges[0].length, edges[2].length);
+                console.debug(`[parallelogram] Height edges differ by ${heightDiff.toFixed(1)}px, using minimum (${height.toFixed(1)}px) for safe fit`);
+            } else {
+                height = (edges[0].length + edges[2].length) / 2;
+            }
+
+            console.debug(`[parallelogram] Edges 1,3 (${edges[1].angle.toFixed(1)}°) align with width direction`);
+        }
+
+        console.debug(`[parallelogram] Calculated rectangle: ${width.toFixed(1)}×${height.toFixed(1)} at ${angle.toFixed(1)}°`);
+
+        // Calculate centroid
+        const centroid = {
+            x: (polygon[0].x + polygon[1].x + polygon[2].x + polygon[3].x) / 4,
+            y: (polygon[0].y + polygon[1].y + polygon[2].y + polygon[3].y) / 4
+        };
+
+        // Calculate corners of the rectangle
+        const angleRad = angle * Math.PI / 180;
+        const cos = Math.cos(angleRad);
+        const sin = Math.sin(angleRad);
+
+        const halfWidth = width / 2;
+        const halfHeight = height / 2;
+
+        const corners = [
+            {
+                x: centroid.x + (-halfWidth * cos - (-halfHeight) * sin),
+                y: centroid.y + (-halfWidth * sin + (-halfHeight) * cos)
+            },
+            {
+                x: centroid.x + (halfWidth * cos - (-halfHeight) * sin),
+                y: centroid.y + (halfWidth * sin + (-halfHeight) * cos)
+            },
+            {
+                x: centroid.x + (halfWidth * cos - halfHeight * sin),
+                y: centroid.y + (halfWidth * sin + halfHeight * cos)
+            },
+            {
+                x: centroid.x + (-halfWidth * cos - halfHeight * sin),
+                y: centroid.y + (-halfWidth * sin + halfHeight * cos)
+            }
+        ];
+
+        return {
+            width: width,
+            height: height,
+            angle: angle,
+            area: width * height,
+            corners: corners,
+            centroid: centroid
+        };
+    }
+
+    // Calculate exact inscribed rectangle for a 4-vertex trapezoid
+    _calculateTrapezoidRectangle(polygon, angle) {
+        console.warn(`🔍 [TRAPEZOID-ENTRY] Function called with angle parameter = ${angle}°`);
+        if (polygon.length !== 4) return null;
+
+        // Calculate edge lengths and angles
+        const edges = [];
+        for (let i = 0; i < 4; i++) {
+            const p1 = polygon[i];
+            const p2 = polygon[(i + 1) % 4];
+            const dx = p2.x - p1.x;
+            const dy = p2.y - p1.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const edgeAngle = Math.atan2(dy, dx) * 180 / Math.PI;
+            edges.push({ length, angle: edgeAngle, p1, p2 });
+        }
+
+        console.debug(`[trapezoid] Edge lengths: ${edges.map(e => e.length.toFixed(1)).join(', ')}`);
+        console.debug(`[trapezoid] Edge angles: ${edges.map(e => e.angle.toFixed(1)).join(', ')}°`);
+
+        // Normalize angles to 0-180 for comparison
+        const normalizeAngle = (a) => {
+            let normalized = a;
+            while (normalized < 0) normalized += 180;
+            while (normalized >= 180) normalized -= 180;
+            return normalized;
+        };
+
+        // Find pairs of parallel edges (angles within 5 degrees)
+        const parallelPairs = [];
+        for (let i = 0; i < 4; i++) {
+            for (let j = i + 1; j < 4; j++) {
+                const angle1 = normalizeAngle(edges[i].angle);
+                const angle2 = normalizeAngle(edges[j].angle);
+                const angleDiff = Math.min(
+                    Math.abs(angle1 - angle2),
+                    Math.abs(angle1 - angle2 + 180),
+                    Math.abs(angle1 - angle2 - 180)
+                );
+                if (angleDiff < 5) {
+                    parallelPairs.push({ edge1: i, edge2: j, length1: edges[i].length, length2: edges[j].length });
+                }
+            }
+        }
+
+        if (parallelPairs.length === 0) {
+            console.debug(`[trapezoid] No parallel edges found, not a trapezoid`);
+            return null;
+        }
+
+        console.debug(`[trapezoid] Found ${parallelPairs.length} parallel edge pair(s)`);
+
+        // For a trapezoid, we want the pair of parallel edges that align with the orientation angle
+        const targetAngle = normalizeAngle(angle);
+        let bestPair = null;
+        let bestAngleDiff = Infinity;
+
+        for (const pair of parallelPairs) {
+            const edgeAngle = normalizeAngle(edges[pair.edge1].angle);
+            const diff = Math.min(
+                Math.abs(edgeAngle - targetAngle),
+                Math.abs(edgeAngle - targetAngle + 180),
+                Math.abs(edgeAngle - targetAngle - 180)
+            );
+            if (diff < bestAngleDiff) {
+                bestAngleDiff = diff;
+                bestPair = pair;
+            }
+        }
+
+        if (!bestPair) {
+            console.debug(`[trapezoid] Could not find parallel edges matching orientation`);
+            return null;
+        }
+
+        // The inscribed rectangle width is the length of the SHORTER parallel edge
+        const width = Math.min(bestPair.length1, bestPair.length2);
+
+        // Calculate height as the TRUE perpendicular distance between the two parallel edges
+        // Get the parallel edge angle
+        const parallelAngleRad = edges[bestPair.edge1].angle * Math.PI / 180;
+        const perpAngleRad = parallelAngleRad + Math.PI / 2;
+
+        // Project all 4 vertices onto the perpendicular axis
+        const perpProjections = polygon.map(p => p.x * Math.cos(perpAngleRad) + p.y * Math.sin(perpAngleRad));
+        const minPerp = Math.min(...perpProjections);
+        const maxPerp = Math.max(...perpProjections);
+        const height = maxPerp - minPerp;
+
+        console.debug(`[trapezoid] Parallel edges: ${bestPair.length1.toFixed(1)}px and ${bestPair.length2.toFixed(1)}px`);
+        console.debug(`[trapezoid] Rectangle width (shorter parallel edge): ${width.toFixed(1)}px`);
+        console.debug(`[trapezoid] Rectangle height (perpendicular distance): ${height.toFixed(1)}px`);
+
+        // Calculate the center point of the inscribed rectangle
+        // For a trapezoid, the rectangle should be centered along the width direction
+        // and positioned at the geometric center in the height direction
+
+        // Find the midpoint of the shorter parallel edge
+        const shorterEdgeIdx = bestPair.length1 < bestPair.length2 ? bestPair.edge1 : bestPair.edge2;
+        const shorterEdge = edges[shorterEdgeIdx];
+        const shorterEdgeMidpoint = {
+            x: (shorterEdge.p1.x + shorterEdge.p2.x) / 2,
+            y: (shorterEdge.p1.y + shorterEdge.p2.y) / 2
+        };
+
+        // Reuse the perpendicular projections already calculated for height
+        // The mean perpendicular position is the center of the trapezoid in the height direction
+        const meanPerp = (minPerp + maxPerp) / 2;
+
+        // Calculate where the shorter edge's midpoint projects onto the perpendicular axis
+        const shorterMidPerp = shorterEdgeMidpoint.x * Math.cos(perpAngleRad) + shorterEdgeMidpoint.y * Math.sin(perpAngleRad);
+
+        // Offset needed to center the rectangle
+        const perpOffset = meanPerp - shorterMidPerp;
+
+        const centroid = {
+            x: shorterEdgeMidpoint.x + perpOffset * Math.cos(perpAngleRad),
+            y: shorterEdgeMidpoint.y + perpOffset * Math.sin(perpAngleRad)
+        };
+
+        console.debug(`[trapezoid] Rectangle centered at (${centroid.x.toFixed(1)}, ${centroid.y.toFixed(1)})`);
+
+        // Calculate corners of the rectangle
+        const angleRad = angle * Math.PI / 180;
+        const cos = Math.cos(angleRad);
+        const sin = Math.sin(angleRad);
+
+        const halfWidth = width / 2;
+        const halfHeight = height / 2;
+
+        const corners = [
+            {
+                x: centroid.x + (-halfWidth * cos - (-halfHeight) * sin),
+                y: centroid.y + (-halfWidth * sin + (-halfHeight) * cos)
+            },
+            {
+                x: centroid.x + (halfWidth * cos - (-halfHeight) * sin),
+                y: centroid.y + (halfWidth * sin + (-halfHeight) * cos)
+            },
+            {
+                x: centroid.x + (halfWidth * cos - halfHeight * sin),
+                y: centroid.y + (halfWidth * sin + halfHeight * cos)
+            },
+            {
+                x: centroid.x + (-halfWidth * cos - halfHeight * sin),
+                y: centroid.y + (-halfWidth * sin + halfHeight * cos)
+            }
+        ];
+
+        console.debug(`[trapezoid] Calculated inscribed rectangle: ${width.toFixed(1)}×${height.toFixed(1)} at ${angle.toFixed(1)}°`);
+
+        return {
+            width: width,
+            height: height,
+            angle: angle,
+            area: width * height,
+            corners: corners,
+            centroid: centroid
+        };
+    }
+
+    // Detect the dominant orientation angle of a polygon (for rectangles/parallelograms)
+    _detectPolygonOrientation(polygon) {
+        if (!polygon || polygon.length < 3) return 0;
+
+        // For parallelograms/rectangles, we want the angle that maximizes the width
+        // Test all edge angles and their perpendiculars to find which gives the widest bounding box
+        const edgeAngles = [];
+
+        for (let i = 0; i < polygon.length; i++) {
+            const p1 = polygon[i];
+            const p2 = polygon[(i + 1) % polygon.length];
+            const dx = p2.x - p1.x;
+            const dy = p2.y - p1.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            edgeAngles.push({ angle, length });
+        }
+
+        // Test each unique angle to see which gives the maximum width
+        let bestAngle = 0;
+        let maxWidth = 0;
+
+        const testedAngles = new Set();
+        for (const edge of edgeAngles) {
+            // Normalize angle to 0-180 range (direction doesn't matter for width)
+            let testAngle = edge.angle;
+            while (testAngle < 0) testAngle += 180;
+            while (testAngle >= 180) testAngle -= 180;
+
+            // Skip if we've already tested this angle
+            const angleKey = Math.round(testAngle * 10) / 10;
+            if (testedAngles.has(angleKey)) continue;
+            testedAngles.add(angleKey);
+
+            // Calculate rotated bounding box width at this angle
+            const angleRad = testAngle * Math.PI / 180;
+            const cos = Math.cos(angleRad);
+            const sin = Math.sin(angleRad);
+
+            let minRotX = Infinity, maxRotX = -Infinity;
+            for (const p of polygon) {
+                const rotX = p.x * cos + p.y * sin;
+                minRotX = Math.min(minRotX, rotX);
+                maxRotX = Math.max(maxRotX, rotX);
+            }
+
+            const width = maxRotX - minRotX;
+            console.debug(`[orientation] Testing angle ${testAngle.toFixed(1)}°: width=${width.toFixed(1)}px`);
+
+            if (width > maxWidth) {
+                maxWidth = width;
+                bestAngle = testAngle;
+            }
+        }
+
+        console.debug(`[orientation] Best orientation: ${bestAngle.toFixed(1)}° with width ${maxWidth.toFixed(1)}px`);
+
+        return bestAngle;
+    }
+
+    // Smart rectangular boundary detection using actual boundary points
+    _detectAndCreateRectangularBoundaryFromPoints(pathBoundaryPoints) {
+        console.debug(`[smart-rect] Testing ${pathBoundaryPoints.length} paths using actual boundary points`);
+
+        // Only handle small numbers of paths that are likely rectangular
+        if (pathBoundaryPoints.length < 2 || pathBoundaryPoints.length > 6) {
+            console.debug(`[smart-rect] Rejected: too many/few paths (${pathBoundaryPoints.length})`);
+            return null;
+        }
+
+        // Check if each path has exactly 4 points (rectangle vertices)
+        for (let i = 0; i < pathBoundaryPoints.length; i++) {
+            const points = pathBoundaryPoints[i];
+            console.debug(`[smart-rect] Path ${i}: ${points.length} boundary points`);
+
+            if (points.length !== 4) {
+                console.debug(`[smart-rect] Rejected: Path ${i} has ${points.length} points, not 4`);
+                return null;
+            }
+
+            console.debug(`[smart-rect] Path ${i} vertices: ${points.map(p => `(${p.x.toFixed(1)},${p.y.toFixed(1)})`).join(', ')}`);
+        }
+
+        // Check if rectangles share vertices (are adjacent)
+        const sharedVertices = this._findSharedVertices(pathBoundaryPoints);
+        console.debug(`[smart-rect] Found ${sharedVertices.length} shared vertices`);
+
+        if (sharedVertices.length >= 1) {
+            console.debug(`[smart-rect] Rectangles share vertices - creating combined boundary`);
+
+            // For 2 rectangles sharing vertices, extract only the unique outer vertices
+            // Shared vertices should be excluded to create a clean 4-vertex boundary
+            const allPoints = pathBoundaryPoints.flat();
+            console.debug(`[smart-rect] All ${allPoints.length} points before filtering: ${allPoints.map(p => `(${p.x.toFixed(1)},${p.y.toFixed(1)})`).join(', ')}`);
+
+            // Create a map to count how many times each vertex appears
+            const vertexCounts = new Map();
+            for (const point of allPoints) {
+                const key = `${point.x.toFixed(1)},${point.y.toFixed(1)}`;
+                vertexCounts.set(key, (vertexCounts.get(key) || 0) + 1);
+            }
+
+            // Keep only vertices that appear exactly once (outer corners)
+            const outerVertices = [];
+            const seenKeys = new Set();
+            for (const point of allPoints) {
+                const key = `${point.x.toFixed(1)},${point.y.toFixed(1)}`;
+                if (vertexCounts.get(key) === 1 && !seenKeys.has(key)) {
+                    outerVertices.push(point);
+                    seenKeys.add(key);
+                }
+            }
+
+            console.debug(`[smart-rect] Filtered to ${outerVertices.length} outer vertices: ${outerVertices.map(p => `(${p.x.toFixed(1)},${p.y.toFixed(1)})`).join(', ')}`);
+
+            // Remove near-duplicate vertices (tolerance 2px) that may have survived the initial filter
+            const dedupedVertices = [];
+            for (const v of outerVertices) {
+                const isDuplicate = dedupedVertices.some(existing => {
+                    const dist = Math.sqrt((existing.x - v.x) ** 2 + (existing.y - v.y) ** 2);
+                    return dist < 2.0;
+                });
+                if (!isDuplicate) {
+                    dedupedVertices.push(v);
+                }
+            }
+
+            if (dedupedVertices.length !== outerVertices.length) {
+                console.debug(`[smart-rect] Removed ${outerVertices.length - dedupedVertices.length} near-duplicate vertices, now have ${dedupedVertices.length}`);
+            }
+
+            const finalVertices = dedupedVertices;
+
+            // For 4 outer vertices, sort them by angle around centroid to ensure proper ordering
+            if (finalVertices.length === 4) {
+                // Calculate centroid
+                const cx = finalVertices.reduce((sum, p) => sum + p.x, 0) / finalVertices.length;
+                const cy = finalVertices.reduce((sum, p) => sum + p.y, 0) / finalVertices.length;
+
+                // Sort by angle from centroid
+                finalVertices.sort((a, b) => {
+                    const angleA = Math.atan2(a.y - cy, a.x - cx);
+                    const angleB = Math.atan2(b.y - cy, b.x - cx);
+                    return angleA - angleB;
+                });
+
+                console.debug(`[smart-rect] Sorted 4 vertices by angle around centroid (${cx.toFixed(1)}, ${cy.toFixed(1)})`);
+                console.debug(`[smart-rect] Combined boundary has ${finalVertices.length} points: ${finalVertices.map(p => `(${p.x.toFixed(1)},${p.y.toFixed(1)})`).join(', ')}`);
+
+                return finalVertices;
+            }
+
+            // For other cases, use convex hull
+            const hull = this.simpleConvexHull(finalVertices);
+            console.debug(`[smart-rect] Combined boundary has ${hull.length} points: ${hull.map(p => `(${p.x.toFixed(1)},${p.y.toFixed(1)})`).join(', ')}`);
+
+            return hull;
+        }
+
+        console.debug(`[smart-rect] Rejected: Rectangles don't share vertices`);
+        return null;
+    }
+
+    // Find vertices that are shared between rectangles
+    _findSharedVertices(pathBoundaryPoints) {
+        const sharedVertices = [];
+        const tolerance = 1.0; // pixels
+
+        for (let i = 0; i < pathBoundaryPoints.length; i++) {
+            for (let j = i + 1; j < pathBoundaryPoints.length; j++) {
+                const points1 = pathBoundaryPoints[i];
+                const points2 = pathBoundaryPoints[j];
+
+                for (const p1 of points1) {
+                    for (const p2 of points2) {
+                        const distance = Math.sqrt((p1.x - p2.x) ** 2 + (p1.y - p2.y) ** 2);
+                        if (distance < tolerance) {
+                            sharedVertices.push({ p1, p2, distance });
+                            console.debug(`[smart-rect] Shared vertex: (${p1.x.toFixed(1)},${p1.y.toFixed(1)}) ≈ (${p2.x.toFixed(1)},${p2.y.toFixed(1)}) dist=${distance.toFixed(1)}`);
+                        }
+                    }
+                }
+            }
+        }
+
+        return sharedVertices;
+    }
+
+    // Smart rectangular boundary detection for simple rectangular arrangements
+    _detectAndCreateRectangularBoundary(groupPaths) {
+        console.debug(`[smart-rect] Testing ${groupPaths.length} paths for rectangular arrangement`);
+
+        // Only handle small numbers of paths that are likely rectangular
+        if (groupPaths.length < 2 || groupPaths.length > 6) {
+            console.debug(`[smart-rect] Rejected: too many/few paths (${groupPaths.length})`);
+            return null;
+        }
+
+        // Get the actual path boundaries (corners) for each path
+        const pathCorners = [];
+        for (let i = 0; i < groupPaths.length; i++) {
+            const path = groupPaths[i];
+            const corners = this._extractPathCorners(path);
+            const bbox = path.getBBox();
+            console.debug(`[smart-rect] Path ${i}: bbox(${bbox.x.toFixed(1)}, ${bbox.y.toFixed(1)}, ${bbox.width.toFixed(1)}×${bbox.height.toFixed(1)}), corners: ${corners ? corners.length : 'null'}`);
+
+            if (!corners || corners.length !== 4) {
+                console.debug(`[smart-rect] Rejected: Path ${i} not a simple rectangle`);
+                return null;
+            }
+            pathCorners.push(corners);
+        }
+
+        // Check if all rectangles have the same orientation (axis-aligned OR consistently rotated)
+        let commonRotation = null;
+        for (let i = 0; i < pathCorners.length; i++) {
+            const corners = pathCorners[i];
+            const isAligned = this._isAxisAligned(corners);
+            const rotation = this._getRectangleRotation(corners);
+
+            console.debug(`[smart-rect] Path ${i} axis-aligned: ${isAligned}, rotation: ${rotation.toFixed(1)}°`);
+
+            if (commonRotation === null) {
+                commonRotation = rotation;
+            } else if (Math.abs(commonRotation - rotation) > 5) {
+                console.debug(`[smart-rect] Rejected: Path ${i} has different rotation (${rotation.toFixed(1)}° vs ${commonRotation.toFixed(1)}°)`);
+                return null; // Mixed rotations
+            }
+        }
+
+        // Combine all corners and find the actual boundary
+        const allCorners = pathCorners.flat();
+
+        // For axis-aligned rectangles, the boundary should be the union of rectangles
+        // Find extreme points in each direction
+        const minX = Math.min(...allCorners.map(p => p.x));
+        const maxX = Math.max(...allCorners.map(p => p.x));
+        const minY = Math.min(...allCorners.map(p => p.y));
+        const maxY = Math.max(...allCorners.map(p => p.y));
+
+        // For 2 side-by-side rectangles, we need to find the actual combined shape
+        // Check if rectangles are adjacent (touching or overlapping)
+        const areAdjacent = this._areRectanglesAdjacent(pathCorners);
+        console.debug(`[smart-rect] Rectangles adjacent: ${areAdjacent}`);
+
+        if (areAdjacent) {
+            console.debug(`[smart-rect] Creating combined rectangular boundary`);
+            // Create the actual boundary following the combined shape
+            return this._createCombinedRectangularBoundary(pathCorners);
+        }
+
+        console.debug(`[smart-rect] Rejected: Not a simple adjacent rectangular arrangement`);
+        return null; // Not a simple adjacent rectangular arrangement
+    }
+
+    // Extract the actual corners from path data (for both axis-aligned and rotated rectangles)
+    _extractPathCorners(path) {
+        try {
+            // Get the path data string - handle different path object types
+            let pathData = null;
+            if (path.getAttribute) {
+                pathData = path.getAttribute('d');
+            } else if (path.d) {
+                pathData = path.d;
+            } else if (path.pathData) {
+                pathData = path.pathData;
+            }
+
+            console.debug(`[smart-rect] Path object type: ${typeof path}, has getAttribute: ${!!path.getAttribute}, pathData: ${pathData ? pathData.substring(0, 50) + '...' : 'null'}`);
+
+            if (!pathData) {
+                console.debug(`[smart-rect] No path data found, using bbox fallback`);
+                const bbox = path.getBBox();
+                return [
+                    { x: bbox.x, y: bbox.y },
+                    { x: bbox.x + bbox.width, y: bbox.y },
+                    { x: bbox.x + bbox.width, y: bbox.y + bbox.height },
+                    { x: bbox.x, y: bbox.y + bbox.height }
+                ];
+            }
+
+            // Parse the path to extract vertices
+            const points = [];
+            const commands = pathData.match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/gi);
+
+            let currentX = 0, currentY = 0;
+            let firstX = 0, firstY = 0;
+
+            for (const command of commands) {
+                const type = command[0].toUpperCase();
+                const coords = command.slice(1).trim().split(/[\s,]+/).map(Number).filter(n => !isNaN(n));
+
+                if (type === 'M') {
+                    // Move to
+                    currentX = coords[0];
+                    currentY = coords[1];
+                    firstX = currentX;
+                    firstY = currentY;
+                    points.push({ x: currentX, y: currentY });
+
+                    // Handle additional coordinates as line-to commands
+                    for (let i = 2; i < coords.length; i += 2) {
+                        currentX = coords[i];
+                        currentY = coords[i + 1];
+                        points.push({ x: currentX, y: currentY });
+                    }
+                } else if (type === 'L') {
+                    // Line to
+                    for (let i = 0; i < coords.length; i += 2) {
+                        currentX = coords[i];
+                        currentY = coords[i + 1];
+                        points.push({ x: currentX, y: currentY });
+                    }
+                } else if (type === 'Z') {
+                    // Close path - don't add duplicate of first point
+                    break;
+                }
+            }
+
+            // Should have exactly 4 points for a rectangle
+            if (points.length === 4) {
+                return points;
+            }
+
+            // Fallback to bbox if we don't get 4 points
+            console.debug(`[smart-rect] Path parsing got ${points.length} points, using bbox fallback`);
+            const bbox = path.getBBox();
+            return [
+                { x: bbox.x, y: bbox.y },
+                { x: bbox.x + bbox.width, y: bbox.y },
+                { x: bbox.x + bbox.width, y: bbox.y + bbox.height },
+                { x: bbox.x, y: bbox.y + bbox.height }
+            ];
+
+        } catch (error) {
+            console.debug(`[smart-rect] Error parsing path corners: ${error.message}`);
+            // Fallback to bbox
+            const bbox = path.getBBox();
+            return [
+                { x: bbox.x, y: bbox.y },
+                { x: bbox.x + bbox.width, y: bbox.y },
+                { x: bbox.x + bbox.width, y: bbox.y + bbox.height },
+                { x: bbox.x, y: bbox.y + bbox.height }
+            ];
+        }
+    }
+
+    // Check if corners represent an axis-aligned rectangle
+    _isAxisAligned(corners) {
+        // Simple check: all x-coordinates should be one of two values
+        // and all y-coordinates should be one of two values
+        const xValues = [...new Set(corners.map(p => Math.round(p.x)))];
+        const yValues = [...new Set(corners.map(p => Math.round(p.y)))];
+        return xValues.length === 2 && yValues.length === 2;
+    }
+
+    // Get the rotation angle of a rectangle from its corners
+    _getRectangleRotation(corners) {
+        // Calculate the angle of the first edge (from corner 0 to corner 1)
+        const dx = corners[1].x - corners[0].x;
+        const dy = corners[1].y - corners[0].y;
+        let angle = Math.atan2(dy, dx) * 180 / Math.PI;
+
+        // Normalize to 0-360 degrees
+        if (angle < 0) angle += 360;
+
+        // For rectangles, we care about orientation, so normalize to 0-90 degrees
+        // (since a rectangle rotated 90° is the same as rotated 0°)
+        angle = angle % 90;
+
+        return angle;
+    }
+
+    // Check if rectangles are adjacent (side-by-side or stacked)
+    _areRectanglesAdjacent(pathCorners) {
+        if (pathCorners.length !== 2) return false; // For now, only handle 2 rectangles
+
+        const rect1 = this._getBounds(pathCorners[0]);
+        const rect2 = this._getBounds(pathCorners[1]);
+
+        const tolerance = 5; // pixels
+
+        // Check if they're side-by-side (sharing a vertical edge)
+        const verticallyAdjacent = (
+            Math.abs(rect1.maxX - rect2.minX) < tolerance ||
+            Math.abs(rect2.maxX - rect1.minX) < tolerance
+        ) && (
+            !(rect1.maxY < rect2.minY - tolerance || rect2.maxY < rect1.minY - tolerance) // overlapping in Y
+        );
+
+        // Check if they're stacked (sharing a horizontal edge)
+        const horizontallyAdjacent = (
+            Math.abs(rect1.maxY - rect2.minY) < tolerance ||
+            Math.abs(rect2.maxY - rect1.minY) < tolerance
+        ) && (
+            !(rect1.maxX < rect2.minX - tolerance || rect2.maxX < rect1.minX - tolerance) // overlapping in X
+        );
+
+        return verticallyAdjacent || horizontallyAdjacent;
+    }
+
+    _getBounds(corners) {
+        return {
+            minX: Math.min(...corners.map(p => p.x)),
+            maxX: Math.max(...corners.map(p => p.x)),
+            minY: Math.min(...corners.map(p => p.y)),
+            maxY: Math.max(...corners.map(p => p.y))
+        };
+    }
+
+    // Create the actual combined boundary for adjacent rectangles
+    _createCombinedRectangularBoundary(pathCorners) {
+        if (pathCorners.length === 2) {
+            console.debug(`[smart-rect] Creating boundary for 2 rectangles`);
+
+            // For rotated rectangles, we need to find the actual combined outline
+            // Use convex hull of all corners, which should give us the correct boundary
+            const allCorners = pathCorners.flat();
+            console.debug(`[smart-rect] All corners: ${allCorners.map(p => `(${p.x.toFixed(1)},${p.y.toFixed(1)})`).join(', ')}`);
+
+            // Use convex hull to find the outer boundary
+            const hull = this.simpleConvexHull(allCorners);
+            console.debug(`[smart-rect] Convex hull: ${hull.length} points: ${hull.map(p => `(${p.x.toFixed(1)},${p.y.toFixed(1)})`).join(', ')}`);
+
+            return hull;
+        }
+
+        return null;
+    }
+
+    // Check if two rectangles form a simple rectangular union
+    _rectanglesFormSimpleUnion(rect1, rect2) {
+        const tolerance = 5;
+
+        // Check if they align on top/bottom edges (side-by-side with same height range)
+        const sameHeight = Math.abs(rect1.minY - rect2.minY) < tolerance &&
+                          Math.abs(rect1.maxY - rect2.maxY) < tolerance;
+
+        // Check if they align on left/right edges (stacked with same width range)
+        const sameWidth = Math.abs(rect1.minX - rect2.minX) < tolerance &&
+                         Math.abs(rect1.maxX - rect2.maxX) < tolerance;
+
+        return sameHeight || sameWidth;
+    }
+
+    // Create boundary for complex rectangular arrangements (like L-shapes)
+    _createComplexRectangularBoundary(rect1, rect2) {
+        // This would create the actual traced boundary for L-shaped arrangements
+        // For now, fallback to simple union
+        const minX = Math.min(rect1.minX, rect2.minX);
+        const maxX = Math.max(rect1.maxX, rect2.maxX);
+        const minY = Math.min(rect1.minY, rect2.minY);
+        const maxY = Math.max(rect1.maxY, rect2.maxY);
+
+        return [
+            { x: minX, y: minY },
+            { x: maxX, y: minY },
+            { x: maxX, y: maxY },
+            { x: minX, y: maxY }
+        ];
     }
 
     // Combine original SVG path data from multiple paths
@@ -2294,6 +3141,7 @@ class SvgViewerInstance {
         if (debugCleanup) console.debug(`[cleanup] Removed ${removedCount} paths by color attributes`);
     }
 
+
     // Create a single merged SVG path by combining all selected path data
     _createUnifiedPath(groupPaths, scope, debugVisible = false) {
         try {
@@ -2316,13 +3164,67 @@ class SvgViewerInstance {
             console.debug(`[outline] Total extracted boundary points: ${allBoundaryPoints.length}`);
 
             // Create unified path by modifying paths to overlap and then merging
-            const unifiedBoundary = this._createOverlappingPathMerge(groupPaths, allBoundaryPoints);
+            let unifiedBoundary = this._createOverlappingPathMerge(groupPaths, allBoundaryPoints);
             let hull = null;
 
             if (!unifiedBoundary || unifiedBoundary.length < 3) {
-                console.warn('[outline] Overlapping path merge failed, falling back to convex hull');
-                hull = this.simpleConvexHull(allBoundaryPoints);
-                var pathData = `M ${hull[0].x} ${hull[0].y}`;
+                console.warn('[outline] Overlapping path merge failed, trying smart rectangular detection');
+
+                // Extract the actual 4-vertex boundary points for each path
+                // Use the same linearization that the winding algorithm uses
+                const lineSegmentPaths = this._convertPathsToLineSegments(groupPaths);
+                console.debug(`[smart-rect] Converted ${lineSegmentPaths.length} paths to line segments`);
+
+                const pathBoundaryPoints = [];
+                for (const lineSegPath of lineSegmentPaths) {
+                    const segments = lineSegPath.segments;
+                    if (segments.length === 0) continue;
+
+                    // Extract unique vertices from segments
+                    const vertices = [];
+                    vertices.push(segments[0].start);
+                    for (const seg of segments) {
+                        vertices.push(seg.end);
+                    }
+
+                    // Remove duplicate last vertex (closes the path)
+                    if (vertices.length > 1) {
+                        const first = vertices[0];
+                        const last = vertices[vertices.length - 1];
+                        if (Math.abs(first.x - last.x) < 0.1 && Math.abs(first.y - last.y) < 0.1) {
+                            vertices.pop();
+                        }
+                    }
+
+                    pathBoundaryPoints.push(vertices);
+                    console.debug(`[smart-rect] Path ${lineSegPath.pathIdx}: ${vertices.length} vertices: ${vertices.map(p => `(${p.x.toFixed(1)},${p.y.toFixed(1)})`).join(', ')}`);
+                }
+
+                if (pathBoundaryPoints.length === 0) {
+                    console.debug(`[smart-rect] No vertices extracted, falling back to convex hull`);
+                    hull = this.simpleConvexHull(allBoundaryPoints);
+                }
+
+                // Try to detect simple rectangular arrangements and create proper boundaries
+                if (!hull && pathBoundaryPoints.length > 0) {
+                    const rectangularBoundary = this._detectAndCreateRectangularBoundaryFromPoints(pathBoundaryPoints);
+                    if (rectangularBoundary) {
+                        console.debug('[outline] Using smart rectangular boundary detection');
+                        unifiedBoundary = rectangularBoundary;
+                    } else {
+                        console.warn('[outline] Smart rectangular detection failed, falling back to convex hull');
+                        hull = this.simpleConvexHull(allBoundaryPoints);
+                    }
+                } else if (!hull) {
+                    console.warn('[outline] Path data extraction failed, falling back to convex hull');
+                    hull = this.simpleConvexHull(allBoundaryPoints);
+                }
+            }
+
+            // Create SVG path data from the result
+            let pathData;
+            if (hull) {
+                pathData = `M ${hull[0].x} ${hull[0].y}`;
                 for (let i = 1; i < hull.length; i++) {
                     pathData += ` L ${hull[i].x} ${hull[i].y}`;
                 }
@@ -2330,7 +3232,7 @@ class SvgViewerInstance {
                 console.debug(`[outline] Fallback: Created convex hull unified path from ${hull.length} hull points`);
             } else {
                 // Convert merged boundary to SVG path data
-                var pathData = `M ${unifiedBoundary[0].x} ${unifiedBoundary[0].y}`;
+                pathData = `M ${unifiedBoundary[0].x} ${unifiedBoundary[0].y}`;
                 for (let i = 1; i < unifiedBoundary.length; i++) {
                     pathData += ` L ${unifiedBoundary[i].x} ${unifiedBoundary[i].y}`;
                 }
@@ -2342,11 +3244,43 @@ class SvgViewerInstance {
             const polygon = unifiedBoundary || hull;
             let largestRect = null;
             if (polygon && polygon.length >= 3) {
-                largestRect = this.findLargestInscribedRectangle(polygon, {
-                    gridSize: 20,
-                    minArea: 100,
-                    debugLog: debugVisible
-                });
+                // Detect the actual orientation of the polygon for better angle estimation
+                const orientationAngle = this._detectPolygonOrientation(polygon);
+                console.debug(`[outline] Detected polygon orientation: ${orientationAngle.toFixed(1)}°`);
+
+                // Special case: For 4-vertex polygons (parallelograms), calculate exact dimensions
+                if (polygon.length === 4) {
+                    console.warn(`🔍 [EXACT-RECT-DEBUG] About to call _calculateParallelogramRectangle with orientationAngle=${orientationAngle.toFixed(1)}°`);
+                    const exactRect = this._calculateParallelogramRectangle(polygon, orientationAngle);
+                    console.warn(`🔍 [EXACT-RECT-DEBUG] _calculateParallelogramRectangle returned:`, exactRect);
+                    if (exactRect) {
+                        console.warn(`🔍 [EXACT-RECT-DEBUG] exactRect is truthy, should use it!`);
+                        console.debug(`[outline] Using exact parallelogram rectangle: ${exactRect.width.toFixed(1)}×${exactRect.height.toFixed(1)} at ${exactRect.angle}°`);
+                        largestRect = exactRect;
+                    } else {
+                        console.warn(`🔍 [EXACT-RECT-DEBUG] exactRect is null/falsy, trying trapezoid calculation`);
+
+                        // Try trapezoid calculation
+                        const trapezoidRect = this._calculateTrapezoidRectangle(polygon, orientationAngle);
+                        if (trapezoidRect) {
+                            console.warn(`🔍 [TRAPEZOID-DEBUG] Trapezoid calculation succeeded!`);
+                            console.debug(`[outline] Using trapezoid rectangle: ${trapezoidRect.width.toFixed(1)}×${trapezoidRect.height.toFixed(1)} at ${trapezoidRect.angle}°`);
+                            largestRect = trapezoidRect;
+                        } else {
+                            console.warn(`🔍 [TRAPEZOID-DEBUG] Trapezoid calculation also failed, falling back to optimized algorithm`);
+                        }
+                    }
+                }
+
+                // Fallback to general inscribed rectangle algorithm if exact calculation failed
+                if (!largestRect) {
+                    largestRect = this.findLargestInscribedRectangle(polygon, {
+                        gridSize: 20,
+                        minArea: 100,
+                        debugLog: debugVisible,
+                        hintAngle: orientationAngle
+                    });
+                }
             }
 
             // Create the merged path element
@@ -2391,14 +3325,24 @@ class SvgViewerInstance {
                     }
                     
                     rectPath.attr({
-                        fill: 'rgba(0, 255, 0, 0.2)',      // Semi-transparent green fill
-                        stroke: '#00FF00',                  // Green border
-                        strokeWidth: 2,
+                        fill: 'rgba(255, 165, 0, 0.2)',    // Semi-transparent orange fill
+                        stroke: '#FF8800',                  // Orange border
+                        strokeWidth: 3,
                         'fill-opacity': 0.2,
-                        'stroke-opacity': 0.8,
+                        'stroke-opacity': 1.0,
                         'pointer-events': 'none',
                         'stroke-dasharray': '5,5'          // Dashed border
                     });
+
+                    // Also set style attribute directly to ensure it's not overridden
+                    rectPath.node.setAttribute('style',
+                        'stroke: #FF8800 !important; ' +
+                        'stroke-width: 3px !important; ' +
+                        'stroke-dasharray: 5,5 !important; ' +
+                        'fill: rgba(255, 165, 0, 0.2) !important; ' +
+                        'pointer-events: none !important;'
+                    );
+
                     rectPath.addClass("debug-inscribed-rectangle");
                     parentScope.appendChild(rectPath.node);
                 }

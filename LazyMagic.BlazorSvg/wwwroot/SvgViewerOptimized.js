@@ -1034,6 +1034,7 @@ function fastInscribedRectangle(polygon, options = {}) {
             const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x) * 180 / Math.PI;
             const normalizedAngle = ((angle % 180) + 180) % 180; // Normalize to 0-180
             edgeAngles.push(normalizedAngle);
+            if (debugMode) console.debug(`[edge-angle] Edge ${i}: raw=${angle.toFixed(1)}°, normalized=${normalizedAngle.toFixed(1)}°`);
         }
 
         // Get unique edge angles and their perpendiculars - DETERMINISTIC ORDER
@@ -1043,6 +1044,11 @@ function fastInscribedRectangle(polygon, options = {}) {
             .sort((a, b) => a - b); // Sort for consistent ordering
 
         const perpAngles = uniqueAngles.map(a => (a + 90) % 180).sort((a, b) => a - b);
+
+        if (debugMode) {
+            console.debug(`[edge-angle] Unique angles: [${uniqueAngles.join(', ')}]`);
+            console.debug(`[edge-angle] Perpendicular angles: [${perpAngles.join(', ')}]`);
+        }
 
         // ENHANCED: Strategic angles with natural parallelogram angles prioritized
         // Use deterministic ordering by combining and sorting all angles
@@ -1075,7 +1081,10 @@ function fastInscribedRectangle(polygon, options = {}) {
             // Special debug logging for angle 22° at centroid (552, 228) OR angle 9° for all
             const isCriticalTest = (isCriticalCentroid && angle === 22) || (angle === 9);
 
-            const rect = tryRectangleAtAngle(polygon, angle, centroid, isCriticalTest);
+            // Debug logging for angles 0, 9, and 99 to see their actual areas
+            const isKeyAngle = (angle === 0 || angle === 9 || angle === 99);
+
+            const rect = tryRectangleAtAngle(polygon, angle, centroid, isCriticalTest || isKeyAngle);
 
             if (isCriticalTest) {
                 if (rect) {
@@ -1085,10 +1094,52 @@ function fastInscribedRectangle(polygon, options = {}) {
                 }
             }
 
-            if (rect && rect.area > bestAreaForCentroid) {
-                bestAreaForCentroid = rect.area;
-                bestAngleForCentroid = angle;
-                bestRectForCentroid = rect;
+            if (rect) {
+                // Prefer edge angles when areas are nearly equal (within 0.1%)
+                const isNewAngleEdge = uniqueAngles.includes(angle) || perpAngles.includes(angle);
+                const isBestAngleEdge = uniqueAngles.includes(bestAngleForCentroid) || perpAngles.includes(bestAngleForCentroid);
+
+                const areaDiff = Math.abs(rect.area - bestAreaForCentroid);
+                const maxArea = Math.max(rect.area, bestAreaForCentroid, 1); // Avoid division by zero
+                const areaSimilar = areaDiff / maxArea < 0.001; // Within 0.1%
+
+                let shouldUpdate = false;
+                let reason = '';
+
+                if (rect.area > bestAreaForCentroid && !areaSimilar) {
+                    // Significantly better area - always update
+                    shouldUpdate = true;
+                    reason = 'larger area';
+                } else if (areaSimilar) {
+                    // Areas are similar - prefer edge angles
+                    if (isNewAngleEdge && !isBestAngleEdge) {
+                        // New angle is edge angle, current best is not - prefer edge angle
+                        shouldUpdate = true;
+                        reason = 'preferred edge angle';
+                    } else if (!isNewAngleEdge && isBestAngleEdge) {
+                        // Current best is edge angle, new is not - keep current
+                        shouldUpdate = false;
+                        reason = 'keeping edge angle';
+                    } else if (rect.area > bestAreaForCentroid) {
+                        // Both are edge angles or both are not - prefer larger
+                        shouldUpdate = true;
+                        reason = 'slightly larger';
+                    }
+                } else if (rect.area > bestAreaForCentroid) {
+                    shouldUpdate = true;
+                    reason = 'larger area';
+                }
+
+                if (shouldUpdate) {
+                    if ((isKeyAngle || isNewAngleEdge) && debugMode) {
+                        console.debug(`🔷 [RECT-DEBUG] New best at angle ${angle}°: area=${rect.area.toFixed(0)}, size=${rect.width.toFixed(1)}×${rect.height.toFixed(1)} (${reason}, diff=${areaDiff.toFixed(1)})`);
+                    }
+                    bestAreaForCentroid = rect.area;
+                    bestAngleForCentroid = angle;
+                    bestRectForCentroid = rect;
+                } else if ((isKeyAngle || isNewAngleEdge) && debugMode) {
+                    console.debug(`[RECT-DEBUG] Angle ${angle}°: area=${rect.area.toFixed(0)}, size=${rect.width.toFixed(1)}×${rect.height.toFixed(1)} (${reason || 'not better'}, diff=${areaDiff.toFixed(1)}, best=${bestAreaForCentroid.toFixed(0)})`);
+                }
             }
         }
 

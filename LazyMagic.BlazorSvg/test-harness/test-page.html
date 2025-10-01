@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SvgViewer Test Harness</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+        #svg-container {
+            border: 1px solid #444;
+            margin: 20px 0;
+            background: white;
+        }
+        .test-result {
+            background: #2d2d2d;
+            border: 1px solid #444;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .test-result.success {
+            border-left: 4px solid #4caf50;
+        }
+        .test-result.failed {
+            border-left: 4px solid #f44336;
+        }
+        pre {
+            background: #1e1e1e;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>SvgViewer.js Test Harness</h1>
+    <div id="test-status">Loading...</div>
+    <div id="svg-container"></div>
+    <div id="test-results"></div>
+
+    <!-- Load Snap.svg -->
+    <script src="../wwwroot/snap.svg-min.js"></script>
+
+    <!-- Load SvgViewer.js -->
+    <script src="../wwwroot/SvgViewer.js"></script>
+
+    <script>
+        // Test configuration
+        const testCases = [
+            {
+                name: "Two Ballrooms",
+                paths: ["Ballroom_1", "Ballroom_3"],
+                description: "Two ballrooms side by side"
+            },
+            {
+                name: "Two Ballrooms with Aisle",
+                paths: ["Ballroom_1", "Ballroom_Aisle_12", "Ballroom_2"],
+                description: "Two ballrooms connected by an aisle"
+            },
+            {
+                name: "Complex Combination",
+                paths: ["Ballroom_1", "Ballroom_Aisle_12", "Ballroom_2", "Ballroom_4"],
+                description: "Complex combination with 4 paths"
+            }
+        ];
+
+        // Store test results for Puppeteer to read
+        window.testResults = [];
+
+        // Load SVG and run tests
+        async function runTests() {
+            try {
+                // Load the SVG
+                const response = await fetch('../../BlazorTest.WASM/wwwroot/Level1.svg');
+                const svgText = await response.text();
+
+                // Insert SVG into container
+                const container = document.getElementById('svg-container');
+                container.innerHTML = svgText;
+
+                const svg = container.querySelector('svg');
+                const snap = Snap(svg);
+
+                // Initialize SvgViewer
+                const svgViewer = new SvgViewerInstance();
+                svgViewer.init(snap, {
+                    debugMode: true,
+                    highlightColor: '#FF8800'
+                });
+
+                document.getElementById('test-status').textContent = 'Running tests...';
+
+                // Run each test case
+                for (const testCase of testCases) {
+                    const result = await runTestCase(svgViewer, snap, testCase);
+                    window.testResults.push(result);
+                    displayTestResult(result);
+                }
+
+                document.getElementById('test-status').textContent =
+                    `Completed ${testCases.length} tests. Check results below.`;
+
+                // Signal to Puppeteer that tests are complete
+                window.testsComplete = true;
+
+            } catch (error) {
+                console.error('Test error:', error);
+                document.getElementById('test-status').textContent =
+                    `Error: ${error.message}`;
+                window.testResults.push({
+                    error: error.message,
+                    stack: error.stack
+                });
+                window.testsComplete = true;
+            }
+        }
+
+        async function runTestCase(svgViewer, snap, testCase) {
+            console.log(`\n=== Running test: ${testCase.name} ===`);
+
+            const result = {
+                name: testCase.name,
+                paths: testCase.paths,
+                success: false,
+                error: null,
+                data: {}
+            };
+
+            try {
+                // Clear previous selections
+                svgViewer.clearSelection?.();
+
+                // Find and select the paths
+                const selectedPaths = [];
+                for (const pathId of testCase.paths) {
+                    const pathElement = snap.select(`#${pathId}`);
+                    if (!pathElement) {
+                        throw new Error(`Path ${pathId} not found in SVG`);
+                    }
+                    selectedPaths.push(pathElement);
+                    // Simulate selection
+                    svgViewer.selectPath?.(pathElement);
+                }
+
+                // Wait a bit for processing
+                await new Promise(resolve => setTimeout(resolve, 100));
+
+                // Try to extract the inscribed rectangle data
+                // This will depend on how SvgViewer exposes the data
+
+                result.success = true;
+                result.data = {
+                    pathCount: testCase.paths.length,
+                    // TODO: Extract actual rectangle data from svgViewer
+                    message: 'Selection successful - rectangle calculation in progress'
+                };
+
+            } catch (error) {
+                result.error = error.message;
+                console.error(`Test failed: ${error.message}`);
+            }
+
+            return result;
+        }
+
+        function displayTestResult(result) {
+            const resultsDiv = document.getElementById('test-results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${result.success ? 'success' : 'failed'}`;
+
+            resultDiv.innerHTML = `
+                <h3>${result.success ? '✓' : '✗'} ${result.name}</h3>
+                <p><strong>Paths:</strong> ${result.paths.join(', ')}</p>
+                ${result.error ? `<p style="color: #f44336;"><strong>Error:</strong> ${result.error}</p>` : ''}
+                <pre>${JSON.stringify(result.data, null, 2)}</pre>
+            `;
+
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        // Start tests when page loads
+        window.addEventListener('load', () => {
+            setTimeout(runTests, 500);
+        });
+    </script>
+</body>
+</html>

@@ -9,7 +9,7 @@
    id="svg5"
    xml:space="preserve"
    inkscape:version="1.4.2 (f4327f4, 2025-05-13)"
-   sodipodi:docname="Level1.svg"
+   sodipodi:docname="Level1_normal.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns:xlink="http://www.w3.org/1999/xlink"
@@ -28,7 +28,7 @@
      showguides="false"
      inkscape:zoom="0.13321564"
      inkscape:cx="21983.155"
-     inkscape:cy="9916.2531"
+     inkscape:cy="7514.1327"
      inkscape:window-width="2285"
      inkscape:window-height="1360"
      inkscape:window-x="1139"
@@ -129,7 +129,7 @@
        inkscape:label="Aisle 34"
        inkscape:transform-center-x="-0.15979631"
        inkscape:transform-center-y="-1.064856"
-       d="m 458.19863,128.07719 0,20.13691 -107.22741,-0.27998 v -19.85693 z"
+       d="m 458.19863,128.07719 v 19.85693 l -107.22741,0 v -19.85693 z"
        sodipodi:nodetypes="ccccc"><title
          id="title6482-6-2">Aisle 34</title></path><path
        id="Ballroom_Aisle_56"
