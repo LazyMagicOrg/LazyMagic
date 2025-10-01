@@ -1,20 +1,20 @@
-// Test configuration for inscribed rectangle algorithm testing
+﻿// Test configuration for inscribed rectangle algorithm testing
 
 export const testCases = [
     {
-        name: "Two Ballrooms",
+        name: "Test01",
         paths: ["Ballroom_1", "Ballroom_3"],
         expectedShape: "rectangle",
         description: "Two ballrooms side by side should form a perfect rectangle"
     },
     {
-        name: "Two Ballrooms with Aisle",
+        name: "Test02",
         paths: ["Ballroom_1", "Ballroom_Aisle_12", "Ballroom_2"],
         expectedShape: "rectangle",
         description: "Two ballrooms connected by an aisle"
     },
     {
-        name: "Two Ballrooms with Aisle and Room 4",
+        name: "Test03",
         paths: ["Ballroom_1", "Ballroom_Aisle_12", "Ballroom_2", "Ballroom_4"],
         expectedShape: "complex",
         description: "Complex combination of ballrooms and aisle"

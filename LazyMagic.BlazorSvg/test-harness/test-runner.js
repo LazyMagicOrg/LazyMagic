@@ -54,19 +54,158 @@ function extractPathData(svgContent, pathIds) {
     const paths = [];
 
     for (const pathId of pathIds) {
-        // Find path with matching id
-        const regex = new RegExp(`<path[^>]*id="${pathId}"[^>]*d="([^"]*)"`, 'i');
-        const match = svgContent.match(regex);
+        // First try to find a path element
+        let regex = new RegExp(`<path[^>]*id="${pathId}"[^>]*d="([^"]*)"`, 'i');
+        let match = svgContent.match(regex);
 
-        if (!match) {
-            log(`  ❌ Path "${pathId}" not found in SVG`, 'red');
-            return null;
+        if (match) {
+            paths.push({
+                id: pathId,
+                d: match[1]
+            });
+            continue;
         }
 
-        paths.push({
-            id: pathId,
-            d: match[1]
-        });
+        // Try to find a rect element by id or inkscape:label (handle multi-line)
+        regex = new RegExp(`<rect[^>]*(?:id="${pathId}"|inkscape:label="${pathId}")[^>]*/>`, 'is');
+        match = svgContent.match(regex);
+
+        if (match) {
+            const rectTag = match[0];
+
+            // Extract individual attributes
+            const xMatch = rectTag.match(/x="([^"]*)"/);
+            const yMatch = rectTag.match(/y="([^"]*)"/);
+            const widthMatch = rectTag.match(/width="([^"]*)"/);
+            const heightMatch = rectTag.match(/height="([^"]*)"/);
+
+            if (xMatch && yMatch && widthMatch && heightMatch) {
+                let x = parseFloat(xMatch[1]);
+                let y = parseFloat(yMatch[1]);
+                const width = parseFloat(widthMatch[1]);
+                const height = parseFloat(heightMatch[1]);
+
+                // Get the four corners of the rectangle
+                let corners = [
+                    { x: x, y: y },
+                    { x: x + width, y: y },
+                    { x: x + width, y: y + height },
+                    { x: x, y: y + height }
+                ];
+
+                // Check for transform attribute and apply it
+                let transformMatch = rectTag.match(/transform="matrix\(([^)]*)\)"/);
+                let hasTransform = false;
+
+                if (transformMatch) {
+                    hasTransform = true;
+                    const matrixValues = transformMatch[1].split(/[\s,]+/).map(parseFloat);
+                    if (matrixValues.length === 6) {
+                        const [a, b, c, d, e, f] = matrixValues;
+                        console.log(`\n[DEBUG] Transform for ${pathId}:`);
+                        console.log(`  Original rect: x=${x}, y=${y}, width=${width}, height=${height}`);
+                        console.log(`  Original area: ${width * height}`);
+                        console.log(`  Matrix: [${a}, ${b}, ${c}, ${d}, ${e}, ${f}]`);
+                        console.log(`  Corners before transform:`, corners);
+
+                        // Apply transformation matrix to each corner
+                        corners = corners.map(corner => ({
+                            x: a * corner.x + c * corner.y + e,
+                            y: b * corner.x + d * corner.y + f
+                        }));
+
+                        console.log(`  Corners after transform:`, corners);
+
+                        // CRITICAL: The test rectangles are in the untransformed SVG coordinate space,
+                        // but the ballroom paths are inside a layer with transform="scale(48.345845)".
+                        // We need to scale down the test rectangles to match the ballroom coordinate space.
+                        const BALLROOM_SCALE = 48.345845;
+                        corners = corners.map(corner => ({
+                            x: corner.x / BALLROOM_SCALE,
+                            y: corner.y / BALLROOM_SCALE
+                        }));
+
+                        console.log(`  Corners after scaling to ballroom space:`, corners);
+
+                        // Calculate area using shoelace formula for verification
+                        let area = 0;
+                        for (let i = 0; i < corners.length; i++) {
+                            const j = (i + 1) % corners.length;
+                            area += corners[i].x * corners[j].y;
+                            area -= corners[j].x * corners[i].y;
+                        }
+                        area = Math.abs(area) / 2;
+                        console.log(`  Scaled area: ${area}\n`);
+                    }
+                }
+
+                // Check for rotate transform
+                if (!hasTransform) {
+                    const rotateMatch = rectTag.match(/transform="rotate\(([^)]*)\)"/);
+                    if (rotateMatch) {
+                        hasTransform = true;
+                        const angleStr = rotateMatch[1];
+                        const angle = parseFloat(angleStr) * Math.PI / 180; // Convert to radians
+
+                        console.log(`\n[DEBUG] Transform for ${pathId}:`);
+                        console.log(`  Original rect: x=${x}, y=${y}, width=${width}, height=${height}`);
+                        console.log(`  Original area: ${width * height}`);
+                        console.log(`  Rotate angle: ${angleStr}° (${angle} rad)`);
+                        console.log(`  Corners before transform:`, corners);
+
+                        // Rotate around origin (0, 0) - SVG default for rotate
+                        const cos = Math.cos(angle);
+                        const sin = Math.sin(angle);
+                        corners = corners.map(corner => ({
+                            x: cos * corner.x - sin * corner.y,
+                            y: sin * corner.x + cos * corner.y
+                        }));
+
+                        console.log(`  Corners after rotation:`, corners);
+
+                        // Scale down to ballroom coordinate space
+                        const BALLROOM_SCALE = 48.345845;
+                        corners = corners.map(corner => ({
+                            x: corner.x / BALLROOM_SCALE,
+                            y: corner.y / BALLROOM_SCALE
+                        }));
+
+                        console.log(`  Corners after scaling to ballroom space:`, corners);
+
+                        // Calculate area using shoelace formula for verification
+                        let area = 0;
+                        for (let i = 0; i < corners.length; i++) {
+                            const j = (i + 1) % corners.length;
+                            area += corners[i].x * corners[j].y;
+                            area -= corners[j].x * corners[i].y;
+                        }
+                        area = Math.abs(area) / 2;
+                        console.log(`  Scaled area: ${area}\n`);
+                    }
+                }
+
+                // If no transform was found, still need to scale down
+                if (!hasTransform) {
+                    const BALLROOM_SCALE = 48.345845;
+                    corners = corners.map(corner => ({
+                        x: corner.x / BALLROOM_SCALE,
+                        y: corner.y / BALLROOM_SCALE
+                    }));
+                }
+
+                // Convert transformed corners to path data
+                const d = `M ${corners[0].x},${corners[0].y} L ${corners[1].x},${corners[1].y} L ${corners[2].x},${corners[2].y} L ${corners[3].x},${corners[3].y} Z`;
+
+                paths.push({
+                    id: pathId,
+                    d: d
+                });
+                continue;
+            }
+        }
+
+        log(`  ❌ Path or rect "${pathId}" not found in SVG`, 'red');
+        return null;
     }
 
     return paths;
@@ -115,6 +254,20 @@ async function runTest(testCase) {
     }
 
     log(`  ✓ Extracted ${pathData.length} paths`, 'green');
+
+    // Extract target test path (e.g., "Test01" for validation)
+    const targetPathData = extractPathData(svgContent, [testCase.name]);
+    let targetArea = null;
+    if (targetPathData && targetPathData.length > 0) {
+        // Parse target path to get its bounding box/area
+        const targetSegments = SvgViewerAlgorithms.parsePathToLineSegments(targetPathData[0].d, 0);
+        if (targetSegments && targetSegments.length >= 4) {
+            // Calculate area of the target rectangle
+            const targetPoints = targetSegments.map(s => s.start);
+            targetArea = Math.abs(SvgViewerAlgorithms.calculatePolygonArea(targetPoints));
+            log(`  ✓ Target area (${testCase.name}): ${targetArea.toFixed(1)} sq px`, 'green');
+        }
+    }
 
     // Parse paths to line segments using the library function
     log(`  Parsing paths to line segments...`, 'blue');
@@ -185,11 +338,14 @@ async function runTest(testCase) {
             success: false,
             error: 'Rectangle calculation failed',
             polygon,
-            pathCount: paths.length,
+            pathCount: pathData.length,
             vertexCount: polygon.length,
             pathData,
             svgContent,
-            viewBox
+            viewBox,
+            targetArea,
+            areaRatio: null,
+            passesValidation: false
         };
     }
 
@@ -212,6 +368,20 @@ async function runTest(testCase) {
     log(`    Centroid: (${rectangle.centroid.x.toFixed(1)}, ${rectangle.centroid.y.toFixed(1)})`, 'green');
     log(`    Time: ${calculationTime.toFixed(1)} ms`, 'green');
 
+    // Validate against target area if available
+    let areaRatio = null;
+    let passesValidation = true;
+    if (targetArea !== null) {
+        areaRatio = rectangle.area / targetArea;
+        const percentOfTarget = (areaRatio * 100).toFixed(1);
+        log(`    Coverage: ${percentOfTarget}% of target`, areaRatio >= 0.98 ? 'green' : 'red');
+
+        if (areaRatio < 0.98) {
+            log(`  ⚠️  Rectangle area is less than 98% of target (${percentOfTarget}%)`, 'yellow');
+            passesValidation = false;
+        }
+    }
+
     log(`\n  Rectangle corners:`, 'yellow');
     for (let i = 0; i < rectangle.corners.length; i++) {
         const c = rectangle.corners[i];
@@ -219,7 +389,7 @@ async function runTest(testCase) {
     }
 
     return {
-        success: true,
+        success: passesValidation,
         polygon,
         rectangle,
         pathCount: pathData.length,
@@ -227,7 +397,10 @@ async function runTest(testCase) {
         pathData,
         svgContent,
         viewBox,
-        calculationTime
+        calculationTime,
+        targetArea,
+        areaRatio,
+        passesValidation
     };
 }
 
@@ -241,7 +414,7 @@ function extractTestPathsContent(pathData) {
 }
 
 function generateSvgVisualization(testCase, result) {
-    const { polygon, rectangle, pathData, viewBox, calculationTime } = result;
+    const { polygon, rectangle, pathData, viewBox, calculationTime, targetArea, areaRatio } = result;
 
     // Calculate bounds from the polygon to create an appropriate viewBox
     const bounds = calculateBounds(polygon);
@@ -254,13 +427,13 @@ function generateSvgVisualization(testCase, result) {
     // Create clean path elements from path data
     const testPathsContent = extractTestPathsContent(pathData);
 
-    if (!result.success || !result.rectangle) {
-        // Failed case
+    if (!result.rectangle) {
+        // No rectangle found case
         const polygonPoints = polygon.map(p => `${p.x},${p.y}`).join(' ');
 
         return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="${vbX} ${vbY} ${vbWidth} ${vbHeight}" width="${vbWidth}" height="${vbHeight}">
-  <title>${testCase.name} - FAILED</title>
+  <title>${testCase.name} - FAILED (No Rectangle)</title>
 
   <!-- White Background -->
   <rect x="${vbX}" y="${vbY}" width="${vbWidth}" height="${vbHeight}" fill="white"/>
@@ -281,20 +454,20 @@ function generateSvgVisualization(testCase, result) {
   <circle cx="${v.x}" cy="${v.y}" r="3" fill="#666"/>
   <text x="${v.x + 5}" y="${v.y - 5}" font-size="10" fill="#333">v${i}</text>`).join('')}
 
-  <!-- Failure message -->
-  <text x="${vbWidth/2}" y="50" text-anchor="middle" font-size="24" font-weight="bold" fill="red">
-    FAILED: ${result.error || 'Rectangle calculation failed'}
-  </text>
+  <!-- Legend -->
+  <text x="${vbX + 10}" y="${vbY + 30}" font-size="12" font-weight="bold" fill="red">${testCase.name} - FAILED</text>
+  <text x="${vbX + 10}" y="${vbY + 50}" font-size="10" fill="red">${result.error || 'Rectangle calculation failed'}</text>
 </svg>`;
     }
 
-    // Success case
+    // Rectangle found case (may pass or fail validation)
     const polygonPoints = polygon.map(p => `${p.x},${p.y}`).join(' ');
     const rectanglePoints = rectangle.corners.map(c => `${c.x},${c.y}`).join(' ');
+    const titleSuffix = result.passesValidation ? '' : ' - FAILED VALIDATION';
 
     return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="${vbX} ${vbY} ${vbWidth} ${vbHeight}" width="${vbWidth}" height="${vbHeight}">
-  <title>${testCase.name}</title>
+  <title>${testCase.name}${titleSuffix}</title>
 
   <!-- White Background -->
   <rect x="${vbX}" y="${vbY}" width="${vbWidth}" height="${vbHeight}" fill="white"/>
@@ -337,7 +510,8 @@ function generateSvgVisualization(testCase, result) {
   <text x="${vbX + 10}" y="${vbY + 65}" font-size="10">Size: ${rectangle.width.toFixed(1)} × ${rectangle.height.toFixed(1)} px</text>
   <text x="${vbX + 10}" y="${vbY + 80}" font-size="10">Area: ${rectangle.area.toFixed(1)} sq px</text>
   <text x="${vbX + 10}" y="${vbY + 95}" font-size="10">Angle: ${rectangle.angle.toFixed(1)}°</text>
-  <text x="${vbX + 10}" y="${vbY + 110}" font-size="10">Time: ${calculationTime.toFixed(1)} ms</text>
+  <text x="${vbX + 10}" y="${vbY + 110}" font-size="10">Time: ${calculationTime.toFixed(1)} ms</text>${targetArea !== null && areaRatio !== null ? `
+  <text x="${vbX + 10}" y="${vbY + 125}" font-size="10" fill="${areaRatio >= 0.98 ? 'green' : 'red'}">Coverage: ${(areaRatio * 100).toFixed(1)}% of target</text>` : ''}
 </svg>`;
 }
 
