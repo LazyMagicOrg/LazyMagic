@@ -327,7 +327,14 @@ async function runTest(testCase) {
     log(`\n  Calculating inscribed rectangle...`, 'cyan');
     const startTime = performance.now();
     const rectangle = fastInscribedRectangle(polygon, {
-        debugLog: true
+        debugLog: true,
+        // Optimized configuration based on parameter sweep results
+        maxTime: 1000,
+        gridStep: 8.0,
+        polylabelPrecision: 0.5,
+        aspectRatios: [0.5, 0.6, 0.7, 0.85, 1.0, 1.2, 1.4, 1.7, 2.0, 2.3, 2.5, 2.8, 3.0],
+        binarySearchPrecision: 0.0001,
+        binarySearchMaxIterations: 20
     });
     const endTime = performance.now();
     const calculationTime = endTime - startTime;

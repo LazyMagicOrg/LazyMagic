@@ -658,7 +658,7 @@ function getMultipleCentroids(polygon, minX, maxX, minY, maxY, options = {}) {
     const height = maxY - minY;
 
     // 1. Use Polylabel to find THE pole of inaccessibility (deepest interior point)
-    const precision = 1.0;
+    const precision = options.polylabelPrecision || 1.0;
     const pole = polylabel(polygon, precision, debugMode);
 
     if (debugMode) {
@@ -700,7 +700,7 @@ function getMultipleCentroids(polygon, minX, maxX, minY, maxY, options = {}) {
     // 3. Add strategic grid sampling with FIXED step size and ALIGNED origins
     // Use fixed pixel spacing with grid aligned to absolute coordinates
     // This ensures Shape 1, 2, 3 all test the SAME grid points in overlapping regions
-    const stepSize = 12.0; // Fixed 12-pixel step balances coverage with performance
+    const stepSize = options.gridStep || 12.0; // Configurable grid step balances coverage with performance
 
     // Start grid from multiples of stepSize (aligned to origin 0,0)
     const gridStartX = Math.ceil(minX / stepSize) * stepSize;
@@ -809,7 +809,7 @@ function getMultipleCentroids(polygon, minX, maxX, minY, maxY, options = {}) {
 
 // Find the best centroid for concave polygons using improved sampling
 function findBestCentroid(polygon, minX, maxX, minY, maxY, options = {}) {
-    const { debugMode = false } = options;
+    const { debugMode = false, aspectRatios = [0.5, 0.7, 1.0, 1.4, 2.0, 2.5, 3.0], binarySearchPrecision = 0.001, binarySearchMaxIterations = 15 } = options;
 
     // First try the area-weighted centroid
     const areaCentroid = getPolygonAreaCentroid(polygon, minX, maxX, minY, maxY);
@@ -920,7 +920,7 @@ function findBestCentroid(polygon, minX, maxX, minY, maxY, options = {}) {
         let maxAreaForCandidate = 0;
 
         for (const angle of testAngles) {
-            const testRect = tryRectangleAtAngle(polygon, angle, candidate, false);
+            const testRect = tryRectangleAtAngle(polygon, angle, candidate, false, aspectRatios, binarySearchPrecision, binarySearchMaxIterations);
             if (testRect && testRect.area > maxAreaForCandidate) {
                 maxAreaForCandidate = testRect.area;
             }
@@ -965,7 +965,13 @@ function fastInscribedRectangle(polygon, options = {}) {
         angleStep = 12,        // OPTIMIZED: Slightly finer initial angle step
         refinementStep = 2,    // OPTIMIZED: Finer refinement step
         maxTime = 100,         // Max time in ms
-        debugMode = false      // Enable debug logging
+        debugMode = false,     // Enable debug logging
+        // Algorithm tuning parameters
+        gridStep = 12.0,       // Grid step for centroid sampling
+        polylabelPrecision = 1.0,  // Precision for pole of inaccessibility
+        aspectRatios = [0.5, 0.7, 1.0, 1.4, 2.0, 2.5, 3.0],  // Aspect ratios to test
+        binarySearchPrecision = 0.001,  // Binary search convergence threshold
+        binarySearchMaxIterations = 15   // Max binary search iterations
     } = options;
 
     // Bounds already calculated above
@@ -981,7 +987,7 @@ function fastInscribedRectangle(polygon, options = {}) {
         if (debugMode) console.debug('[fast-rectangle] Convex polygon detected, using area centroid');
     } else {
         // For concave polygons, try multiple strategic centroids
-        centroids = getMultipleCentroids(polygon, minX, maxX, minY, maxY, { debugMode });
+        centroids = getMultipleCentroids(polygon, minX, maxX, minY, maxY, { debugMode, gridStep, polylabelPrecision });
         if (debugMode) console.debug(`[fast-rectangle] Concave polygon detected, testing ${centroids.length} centroids`);
     }
 
@@ -1084,7 +1090,7 @@ function fastInscribedRectangle(polygon, options = {}) {
             // Debug logging for angles 0, 9, and 99 to see their actual areas
             const isKeyAngle = (angle === 0 || angle === 9 || angle === 99);
 
-            const rect = tryRectangleAtAngle(polygon, angle, centroid, isCriticalTest || isKeyAngle);
+            const rect = tryRectangleAtAngle(polygon, angle, centroid, isCriticalTest || isKeyAngle, aspectRatios, binarySearchPrecision, binarySearchMaxIterations);
 
             if (isCriticalTest) {
                 if (rect) {
@@ -1149,7 +1155,7 @@ function fastInscribedRectangle(polygon, options = {}) {
                 if (performance.now() - startTime > maxTime) break;
                 if (strategicAngles.includes(angle)) continue; // Skip already tested angles
 
-                const rect = tryRectangleAtAngle(polygon, angle, centroid, false);
+                const rect = tryRectangleAtAngle(polygon, angle, centroid, false, aspectRatios, binarySearchPrecision, binarySearchMaxIterations);
                 if (rect && rect.area > bestAreaForCentroid) {
                     bestAreaForCentroid = rect.area;
                     bestAngleForCentroid = angle;
@@ -1342,7 +1348,7 @@ function raySegmentIntersection(rayStart, rayEnd, segStart, segEnd) {
 }
 
 // Try to fit a rectangle at a specific angle
-function tryRectangleAtAngle(polygon, angleDeg, centroid, debugMode = false) {
+function tryRectangleAtAngle(polygon, angleDeg, centroid, debugMode = false, aspectRatios = [0.5, 0.7, 1.0, 1.4, 2.0, 2.5, 3.0], binarySearchPrecision = 0.001, binarySearchMaxIterations = 15) {
     const angleRad = (angleDeg * Math.PI) / 180;
     const cos = Math.cos(angleRad);
     const sin = Math.sin(angleRad);
@@ -1410,7 +1416,7 @@ function tryRectangleAtAngle(polygon, angleDeg, centroid, debugMode = false) {
     let bestResult = null;
 
     // ENHANCED: Test wider range of aspect ratios for parallelogram shapes
-    const aspectRatios = [0.5, 0.7, 1.0, 1.4, 2.0, 2.5, 3.0]; // Much wider range including very wide rectangles
+    // aspectRatios is now configurable via options parameter
 
     // Debug logging for critical angles
     if (debugMode && (angleDeg === 9 || angleDeg === 22)) {
@@ -1426,8 +1432,8 @@ function tryRectangleAtAngle(polygon, angleDeg, centroid, debugMode = false) {
         let low = 0, high = 1.0; // Scale from 0 to 1 (100% of max dimensions)
 
         // CONSERVATIVE: Use polygon bounds with moderate scaling
-        const maxIterations = 15;
-        const precision = 0.001; // Binary search precision
+        const maxIterations = binarySearchMaxIterations;
+        const precision = binarySearchPrecision; // Binary search precision
 
         for (let iter = 0; iter < maxIterations && (high - low) > precision; iter++) {
             const scale = Math.round((low + high) * 500) / 1000; // Round to 3 decimal places for determinism
