@@ -1307,8 +1307,210 @@ class SvgViewerInstance {
 
     // Merge adjacent points between different paths only (Rules 5-9)
     _mergeCoincidentPoints(allSegments, tolerance) {
-        return window.SvgViewerAlgorithms.mergeCoincidentPoints(allSegments, tolerance);
+        console.debug(`[winding] Merging adjacent points with ${tolerance}px tolerance (different paths only)`);
+
+        // First, find ALL potential connections within tolerance
+        const potentialConnections = [];
+
+        // Find adjacent point pairs between different paths only (Rule 5, 6)
+        for (let i = 0; i < allSegments.length; i++) {
+            const seg1 = allSegments[i];
+            for (let j = i + 1; j < allSegments.length; j++) {
+                const seg2 = allSegments[j];
+
+                // Rule 5: NEVER merge points from the same path
+                if (seg1.pathIdx === seg2.pathIdx) {
+                    continue;
+                }
+
+                // Check all endpoint combinations
+                const combinations = [
+                    { point1: seg1.start, point2: seg2.start, seg1, seg2, end1: 'start', end2: 'start' },
+                    { point1: seg1.start, point2: seg2.end, seg1, seg2, end1: 'start', end2: 'end' },
+                    { point1: seg1.end, point2: seg2.start, seg1, seg2, end1: 'end', end2: 'start' },
+                    { point1: seg1.end, point2: seg2.end, seg1, seg2, end1: 'end', end2: 'end' }
+                ];
+
+                for (const combo of combinations) {
+                    // Check distance for potential connection
+                    const distance = this.calculateDistance(combo.point1, combo.point2);
+
+                    console.debug(`[winding] - Checking seg${seg1.pathIdx}_${seg1.segmentIdx}.${combo.end1} (${combo.point1.x.toFixed(1)}, ${combo.point1.y.toFixed(1)}) vs seg${seg2.pathIdx}_${seg2.segmentIdx}.${combo.end2} (${combo.point2.x.toFixed(1)}, ${combo.point2.y.toFixed(1)}) = ${distance.toFixed(1)}px`);
+
+                    if (distance <= tolerance) {
+                        const point1Key = `${seg1.pathIdx}_${seg1.segmentIdx}_${combo.end1}`;
+                        const point2Key = `${seg2.pathIdx}_${seg2.segmentIdx}_${combo.end2}`;
+
+                        // Create a geometric key to deduplicate same point pairs
+                        const geomKey1 = `${combo.point1.x.toFixed(2)}_${combo.point1.y.toFixed(2)}`;
+                        const geomKey2 = `${combo.point2.x.toFixed(2)}_${combo.point2.y.toFixed(2)}`;
+                        const pairKey = geomKey1 < geomKey2 ? `${geomKey1}-${geomKey2}` : `${geomKey2}-${geomKey1}`;
+
+                        // Only add if we haven't seen this geometric point pair before
+                        if (!potentialConnections.some(conn => {
+                            const connGeomKey1 = `${conn.point1.x.toFixed(2)}_${conn.point1.y.toFixed(2)}`;
+                            const connGeomKey2 = `${conn.point2.x.toFixed(2)}_${conn.point2.y.toFixed(2)}`;
+                            const connPairKey = connGeomKey1 < connGeomKey2 ? `${connGeomKey1}-${connGeomKey2}` : `${connGeomKey2}-${connGeomKey1}`;
+                            return connPairKey === pairKey;
+                        })) {
+                            console.debug(`[winding] - POTENTIAL CONNECTION: ${distance.toFixed(1)}px (new geometric pair)`);
+                            potentialConnections.push({
+                                distance,
+                                seg1: combo.seg1,
+                                seg2: combo.seg2,
+                                end1: combo.end1,
+                                end2: combo.end2,
+                                point1: combo.point1,
+                                point2: combo.point2,
+                                point1Key,
+                                point2Key
+                            });
+                        } else {
+                            console.debug(`[winding] - DUPLICATE geometric pair: ${distance.toFixed(1)}px (skipping)`);
+                        }
+                    }
+                }
+            }
+        }
+
+        console.debug(`[winding] Found ${potentialConnections.length} potential connections, sorted by distance: ${potentialConnections.map(p => `${p.distance.toFixed(1)}px`).join(', ')}`);
+
+        // NEW APPROACH: Cluster all points within tolerance using union-find
+        // This allows 3+ points to merge into a single super-node
+        console.debug(`[winding] Clustering points using union-find algorithm`);
+        
+        // Create a map of all unique points
+        const pointMap = new Map();
+        for (const segment of allSegments) {
+            const startKey = `${segment.pathIdx}_${segment.segmentIdx}_start`;
+            const endKey = `${segment.pathIdx}_${segment.segmentIdx}_end`;
+            pointMap.set(startKey, { point: segment.start, key: startKey });
+            pointMap.set(endKey, { point: segment.end, key: endKey });
+        }
+
+        // Union-Find data structure
+        const parent = new Map();
+        const rank = new Map();
+        
+        for (const key of pointMap.keys()) {
+            parent.set(key, key);
+            rank.set(key, 0);
+        }
+
+        function find(x) {
+            if (parent.get(x) !== x) {
+                parent.set(x, find(parent.get(x)));
+            }
+            return parent.get(x);
+        }
+
+        function union(x, y) {
+            const rootX = find(x);
+            const rootY = find(y);
+            
+            if (rootX === rootY) return;
+            
+            const rankX = rank.get(rootX);
+            const rankY = rank.get(rootY);
+            
+            if (rankX < rankY) {
+                parent.set(rootX, rootY);
+            } else if (rankX > rankY) {
+                parent.set(rootY, rootX);
+            } else {
+                parent.set(rootY, rootX);
+                rank.set(rootX, rankX + 1);
+            }
+        }
+
+        // Union all points that are within tolerance and from different paths
+        let connectionsApplied = 0;
+        for (const connection of potentialConnections) {
+            // Get the segments these points belong to
+            const seg1Path = connection.point1Key.split('_')[0];
+            const seg2Path = connection.point2Key.split('_')[0];
+            
+            if (seg1Path !== seg2Path) {
+                union(connection.point1Key, connection.point2Key);
+                connectionsApplied++;
+                console.debug(`[winding] - Unioning ${connection.point1Key} and ${connection.point2Key} (${connection.distance.toFixed(1)}px)`);
+            }
+        }
+
+        console.debug(`[winding] Applied ${connectionsApplied} unions`);
+
+        // Group points by their root (cluster)
+        const clusters = new Map();
+        for (const [key, pointData] of pointMap) {
+            const root = find(key);
+            if (!clusters.has(root)) {
+                clusters.set(root, []);
+            }
+            clusters.get(root).push(pointData);
+        }
+
+        console.debug(`[winding] Created ${clusters.size} clusters from ${pointMap.size} points`);
+
+        // For each cluster with 2+ points, create a super-node at their average position
+        const superNodeMap = new Map(); // Maps original point key to super-node location
+        
+        for (const [root, clusterPoints] of clusters) {
+            if (clusterPoints.length > 1) {
+                // Check if cluster has points from multiple paths
+                const paths = new Set(clusterPoints.map(p => p.key.split('_')[0]));
+                if (paths.size > 1) {
+                    const superNode = {
+                        x: clusterPoints.reduce((sum, p) => sum + p.point.x, 0) / clusterPoints.length,
+                        y: clusterPoints.reduce((sum, p) => sum + p.point.y, 0) / clusterPoints.length
+                    };
+                    // Super-node created
+                    
+                    for (const pointData of clusterPoints) {
+                        superNodeMap.set(pointData.key, superNode);
+                    }
+                }
+            }
+        }
+
+        // Created point mappings to super-nodes
+
+        // Additional pass: Map same-path points that share coordinates with super-node points
+        // This handles cases where segment endpoints from the same path have the same coordinates
+        // as points that were merged across paths (e.g., 1_1_start at same location as 1_0_end)
+        const EXACT_MATCH_TOLERANCE = 0.1;
+        for (const [mappedKey, superNode] of superNodeMap) {
+            const mappedPoint = pointMap.get(mappedKey).point;
+            
+            // Find all other points at the same location
+            for (const [otherKey, otherData] of pointMap) {
+                if (!superNodeMap.has(otherKey)) {
+                    const dist = this.calculateDistance(mappedPoint, otherData.point);
+                    if (dist < EXACT_MATCH_TOLERANCE) {
+                        superNodeMap.set(otherKey, superNode);
+                        console.debug(`[winding] - Including same-path point ${otherKey} in super-node (distance: ${dist.toFixed(2)}px)`);
+                    }
+                }
+            }
+        }
+
+        console.debug(`[winding] Final super-node mappings: ${superNodeMap.size}`);
+
+        // Rule 10: Preserve segment count, update endpoints to super-nodes
+        const modifiedSegments = allSegments.map(seg => {
+            const startKey = `${seg.pathIdx}_${seg.segmentIdx}_start`;
+            const endKey = `${seg.pathIdx}_${seg.segmentIdx}_end`;
+            
+            return {
+                ...seg,
+                start: superNodeMap.has(startKey) ? superNodeMap.get(startKey) : { ...seg.start },
+                end: superNodeMap.has(endKey) ? superNodeMap.get(endKey) : { ...seg.end }
+            };
+        });
+
+        return modifiedSegments;
     }
+
+    // Optimized merge using spatial hash for O(n log n) performance instead of O(n²)
     _mergeCoincidentPointsOptimized(allSegments, tolerance) {
         // Timing: Spatial hash merge
         // Using optimized spatial hash merging
@@ -1393,8 +1595,118 @@ class SvgViewerInstance {
 
     // Union-find clustering logic extracted for reuse
     _clusterAndMergePoints(allSegments, potentialConnections) {
-        return window.SvgViewerAlgorithms.clusterAndMergePoints(allSegments, potentialConnections);
+        // Timing: Union-find clustering
+
+        // Create union-find data structure for clustering
+        const unionFind = new Map();
+        const pointCoords = new Map();
+
+        // Initialize each point as its own cluster
+        for (const segment of allSegments) {
+            const startKey = `${segment.pathIdx}_${segment.segmentIdx}_start`;
+            const endKey = `${segment.pathIdx}_${segment.segmentIdx}_end`;
+
+            unionFind.set(startKey, startKey);
+            unionFind.set(endKey, endKey);
+            pointCoords.set(startKey, segment.start);
+            pointCoords.set(endKey, segment.end);
+        }
+
+        // Union-find helper functions
+        const find = (key) => {
+            if (unionFind.get(key) !== key) {
+                unionFind.set(key, find(unionFind.get(key))); // Path compression
+            }
+            return unionFind.get(key);
+        };
+
+        const union = (key1, key2) => {
+            const root1 = find(key1);
+            const root2 = find(key2);
+            if (root1 !== root2) {
+                unionFind.set(root2, root1);
+                return true;
+            }
+            return false;
+        };
+
+        // Apply unions for all potential connections
+        let unionsApplied = 0;
+        for (const connection of potentialConnections) {
+            if (union(connection.point1Key, connection.point2Key)) {
+                unionsApplied++;
+            }
+        }
+
+        // Applied unions
+
+        // Group points by their root cluster
+        const clusters = new Map();
+        for (const [pointKey, _] of unionFind) {
+            const root = find(pointKey);
+            if (!clusters.has(root)) {
+                clusters.set(root, []);
+            }
+            clusters.get(root).push(pointKey);
+        }
+
+        // Created clusters from points
+
+        // Create super-nodes for clusters with multiple points
+        const superNodes = new Map();
+        const pointToSuperNode = new Map();
+
+        for (const [root, pointKeys] of clusters) {
+            if (pointKeys.length > 1) {
+                // Calculate centroid for super-node
+                let sumX = 0, sumY = 0;
+                for (const pointKey of pointKeys) {
+                    const coords = pointCoords.get(pointKey);
+                    sumX += coords.x;
+                    sumY += coords.y;
+                }
+                const centroid = { x: sumX / pointKeys.length, y: sumY / pointKeys.length };
+
+                superNodes.set(root, { point: centroid, members: pointKeys });
+
+                for (const pointKey of pointKeys) {
+                    pointToSuperNode.set(pointKey, root);
+                }
+
+                // Super-node created
+            }
+        }
+
+        // Created point mappings to super-nodes
+        // Union-find clustering completed
+
+        // Apply super-node coordinates to segments
+        const mergedSegments = allSegments.map(segment => {
+            const startKey = `${segment.pathIdx}_${segment.segmentIdx}_start`;
+            const endKey = `${segment.pathIdx}_${segment.segmentIdx}_end`;
+
+            const newSegment = { ...segment };
+
+            if (pointToSuperNode.has(startKey)) {
+                const superNode = superNodes.get(pointToSuperNode.get(startKey));
+                newSegment.start = superNode.point;
+            }
+
+            if (pointToSuperNode.has(endKey)) {
+                const superNode = superNodes.get(pointToSuperNode.get(endKey));
+                newSegment.end = superNode.point;
+            }
+
+            return newSegment;
+        });
+
+        return mergedSegments;
     }
+
+    // Mark shared/internal segments that should not be part of the outer boundary
+    // A segment is "shared" if it overlaps with a segment from a different path going in the opposite direction
+    // NOTE: This should use exact coordinate matching (0.01px) because we only want to mark segments
+    // whose endpoints were actually merged to the same location in the point merging step
     _markSharedSegments(allSegments, tolerance = 0.01) {
         return window.SvgViewerAlgorithms.markSharedSegments(allSegments, tolerance);
     }
@@ -1411,8 +1723,210 @@ class SvgViewerInstance {
 
     // Step 4: Traverse outer edge using winding algorithm
     _traverseOuterEdge(pathNetwork) {
-        return window.SvgViewerAlgorithms.traverseOuterEdge(pathNetwork);
+        console.debug('[winding] Traversing outer edge with winding algorithm');
+
+        const { segments, pointToSegments } = pathNetwork;
+
+        if (segments.length === 0) {
+            console.warn('[winding] No segments to traverse');
+            return [];
+        }
+
+        // Calculate centroid of all points for outer-facing detection
+        let centroidX = 0, centroidY = 0, pointCount = 0;
+        for (const [pointKey, _] of pointToSegments) {
+            const [x, y] = pointKey.split('_').map(Number);
+            centroidX += x;
+            centroidY += y;
+            pointCount++;
+        }
+        const centroid = { x: centroidX / pointCount, y: centroidY / pointCount };
+        console.debug(`[winding] Shape centroid: (${centroid.x.toFixed(1)}, ${centroid.y.toFixed(1)})`);
+
+        // Find the leftmost point as starting point (guaranteed to be on outer edge)
+        let startPoint = null;
+        let startKey = null;
+        for (const [pointKey, _] of pointToSegments) {
+            const [x, y] = pointKey.split('_').map(Number);
+            const point = { x, y };
+
+            if (!startPoint || x < startPoint.x || (x === startPoint.x && y < startPoint.y)) {
+                startPoint = point;
+                startKey = pointKey;
+            }
+        }
+
+        console.debug(`[winding] Starting traversal from leftmost point: (${startPoint.x.toFixed(1)}, ${startPoint.y.toFixed(1)})`);
+
+        // Traverse the outer edge by always taking the most clockwise turn (rightmost/outward)
+        const outerEdgePoints = [startPoint];
+        const visitedSegments = new Set();
+        let currentPoint = startPoint;
+        let currentKey = startKey;
+        let incomingAngle = null; // Angle we came from
+
+        const maxIterations = segments.length * 2; // Prevent infinite loops
+        let iterations = 0;
+
+        while (iterations < maxIterations) {
+            iterations++;
+
+            const connectedSegments = pointToSegments.get(currentKey) || [];
+            const internalSegments = connectedSegments.filter(conn => conn.segment.isInternal);
+            const availableSegments = connectedSegments.filter(conn => 
+                !visitedSegments.has(conn.segment.id) && !conn.segment.isInternal
+            );
+
+            console.debug(`[winding] Iteration ${iterations}: At point (${currentPoint.x.toFixed(1)}, ${currentPoint.y.toFixed(1)})`);
+            console.debug(`[winding] - Connected segments: ${connectedSegments.length}, Internal: ${internalSegments.length}, Available: ${availableSegments.length}`);
+            if (internalSegments.length > 0) {
+                console.debug(`[winding] - Excluding internal segments: ${internalSegments.map(conn => conn.segment.id).join(', ')}`);
+            }
+            console.debug(`[winding] - Visited segments: [${Array.from(visitedSegments).join(', ')}]`);
+            if (availableSegments.length > 0) {
+                console.debug(`[winding] - Available segment destinations: ${availableSegments.map(conn => {
+                    const nextPt = conn.isStart ? conn.segment.end : conn.segment.start;
+                    return `${conn.segment.id}→(${nextPt.x.toFixed(1)},${nextPt.y.toFixed(1)})`;
+                }).join(', ')}`);
+            }
+
+            // FAILURE DETECTION: Check if we're being forced into a potentially internal path
+            if (availableSegments.length === 1) {
+                const forcedSegment = availableSegments[0].segment;
+                const nextPoint = availableSegments[0].isStart ? forcedSegment.end : forcedSegment.start;
+                const nextKey = `${nextPoint.x.toFixed(2)}_${nextPoint.y.toFixed(2)}`;
+                const nextConnections = pointToSegments.get(nextKey) || [];
+
+                console.debug(`[winding] - FORCED CHOICE: Only 1 segment available, going to (${nextPoint.x.toFixed(1)}, ${nextPoint.y.toFixed(1)}) with ${nextConnections.length} connections`);
+
+                // Flag potential internal segment: going to a high-degree vertex (merge point)
+                if (nextConnections.length >= 3) {
+                    console.debug(`[winding] - ⚠️  POTENTIAL INTERNAL SEGMENT: Forced to high-degree vertex (${nextConnections.length} connections)`);
+                }
+            }
+
+            if (availableSegments.length === 0) {
+                console.debug('[winding] No more available segments, traversal complete');
+                console.debug(`[winding] - Total segments in network: ${segments.length}`);
+                console.debug(`[winding] - Segments visited: ${visitedSegments.size}`);
+                break;
+            }
+
+            // Choose the segment that represents the most clockwise turn (smallest angle = most outward)
+            let bestSegment = null;
+            let bestAngle = null;
+            let bestConn = null;
+
+            for (const conn of availableSegments) {
+                const segment = conn.segment;
+                const nextPoint = conn.isStart ? segment.end : segment.start;
+                const outgoingAngle = Math.atan2(nextPoint.y - currentPoint.y, nextPoint.x - currentPoint.x);
+
+                // Calculate the turn angle relative to incoming direction
+                let turnAngle = outgoingAngle;
+                if (incomingAngle !== null) {
+                    turnAngle = outgoingAngle - incomingAngle;
+                    // Normalize to [0, 2π)
+                    while (turnAngle < 0) turnAngle += 2 * Math.PI;
+                    while (turnAngle >= 2 * Math.PI) turnAngle -= 2 * Math.PI;
+                }
+
+                // Check if this segment leads away from centroid (outer-facing)
+                const fromCentroidX = currentPoint.x - centroid.x;
+                const fromCentroidY = currentPoint.y - centroid.y;
+                const toNextX = nextPoint.x - currentPoint.x;
+                const toNextY = nextPoint.y - currentPoint.y;
+
+                // Dot product: positive means pointing away from centroid (outer-facing)
+                const dotProduct = fromCentroidX * toNextX + fromCentroidY * toNextY;
+                const isOuterFacing = dotProduct > 0;
+
+                console.debug(`[winding] - Candidate segment ${segment.id}: to (${nextPoint.x.toFixed(1)}, ${nextPoint.y.toFixed(1)}), turn angle: ${(turnAngle * 180 / Math.PI).toFixed(1)}°, outer-facing: ${isOuterFacing}`);
+
+                // For outer edge, we want the SMALLEST turn angle (most clockwise = most outward)
+                // Treat angles near 360° as small angles (e.g., 350° -> 10°)
+                let normalizedAngle = turnAngle;
+                if (turnAngle > Math.PI) {
+                    normalizedAngle = 2 * Math.PI - turnAngle;
+                }
+
+                // For outer edge, we want the SMALLEST turn angle (most clockwise = most outward)
+                // Treat angles near 360° as small angles (e.g., 350° -> 10°)
+                let priority = normalizedAngle;
+
+
+                // CRITICAL: At high-degree vertices, strongly prefer outer-facing segments
+                const currentPointKey = `${currentPoint.x.toFixed(2)}_${currentPoint.y.toFixed(2)}`;
+                const currentConnections = pointToSegments.get(currentPointKey) || [];
+                if (currentConnections.length >= 4 && isOuterFacing) {
+                    priority = -3; // Even higher priority than collinear for outer-facing at high-degree vertices
+                    console.debug(`[winding] - HIGH-DEGREE VERTEX: Prioritizing outer-facing segment at ${currentConnections.length}-connection vertex`);
+                }
+
+                // Special case: If this is a straight continuation (collinear), give it highest priority
+                // Only check if the turn angle is close to 0° (true straight continuation)
+                // Note: 360° is NOT straight - it's a full circle back, which is a sharp inward turn
+                if (incomingAngle !== null) {
+                    const COLLINEAR_THRESHOLD = 0.1; // Close to 0° (< ~6 degrees)
+                    const isNearZero = Math.abs(turnAngle) < COLLINEAR_THRESHOLD;
+
+                    if (isNearZero) { // Only true straight continuation
+                        priority = -2; // Higher priority than even sharp turns
+                        console.debug(`[winding] - COLLINEAR: Straight continuation detected (turn angle: ${(turnAngle * 180 / Math.PI).toFixed(1)}°), highest priority`);
+                    }
+                }
+
+                let bestPriority = bestAngle !== null ?
+                    (bestAngle > Math.PI ? 2 * Math.PI - bestAngle : bestAngle) : Infinity;
+                const COLLINEAR_THRESHOLD = 0.1; // ~6 degrees
+                if (Math.abs(bestAngle) < COLLINEAR_THRESHOLD || Math.abs(bestAngle - 2 * Math.PI) < COLLINEAR_THRESHOLD) {
+                    bestPriority = -1;
+                }
+
+                if (bestSegment === null || priority < bestPriority) {
+                    bestSegment = segment;
+                    bestAngle = turnAngle;
+                    bestConn = conn;
+                }
+            }
+
+            if (!bestSegment) {
+                console.debug('[winding] No best segment found, stopping traversal');
+                break;
+            }
+
+            // Move to next point
+            console.debug(`[winding] - Selected segment ${bestSegment.id} with turn angle ${(bestAngle * 180 / Math.PI).toFixed(1)}°`);
+            visitedSegments.add(bestSegment.id);
+            const nextPoint = bestConn.isStart ? bestSegment.end : bestSegment.start;
+            console.debug(`[winding] - Moving to next point: (${nextPoint.x.toFixed(1)}, ${nextPoint.y.toFixed(1)})`);
+
+            // Update incoming angle for next iteration
+            incomingAngle = Math.atan2(nextPoint.y - currentPoint.y, nextPoint.x - currentPoint.x);
+            const nextKey = `${nextPoint.x.toFixed(2)}_${nextPoint.y.toFixed(2)}`;
+
+            // Check if we've returned to start
+            if (nextKey === startKey && outerEdgePoints.length > 2) {
+                console.debug('[winding] Returned to start point, outer edge complete');
+                break;
+            }
+
+            outerEdgePoints.push(nextPoint);
+            incomingAngle = Math.atan2(nextPoint.y - currentPoint.y, nextPoint.x - currentPoint.x);
+            currentPoint = nextPoint;
+            currentKey = nextKey;
+        }
+
+        console.debug(`[winding] Traversal completed in ${iterations} iterations, found ${outerEdgePoints.length} outer edge points`);
+
+        // VALIDATION: Basic polygon cleanup before returning
+        const validatedPoints = this._basicPolygonCleanup(outerEdgePoints);
+        console.debug(`[winding] Polygon validation: ${outerEdgePoints.length} → ${validatedPoints.length} points`);
+
+        return validatedPoints;
     }
+
+    // Minimal polygon cleanup - detect corrupted results and force failure
     _basicPolygonCleanup(points) {
         return window.SvgViewerAlgorithms.basicPolygonCleanup(points);
     }
