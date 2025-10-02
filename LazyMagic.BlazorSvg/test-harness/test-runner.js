@@ -17,6 +17,12 @@ global.SpatialGrid = SvgViewerAlgorithms.SpatialGrid;
 // Now load SvgViewerOptimized.js (needs global.SpatialGrid)
 const { fastInscribedRectangle } = require('../wwwroot/SvgViewerOptimized.js');
 
+// Load boundary-based and hybrid algorithms
+const { boundaryBasedInscribedRectangle, hybridInscribedRectangle } = require('../wwwroot/SvgViewerBoundaryBased.js');
+
+// Make fastInscribedRectangle globally available for hybrid algorithm
+global.fastInscribedRectangle = fastInscribedRectangle;
+
 // Color codes for console output
 const colors = {
     reset: '\x1b[0m',
@@ -323,12 +329,18 @@ async function runTest(testCase) {
         log(`    (${v.x.toFixed(1)}, ${v.y.toFixed(1)})`, 'yellow');
     }
 
-    // Calculate inscribed rectangle using fastInscribedRectangle
-    log(`\n  Calculating inscribed rectangle...`, 'cyan');
+    // Calculate inscribed rectangle using hybrid approach (tries boundary-based first)
+    log(`\n  Calculating inscribed rectangle with hybrid algorithm...`, 'cyan');
     const startTime = performance.now();
-    const rectangle = fastInscribedRectangle(polygon, {
-        debugLog: true,
-        // Optimized configuration based on parameter sweep results
+    const rectangle = hybridInscribedRectangle(polygon, {
+        debugMode: true,
+        coverageThreshold: 0.95,  // Skip optimized if boundary-based achieves 95%+
+        targetArea: targetArea,  // Pass target for coverage-based decision
+        // Boundary-based options
+        maxAngles: 8,
+        angleTolerance: 5,
+        testPerpendicular: true,
+        // Optimized configuration (used if boundary-based insufficient)
         maxTime: 1000,
         gridStep: 8.0,
         polylabelPrecision: 0.5,
