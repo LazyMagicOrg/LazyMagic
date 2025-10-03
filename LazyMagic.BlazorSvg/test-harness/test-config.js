@@ -117,6 +117,24 @@ export const testCases = [
         paths: ["Ballroom_Aisle_3456", "Ballroom_Aisle_56"],
         expectedShape: "",
         description: ""
+    },
+    {
+        name: "Test17",
+        paths: ["Ballroom_1", "Ballroom_3", "Ballroom_5", "Ballroom_Grand", "Ballroom_Aisle_56", "Ballroom_Aisle_35"],
+        expectedShape: "",
+        description: ""
+    },
+    {
+        name: "Test18",
+        paths: ["Ballroom_1", "Ballroom_2", "Ballroom_3", "Ballroom_4", "Ballroom_Grand", "Ballroom_Aisle_12", "Ballroom_Aisle_34", "Ballroom_Aisle_35", "Ballroom_Aisle_46", "Ballroom_Aisle_3456"],
+        expectedShape: "",
+        description: ""
+    },
+    {
+        name: "Test19",
+        paths: ["Ballroom_1", "Ballroom_2", "Ballroom_3", "Ballroom_4", "Ballroom_Grand", "Ballroom_Aisle_12", "Ballroom_Aisle_34", "Ballroom_Aisle_46"],
+        expectedShape: "",
+        description: ""
     }
 ];
 

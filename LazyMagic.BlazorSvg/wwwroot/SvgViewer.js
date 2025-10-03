@@ -47,6 +47,27 @@ async function loadOptimizationLibraries() {
         SpatialGrid = window.SpatialGrid;
     }
 
+    // Load boundary-based algorithms (required for hybrid algorithm)
+    if (typeof window.hybridInscribedRectangle === 'undefined') {
+        console.warn('[LOADING-DEBUG] Attempting to load SvgViewerBoundaryBased.js...');
+        const boundaryScript = document.createElement('script');
+        boundaryScript.src = './_content/LazyMagic.BlazorSvg/SvgViewerBoundaryBased.js';
+        console.warn('[LOADING-DEBUG] Script src set to:', boundaryScript.src);
+        const boundaryPromise = new Promise((resolve) => {
+            boundaryScript.onload = () => {
+                console.log('[boundary-based] Hybrid inscribed rectangle algorithm loaded successfully');
+                resolve(true);
+            };
+            boundaryScript.onerror = (error) => {
+                console.warn('[LOADING-DEBUG] Failed to load SvgViewerBoundaryBased.js, error:', error);
+                console.warn('[boundary-based] Failed to load hybrid algorithm');
+                resolve(false);
+            };
+        });
+        document.head.appendChild(boundaryScript);
+        loadPromises.push(boundaryPromise);
+    }
+
     // Load optimized algorithms
     if (typeof window.SpatialHash === 'undefined') {
         console.warn('[LOADING-DEBUG] Attempting to load SvgViewerOptimized.js...');
@@ -86,6 +107,7 @@ async function loadOptimizationLibraries() {
 // Initialize optimization libraries
 loadOptimizationLibraries().then(() => {
     console.log('[optimization] Library loading complete');
+    console.log('[optimization] hybridInscribedRectangle:', typeof window.hybridInscribedRectangle !== 'undefined' ? '✅ Available' : '❌ Not available');
     console.log('[optimization] fastInscribedRectangle:', typeof window.fastInscribedRectangle !== 'undefined' ? '✅ Available' : '❌ Not available');
 });
 
@@ -93,6 +115,7 @@ loadOptimizationLibraries().then(() => {
 window.checkSvgOptimizationStatus = function() {
     console.log('=== SVG Optimization Status ===');
     console.log('SvgViewerAlgorithms:', typeof window.SvgViewerAlgorithms !== 'undefined' ? '✅ Loaded' : '❌ Not loaded');
+    console.log('hybridInscribedRectangle:', typeof window.hybridInscribedRectangle !== 'undefined' ? '✅ Loaded' : '❌ Not loaded');
     console.log('fastWindingAlgorithm:', typeof window.fastWindingAlgorithm !== 'undefined' ? '✅ Loaded' : '❌ Not loaded');
     console.log('fastInscribedRectangle:', typeof window.fastInscribedRectangle !== 'undefined' ? '✅ Loaded' : '❌ Not loaded');
     console.log('SpatialHash:', typeof window.SpatialHash !== 'undefined' ? '✅ Loaded' : '❌ Not loaded');
@@ -537,9 +560,11 @@ class SvgViewerInstance {
         console.warn(`🔍 [FUNCTION-DEBUG] findLargestInscribedRectangle CALLED with ${polygon?.length || 0} vertices`);
         const rectangleStartTime = performance.now();
         const {
-            gridSize = 20,           // Number of grid divisions per axis
-            minArea = 100,           // Minimum rectangle area to consider
-            debugLog = false         // Enable debug logging
+            gridSize = 20,           // Number of grid divisions per axis (legacy, not used)
+            minArea = 100,           // Minimum rectangle area to consider (legacy, not used)
+            debugLog = false,        // Enable debug logging
+            hintAngle = undefined,   // Optional hint angle from polygon orientation
+            targetArea = null        // Optional target area for coverage calculations
         } = options;
 
         if (!polygon || polygon.length < 3) {
@@ -547,37 +572,48 @@ class SvgViewerInstance {
             return null;
         }
 
-        // Use fast algorithm
-        if (typeof window.fastInscribedRectangle === 'undefined') {
-            console.error('❌ Fast inscribed rectangle algorithm not loaded');
+        // Use hybrid algorithm (tries boundary-based first, falls back to optimized)
+        if (typeof window.hybridInscribedRectangle === 'undefined') {
+            console.error('❌ Hybrid inscribed rectangle algorithm not loaded');
             return null;
         }
 
         const debugRect = debugLog;
-        if (debugRect) console.debug('[rectangle] Using fast inscribed rectangle algorithm');
+        if (debugRect) console.debug('[rectangle] Using hybrid inscribed rectangle algorithm (boundary-based + optimized fallback)');
 
-        const fastInscribedRectangle = window.fastInscribedRectangle;
+        // Don't use target-aware search in live version - we don't have ideal target bounds
+        // Only the test harness has access to the target path to extract proper bounds
+        let targetAreaWithBounds = targetArea;
 
-        // If a hint angle is provided, test angles around it with higher precision
+        // Build options for hybrid algorithm (match test harness exactly)
         const algorithmOptions = {
-            angleStep: options.hintAngle !== undefined ? 1 : 10,  // Use 1° steps if we have a hint
-            refinementStep: 0.5,  // Finer refinement for better precision
-            maxTime: 5000,
-            debugMode: true
+            debugMode: debugLog,
+            coverageThreshold: 0.95,  // Skip optimized if boundary-based achieves 95%+
+            targetArea: targetAreaWithBounds,  // Pass target with bounds for focused search
+            // Boundary-based options
+            maxAngles: 8,
+            angleTolerance: 5,
+            testPerpendicular: true,
+            // Optimized configuration (used if boundary-based insufficient)
+            maxTime: 1000,
+            gridStep: 8.0,
+            polylabelPrecision: 0.5,
+            aspectRatios: [0.5, 0.6, 0.7, 0.85, 1.0, 1.2, 1.4, 1.7, 2.0, 2.3, 2.5, 2.8, 3.0],
+            binarySearchPrecision: 0.0001,
+            binarySearchMaxIterations: 20
         };
 
-        // If hint angle provided, also test angles around the hint
-        if (options.hintAngle !== undefined) {
-            console.debug(`[rectangle] Using hint angle: ${options.hintAngle.toFixed(1)}°`);
-            algorithmOptions.startAngle = options.hintAngle - 5;  // Test ±5° around hint
-            algorithmOptions.endAngle = options.hintAngle + 5;
+        // If hint angle provided, use it to guide the boundary-based algorithm
+        if (hintAngle !== undefined) {
+            console.debug(`[rectangle] Using hint angle: ${hintAngle.toFixed(1)}°`);
+            algorithmOptions.hintAngle = hintAngle;
         }
 
-        const result = fastInscribedRectangle(polygon, algorithmOptions);
+        const result = window.hybridInscribedRectangle(polygon, algorithmOptions);
 
-        if (debugRect) console.debug(`[rectangle] Fast algorithm result:`, result);
+        if (debugRect) console.debug(`[rectangle] Hybrid algorithm result:`, result);
         if (result) {
-            if (debugRect) console.log(`[rectangle] Fast algorithm found ${result.width.toFixed(1)}x${result.height.toFixed(1)} rectangle at ${result.angle}°`);
+            if (debugRect) console.log(`[rectangle] Hybrid algorithm found ${result.width.toFixed(1)}x${result.height.toFixed(1)} rectangle at ${result.angle}° using ${result.type || 'unknown'} algorithm`);
 
             // FINAL DEBUG: Show polygon characteristics after area calculation
             const timeInfo = result.elapsed ? `${result.elapsed.toFixed(1)}ms` : 'N/A';
@@ -586,7 +622,7 @@ class SvgViewerInstance {
             return result;
         }
 
-        console.error('❌ Fast algorithm returned null');
+        console.error('❌ Hybrid algorithm returned null');
         return null;
     }
 

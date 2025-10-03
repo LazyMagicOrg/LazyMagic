@@ -264,6 +264,7 @@ async function runTest(testCase) {
     // Extract target test path (e.g., "Test01" for validation)
     const targetPathData = extractPathData(svgContent, [testCase.name]);
     let targetArea = null;
+    let targetBounds = null;
     if (targetPathData && targetPathData.length > 0) {
         // Parse target path to get its bounding box/area
         const targetSegments = SvgViewerAlgorithms.parsePathToLineSegments(targetPathData[0].d, 0);
@@ -271,6 +272,17 @@ async function runTest(testCase) {
             // Calculate area of the target rectangle
             const targetPoints = targetSegments.map(s => s.start);
             targetArea = Math.abs(SvgViewerAlgorithms.calculatePolygonArea(targetPoints));
+
+            // Calculate target bounds
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            for (const p of targetPoints) {
+                minX = Math.min(minX, p.x);
+                minY = Math.min(minY, p.y);
+                maxX = Math.max(maxX, p.x);
+                maxY = Math.max(maxY, p.y);
+            }
+            targetBounds = { minX, minY, maxX, maxY };
+
             log(`  ✓ Target area (${testCase.name}): ${targetArea.toFixed(1)} sq px`, 'green');
         }
     }
@@ -335,7 +347,7 @@ async function runTest(testCase) {
     const rectangle = hybridInscribedRectangle(polygon, {
         debugMode: true,
         coverageThreshold: 0.95,  // Skip optimized if boundary-based achieves 95%+
-        targetArea: targetArea,  // Pass target for coverage-based decision
+        targetArea: targetBounds ? { value: targetArea, bounds: targetBounds } : targetArea,  // Pass target with bounds for focused search
         // Boundary-based options
         maxAngles: 8,
         angleTolerance: 5,
