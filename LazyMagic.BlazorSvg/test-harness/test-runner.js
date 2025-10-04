@@ -17,11 +17,15 @@ global.SpatialGrid = SvgViewerAlgorithms.SpatialGrid;
 // Now load SvgViewerOptimized.js (needs global.SpatialGrid)
 const { fastInscribedRectangle } = require('../wwwroot/SvgViewerOptimized.js');
 
+// Load rotating calipers algorithm
+const { rotatingCalipersInscribedRectangle } = require('../wwwroot/SvgViewerRotatingCalipers.js');
+
 // Load boundary-based and hybrid algorithms
 const { boundaryBasedInscribedRectangle, hybridInscribedRectangle } = require('../wwwroot/SvgViewerBoundaryBased.js');
 
-// Make fastInscribedRectangle globally available for hybrid algorithm
+// Make algorithms globally available for hybrid algorithm
 global.fastInscribedRectangle = fastInscribedRectangle;
+global.rotatingCalipersInscribedRectangle = rotatingCalipersInscribedRectangle;
 
 // Color codes for console output
 const colors = {

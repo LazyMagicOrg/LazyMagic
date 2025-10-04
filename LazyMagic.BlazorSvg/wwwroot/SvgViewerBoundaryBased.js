@@ -143,8 +143,8 @@ function findMaxRectangleAtAngle(polygon, angleDeg, debugMode = false, targetAre
     // Collect all test centroids
     const testCentroids = [];
 
-    // Add grid of center positions
-    const gridSteps = 15;
+    // Add grid of center positions (coarser grid for speed)
+    const gridSteps = 8;
     const stepX = width / (gridSteps + 1);
     const stepY = height / (gridSteps + 1);
 
@@ -228,8 +228,8 @@ function findMaxRectangleAtAngle(polygon, angleDeg, debugMode = false, targetAre
             const centerY = center.y;
 
             // For each center, try different rectangles
-            // Test multiple aspect ratios (expanded range with finer granularity)
-            const aspectRatios = [0.5, 0.6, 0.7, 0.85, 1.0, 1.1, 1.2, 1.3, 1.4, 1.45, 1.5, 1.6, 1.7, 1.8, 2.0, 2.3, 2.5, 2.8, 3.0];
+            // Test multiple aspect ratios (coarser for speed)
+            const aspectRatios = [0.5, 0.7, 1.0, 1.3, 1.5, 1.8, 2.0, 2.5];
 
             for (const aspectRatio of aspectRatios) {
                 // Binary search for maximum scale
@@ -673,7 +673,7 @@ function findMaxExpansion(corners, vertexIndices, normal, polygon, debugMode) {
 function boundaryBasedInscribedRectangle(polygon, options = {}) {
     const {
         debugMode = false,
-        maxAngles = 8,  // Test top N dominant angles
+        maxAngles = 5,  // Test top N dominant angles (reduced for speed)
         angleTolerance = 5,  // Degrees tolerance for grouping angles
         testPerpendicular = true,  // Also test angles perpendicular to dominant edges
         targetArea = null  // Optional target area for focused search
@@ -755,7 +755,18 @@ function boundaryBasedInscribedRectangle(polygon, options = {}) {
     let bestRect = null;
     let bestArea = 0;
 
+    // Time-based cutoff: stop if we exceed 300ms (without goal seeker)
+    const maxComputeTime = 300; // milliseconds
+
     for (const angle of angles) {
+        // Check if we've exceeded time limit (only when no target area)
+        if (!targetArea && (performance.now() - startTime) > maxComputeTime && bestRect) {
+            if (forceDebug) {
+                console.log(`[boundary-based] ⏱️ Time limit reached (${maxComputeTime}ms), stopping early with best result (${angles.length - angles.indexOf(angle)} angles remaining)`);
+            }
+            break;
+        }
+
         const rect = findMaxRectangleAtAngle(polygon, angle, forceDebug, targetArea);
 
         if (forceDebug) {
@@ -809,9 +820,9 @@ function boundaryBasedInscribedRectangle(polygon, options = {}) {
 function hybridInscribedRectangle(polygon, options = {}) {
     const {
         debugMode = false,
-        coverageThreshold = 0.95,  // If boundary-based achieves this, skip optimized
+        coverageThreshold = 0.96,  // If boundary-based achieves this, skip optimized
         // Boundary-based options
-        maxAngles = 8,
+        maxAngles = 5,  // Reduced for speed
         angleTolerance = 5,
         testPerpendicular = true,
         // Optimized algorithm options (from SvgViewerOptimized.js)
@@ -851,8 +862,15 @@ function hybridInscribedRectangle(polygon, options = {}) {
     let optimizedResult = null;
     let shouldRunOptimized = true;
 
+    // Don't run optimized if no target area (no goal seeker) - boundary-based is fast enough
+    if (!options.targetArea) {
+        if (debugMode) {
+            console.log('[hybrid] No target area provided, using boundary-based result only');
+        }
+        shouldRunOptimized = false;
+    }
     // Check if we have a target area to compare against (passed in options)
-    if (options.targetArea && boundaryResult) {
+    else if (options.targetArea && boundaryResult) {
         // Handle both old format (number) and new format (object with value and bounds)
         const targetValue = typeof options.targetArea === 'object' ? options.targetArea.value : options.targetArea;
         const coverage = boundaryResult.area / targetValue;
