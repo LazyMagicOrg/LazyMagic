@@ -366,3 +366,4 @@ FodyWeavers.xsd
 # so we keep the .gitkeep file. Note that everyhting else in 
 # the folder will be ignored.
 !**/[Pp]ackages/.gitkeep
+/LazyMagic.BlazorSvg/test-harness/nul
