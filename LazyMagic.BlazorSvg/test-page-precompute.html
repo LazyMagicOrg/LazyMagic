@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscribed Rectangle Pre-computation</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/3.2.4/svg.min.js"></script>
+    <script src="wwwroot/SvgViewerBoundaryBased.js"></script>
+    <script src="wwwroot/SvgViewer.js"></script>
+</head>
+<body>
+    <div id="svg-container"></div>
+    <script>
+        // This page will be controlled by Puppeteer to compute inscribed rectangles
+        window.computeInscribedRectangle = async function(pathIds) {
+            try {
+                // Load the SVG
+                const response = await fetch('../BlazorTest.WASM/wwwroot/Level1.svg');
+                const svgText = await response.text();
+
+                // Parse SVG
+                const parser = new DOMParser();
+                const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
+                const svgElement = svgDoc.documentElement;
+
+                // Create SVG.js instance
+                const container = document.getElementById('svg-container');
+                container.innerHTML = '';
+                container.appendChild(svgElement);
+
+                const draw = SVG(svgElement);
+
+                // Create SvgViewer instance
+                const viewer = new SvgViewer(draw);
+
+                // Generate merged path outline
+                const outlinePathData = viewer.generateGroupOutline(pathIds, {
+                    gapHopPx: 3,
+                    kStart: 10,
+                    kMax: 25,
+                    maxEdgePx: 100,
+                    sampleStride: 1,
+                    downsampleEveryN: 1,
+                    minContainment: 0.0,
+                    debugShowUnifiedPath: false
+                });
+
+                if (!outlinePathData) {
+                    return { error: 'Failed to generate outline' };
+                }
+
+                // Parse the path data to extract polygon points
+                const pathElement = draw.path(outlinePathData);
+                const pathLength = pathElement.length();
+                const numSamples = Math.max(100, Math.floor(pathLength / 5));
+
+                const polygon = [];
+                for (let i = 0; i < numSamples; i++) {
+                    const point = pathElement.pointAt(i / numSamples * pathLength);
+                    polygon.push({ x: point.x, y: point.y });
+                }
+
+                pathElement.remove();
+
+                // Compute inscribed rectangle using hybridInscribedRectangle
+                if (typeof window.hybridInscribedRectangle === 'undefined') {
+                    return { error: 'hybridInscribedRectangle not loaded' };
+                }
+
+                const options = {
+                    gridSize: 30,
+                    minArea: 50,
+                    pathCount: pathIds.length,
+                    centroidStrategy: 'auto',
+                    timeoutMs: 60000,
+                    accuracyMode: true
+                };
+
+                const result = window.hybridInscribedRectangle(polygon, options);
+
+                if (!result || result.area === 0) {
+                    return { error: 'No rectangle found' };
+                }
+
+                return {
+                    success: true,
+                    rectangle: {
+                        x: result.x,
+                        y: result.y,
+                        width: result.width,
+                        height: result.height,
+                        angle: result.angle || 0,
+                        area: result.area,
+                        corners: result.corners,
+                        type: result.type,
+                        centroidStrategy: result.centroidStrategy
+                    }
+                };
+            } catch (error) {
+                return { error: error.message };
+            }
+        };
+
+        console.log('Pre-computation page ready');
+    </script>
+</body>
+</html>

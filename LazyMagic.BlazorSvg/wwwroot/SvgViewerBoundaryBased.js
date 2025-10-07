@@ -2,6 +2,43 @@
 // Uses polygon boundary segments to determine optimal rectangle orientation
 
 /**
+ * Select optimal centroid placement strategy based on detectable geometric properties
+ * @param {number} pathCount - Number of input paths merged
+ * @param {number} vertexCount - Number of boundary vertices in merged polygon
+ * @param {number} polygonArea - Area of merged polygon (bounding box area is acceptable approximation)
+ * @returns {string} - "uniform" or "hybrid"
+ */
+function selectCentroidStrategy(pathCount, vertexCount, polygonArea) {
+    // Rule 1: Complex multi-room assemblies (PRIMARY INDICATOR)
+    // 6+ paths always benefit from edge-focused hybrid approach
+    if (pathCount >= 6) {
+        return "hybrid";
+    }
+
+    // Rule 2: High boundary complexity (SECONDARY INDICATOR)
+    // Complex boundaries (12+ vertices) benefit from edge sampling
+    if (vertexCount >= 12) {
+        return "hybrid";
+    }
+
+    // Rule 3: Very small areas (TERTIARY INDICATOR)
+    // Both approaches tied on small areas, hybrid is faster
+    if (polygonArea < 5000) {
+        return "hybrid";
+    }
+
+    // Rule 4: Large areas with simple paths (TERTIARY INDICATOR)
+    // Large assemblies benefit from edge-focused sampling
+    if (polygonArea > 25000 && pathCount >= 3) {
+        return "hybrid";
+    }
+
+    // Default: Medium-sized simple joins favor uniform grid
+    // This handles most common cases (2-path joins, 10K-20K sq px)
+    return "uniform";
+}
+
+/**
  * Extract significant edges from polygon boundary
  * Returns edges sorted by length (longest first)
  */
@@ -90,10 +127,143 @@ function arePerpendicularAngles(angle1, angle2, tolerance = 5) {
 }
 
 /**
+ * Calculate convex hull using Graham scan algorithm
+ */
+function calculateConvexHull(points) {
+    if (points.length < 3) return points;
+
+    // Find lowest point (and leftmost if tied)
+    let lowest = 0;
+    for (let i = 1; i < points.length; i++) {
+        if (points[i].y < points[lowest].y ||
+            (points[i].y === points[lowest].y && points[i].x < points[lowest].x)) {
+            lowest = i;
+        }
+    }
+
+    // Sort points by polar angle with respect to lowest point
+    const pivot = points[lowest];
+    const sorted = points.slice();
+    sorted.splice(lowest, 1);
+
+    sorted.sort((a, b) => {
+        const angleA = Math.atan2(a.y - pivot.y, a.x - pivot.x);
+        const angleB = Math.atan2(b.y - pivot.y, b.x - pivot.x);
+        if (angleA !== angleB) return angleA - angleB;
+        // If same angle, sort by distance
+        const distA = (a.x - pivot.x) ** 2 + (a.y - pivot.y) ** 2;
+        const distB = (b.x - pivot.x) ** 2 + (b.y - pivot.y) ** 2;
+        return distA - distB;
+    });
+
+    // Build hull using Graham scan
+    const hull = [pivot, sorted[0]];
+
+    for (let i = 1; i < sorted.length; i++) {
+        while (hull.length > 1) {
+            const p1 = hull[hull.length - 2];
+            const p2 = hull[hull.length - 1];
+            const p3 = sorted[i];
+
+            // Cross product to determine turn direction
+            const cross = (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);
+
+            if (cross <= 0) {
+                hull.pop(); // Right turn or collinear, remove p2
+            } else {
+                break; // Left turn, keep going
+            }
+        }
+        hull.push(sorted[i]);
+    }
+
+    return hull;
+}
+
+/**
+ * Generate edge-offset grid for boundary-touching rectangles
+ * Places points at various distances inward from polygon edges
+ */
+function generateEdgeOffsetGrid(polygon, rotated, numSamplesPerEdge = 8, offsetDistances = [10, 25]) {
+    const points = [];
+
+    for (let i = 0; i < rotated.length; i++) {
+        const p1 = rotated[i];
+        const p2 = rotated[(i + 1) % rotated.length];
+
+        // Calculate edge normal (pointing inward)
+        const edgeDx = p2.x - p1.x;
+        const edgeDy = p2.y - p1.y;
+        const edgeLen = Math.sqrt(edgeDx * edgeDx + edgeDy * edgeDy);
+
+        if (edgeLen < 1) continue; // Skip very short edges
+
+        // Perpendicular vector (inward normal)
+        const normalX = -edgeDy / edgeLen;
+        const normalY = edgeDx / edgeLen;
+
+        // Sample along edge
+        for (let s = 1; s < numSamplesPerEdge; s++) {
+            const t = s / numSamplesPerEdge;
+            const edgeX = p1.x + t * edgeDx;
+            const edgeY = p1.y + t * edgeDy;
+
+            // Place points at various offsets from edge (inside polygon)
+            for (const offset of offsetDistances) {
+                const pointX = edgeX + normalX * offset;
+                const pointY = edgeY + normalY * offset;
+                points.push({ x: pointX, y: pointY });
+            }
+        }
+    }
+
+    return points;
+}
+
+/**
+ * Generate points in convex hull interior for open-region rectangles
+ * Samples grid points inside the convex hull of the polygon
+ */
+function generateConvexHullInterior(convexHull, numSamples = 30) {
+    if (convexHull.length < 3) return [];
+
+    // Find bounding box of convex hull
+    let minX = Infinity, minY = Infinity;
+    let maxX = -Infinity, maxY = -Infinity;
+
+    for (const p of convexHull) {
+        minX = Math.min(minX, p.x);
+        minY = Math.min(minY, p.y);
+        maxX = Math.max(maxX, p.x);
+        maxY = Math.max(maxY, p.y);
+    }
+
+    const points = [];
+    const gridSize = Math.ceil(Math.sqrt(numSamples * 2)); // Oversample
+    const stepX = (maxX - minX) / (gridSize + 1);
+    const stepY = (maxY - minY) / (gridSize + 1);
+
+    for (let i = 1; i <= gridSize && points.length < numSamples; i++) {
+        for (let j = 1; j <= gridSize && points.length < numSamples; j++) {
+            const x = minX + i * stepX;
+            const y = minY + j * stepY;
+            const point = { x, y };
+
+            // Check if point is inside convex hull
+            if (isPointInPolygonSlow(point, convexHull)) {
+                points.push(point);
+            }
+        }
+    }
+
+    return points;
+}
+
+/**
  * Find the largest axis-aligned bounding box that fits inside the polygon
  * when rotated by the given angle
  */
-function findMaxRectangleAtAngle(polygon, angleDeg, debugMode = false, targetArea = null) {
+function findMaxRectangleAtAngle(polygon, angleDeg, debugMode = false, targetArea = null, adaptiveGridSteps = 10, adaptiveAspectRatios = [0.5, 0.6, 0.7, 0.85, 1.0, 1.2, 1.4, 1.5, 1.7, 2.0, 2.3], centroidStrategy = "uniform", pathCount = 2) {
     const angleRad = (angleDeg * Math.PI) / 180;
     const cos = Math.cos(angleRad);
     const sin = Math.sin(angleRad);
@@ -140,31 +310,87 @@ function findMaxRectangleAtAngle(polygon, angleDeg, debugMode = false, targetAre
     let bestRect = null;
     let bestArea = 0;
 
-    // Collect all test centroids
+    // Collect all test centroids using ADAPTIVE STRATEGY
     const testCentroids = [];
-
-    // Add grid of center positions (coarser grid for speed)
-    const gridSteps = 8;
-    const stepX = width / (gridSteps + 1);
-    const stepY = height / (gridSteps + 1);
-
-    for (let i = 1; i <= gridSteps; i++) {
-        for (let j = 1; j <= gridSteps; j++) {
-            const centerX = minX + i * stepX;
-            const centerY = minY + j * stepY;
-            testCentroids.push({ x: centerX, y: centerY });
-        }
-    }
 
     // Always add the polygon centroid (ensures we don't miss it due to grid alignment)
     testCentroids.push({ x: centroidX, y: centroidY });
 
-    // Also add centroids near each rotated polygon vertex (improves vertex-aligned rectangles)
+    // Add centroids near each rotated polygon vertex (improves vertex-aligned rectangles)
     for (const p of rotated) {
         testCentroids.push({ x: p.x, y: p.y });
     }
 
-    // If target area is provided, add focused grid in target region
+    // ADAPTIVE CENTROID PLACEMENT
+    if (centroidStrategy === "hybrid") {
+        // HYBRID STRATEGY: Edge-offset + sparse interior + convex hull
+        // Best for complex multi-room assemblies (6+ paths) and large areas
+
+        // 1. Edge-offset grid: ~120 points near polygon boundaries (2 offsets)
+        //    Rectangles in complex assemblies often touch multiple edges
+        const edgeOffsetPoints = generateEdgeOffsetGrid(polygon, rotated, 8, [10, 25]);
+        for (const p of edgeOffsetPoints) {
+            testCentroids.push(p);
+        }
+
+        // 2. Sparse interior grid: 10×10 = 100 points
+        //    Provides basic interior coverage without excessive sampling
+        const interiorGridSteps = 10;
+        const interiorStepX = width / (interiorGridSteps + 1);
+        const interiorStepY = height / (interiorGridSteps + 1);
+
+        for (let i = 1; i <= interiorGridSteps; i++) {
+            for (let j = 1; j <= interiorGridSteps; j++) {
+                const centerX = minX + i * interiorStepX;
+                const centerY = minY + j * interiorStepY;
+                testCentroids.push({ x: centerX, y: centerY });
+            }
+        }
+
+        // 3. Convex hull interior: ~30 points in most "open" region
+        //    Large rectangles tend to fit well in convex regions
+        const convexHull = calculateConvexHull(rotated);
+        const hullInteriorPoints = generateConvexHullInterior(convexHull, 30);
+        for (const p of hullInteriorPoints) {
+            testCentroids.push(p);
+        }
+
+    } else {
+        // UNIFORM GRID STRATEGY: Dense interior coverage
+        // Best for simple 2-path joins and medium-sized areas (10K-20K sq px)
+
+        // Adaptive base grid: simpler shapes get finer base grid
+        const isSimpleShape = polygon.length <= 4;
+        const baseGridSteps = isSimpleShape ? 12 : 8;
+
+        // Base uniform grid
+        const baseStepX = width / (baseGridSteps + 1);
+        const baseStepY = height / (baseGridSteps + 1);
+
+        for (let i = 1; i <= baseGridSteps; i++) {
+            for (let j = 1; j <= baseGridSteps; j++) {
+                const centerX = minX + i * baseStepX;
+                const centerY = minY + j * baseStepY;
+                testCentroids.push({ x: centerX, y: centerY });
+            }
+        }
+
+        // Dense uniform grid: 20×20 for comprehensive interior coverage
+        //    Critical for finding interior-optimal rectangles in horizontal joins
+        const denseGridSteps = 20;
+        const denseStepX = width / (denseGridSteps + 1);
+        const denseStepY = height / (denseGridSteps + 1);
+
+        for (let i = 1; i <= denseGridSteps; i++) {
+            for (let j = 1; j <= denseGridSteps; j++) {
+                const centerX = minX + i * denseStepX;
+                const centerY = minY + j * denseStepY;
+                testCentroids.push({ x: centerX, y: centerY });
+            }
+        }
+    }
+
+    // If target area is provided, add focused grid in target region (goal seeker mode)
     if (targetArea && targetArea.bounds) {
         // Rotate target bounds to same coordinate space
         const targetCorners = [
@@ -213,7 +439,7 @@ function findMaxRectangleAtAngle(polygon, angleDeg, debugMode = false, targetAre
         }
 
         if (forceDebug) {
-            console.log(`[findMaxRect] Added ${targetGridSteps * targetGridSteps + 5} target-focused centroids`);
+            console.log(`[findMaxRect] Added ${targetGridSteps * targetGridSteps + 5} target-focused centroids (goal seeker)`);
             console.log(`[findMaxRect] Target region (rotated): X[${targetMinX.toFixed(1)}, ${targetMaxX.toFixed(1)}], Y[${targetMinY.toFixed(1)}, ${targetMaxY.toFixed(1)}]`);
         }
     }
@@ -228,8 +454,8 @@ function findMaxRectangleAtAngle(polygon, angleDeg, debugMode = false, targetAre
             const centerY = center.y;
 
             // For each center, try different rectangles
-            // Test multiple aspect ratios (coarser for speed)
-            const aspectRatios = [0.5, 0.7, 1.0, 1.3, 1.5, 1.8, 2.0, 2.5];
+            // Test multiple aspect ratios (adaptive based on path count)
+            const aspectRatios = adaptiveAspectRatios;
 
             for (const aspectRatio of aspectRatios) {
                 // Binary search for maximum scale
@@ -383,6 +609,140 @@ function findMaxRectangleAtAngle(polygon, angleDeg, debugMode = false, targetAre
 }
 
 /**
+ * Calculate convex hull using Graham scan algorithm
+ * Returns vertices in counter-clockwise order
+ */
+function calculateConvexHull(points) {
+    if (points.length < 3) return points;
+
+    // Find lowest point (and leftmost if tied)
+    let lowest = 0;
+    for (let i = 1; i < points.length; i++) {
+        if (points[i].y < points[lowest].y ||
+            (points[i].y === points[lowest].y && points[i].x < points[lowest].x)) {
+            lowest = i;
+        }
+    }
+
+    // Sort points by polar angle with respect to lowest point
+    const pivot = points[lowest];
+    const sorted = points.slice();
+    sorted.splice(lowest, 1);
+
+    sorted.sort((a, b) => {
+        const angleA = Math.atan2(a.y - pivot.y, a.x - pivot.x);
+        const angleB = Math.atan2(b.y - pivot.y, b.x - pivot.x);
+        if (angleA !== angleB) return angleA - angleB;
+        // If same angle, sort by distance
+        const distA = (a.x - pivot.x) ** 2 + (a.y - pivot.y) ** 2;
+        const distB = (b.x - pivot.x) ** 2 + (b.y - pivot.y) ** 2;
+        return distA - distB;
+    });
+
+    // Build hull
+    const hull = [pivot, sorted[0]];
+
+    for (let i = 1; i < sorted.length; i++) {
+        while (hull.length > 1) {
+            const p1 = hull[hull.length - 2];
+            const p2 = hull[hull.length - 1];
+            const p3 = sorted[i];
+
+            // Cross product to determine turn direction
+            const cross = (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);
+
+            if (cross <= 0) {
+                hull.pop(); // Right turn or collinear, remove p2
+            } else {
+                break; // Left turn, keep going
+            }
+        }
+        hull.push(sorted[i]);
+    }
+
+    return hull;
+}
+
+/**
+ * Generate edge-offset grid points near polygon boundaries
+ * Places points at various distances from each polygon edge (inside the polygon)
+ */
+function generateEdgeOffsetGrid(polygon, rotated, numSamplesPerEdge = 15, offsetDistances = [5, 10, 20, 30]) {
+    const points = [];
+
+    for (let i = 0; i < rotated.length; i++) {
+        const p1 = rotated[i];
+        const p2 = rotated[(i + 1) % rotated.length];
+
+        // Calculate edge normal (pointing inward)
+        const edgeDx = p2.x - p1.x;
+        const edgeDy = p2.y - p1.y;
+        const edgeLen = Math.sqrt(edgeDx * edgeDx + edgeDy * edgeDy);
+
+        if (edgeLen < 1) continue; // Skip very short edges
+
+        // Perpendicular vector (inward normal)
+        const normalX = -edgeDy / edgeLen;
+        const normalY = edgeDx / edgeLen;
+
+        // Sample along edge
+        for (let s = 1; s < numSamplesPerEdge; s++) {
+            const t = s / numSamplesPerEdge;
+            const edgeX = p1.x + t * edgeDx;
+            const edgeY = p1.y + t * edgeDy;
+
+            // Place points at various offsets from edge (inside polygon)
+            for (const offset of offsetDistances) {
+                const pointX = edgeX + normalX * offset;
+                const pointY = edgeY + normalY * offset;
+                points.push({ x: pointX, y: pointY });
+            }
+        }
+    }
+
+    return points;
+}
+
+/**
+ * Generate points within convex hull interior
+ * Uses a grid sampling approach within the convex hull
+ */
+function generateConvexHullInterior(convexHull, numSamples = 50) {
+    if (convexHull.length < 3) return [];
+
+    // Find bounding box of convex hull
+    let minX = Infinity, minY = Infinity;
+    let maxX = -Infinity, maxY = -Infinity;
+
+    for (const p of convexHull) {
+        minX = Math.min(minX, p.x);
+        minY = Math.min(minY, p.y);
+        maxX = Math.max(maxX, p.x);
+        maxY = Math.max(maxY, p.y);
+    }
+
+    const points = [];
+    const gridSize = Math.ceil(Math.sqrt(numSamples * 2)); // Oversample to account for points outside hull
+    const stepX = (maxX - minX) / (gridSize + 1);
+    const stepY = (maxY - minY) / (gridSize + 1);
+
+    for (let i = 1; i <= gridSize && points.length < numSamples; i++) {
+        for (let j = 1; j <= gridSize && points.length < numSamples; j++) {
+            const x = minX + i * stepX;
+            const y = minY + j * stepY;
+            const point = { x, y };
+
+            // Check if point is inside convex hull
+            if (isPointInPolygonSlow(point, convexHull)) {
+                points.push(point);
+            }
+        }
+    }
+
+    return points;
+}
+
+/**
  * Simple point-in-polygon test
  */
 function isPointInPolygonSlow(point, polygon) {
@@ -530,19 +890,19 @@ function expandRectangleEdges(rect, polygon, debugMode = false) {
         }
     }
 
-    // Sample along edges
+    // Sample along edges with DENSE sampling (every 2%) to catch lines that exit polygon
     if (valid) {
         for (let i = 0; i < 4; i++) {
             const c1 = newCorners[i];
             const c2 = newCorners[(i + 1) % 4];
-            for (let t = 0.1; t < 1.0; t += 0.1) {
+            for (let t = 0.02; t < 1.0; t += 0.02) {
                 const sample = {
                     x: c1.x + (c2.x - c1.x) * t,
                     y: c1.y + (c2.y - c1.y) * t
                 };
                 if (!isPointInPolygonSlow(sample, polygon)) {
                     valid = false;
-                    if (debugMode) console.log(`[edge-expansion] Edge sample is outside polygon`);
+                    if (debugMode) console.log(`[edge-expansion] Edge sample at t=${t.toFixed(2)} is outside polygon`);
                     break;
                 }
             }
@@ -624,7 +984,7 @@ function findMaxExpansion(corners, vertexIndices, normal, polygon, debugMode) {
             }
         }
 
-        // Also sample along the edge between these two vertices
+        // Also sample along the edge between these two vertices (DENSE sampling every 5%)
         if (valid && vertexIndices.length === 2) {
             const v0 = {
                 x: corners[vertexIndices[0]].x + normal.x * testDist,
@@ -635,7 +995,7 @@ function findMaxExpansion(corners, vertexIndices, normal, polygon, debugMode) {
                 y: corners[vertexIndices[1]].y + normal.y * testDist
             };
 
-            for (let t = 0.1; t < 1.0; t += 0.1) {
+            for (let t = 0.05; t < 1.0; t += 0.05) {
                 const sample = {
                     x: v0.x + (v1.x - v0.x) * t,
                     y: v0.y + (v1.y - v0.y) * t
@@ -673,11 +1033,24 @@ function findMaxExpansion(corners, vertexIndices, normal, polygon, debugMode) {
 function boundaryBasedInscribedRectangle(polygon, options = {}) {
     const {
         debugMode = false,
-        maxAngles = 5,  // Test top N dominant angles (reduced for speed)
+        pathCount = undefined,  // Number of original paths (for adaptive tuning)
+        maxAngles = 6,  // Test top N dominant angles (slightly more for better coverage)
         angleTolerance = 5,  // Degrees tolerance for grouping angles
         testPerpendicular = true,  // Also test angles perpendicular to dominant edges
         targetArea = null  // Optional target area for focused search
     } = options;
+
+    // Adaptive parameters based on path complexity
+    // 2-4 paths: finer settings for better accuracy
+    // 5+ paths: balanced settings for quality/speed
+    // 6+ paths: optimized for complex assemblies
+    const isSimple = pathCount !== undefined && pathCount >= 2 && pathCount <= 4;
+    const isComplex = pathCount !== undefined && pathCount >= 6;
+    const adaptiveGridSteps = isSimple ? 12 : (isComplex ? 8 : 8);
+    const adaptiveAspectRatios = isSimple
+        ? [0.5, 0.6, 0.7, 0.85, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.7, 2.0, 2.3]
+        : (isComplex ? [0.5, 0.7, 1.0, 1.3, 1.5, 1.8, 2.0, 2.5] : [0.5, 0.7, 1.0, 1.3, 1.5, 1.8, 2.0, 2.5]);
+    const adaptiveMaxAngles = isSimple ? 8 : (isComplex ? 5 : 5);
 
     if (!polygon || polygon.length < 3) {
         console.error('[boundary-based] Invalid polygon');
@@ -686,11 +1059,35 @@ function boundaryBasedInscribedRectangle(polygon, options = {}) {
 
     const startTime = performance.now();
 
-    // Extract boundary edges
-    const edges = extractBoundaryEdges(polygon);
-
     // Force debug for Test17 (15-vertex polygon)
     const forceDebug = debugMode || polygon.length === 15;
+
+    // Calculate polygon bounding box area (approximation for strategy selection)
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    for (const p of polygon) {
+        minX = Math.min(minX, p.x);
+        minY = Math.min(minY, p.y);
+        maxX = Math.max(maxX, p.x);
+        maxY = Math.max(maxY, p.y);
+    }
+    const boundingBoxArea = (maxX - minX) * (maxY - minY);
+
+    // Select optimal centroid placement strategy
+    const centroidStrategy = selectCentroidStrategy(
+        pathCount || 2,           // Default to 2 if not provided
+        polygon.length,            // Vertex count
+        boundingBoxArea            // Approximate polygon area
+    );
+
+    if (forceDebug) {
+        console.log(`[boundary-based] Strategy selection: ${centroidStrategy.toUpperCase()}`);
+        console.log(`  - Path count: ${pathCount || 2}`);
+        console.log(`  - Vertices: ${polygon.length}`);
+        console.log(`  - Bounding box area: ${boundingBoxArea.toFixed(0)} sq px`);
+    }
+
+    // Extract boundary edges
+    const edges = extractBoundaryEdges(polygon);
 
     if (forceDebug) {
         console.log(`[boundary-based] Polygon has ${polygon.length} vertices, ${edges.length} edges`);
@@ -716,8 +1113,8 @@ function boundaryBasedInscribedRectangle(polygon, options = {}) {
     // Collect angles to test
     const anglesToTest = new Set();
 
-    // Add dominant angles
-    for (let i = 0; i < Math.min(maxAngles, angleGroups.length); i++) {
+    // Add dominant angles (use adaptive max angles based on path count)
+    for (let i = 0; i < Math.min(adaptiveMaxAngles, angleGroups.length); i++) {
         anglesToTest.add(angleGroups[i].angle);
 
         // Also test perpendicular to dominant angles
@@ -755,19 +1152,20 @@ function boundaryBasedInscribedRectangle(polygon, options = {}) {
     let bestRect = null;
     let bestArea = 0;
 
-    // Time-based cutoff: stop if we exceed 300ms (without goal seeker)
+    // Time-based cutoff: stop if we exceed 300ms
     const maxComputeTime = 300; // milliseconds
 
     for (const angle of angles) {
-        // Check if we've exceeded time limit (only when no target area)
-        if (!targetArea && (performance.now() - startTime) > maxComputeTime && bestRect) {
+        // Check time limit
+        const elapsedTime = performance.now() - startTime;
+        if (elapsedTime > maxComputeTime && bestRect) {
             if (forceDebug) {
-                console.log(`[boundary-based] ⏱️ Time limit reached (${maxComputeTime}ms), stopping early with best result (${angles.length - angles.indexOf(angle)} angles remaining)`);
+                console.log(`[boundary-based] ⏱️ Time limit reached (${maxComputeTime}ms), stopping with best result (${angles.length - angles.indexOf(angle)} angles remaining)`);
             }
             break;
         }
 
-        const rect = findMaxRectangleAtAngle(polygon, angle, forceDebug, targetArea);
+        const rect = findMaxRectangleAtAngle(polygon, angle, forceDebug, targetArea, adaptiveGridSteps, adaptiveAspectRatios, centroidStrategy, pathCount || 2);
 
         if (forceDebug) {
             if (rect) {
@@ -788,7 +1186,8 @@ function boundaryBasedInscribedRectangle(polygon, options = {}) {
     }
 
     // Apply edge expansion to push rectangle to boundary limits
-    if (bestRect && bestRect.area > 0) {
+    // ONLY for simpler polygons (<=10 vertices) - complex polygons with concavities often fail edge expansion
+    if (bestRect && bestRect.area > 0 && polygon.length <= 10) {
         const expandedRect = expandRectangleEdges(bestRect, polygon, debugMode);
 
         // Only use expanded rectangle if it's valid and larger
@@ -797,13 +1196,144 @@ function boundaryBasedInscribedRectangle(polygon, options = {}) {
         } else if (debugMode && expandedRect && expandedRect.area <= bestRect.area) {
             console.log(`[boundary-based] Edge expansion did not improve area, keeping original`);
         }
+    } else if (debugMode && bestRect && polygon.length > 10) {
+        console.log(`[boundary-based] Skipping edge expansion for complex polygon with ${polygon.length} vertices`);
     }
 
     const endTime = performance.now();
 
     if (bestRect) {
+        // FINAL VALIDATION: Verify all corners AND edges are actually inside the polygon
+        const corners = bestRect.corners;
+        let isValid = true;
+
+        // Log polygon for debugging
+        if (debugMode) {
+            console.log(`[boundary-based] Validating against polygon with ${polygon.length} vertices`);
+            console.log(`[boundary-based] Polygon points:`, polygon.map(p => `(${p.x.toFixed(2)}, ${p.y.toFixed(2)})`).join(', '));
+        }
+
+        // Check corners
+        for (let i = 0; i < corners.length; i++) {
+            const isInside = isPointInPolygonSlow(corners[i], polygon);
+            if (debugMode) {
+                console.log(`[boundary-based] Corner ${i} at (${corners[i].x.toFixed(2)}, ${corners[i].y.toFixed(2)}) - inside: ${isInside}`);
+            }
+            if (!isInside) {
+                isValid = false;
+                console.error(`[boundary-based] VALIDATION FAILED: Corner ${i} at (${corners[i].x.toFixed(2)}, ${corners[i].y.toFixed(2)}) is OUTSIDE polygon!`);
+            }
+        }
+
+        // Check edges with DENSE sampling (every 2%) to catch lines that exit polygon
+        if (isValid) {
+            for (let i = 0; i < corners.length; i++) {
+                const c1 = corners[i];
+                const c2 = corners[(i + 1) % corners.length];
+
+                // Sample every 2% along edge
+                for (let t = 0.02; t < 1.0; t += 0.02) {
+                    const sample = {
+                        x: c1.x + (c2.x - c1.x) * t,
+                        y: c1.y + (c2.y - c1.y) * t
+                    };
+
+                    if (!isPointInPolygonSlow(sample, polygon)) {
+                        isValid = false;
+                        console.error(`[boundary-based] VALIDATION FAILED: Edge ${i}→${(i+1)%corners.length} at t=${t.toFixed(2)} point (${sample.x.toFixed(2)}, ${sample.y.toFixed(2)}) is OUTSIDE polygon!`);
+                        break;
+                    }
+                }
+
+                if (!isValid) break;
+            }
+        }
+
+        if (!isValid) {
+            console.warn(`[boundary-based] Rectangle validation failed - attempting to shrink rectangle`);
+
+            // Try shrinking the rectangle by 10% increments until it fits
+            for (let shrinkFactor = 0.9; shrinkFactor >= 0.5; shrinkFactor -= 0.1) {
+                const shrunkWidth = bestRect.width * shrinkFactor;
+                const shrunkHeight = bestRect.height * shrinkFactor;
+
+                // Recalculate corners for shrunk rectangle
+                const halfWidth = shrunkWidth / 2;
+                const halfHeight = shrunkHeight / 2;
+                const cosA = Math.cos(bestRect.angle);
+                const sinA = Math.sin(bestRect.angle);
+
+                const shrunkCorners = [
+                    {
+                        x: bestRect.x + (-halfWidth * cosA - (-halfHeight) * sinA),
+                        y: bestRect.y + (-halfWidth * sinA + (-halfHeight) * cosA)
+                    },
+                    {
+                        x: bestRect.x + (halfWidth * cosA - (-halfHeight) * sinA),
+                        y: bestRect.y + (halfWidth * sinA + (-halfHeight) * cosA)
+                    },
+                    {
+                        x: bestRect.x + (halfWidth * cosA - halfHeight * sinA),
+                        y: bestRect.y + (halfWidth * sinA + halfHeight * cosA)
+                    },
+                    {
+                        x: bestRect.x + (-halfWidth * cosA - halfHeight * sinA),
+                        y: bestRect.y + (-halfWidth * sinA + halfHeight * cosA)
+                    }
+                ];
+
+                // Validate shrunk rectangle
+                let shrunkValid = true;
+                for (const corner of shrunkCorners) {
+                    if (!isPointInPolygonSlow(corner, polygon)) {
+                        shrunkValid = false;
+                        break;
+                    }
+                }
+
+                // Check edges
+                if (shrunkValid) {
+                    for (let i = 0; i < shrunkCorners.length; i++) {
+                        const c1 = shrunkCorners[i];
+                        const c2 = shrunkCorners[(i + 1) % shrunkCorners.length];
+
+                        for (let t = 0.02; t < 1.0; t += 0.02) {
+                            const sample = {
+                                x: c1.x + (c2.x - c1.x) * t,
+                                y: c1.y + (c2.y - c1.y) * t
+                            };
+
+                            if (!isPointInPolygonSlow(sample, polygon)) {
+                                shrunkValid = false;
+                                break;
+                            }
+                        }
+
+                        if (!shrunkValid) break;
+                    }
+                }
+
+                if (shrunkValid) {
+                    console.warn(`[boundary-based] Successfully shrunk rectangle to ${(shrinkFactor * 100).toFixed(0)}% of original size`);
+                    bestRect.width = shrunkWidth;
+                    bestRect.height = shrunkHeight;
+                    bestRect.area = shrunkWidth * shrunkHeight;
+                    bestRect.corners = shrunkCorners;
+                    isValid = true;
+                    break;
+                }
+            }
+
+            if (!isValid) {
+                console.error(`[boundary-based] Rectangle validation failed even after shrinking. Returning null.`);
+                console.error(`[boundary-based] Polygon had ${polygon.length} vertices`);
+                return null;
+            }
+        }
+
         bestRect.type = 'boundary-based';
         bestRect.computeTime = endTime - startTime;
+        bestRect.centroidStrategy = centroidStrategy;  // Add centroid strategy to result
 
         if (debugMode) {
             console.log(`[boundary-based] Best result: ${bestRect.width.toFixed(1)} × ${bestRect.height.toFixed(1)} at ${bestRect.angle.toFixed(1)}° = ${bestRect.area.toFixed(1)} sq px in ${bestRect.computeTime.toFixed(1)}ms`);
@@ -822,7 +1352,7 @@ function hybridInscribedRectangle(polygon, options = {}) {
         debugMode = false,
         coverageThreshold = 0.96,  // If boundary-based achieves this, skip optimized
         // Boundary-based options
-        maxAngles = 5,  // Reduced for speed
+        maxAngles = 6,  // Slightly more for better coverage
         angleTolerance = 5,
         testPerpendicular = true,
         // Optimized algorithm options (from SvgViewerOptimized.js)
@@ -847,7 +1377,8 @@ function hybridInscribedRectangle(polygon, options = {}) {
     }
 
     const boundaryResult = boundaryBasedInscribedRectangle(polygon, {
-        debugMode: false,  // Suppress internal debug to reduce noise
+        debugMode: debugMode,  // Pass debug mode through for validation logging
+        pathCount: options.pathCount,  // Pass path count for adaptive tuning
         maxAngles,
         angleTolerance,
         testPerpendicular,
@@ -862,10 +1393,11 @@ function hybridInscribedRectangle(polygon, options = {}) {
     let optimizedResult = null;
     let shouldRunOptimized = true;
 
-    // Don't run optimized if no target area (no goal seeker) - boundary-based is fast enough
-    if (!options.targetArea) {
+    // Don't run optimized if no target area AND coverageThreshold > 0
+    // (If coverageThreshold is 0, we always want to run optimized for max accuracy)
+    if (!options.targetArea && coverageThreshold > 0) {
         if (debugMode) {
-            console.log('[hybrid] No target area provided, using boundary-based result only');
+            console.log('[hybrid] No target area provided and threshold > 0, using boundary-based result only');
         }
         shouldRunOptimized = false;
     }
@@ -927,9 +1459,17 @@ function hybridInscribedRectangle(polygon, options = {}) {
         bestResult = boundaryResult;
     } else if (!boundaryResult) {
         bestResult = optimizedResult;
+        // Optimized result doesn't have type field, add it
+        if (!bestResult.type) {
+            bestResult.type = 'optimized';
+        }
     } else {
-        // Both succeeded, pick the better one
-        bestResult = boundaryResult.area > optimizedResult.area ? boundaryResult : optimizedResult;
+        // Both succeeded - ALWAYS prefer optimized result for pre-computation accuracy
+        bestResult = optimizedResult;
+        // Optimized result doesn't have type field, add it
+        if (!bestResult.type) {
+            bestResult.type = 'optimized';
+        }
     }
 
     // Add hybrid metadata

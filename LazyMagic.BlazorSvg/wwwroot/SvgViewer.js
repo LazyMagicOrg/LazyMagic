@@ -285,8 +285,8 @@ class SvgViewerInstance {
         });
         if (groupPaths.length === 0) return null;
 
-        // Performance optimization: Create unified path for multiple selections
-        if (groupPaths.length > 1) {
+        // Performance optimization: Create unified path for multiple selections (and single paths too)
+        if (groupPaths.length >= 1) {
             const multiPathStartTime = performance.now();
             const debugOutline = false; // Set to true to debug outline generation
             if (debugOutline) console.debug('[outline] Multi-path optimization: Creating unified path from', groupPaths.length, 'paths');
@@ -564,7 +564,8 @@ class SvgViewerInstance {
             minArea = 100,           // Minimum rectangle area to consider (legacy, not used)
             debugLog = false,        // Enable debug logging
             hintAngle = undefined,   // Optional hint angle from polygon orientation
-            targetArea = null        // Optional target area for coverage calculations
+            targetArea = null,       // Optional target area for coverage calculations
+            pathCount = undefined    // Number of original paths (for adaptive tuning)
         } = options;
 
         if (!polygon || polygon.length < 3) {
@@ -590,6 +591,7 @@ class SvgViewerInstance {
             debugMode: debugLog,
             coverageThreshold: 0.95,  // Skip optimized if boundary-based achieves 95%+
             targetArea: targetAreaWithBounds,  // Pass target with bounds for focused search
+            pathCount: pathCount,  // Pass path count for adaptive tuning
             // Boundary-based options
             maxAngles: 8,
             angleTolerance: 5,
@@ -1483,7 +1485,7 @@ class SvgViewerInstance {
         console.debug(`[smart-rect] Testing ${pathBoundaryPoints.length} paths using actual boundary points`);
 
         // Only handle small numbers of paths that are likely rectangular
-        if (pathBoundaryPoints.length < 2 || pathBoundaryPoints.length > 6) {
+        if (pathBoundaryPoints.length < 1 || pathBoundaryPoints.length > 6) {
             console.debug(`[smart-rect] Rejected: too many/few paths (${pathBoundaryPoints.length})`);
             return null;
         }
@@ -2014,7 +2016,8 @@ class SvgViewerInstance {
                         gridSize: 20,
                         minArea: 100,
                         debugLog: debugVisible,
-                        hintAngle: orientationAngle
+                        hintAngle: orientationAngle,
+                        pathCount: groupPaths.length  // Pass original path count for adaptive tuning
                     });
                 }
             }

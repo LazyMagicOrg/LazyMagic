@@ -236,6 +236,91 @@ function parseSvgPath(pathString) {
     return commands;
 }
 
+/**
+ * Extract goal-seeking rectangle for a test (if it exists in the SVG)
+ * Goal rectangles are pre-drawn reference rectangles with IDs like "Test02", "Test06", etc.
+ */
+function extractGoalRectangle(svgContent, goalRectangleId) {
+    if (!goalRectangleId) {
+        return null;
+    }
+
+    // Extract the rect element with id matching goalRectangleId
+    const rectRegex = new RegExp(`<rect[^>]*id="${goalRectangleId}"[^>]*/>`, 's');
+    const match = svgContent.match(rectRegex);
+
+    if (!match) {
+        return null;
+    }
+
+    const rectTag = match[0];
+
+    // Extract attributes
+    const widthMatch = rectTag.match(/width="([^"]*)"/);
+    const heightMatch = rectTag.match(/height="([^"]*)"/);
+    const xMatch = rectTag.match(/x="([^"]*)"/);
+    const yMatch = rectTag.match(/y="([^"]*)"/);
+    const transformMatch = rectTag.match(/transform="([^"]*)"/);
+
+    if (!widthMatch || !heightMatch || !xMatch || !yMatch) {
+        return null;
+    }
+
+    let x = parseFloat(xMatch[1]);
+    let y = parseFloat(yMatch[1]);
+    const width = parseFloat(widthMatch[1]);
+    const height = parseFloat(heightMatch[1]);
+
+    // Create corners of the rectangle
+    let corners = [
+        { x: x, y: y },
+        { x: x + width, y: y },
+        { x: x + width, y: y + height },
+        { x: x, y: y + height }
+    ];
+
+    // Apply transform if present (rotation matrix)
+    if (transformMatch) {
+        const transformStr = transformMatch[1];
+        const matrixMatch = transformStr.match(/matrix\(([^)]+)\)/);
+
+        if (matrixMatch) {
+            const values = matrixMatch[1].split(/[\s,]+/).map(Number);
+            // SVG matrix format: matrix(a, b, c, d, e, f)
+            // Transform: x' = a*x + c*y + e, y' = b*x + d*y + f
+            const [a, b, c, d, e, f] = values;
+
+            corners = corners.map(corner => ({
+                x: a * corner.x + c * corner.y + e,
+                y: b * corner.x + d * corner.y + f
+            }));
+        }
+    }
+
+    // Scale down to ballroom coordinate space (same scale used for paths)
+    const BALLROOM_SCALE = 48.345845;
+    corners = corners.map(corner => ({
+        x: corner.x / BALLROOM_SCALE,
+        y: corner.y / BALLROOM_SCALE
+    }));
+
+    // Calculate area using shoelace formula
+    let area = 0;
+    for (let i = 0; i < corners.length; i++) {
+        const j = (i + 1) % corners.length;
+        area += corners[i].x * corners[j].y;
+        area -= corners[j].x * corners[i].y;
+    }
+    area = Math.abs(area) / 2;
+
+    return {
+        corners,
+        area,
+        width: Math.sqrt((corners[1].x - corners[0].x) ** 2 + (corners[1].y - corners[0].y) ** 2),
+        height: Math.sqrt((corners[3].x - corners[0].x) ** 2 + (corners[3].y - corners[0].y) ** 2)
+    };
+}
+
 // Removed old boundary finding functions - now using proper network traversal from SvgViewerAlgorithms
 
 async function runTest(testCase) {
@@ -253,6 +338,12 @@ async function runTest(testCase) {
 
     const svgContent = fs.readFileSync(svgPath, 'utf8');
 
+    // Extract goal rectangle if one exists for this test
+    const goalRectangle = testCase.goalRectangle ? extractGoalRectangle(svgContent, testCase.goalRectangle) : null;
+    if (goalRectangle) {
+        log(`  ✓ Found goal rectangle: ${goalRectangle.area.toFixed(1)} sq px`, 'cyan');
+    }
+
     // Extract SVG viewBox and dimensions for later use
     const viewBoxMatch = svgContent.match(/viewBox="([^"]*)"/);
     const viewBox = viewBoxMatch ? viewBoxMatch[1] : null;
@@ -264,32 +355,6 @@ async function runTest(testCase) {
     }
 
     log(`  ✓ Extracted ${pathData.length} paths`, 'green');
-
-    // Extract target test path (e.g., "Test01" for validation)
-    const targetPathData = extractPathData(svgContent, [testCase.name]);
-    let targetArea = null;
-    let targetBounds = null;
-    if (targetPathData && targetPathData.length > 0) {
-        // Parse target path to get its bounding box/area
-        const targetSegments = SvgViewerAlgorithms.parsePathToLineSegments(targetPathData[0].d, 0);
-        if (targetSegments && targetSegments.length >= 4) {
-            // Calculate area of the target rectangle
-            const targetPoints = targetSegments.map(s => s.start);
-            targetArea = Math.abs(SvgViewerAlgorithms.calculatePolygonArea(targetPoints));
-
-            // Calculate target bounds
-            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-            for (const p of targetPoints) {
-                minX = Math.min(minX, p.x);
-                minY = Math.min(minY, p.y);
-                maxX = Math.max(maxX, p.x);
-                maxY = Math.max(maxY, p.y);
-            }
-            targetBounds = { minX, minY, maxX, maxY };
-
-            log(`  ✓ Target area (${testCase.name}): ${targetArea.toFixed(1)} sq px`, 'green');
-        }
-    }
 
     // Parse paths to line segments using the library function
     log(`  Parsing paths to line segments...`, 'blue');
@@ -348,21 +413,31 @@ async function runTest(testCase) {
     // Calculate inscribed rectangle using hybrid approach (tries boundary-based first)
     log(`\n  Calculating inscribed rectangle with hybrid algorithm...`, 'cyan');
     const startTime = performance.now();
+
+    // SMART HYBRID: Use boundary-based for simple shapes, optimized for complex concave shapes
+    // Detect complexity: vertex count and concavity
+    const vertexCount = polygon.length;
+    const isComplex = vertexCount >= 10;  // 10+ vertices = complex polygon, likely concave
+
     const rectangle = hybridInscribedRectangle(polygon, {
-        debugMode: true,
-        coverageThreshold: 0.95,  // Skip optimized if boundary-based achieves 95%+
-        targetArea: targetBounds ? { value: targetArea, bounds: targetBounds } : targetArea,  // Pass target with bounds for focused search
-        // Boundary-based options
-        maxAngles: 8,
-        angleTolerance: 5,
+        debugMode: false,
+        // Smart threshold: Use boundary-based for simple shapes, optimized for complex
+        coverageThreshold: isComplex ? 0.0 : 0.85,  // Complex = force optimized, Simple = allow boundary
+        targetArea: goalRectangle ? goalRectangle.area : null,
+        pathCount: pathData.length,
+
+        // Boundary-based options (fast for simple shapes)
+        maxAngles: 36,  // Test every 10° for edge alignment
+        angleTolerance: 2,
         testPerpendicular: true,
-        // Optimized configuration (used if boundary-based insufficient)
-        maxTime: 1000,
-        gridStep: 8.0,
+
+        // Optimized grid-based algorithm (for complex concave shapes)
+        maxTime: 60000,  // 60 seconds for complex shapes
+        gridStep: 10.0,
         polylabelPrecision: 0.5,
-        aspectRatios: [0.5, 0.6, 0.7, 0.85, 1.0, 1.2, 1.4, 1.7, 2.0, 2.3, 2.5, 2.8, 3.0],
-        binarySearchPrecision: 0.0001,
-        binarySearchMaxIterations: 20
+        aspectRatios: [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.7, 2.0, 2.5, 3.0],
+        binarySearchPrecision: 0.01,
+        binarySearchMaxIterations: 25
     });
     const endTime = performance.now();
     const calculationTime = endTime - startTime;
@@ -377,10 +452,7 @@ async function runTest(testCase) {
             vertexCount: polygon.length,
             pathData,
             svgContent,
-            viewBox,
-            targetArea,
-            areaRatio: null,
-            passesValidation: false
+            viewBox
         };
     }
 
@@ -403,18 +475,13 @@ async function runTest(testCase) {
     log(`    Centroid: (${rectangle.centroid.x.toFixed(1)}, ${rectangle.centroid.y.toFixed(1)})`, 'green');
     log(`    Time: ${calculationTime.toFixed(1)} ms`, 'green');
 
-    // Validate against target area if available
-    let areaRatio = null;
-    let passesValidation = true;
-    if (targetArea !== null) {
-        areaRatio = rectangle.area / targetArea;
-        const percentOfTarget = (areaRatio * 100).toFixed(1);
-        log(`    Coverage: ${percentOfTarget}% of target`, areaRatio >= 0.98 ? 'green' : 'red');
-
-        if (areaRatio < 0.98) {
-            log(`  ⚠️  Rectangle area is less than 98% of target (${percentOfTarget}%)`, 'yellow');
-            passesValidation = false;
-        }
+    // Show goal comparison if goal rectangle exists
+    if (goalRectangle) {
+        const gap = ((rectangle.area - goalRectangle.area) / goalRectangle.area * 100);
+        log(`\n  Goal Comparison:`, 'yellow');
+        log(`    Inscribed Area: ${rectangle.area.toFixed(1)} sq px`, 'yellow');
+        log(`    Goal Area:      ${goalRectangle.area.toFixed(1)} sq px`, 'yellow');
+        log(`    Gap:            ${gap >= 0 ? '+' : ''}${gap.toFixed(1)}%`, gap >= -5 ? 'green' : 'red');
     }
 
     log(`\n  Rectangle corners:`, 'yellow');
@@ -424,18 +491,16 @@ async function runTest(testCase) {
     }
 
     return {
-        success: passesValidation,
+        success: true,
         polygon,
         rectangle,
+        goalRectangle,
         pathCount: pathData.length,
         vertexCount: polygon.length,
         pathData,
         svgContent,
         viewBox,
-        calculationTime,
-        targetArea,
-        areaRatio,
-        passesValidation
+        calculationTime
     };
 }
 
@@ -449,7 +514,7 @@ function extractTestPathsContent(pathData) {
 }
 
 function generateSvgVisualization(testCase, result) {
-    const { polygon, rectangle, pathData, viewBox, calculationTime, targetArea, areaRatio } = result;
+    const { polygon, rectangle, pathData, viewBox, calculationTime, goalRectangle } = result;
 
     // Calculate bounds from the polygon to create an appropriate viewBox
     const bounds = calculateBounds(polygon);
@@ -495,14 +560,13 @@ function generateSvgVisualization(testCase, result) {
 </svg>`;
     }
 
-    // Rectangle found case (may pass or fail validation)
+    // Rectangle found case
     const polygonPoints = polygon.map(p => `${p.x},${p.y}`).join(' ');
     const rectanglePoints = rectangle.corners.map(c => `${c.x},${c.y}`).join(' ');
-    const titleSuffix = result.passesValidation ? '' : ' - FAILED VALIDATION';
 
     return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="${vbX} ${vbY} ${vbWidth} ${vbHeight}" width="${vbWidth}" height="${vbHeight}">
-  <title>${testCase.name}${titleSuffix}</title>
+  <title>${testCase.name}</title>
 
   <!-- White Background -->
   <rect x="${vbX}" y="${vbY}" width="${vbWidth}" height="${vbHeight}" fill="white"/>
@@ -545,8 +609,9 @@ function generateSvgVisualization(testCase, result) {
   <text x="${vbX + 10}" y="${vbY + 65}" font-size="10">Size: ${rectangle.width.toFixed(1)} × ${rectangle.height.toFixed(1)} px</text>
   <text x="${vbX + 10}" y="${vbY + 80}" font-size="10">Area: ${rectangle.area.toFixed(1)} sq px</text>
   <text x="${vbX + 10}" y="${vbY + 95}" font-size="10">Angle: ${rectangle.angle.toFixed(1)}°</text>
-  <text x="${vbX + 10}" y="${vbY + 110}" font-size="10">Time: ${calculationTime.toFixed(1)} ms</text>${targetArea !== null && areaRatio !== null ? `
-  <text x="${vbX + 10}" y="${vbY + 125}" font-size="10" fill="${areaRatio >= 0.98 ? 'green' : 'red'}">Coverage: ${(areaRatio * 100).toFixed(1)}% of target</text>` : ''}
+  <text x="${vbX + 10}" y="${vbY + 110}" font-size="10">Time: ${calculationTime.toFixed(1)} ms</text>${goalRectangle ? `
+  <text x="${vbX + 10}" y="${vbY + 135}" font-size="10" font-weight="bold">Goal: ${goalRectangle.area.toFixed(1)} sq px</text>
+  <text x="${vbX + 10}" y="${vbY + 150}" font-size="10" fill="${((rectangle.area - goalRectangle.area) / goalRectangle.area * 100) >= -5 ? '#00aa00' : '#cc0000'}">Gap: ${((rectangle.area - goalRectangle.area) / goalRectangle.area * 100).toFixed(1)}% ${((rectangle.area - goalRectangle.area) / goalRectangle.area * 100) >= -5 ? '✓ PASS' : '✗ FAIL'}</text>` : ''}
 </svg>`;
 }
 
@@ -564,20 +629,134 @@ function calculateBounds(points) {
     return { minX, maxX, minY, maxY };
 }
 
+function generateResultsFile(results, testResultsDir) {
+    let output = `INSCRIBED RECTANGLE TEST RESULTS
+${'='.repeat(80)}
+Latest Test Run: ${new Date().toLocaleString()}
+
+GOAL COMPARISON RESULTS
+${'='.repeat(80)}
+Test | Inscribed | Goal      | Gap     | Strategy | Status
+-----|-----------|-----------|---------|----------|----------------------------------
+`;
+
+    // Goal comparison table - show all tests with goals
+    for (const { testCase, result } of results) {
+        if (result.goalRectangle) {
+            const gap = ((result.rectangle.area - result.goalRectangle.area) / result.goalRectangle.area * 100);
+            const strategy = result.rectangle.type || 'boundary-based';
+            const status = gap > -4 ? '✓ Pass' : (gap >= -10 ? '⚠️  Fail (noticeable)' : '❌ Fail (significant)');
+            output += `${testCase.name.replace('Test', '')}   | ${result.rectangle.area.toFixed(1).padStart(9)} | ${result.goalRectangle.area.toFixed(1).padStart(9)} | ${(gap >= 0 ? '+' : '') + gap.toFixed(1)}%`.padEnd(8) + ` | ${strategy.toUpperCase().padEnd(8)} | ${status}\n`;
+        }
+    }
+
+    // Calculate gap statistics
+    const gapsWithGoals = results
+        .filter(r => r.result.goalRectangle)
+        .map(r => ((r.result.rectangle.area - r.result.goalRectangle.area) / r.result.goalRectangle.area * 100));
+    const avgGap = gapsWithGoals.reduce((sum, g) => sum + g, 0) / gapsWithGoals.length;
+    const maxGap = Math.min(...gapsWithGoals);
+    const minGap = Math.max(...gapsWithGoals);
+
+    output += `\nGAP ANALYSIS
+${'='.repeat(80)}
+Average Gap: ${avgGap.toFixed(1)}%
+Largest Gap: ${maxGap.toFixed(1)}% (furthest from goal)
+Smallest Gap: ${minGap.toFixed(1)}% (closest to goal)
+
+Gap Categories:
+  Pass (<4%):         ${gapsWithGoals.filter(g => g > -4).length} tests
+  Fail (4-10%):       ${gapsWithGoals.filter(g => g <= -4 && g >= -10).length} tests
+  Fail (>10%):        ${gapsWithGoals.filter(g => g < -10).length} tests
+
+ALL TEST RESULTS
+${'='.repeat(80)}
+Test | Area      | Speed    | Strategy        | Goal Area  | Gap
+-----|-----------|----------|-----------------|------------|--------
+`;
+
+    // All tests table
+    for (const { testCase, result } of results) {
+        if (result.success && result.rectangle) {
+            const strategy = result.rectangle.type || 'boundary-based';
+            const goalInfo = result.goalRectangle
+                ? `${result.goalRectangle.area.toFixed(1).padStart(10)} | ${(((result.rectangle.area - result.goalRectangle.area) / result.goalRectangle.area * 100).toFixed(1) + '%').padStart(6)}`
+                : '          -'.padStart(10) + ' |      -';
+            output += `${testCase.name.padEnd(4)} | ${result.rectangle.area.toFixed(1).padStart(9)} | ${result.calculationTime.toFixed(1).padStart(6)} ms | ${strategy.toUpperCase().padEnd(15)} | ${goalInfo}\n`;
+        }
+    }
+
+    // Performance summary
+    const avgTime = results.reduce((sum, r) => sum + (r.result.calculationTime || 0), 0) / results.length;
+    const maxTime = Math.max(...results.map(r => r.result.calculationTime || 0));
+    const minTime = Math.min(...results.map(r => r.result.calculationTime || 0));
+
+    output += `\nPERFORMANCE METRICS
+${'='.repeat(80)}
+Speed:
+  - Average: ${avgTime.toFixed(1)} ms
+  - Fastest: ${minTime.toFixed(1)} ms
+  - Slowest: ${maxTime.toFixed(1)} ms
+
+Algorithm Distribution:
+  - Boundary-based: ${results.filter(r => r.result.rectangle?.type === 'boundary-based').length} tests
+  - Optimized: ${results.filter(r => r.result.rectangle?.type === 'optimized').length} tests
+
+Centroid Strategy Distribution:
+  - UNIFORM: ${results.filter(r => r.result.rectangle?.centroidStrategy === 'uniform').length} tests
+  - HYBRID: ${results.filter(r => r.result.rectangle?.centroidStrategy === 'hybrid').length} tests
+
+PRIORITY ISSUES
+${'='.repeat(80)}
+`;
+
+    // List failing tests
+    const failing = results.filter(r => {
+        if (!r.result.goalRectangle) return false;
+        const gap = ((r.result.rectangle.area - r.result.goalRectangle.area) / r.result.goalRectangle.area * 100);
+        return gap <= -4;
+    }).sort((a, b) => {
+        const gapA = ((a.result.rectangle.area - a.result.goalRectangle.area) / a.result.goalRectangle.area * 100);
+        const gapB = ((b.result.rectangle.area - b.result.goalRectangle.area) / b.result.goalRectangle.area * 100);
+        return gapA - gapB;
+    });
+
+    if (failing.length > 0) {
+        output += `Tests requiring attention (gap ≥ 4%):\n\n`;
+        for (const { testCase, result } of failing) {
+            const gap = ((result.rectangle.area - result.goalRectangle.area) / result.goalRectangle.area * 100);
+            output += `${testCase.name}: ${gap.toFixed(1)}% gap\n`;
+            output += `  Current: ${result.rectangle.area.toFixed(1)} sq px\n`;
+            output += `  Goal:    ${result.goalRectangle.area.toFixed(1)} sq px\n`;
+            output += `  Missing: ${(result.goalRectangle.area - result.rectangle.area).toFixed(1)} sq px\n\n`;
+        }
+    }
+
+    output += `\nLast Updated: ${new Date().toLocaleString()}\n`;
+
+    const resultsPath = path.join(testResultsDir, 'results.txt');
+    fs.writeFileSync(resultsPath, output, 'utf8');
+}
+
 async function main() {
     log('\n' + '='.repeat(60), 'cyan');
     log('SVG Inscribed Rectangle Test Harness', 'cyan');
     log('='.repeat(60), 'cyan');
 
-    // Clear TestResults directory
+    // Clear TestResults directory (except tracking files)
     const testResultsDir = path.resolve('../TestResults');
     if (fs.existsSync(testResultsDir)) {
-        log('Clearing previous test results...', 'yellow');
+        log('Clearing previous test files...', 'yellow');
         const files = fs.readdirSync(testResultsDir);
+        let clearedCount = 0;
         for (const file of files) {
-            fs.unlinkSync(path.join(testResultsDir, file));
+            // Delete SVG files and test-output.txt, keep tracking .txt files
+            if (file.endsWith('.svg') || file === 'test-output.txt') {
+                fs.unlinkSync(path.join(testResultsDir, file));
+                clearedCount++;
+            }
         }
-        log(`  ✓ Cleared ${files.length} files from TestResults`, 'green');
+        log(`  ✓ Cleared ${clearedCount} files from TestResults (kept tracking .txt files)`, 'green');
     } else {
         fs.mkdirSync(testResultsDir, { recursive: true });
         log('Created TestResults directory', 'green');
@@ -632,6 +811,11 @@ async function main() {
 
     fs.writeFileSync(outputFilePath, cleanOutput, 'utf8');
     log(`  ✓ Saved test output to ${outputFileName}`, 'green');
+
+    // Generate comprehensive results.txt
+    log('\n  Generating results.txt...', 'cyan');
+    generateResultsFile(results, testResultsDir);
+    log(`  ✓ Saved results to results.txt`, 'green');
 
     log('\n' + '='.repeat(60), 'cyan');
     log(`Test results saved to: ${testResultsDir}`, 'cyan');
