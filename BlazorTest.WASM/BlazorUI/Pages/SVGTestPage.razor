@@ -9,7 +9,7 @@
 <div class="alert alert-info mb-3">
     <strong>Real-time Selection Test:</strong> This page demonstrates SVG real-time selection and bounding box functionality.
     <br />
-    <strong>Initial State:</strong> Starting with paths "Ballroom_1" and "Ballroom_3" selected.
+    <strong>Initial State:</strong> Starting with paths "Ballroom_Room_1" and "Ballroom_Room_3" selected.
     <br />
     <strong>Features:</strong> Real-time grouping and bounding box visualization for selected paths.
 </div>
@@ -43,7 +43,7 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
     <h5>Test Controls:</h5>
     <div class="row">
         <div class="col-md-6">
-            <button class="btn btn-info mb-2" @onclick="TestSelect">TestSelect (Add Ballroom_2)</button>
+            <button class="btn btn-info mb-2" @onclick="TestSelect">TestSelect (Add Ballroom_Room_2)</button>
         </div>
     </div>
 </div>
@@ -64,7 +64,7 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
     // Initialize with multiple paths that create a bounding box
     // If there are other paths inside this bounding box that aren't selected,
     // AllInsideSelected should be false initially
-    private List<string> initialPaths = new List<string> { "Ballroom_1", "Ballroom_3" };
+    private List<string> initialPaths = new List<string> { "Ballroom_Room_1", "Ballroom_Room_3" };
     private bool allInsideSelected = false;
 
     protected override async Task OnInitializedAsync()
@@ -84,7 +84,7 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
 
     private async Task TestSelect()
     {
-        var paths = new List<string> { "Ballroom_2" };
+        var paths = new List<string> { "Ballroom_Room_2" };
         await svgViewer!.SelectPaths(paths);
     }
 

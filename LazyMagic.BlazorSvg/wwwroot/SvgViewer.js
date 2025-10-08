@@ -164,6 +164,10 @@ class SvgViewerInstance {
         // Performance mode - use fast algorithms when available
         this.useFastMode = true;  // Enable fast algorithms by default
         this.verboseLogging = false;  // Reduce logging in fast mode
+
+        // Precomputed rectangles cache
+        this.precomputedRectangles = null;  // Will be loaded on first use
+        this.precomputedRectanglesPromise = null;  // Track loading promise
     }
 
     // Return the inner <svg> if present, otherwise the paper itself
@@ -189,6 +193,78 @@ class SvgViewerInstance {
             }
         }
         return true;
+    }
+
+    // Load precomputed rectangles from JSON file
+    async loadPrecomputedRectangles() {
+        // Return cached data if already loaded
+        if (this.precomputedRectangles) {
+            return this.precomputedRectangles;
+        }
+
+        // Return existing promise if currently loading
+        if (this.precomputedRectanglesPromise) {
+            return this.precomputedRectanglesPromise;
+        }
+
+        // Start loading
+        this.precomputedRectanglesPromise = (async () => {
+            try {
+                console.log('[precomputed] Loading precomputed rectangles...');
+                const response = await fetch('precomputed-rectangles.json');
+                if (!response.ok) {
+                    throw new Error(`Failed to load: ${response.status}`);
+                }
+                const data = await response.json();
+
+                // Create lookup map by section key
+                const lookup = new Map();
+                for (const rect of data.rectangles) {
+                    lookup.set(rect.key, rect.rectangle);
+                }
+
+                this.precomputedRectangles = {
+                    rectangles: data.rectangles,
+                    lookup: lookup,
+                    metadata: {
+                        generatedAt: data.generatedAt,
+                        totalCombinations: data.totalCombinations,
+                        successfulComputations: data.successfulComputations
+                    }
+                };
+
+                console.log(`[precomputed] Loaded ${data.rectangles.length} precomputed rectangles`);
+                return this.precomputedRectangles;
+            } catch (error) {
+                console.warn('[precomputed] Failed to load precomputed rectangles:', error.message);
+                this.precomputedRectangles = { rectangles: [], lookup: new Map(), metadata: {} };
+                return this.precomputedRectangles;
+            }
+        })();
+
+        return this.precomputedRectanglesPromise;
+    }
+
+    // Lookup precomputed rectangle for a set of path IDs
+    async lookupPrecomputedRectangle(pathIds) {
+        if (!pathIds || pathIds.length === 0) {
+            return null;
+        }
+
+        // Ensure data is loaded
+        await this.loadPrecomputedRectangles();
+
+        // Create sorted key to match precomputed format
+        const sortedKey = pathIds.slice().sort().join('_');
+
+        const rectangle = this.precomputedRectangles.lookup.get(sortedKey);
+        if (rectangle) {
+            console.log(`[precomputed] ✓ Found precomputed rectangle for ${pathIds.length} sections`);
+            return rectangle;
+        }
+
+        console.debug(`[precomputed] ✗ No precomputed data for: ${sortedKey}`);
+        return null;
     }
 
     // Active scope = current layer group (or inner <svg>/paper if none detected)
@@ -264,7 +340,7 @@ class SvgViewerInstance {
 
     // Generate tight-fitting concave outline for a set of paths.
     // Includes diagnostic logging to reveal whether concave or convex was used.
-    generateGroupOutline(pathIds, options = {}) {
+    async generateGroupOutline(pathIds, options = {}) {
         if (!this.s || !pathIds || pathIds.length === 0) return null;
 
         const {
@@ -290,7 +366,7 @@ class SvgViewerInstance {
             const multiPathStartTime = performance.now();
             const debugOutline = false; // Set to true to debug outline generation
             if (debugOutline) console.debug('[outline] Multi-path optimization: Creating unified path from', groupPaths.length, 'paths');
-            const result = this._generateOptimizedMultiPathOutline(groupPaths, options);
+            const result = await this._generateOptimizedMultiPathOutline(groupPaths, pathIds, options);
             const multiPathTime = performance.now() - multiPathStartTime;
             if (debugOutline) console.debug(`[outline] Multi-path processing completed in ${multiPathTime.toFixed(1)}ms`);
             return result;
@@ -897,7 +973,7 @@ class SvgViewerInstance {
     }
 
     // Optimized multi-path outline generation - creates a single merged SVG path then outlines it
-    _generateOptimizedMultiPathOutline(groupPaths, options) {
+    async _generateOptimizedMultiPathOutline(groupPaths, pathIds, options) {
         const { kStart, kMax, maxEdgePx, minContainment, sampleStride = 1, debugShowUnifiedPath = false } = options;
         const scope = this.scope();
 
@@ -907,7 +983,7 @@ class SvgViewerInstance {
         const startTime = performance.now();
 
         // Step 1: Create a single unified SVG path from all selected paths
-        const unifiedPath = this._createUnifiedPath(groupPaths, scope, debugShowUnifiedPath);
+        const unifiedPath = await this._createUnifiedPath(groupPaths, pathIds, scope, debugShowUnifiedPath);
         if (!unifiedPath) {
             console.warn('[outline] Failed to create unified path');
             return null;
@@ -1881,7 +1957,7 @@ class SvgViewerInstance {
 
 
     // Create a single merged SVG path by combining all selected path data
-    _createUnifiedPath(groupPaths, scope, debugVisible = false) {
+    async _createUnifiedPath(groupPaths, pathIds, scope, debugVisible = false) {
         try {
             console.debug('[outline] Creating merged path by combining selected path data');
 
@@ -1978,10 +2054,14 @@ class SvgViewerInstance {
                 console.debug(`[outline] Created overlapping merge unified path from ${unifiedBoundary.length} boundary points`);
             }
 
-            // Find largest inscribed rectangle
-            const polygon = unifiedBoundary || hull;
-            let largestRect = null;
-            if (polygon && polygon.length >= 3) {
+            // Try to lookup precomputed rectangle first
+            let largestRect = await this.lookupPrecomputedRectangle(pathIds);
+
+            // If not found in precomputed data, calculate it
+            if (!largestRect) {
+                // Find largest inscribed rectangle
+                const polygon = unifiedBoundary || hull;
+                if (polygon && polygon.length >= 3) {
                 // Detect the actual orientation of the polygon for better angle estimation
                 const orientationAngle = this._detectPolygonOrientation(polygon);
                 console.debug(`[outline] Detected polygon orientation: ${orientationAngle.toFixed(1)}°`);
@@ -2020,7 +2100,8 @@ class SvgViewerInstance {
                         pathCount: groupPaths.length  // Pass original path count for adaptive tuning
                     });
                 }
-            }
+                }
+            } // End of "if not precomputed" block
 
             // Create the merged path element
             const unifiedPath = scope.path(pathData);
@@ -2167,7 +2248,7 @@ class SvgViewerInstance {
     // --------- SELECTION / RENDERING ---------
 
     // Visualize groups AND the live selection perimeter directly on the SVG
-    visualizeGroups() {
+    async visualizeGroups() {
         if (!this.s) return;
 
         const scope = this.scope();
@@ -2181,7 +2262,7 @@ class SvgViewerInstance {
         const selectedIds = Array.from(this.selectedIds || []);
         if (selectedIds.length > 0) {
             // Always generate the outline path data to create the unified path (purple)
-            const selectionPathData = this.generateGroupOutline(selectedIds, {
+            const selectionPathData = await this.generateGroupOutline(selectedIds, {
                 gapHopPx: 3,          // only hop over hairline gaps
                 kStart: 10,           // start with more neighbor options to avoid trapping
                 kMax: 25,             // allow even more neighbor options
@@ -2518,7 +2599,7 @@ class SvgViewerInstance {
         this.updateGlobalBoundingBox();
 
         this.isUpdating = prevIsUpdating;
-        this.highlight();
+        // highlight() is already called by updateGlobalBoundingBox(), no need to call again
         return true;
     }
 
