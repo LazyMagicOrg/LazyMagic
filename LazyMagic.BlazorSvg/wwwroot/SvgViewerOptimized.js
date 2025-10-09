@@ -1,4 +1,4 @@
-// Optimized SVG processing functions for SvgViewer
+﻿// Optimized SVG processing functions for SvgViewer
 // Uses spatial hashing and early exit strategies for better performance
 
 // ============================================================================
@@ -969,7 +969,7 @@ function fastInscribedRectangle(polygon, options = {}) {
         // Algorithm tuning parameters
         gridStep = 12.0,       // Grid step for centroid sampling
         polylabelPrecision = 1.0,  // Precision for pole of inaccessibility
-        aspectRatios = [0.5, 0.7, 1.0, 1.4, 2.0, 2.5, 3.0],  // Aspect ratios to test
+        aspectRatios = [0.5, 0.7, 1.0, 1.4, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0],  // Aspect ratios to test
         binarySearchPrecision = 0.001,  // Binary search convergence threshold
         binarySearchMaxIterations = 15   // Max binary search iterations
     } = options;
@@ -1428,30 +1428,36 @@ function tryRectangleAtAngle(polygon, angleDeg, centroid, debugMode = false, asp
     }
 
     for (const aspectRatio of aspectRatios) {
-        let validScale = 0;
-        let low = 0, high = 1.0; // Scale from 0 to 1 (100% of max dimensions)
+        // NEW APPROACH: Start with aspect ratio at full dimensions, then scale down if needed
+        // Determine rectangle dimensions based on aspect ratio and directional distances
+        let rectWidth, rectHeight;
 
-        // CONSERVATIVE: Use polygon bounds with moderate scaling
+        // Use the smaller of the two directional distances as the constraining dimension
+        // Then calculate the other dimension based on aspect ratio
+        const minDist = Math.min(maxWidth, maxHeight);
+        const maxDist = Math.max(maxWidth, maxHeight);
+
+        if (aspectRatio >= 1.0) {
+            // Width is larger: use height as constraint, calculate width from aspect ratio
+            rectHeight = maxHeight;
+            rectWidth = Math.min(rectHeight * aspectRatio, maxWidth);
+        } else {
+            // Height is larger: use width as constraint, calculate height from aspect ratio
+            rectWidth = maxWidth;
+            rectHeight = Math.min(rectWidth / aspectRatio, maxHeight);
+        }
+
+        // Binary search to find the largest scale that fits
+        let validScale = 0;
+        let low = 0, high = 1.0;
         const maxIterations = binarySearchMaxIterations;
-        const precision = binarySearchPrecision; // Binary search precision
+        const precision = binarySearchPrecision;
 
         for (let iter = 0; iter < maxIterations && (high - low) > precision; iter++) {
             const scale = Math.round((low + high) * 500) / 1000; // Round to 3 decimal places for determinism
 
-            // FIXED: Scale width and height independently based on actual directional distances
-            // Start with the maximum possible dimensions, then scale down together
-            let testWidth = maxWidth * scale;
-            let testHeight = maxHeight * scale;
-
-            // Adjust for aspect ratio while respecting directional constraints (NEVER exceed max dimensions)
-            const currentAspect = testWidth / testHeight;
-            if (aspectRatio > currentAspect) {
-                // Want wider: increase width but cap at maxWidth
-                testWidth = Math.min(testHeight * aspectRatio, maxWidth);
-            } else if (aspectRatio < currentAspect) {
-                // Want taller: increase height but cap at maxHeight
-                testHeight = Math.min(testWidth / aspectRatio, maxHeight);
-            }
+            const testWidth = rectWidth * scale;
+            const testHeight = rectHeight * scale;
 
             const testMinX = centroid.x - testWidth / 2;
             const testMinY = centroid.y - testHeight / 2;
@@ -1486,17 +1492,8 @@ function tryRectangleAtAngle(polygon, angleDeg, centroid, debugMode = false, asp
 
         // Check if this aspect ratio produced a better result
         if (validScale > 0) {
-            let finalWidth = maxWidth * validScale;
-            let finalHeight = maxHeight * validScale;
-
-            // Apply aspect ratio to final dimensions (cap at max dimensions)
-            const currentAspect = finalWidth / finalHeight;
-            if (aspectRatio > currentAspect) {
-                finalWidth = Math.min(finalHeight * aspectRatio, maxWidth);
-            } else if (aspectRatio < currentAspect) {
-                finalHeight = Math.min(finalWidth / aspectRatio, maxHeight);
-            }
-
+            const finalWidth = rectWidth * validScale;
+            const finalHeight = rectHeight * validScale;
             const area = finalWidth * finalHeight;
 
             if (debugMode && validScale > 0.5) {
