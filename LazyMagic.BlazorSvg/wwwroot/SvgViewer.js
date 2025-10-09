@@ -168,6 +168,7 @@ class SvgViewerInstance {
         // Precomputed rectangles cache
         this.precomputedRectangles = null;  // Will be loaded on first use
         this.precomputedRectanglesPromise = null;  // Track loading promise
+        this.svgUrl = null;  // Store resolved SVG URL for deriving precomputed path
     }
 
     // Return the inner <svg> if present, otherwise the paper itself
@@ -210,8 +211,23 @@ class SvgViewerInstance {
         // Start loading
         this.precomputedRectanglesPromise = (async () => {
             try {
-                console.log('[precomputed] Loading precomputed rectangles...');
-                const response = await fetch('precomputed-rectangles.json');
+                // Derive precomputed rectangles URL from SVG URL
+                let precomputedUrl = 'precomputed-rectangles.json';  // Default fallback
+
+                if (this.svgUrl) {
+                    // Replace the SVG filename with precomputed-rectangles.json
+                    // Examples:
+                    //   "https://s3.../base/SetsCmp/data/Level1.svg" → "https://s3.../base/SetsCmp/data/precomputed-rectangles.json"
+                    //   "/data/Level1.svg" → "/data/precomputed-rectangles.json"
+                    //   "Level1.svg" → "precomputed-rectangles.json"
+                    const lastSlashIndex = this.svgUrl.lastIndexOf('/');
+                    if (lastSlashIndex >= 0) {
+                        precomputedUrl = this.svgUrl.substring(0, lastSlashIndex + 1) + 'precomputed-rectangles.json';
+                    }
+                }
+
+                console.log(`[precomputed] Loading precomputed rectangles from: ${precomputedUrl}`);
+                const response = await fetch(precomputedUrl);
                 if (!response.ok) {
                     throw new Error(`Failed to load: ${response.status}`);
                 }
@@ -2329,6 +2345,9 @@ class SvgViewerInstance {
         const response = await fetch(svgContent);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const svgText = await response.text();
+
+        // Store resolved SVG URL for deriving precomputed rectangles path
+        this.svgUrl = svgContent;
 
         const fragment = Snap.parse(svgText);
         if (fragment) {
