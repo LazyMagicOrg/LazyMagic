@@ -53,13 +53,51 @@
 
             console.debug(`[winding] Removed ${points.length - cleaned.length} duplicate points`);
 
-            // Step 2: Detect corrupted polygon structures
-            if (cleaned.length === 6) {
+            if (cleaned.length < 3) {
+                return cleaned;
+            }
+
+            // Step 2: Remove collinear points (points that lie on a straight line between neighbors)
+            const simplified = [];
+            const collinearTolerance = 0.1; // Cross product threshold for collinearity
+
+            for (let i = 0; i < cleaned.length; i++) {
+                const prev = cleaned[(i - 1 + cleaned.length) % cleaned.length];
+                const curr = cleaned[i];
+                const next = cleaned[(i + 1) % cleaned.length];
+
+                // Calculate cross product to detect collinearity
+                // Vector from prev to curr
+                const dx1 = curr.x - prev.x;
+                const dy1 = curr.y - prev.y;
+
+                // Vector from curr to next
+                const dx2 = next.x - curr.x;
+                const dy2 = next.y - curr.y;
+
+                // Cross product magnitude (should be ~0 for collinear points)
+                const cross = Math.abs(dx1 * dy2 - dy1 * dx2);
+
+                // Keep point if it's NOT collinear (cross product > tolerance)
+                if (cross > collinearTolerance) {
+                    simplified.push(curr);
+                }
+            }
+
+            // Ensure we always have at least 3 points (minimum for a polygon)
+            const finalPoints = simplified.length >= 3 ? simplified : cleaned;
+
+            if (simplified.length < cleaned.length) {
+                console.debug(`[winding] Removed ${cleaned.length - simplified.length} collinear points (${cleaned.length} → ${simplified.length})`);
+            }
+
+            // Step 3: Detect corrupted polygon structures
+            if (finalPoints.length === 6) {
                 // For simple rectangular arrangements, 6 vertices often indicates corruption
                 // Calculate polygon area vs bounding box area to detect issues
-                const bounds = this.getPolygonBounds(cleaned);
+                const bounds = this.getPolygonBounds(finalPoints);
                 const boundingArea = (bounds.maxX - bounds.minX) * (bounds.maxY - bounds.minY);
-                const polygonArea = this.calculatePolygonArea(cleaned);
+                const polygonArea = this.calculatePolygonArea(finalPoints);
                 const areaRatio = polygonArea / boundingArea;
 
                 if (areaRatio < 0.8) {
@@ -68,7 +106,7 @@
                 }
             }
 
-            return cleaned;
+            return finalPoints;
         },
 
         // ===== Rectangle/Geometric Helper Functions =====
