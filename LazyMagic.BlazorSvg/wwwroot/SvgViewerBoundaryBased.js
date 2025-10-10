@@ -1393,9 +1393,17 @@ function hybridInscribedRectangle(polygon, options = {}) {
     let optimizedResult = null;
     let shouldRunOptimized = true;
 
-    // Don't run optimized if no target area AND coverageThreshold > 0
+    // CRITICAL: Always run optimized if boundary-based failed (returned null)
+    // This ensures proper fallback for validation failures and edge cases
+    if (!boundaryResult) {
+        if (debugMode) {
+            console.log('[hybrid] Boundary-based failed, forcing optimized algorithm as fallback');
+        }
+        shouldRunOptimized = true;
+    }
+    // Don't run optimized if no target area AND coverageThreshold > 0 AND boundary-based succeeded
     // (If coverageThreshold is 0, we always want to run optimized for max accuracy)
-    if (!options.targetArea && coverageThreshold > 0) {
+    else if (!options.targetArea && coverageThreshold > 0) {
         if (debugMode) {
             console.log('[hybrid] No target area provided and threshold > 0, using boundary-based result only');
         }
