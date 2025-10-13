@@ -260,6 +260,413 @@ function generateConvexHullInterior(convexHull, numSamples = 30) {
 }
 
 /**
+ * Find near-90-degree corners in a polygon
+ * Returns array of { vertexIndex, angle, edge1Dir, edge2Dir }
+ */
+function findRightAngleCorners(rotated, angleTolerance = 2.0) {
+    const corners = [];
+
+    for (let i = 0; i < rotated.length; i++) {
+        const prev = rotated[(i - 1 + rotated.length) % rotated.length];
+        const curr = rotated[i];
+        const next = rotated[(i + 1) % rotated.length];
+
+        // Vectors from current vertex to neighbors
+        const v1 = { x: prev.x - curr.x, y: prev.y - curr.y };
+        const v2 = { x: next.x - curr.x, y: next.y - curr.y };
+
+        // Normalize vectors
+        const len1 = Math.sqrt(v1.x * v1.x + v1.y * v1.y);
+        const len2 = Math.sqrt(v2.x * v2.x + v2.y * v2.y);
+
+        if (len1 < 0.001 || len2 < 0.001) continue; // Skip degenerate edges
+
+        v1.x /= len1;
+        v1.y /= len1;
+        v2.x /= len2;
+        v2.y /= len2;
+
+        // Calculate angle between vectors using dot product
+        const dot = v1.x * v2.x + v1.y * v2.y;
+        const angle = Math.acos(Math.max(-1, Math.min(1, dot))) * 180 / Math.PI;
+
+        // Check if angle is close to 90 degrees
+        if (Math.abs(angle - 90) <= angleTolerance) {
+            corners.push({
+                vertexIndex: i,
+                vertex: curr,
+                angle: angle,
+                edge1Dir: { x: -v1.x, y: -v1.y }, // Direction away from prev
+                edge2Dir: { x: -v2.x, y: -v2.y }  // Direction away from next
+            });
+        }
+    }
+
+    return corners;
+}
+
+/**
+ * Expand rectangle from a corner along two perpendicular directions
+ * Returns largest rectangle that fits inside polygon
+ */
+function expandRectangleFromCorner(corner, polygon, rotated, debugMode = false) {
+    const { vertex, edge1Dir, edge2Dir } = corner;
+
+    if (debugMode) {
+        console.log(`[expandCorner] Starting from vertex (${vertex.x.toFixed(1)}, ${vertex.y.toFixed(1)})`);
+        console.log(`[expandCorner] edge1Dir: (${edge1Dir.x.toFixed(3)}, ${edge1Dir.y.toFixed(3)})`);
+        console.log(`[expandCorner] edge2Dir: (${edge2Dir.x.toFixed(3)}, ${edge2Dir.y.toFixed(3)})`);
+    }
+
+    // Binary search for maximum expansion along each direction
+    const maxDist = 500; // Maximum distance to try
+    const epsilon = 0.1; // Start slightly inside the polygon to avoid boundary issues
+
+    // Find maximum distance along edge1Dir
+    let low1 = epsilon, high1 = maxDist;
+    while (high1 - low1 > 0.5) {
+        const mid = (low1 + high1) / 2;
+        const testPoint = {
+            x: vertex.x + edge1Dir.x * mid,
+            y: vertex.y + edge1Dir.y * mid
+        };
+
+        if (isPointInPolygonSlow(testPoint, rotated)) {
+            low1 = mid;
+        } else {
+            high1 = mid;
+        }
+    }
+    const maxDist1 = low1;
+
+    if (debugMode) {
+        console.log(`[expandCorner] Max distance along edge1Dir: ${maxDist1.toFixed(1)}`);
+        console.log(`[expandCorner] Reaches point: (${(vertex.x + edge1Dir.x * maxDist1).toFixed(1)}, ${(vertex.y + edge1Dir.y * maxDist1).toFixed(1)})`);
+    }
+
+    // Find maximum distance along edge2Dir
+    let low2 = epsilon, high2 = maxDist;  // Start from epsilon to avoid boundary issues
+    while (high2 - low2 > 0.5) {
+        const mid = (low2 + high2) / 2;
+        const testPoint = {
+            x: vertex.x + edge2Dir.x * mid,
+            y: vertex.y + edge2Dir.y * mid
+        };
+
+        if (isPointInPolygonSlow(testPoint, rotated)) {
+            low2 = mid;
+        } else {
+            high2 = mid;
+        }
+    }
+    const maxDist2 = low2;
+
+    if (debugMode) {
+        console.log(`[expandCorner] Max distance along edge2Dir: ${maxDist2.toFixed(1)}`);
+        console.log(`[expandCorner] Reaches point: (${(vertex.x + edge2Dir.x * maxDist2).toFixed(1)}, ${(vertex.y + edge2Dir.y * maxDist2).toFixed(1)})`);
+    }
+
+    // Try different combinations of distances to find largest valid rectangle
+    let bestRect = null;
+    let bestArea = 0;
+
+    // Sample grid: try different width/height combinations
+    const samples = 20;
+    for (let i = 0; i <= samples; i++) {
+        for (let j = 0; j <= samples; j++) {
+            const dist1 = maxDist1 * i / samples;
+            const dist2 = maxDist2 * j / samples;
+
+            // Create rectangle corners
+            const rectCorners = [
+                vertex,
+                { x: vertex.x + edge1Dir.x * dist1, y: vertex.y + edge1Dir.y * dist1 },
+                { x: vertex.x + edge1Dir.x * dist1 + edge2Dir.x * dist2, y: vertex.y + edge1Dir.y * dist1 + edge2Dir.y * dist2 },
+                { x: vertex.x + edge2Dir.x * dist2, y: vertex.y + edge2Dir.y * dist2 }
+            ];
+
+            // Check if all corners and edges are inside polygon
+            let valid = true;
+            for (const rc of rectCorners) {
+                if (!isPointInPolygonSlow(rc, rotated)) {
+                    valid = false;
+                    break;
+                }
+            }
+
+            // Check edge samples
+            if (valid) {
+                for (let k = 0; k < 4; k++) {
+                    const c1 = rectCorners[k];
+                    const c2 = rectCorners[(k + 1) % 4];
+                    for (let t = 0.1; t < 1.0; t += 0.1) {
+                        const sample = {
+                            x: c1.x + (c2.x - c1.x) * t,
+                            y: c1.y + (c2.y - c1.y) * t
+                        };
+                        if (!isPointInPolygonSlow(sample, rotated)) {
+                            valid = false;
+                            break;
+                        }
+                    }
+                    if (!valid) break;
+                }
+            }
+
+            if (valid) {
+                const area = dist1 * dist2;
+                if (area > bestArea) {
+                    bestArea = area;
+                    bestRect = {
+                        corners: rectCorners,
+                        width: dist1,
+                        height: dist2,
+                        area: area
+                    };
+                }
+            }
+        }
+    }
+
+    return bestRect;
+}
+
+/**
+ * Find the largest rectangle with one edge flush against a given trapezoid edge
+ * @param {object} parallelEdge - Edge object with p1, p2, index
+ * @param {Array} rotated - Rotated polygon vertices
+ * @param {boolean} debugMode - Enable debug logging
+ * @returns {object} Rectangle with corners, width, height, area
+ */
+function findRectangleFromEdge(parallelEdge, rotated, debugMode = false) {
+    const { p1, p2 } = parallelEdge;
+
+    // Edge vector
+    const edgeVec = { x: p2.x - p1.x, y: p2.y - p1.y };
+    const edgeLen = Math.sqrt(edgeVec.x * edgeVec.x + edgeVec.y * edgeVec.y);
+    const edgeDir = { x: edgeVec.x / edgeLen, y: edgeVec.y / edgeLen };
+
+    // Calculate polygon centroid to determine which direction is "inward"
+    let centroidX = 0, centroidY = 0;
+    for (const p of rotated) {
+        centroidX += p.x;
+        centroidY += p.y;
+    }
+    centroidX /= rotated.length;
+    centroidY /= rotated.length;
+
+    // Edge midpoint
+    const midX = (p1.x + p2.x) / 2;
+    const midY = (p1.y + p2.y) / 2;
+
+    // Two possible perpendicular directions
+    const perp1 = { x: -edgeDir.y, y: edgeDir.x };
+    const perp2 = { x: edgeDir.y, y: -edgeDir.x };
+
+    // Choose the one pointing toward the centroid
+    const toCentroid = { x: centroidX - midX, y: centroidY - midY };
+    const dot1 = perp1.x * toCentroid.x + perp1.y * toCentroid.y;
+    const dot2 = perp2.x * toCentroid.x + perp2.y * toCentroid.y;
+
+    const perpDir = dot1 > dot2 ? perp1 : perp2;
+
+    if (debugMode) {
+        console.log(`[findRectFromEdge] Edge from (${p1.x.toFixed(1)}, ${p1.y.toFixed(1)}) to (${p2.x.toFixed(1)}, ${p2.y.toFixed(1)})`);
+        console.log(`[findRectFromEdge] Edge length: ${edgeLen.toFixed(1)}, perpDir: (${perpDir.x.toFixed(3)}, ${perpDir.y.toFixed(3)})`);
+        console.log(`[findRectFromEdge] Centroid: (${centroidX.toFixed(1)}, ${centroidY.toFixed(1)}), mid: (${midX.toFixed(1)}, ${midY.toFixed(1)})`);
+    }
+
+    // Find maximum perpendicular distance (rectangle height)
+    let maxHeight = 0;
+    const maxDist = 500;
+    const epsilon = 1.0; // Start 1px inside to avoid boundary issues
+    let low = epsilon, high = maxDist;
+
+    // Binary search for maximum height
+    while (high - low > 0.5) {
+        const mid = (low + high) / 2;
+
+        // Test if we can place a rectangle of this height
+        // Check if corners are inside polygon
+        const testCorners = [
+            p1,
+            p2,
+            { x: p2.x + perpDir.x * mid, y: p2.y + perpDir.y * mid },
+            { x: p1.x + perpDir.x * mid, y: p1.y + perpDir.y * mid }
+        ];
+
+        let valid = true;
+        for (const corner of testCorners) {
+            if (!isPointInPolygonWithTolerance(corner, rotated, 0.5)) {
+                valid = false;
+                break;
+            }
+        }
+
+        // Also check edge samples
+        if (valid) {
+            for (let i = 0; i < 4; i++) {
+                const c1 = testCorners[i];
+                const c2 = testCorners[(i + 1) % 4];
+                for (let t = 0.1; t < 1.0; t += 0.1) {
+                    const sample = {
+                        x: c1.x + (c2.x - c1.x) * t,
+                        y: c1.y + (c2.y - c1.y) * t
+                    };
+                    if (!isPointInPolygonWithTolerance(sample, rotated, 0.5)) {
+                        valid = false;
+                        break;
+                    }
+                }
+                if (!valid) break;
+            }
+        }
+
+        if (valid) {
+            maxHeight = mid;
+            low = mid;
+        } else {
+            high = mid;
+        }
+    }
+
+    if (maxHeight < 0.5) {
+        if (debugMode) {
+            console.log(`[findRectFromEdge] No valid rectangle found (maxHeight < 0.5)`);
+        }
+        return null;
+    }
+
+    // Create final rectangle
+    const corners = [
+        p1,
+        p2,
+        { x: p2.x + perpDir.x * maxHeight, y: p2.y + perpDir.y * maxHeight },
+        { x: p1.x + perpDir.x * maxHeight, y: p1.y + perpDir.y * maxHeight }
+    ];
+
+    const area = edgeLen * maxHeight;
+
+    if (debugMode) {
+        console.log(`[findRectFromEdge] Found rectangle: ${edgeLen.toFixed(1)} × ${maxHeight.toFixed(1)} = ${area.toFixed(1)} sq px`);
+    }
+
+    return {
+        corners: corners,
+        width: edgeLen,
+        height: maxHeight,
+        area: area
+    };
+}
+
+/**
+ * Detect if a rotated polygon is a trapezoid (has two parallel edges)
+ * Returns { isTrapezoid, parallelAxis, parallelEdges, slantedEdges } or null
+ */
+function detectTrapezoid(rotated, tolerance = 0.1) {
+    const debugMode = false; // Disable verbose debug output
+
+    if (rotated.length !== 4) return null;
+
+    // Check each pair of opposite edges for parallelism
+    // Edge 0-1 and Edge 2-3
+    const edge01_dx = rotated[1].x - rotated[0].x;
+    const edge01_dy = rotated[1].y - rotated[0].y;
+    const edge23_dx = rotated[3].x - rotated[2].x;
+    const edge23_dy = rotated[3].y - rotated[2].y;
+
+    // Normalize edge vectors
+    const len01 = Math.sqrt(edge01_dx * edge01_dx + edge01_dy * edge01_dy);
+    const len23 = Math.sqrt(edge23_dx * edge23_dx + edge23_dy * edge23_dy);
+
+    const norm01_x = edge01_dx / len01;
+    const norm01_y = edge01_dy / len01;
+    const norm23_x = edge23_dx / len23;
+    const norm23_y = edge23_dy / len23;
+
+    // Check if edges 0-1 and 2-3 are parallel (same or opposite direction)
+    const dot01_23 = Math.abs(norm01_x * norm23_x + norm01_y * norm23_y);
+    const isPair1Parallel = dot01_23 > (1 - tolerance);
+
+    if (debugMode) {
+        console.log(`[trapezoid] Edge pair 1 (0-1 vs 2-3):`);
+        console.log(`[trapezoid]   Edge 0-1: (${edge01_dx.toFixed(1)}, ${edge01_dy.toFixed(1)}), normalized: (${norm01_x.toFixed(3)}, ${norm01_y.toFixed(3)})`);
+        console.log(`[trapezoid]   Edge 2-3: (${edge23_dx.toFixed(1)}, ${edge23_dy.toFixed(1)}), normalized: (${norm23_x.toFixed(3)}, ${norm23_y.toFixed(3)})`);
+        console.log(`[trapezoid]   Dot product: ${dot01_23.toFixed(3)}, threshold: ${(1 - tolerance).toFixed(3)}, parallel: ${isPair1Parallel}`);
+    }
+
+    // Edge 1-2 and Edge 3-0
+    const edge12_dx = rotated[2].x - rotated[1].x;
+    const edge12_dy = rotated[2].y - rotated[1].y;
+    const edge30_dx = rotated[0].x - rotated[3].x;
+    const edge30_dy = rotated[0].y - rotated[3].y;
+
+    const len12 = Math.sqrt(edge12_dx * edge12_dx + edge12_dy * edge12_dy);
+    const len30 = Math.sqrt(edge30_dx * edge30_dx + edge30_dy * edge30_dy);
+
+    const norm12_x = edge12_dx / len12;
+    const norm12_y = edge12_dy / len12;
+    const norm30_x = edge30_dx / len30;
+    const norm30_y = edge30_dy / len30;
+
+    const dot12_30 = Math.abs(norm12_x * norm30_x + norm12_y * norm30_y);
+    const isPair2Parallel = dot12_30 > (1 - tolerance);
+
+    if (debugMode) {
+        console.log(`[trapezoid] Edge pair 2 (1-2 vs 3-0):`);
+        console.log(`[trapezoid]   Edge 1-2: (${edge12_dx.toFixed(1)}, ${edge12_dy.toFixed(1)}), normalized: (${norm12_x.toFixed(3)}, ${norm12_y.toFixed(3)})`);
+        console.log(`[trapezoid]   Edge 3-0: (${edge30_dx.toFixed(1)}, ${edge30_dy.toFixed(1)}), normalized: (${norm30_x.toFixed(3)}, ${norm30_y.toFixed(3)})`);
+        console.log(`[trapezoid]   Dot product: ${dot12_30.toFixed(3)}, threshold: ${(1 - tolerance).toFixed(3)}, parallel: ${isPair2Parallel}`);
+    }
+
+    // Determine which edges are parallel and what axis they align to
+    if (isPair1Parallel && !isPair2Parallel) {
+        // Edges 0-1 and 2-3 are parallel
+        // Determine if they're more horizontal or vertical
+        const avgDx = Math.abs(norm01_x + norm23_x) / 2;
+        const avgDy = Math.abs(norm01_y + norm23_y) / 2;
+        const isHorizontal = avgDx > avgDy;
+
+        return {
+            isTrapezoid: true,
+            parallelAxis: isHorizontal ? 'horizontal' : 'vertical',
+            parallelEdges: [
+                { p1: rotated[0], p2: rotated[1], index: [0, 1] },
+                { p1: rotated[2], p2: rotated[3], index: [2, 3] }
+            ],
+            slantedEdges: [
+                { p1: rotated[1], p2: rotated[2], index: [1, 2] },
+                { p1: rotated[3], p2: rotated[0], index: [3, 0] }
+            ]
+        };
+    } else if (isPair2Parallel && !isPair1Parallel) {
+        // Edges 1-2 and 3-0 are parallel
+        // Determine if they're more horizontal or vertical
+        const avgDx = Math.abs(norm12_x + norm30_x) / 2;
+        const avgDy = Math.abs(norm12_y + norm30_y) / 2;
+        const isHorizontal = avgDx > avgDy;
+
+        return {
+            isTrapezoid: true,
+            parallelAxis: isHorizontal ? 'horizontal' : 'vertical',
+            parallelEdges: [
+                { p1: rotated[1], p2: rotated[2], index: [1, 2] },
+                { p1: rotated[3], p2: rotated[0], index: [3, 0] }
+            ],
+            slantedEdges: [
+                { p1: rotated[0], p2: rotated[1], index: [0, 1] },
+                { p1: rotated[2], p2: rotated[3], index: [2, 3] }
+            ]
+        };
+    } else if (isPair1Parallel && isPair2Parallel) {
+        // It's a rectangle/parallelogram, not a trapezoid
+        return null;
+    }
+
+    return null;
+}
+
+/**
  * Find the largest axis-aligned bounding box that fits inside the polygon
  * when rotated by the given angle
  */
@@ -268,14 +675,61 @@ function findMaxRectangleAtAngle(polygon, angleDeg, debugMode = false, targetAre
     const cos = Math.cos(angleRad);
     const sin = Math.sin(angleRad);
 
-    // Force debug for Test17 at specific angles
-    const forceDebug = debugMode || (polygon.length === 15 && (Math.abs(angleDeg - 25.9) < 1 || Math.abs(angleDeg - 9.4) < 0.1 || Math.abs(angleDeg - 99.4) < 0.1));
+    // Force debug for Test17 at specific angles and Combo_0002 (4-vertex trapezoid)
+    const forceDebug = debugMode || (polygon.length === 15 && (Math.abs(angleDeg - 25.9) < 1 || Math.abs(angleDeg - 9.4) < 0.1 || Math.abs(angleDeg - 99.4) < 0.1)) || (polygon.length === 4 && Math.abs(angleDeg - 90) < 1);
 
     // Rotate all polygon points to align with angle
     const rotated = polygon.map(p => ({
         x: p.x * cos + p.y * sin,
         y: -p.x * sin + p.y * cos
     }));
+
+    // Try edge-based rectangles for 4-vertex polygons
+    // For each edge, try placing a rectangle with that edge as one side
+    if (rotated.length === 4) {
+        let edgeBestRect = null;
+        let edgeBestArea = 0;
+
+        // Try each edge as a potential rectangle edge
+        for (let i = 0; i < rotated.length; i++) {
+            const p1 = rotated[i];
+            const p2 = rotated[(i + 1) % rotated.length];
+            const edge = { p1, p2, index: [i, (i + 1) % rotated.length] };
+
+            const rect = findRectangleFromEdge(edge, rotated, forceDebug);
+            if (rect && rect.area > edgeBestArea) {
+                edgeBestArea = rect.area;
+                edgeBestRect = rect;
+            }
+        }
+
+        if (edgeBestRect && edgeBestArea > 0) {
+            // Rotate corners back to original space
+            const originalCorners = edgeBestRect.corners.map(p => ({
+                x: p.x * cos - p.y * sin,
+                y: p.x * sin + p.y * cos
+            }));
+
+            const origCentroid = {
+                x: (originalCorners[0].x + originalCorners[1].x + originalCorners[2].x + originalCorners[3].x) / 4,
+                y: (originalCorners[0].y + originalCorners[1].y + originalCorners[2].y + originalCorners[3].y) / 4
+            };
+
+            if (forceDebug) {
+                console.log(`[findMaxRect] ✅ Edge-based expansion found ${edgeBestRect.width.toFixed(1)} × ${edgeBestRect.height.toFixed(1)} = ${edgeBestArea.toFixed(1)} sq px`);
+            }
+
+            return {
+                corners: originalCorners,
+                width: edgeBestRect.width,
+                height: edgeBestRect.height,
+                area: edgeBestArea,
+                angle: angleDeg,
+                centroid: origCentroid,
+                aspectRatio: edgeBestRect.width / edgeBestRect.height
+            };
+        }
+    }
 
     // Find bounding box of rotated polygon
     let minX = Infinity, minY = Infinity;
@@ -457,7 +911,8 @@ function findMaxRectangleAtAngle(polygon, angleDeg, debugMode = false, targetAre
             // Test multiple aspect ratios (adaptive based on path count)
             const aspectRatios = adaptiveAspectRatios;
 
-            for (const aspectRatio of aspectRatios) {
+            // Helper function to test a specific aspect ratio
+            const testAspectRatio = (aspectRatio) => {
                 // Binary search for maximum scale
                 // Use the larger dimension as base to ensure we can capture elongated shapes
                 const baseDim = Math.max(width, height);
@@ -542,6 +997,7 @@ function findMaxRectangleAtAngle(polygon, angleDeg, debugMode = false, targetAre
                     }
                 }
 
+                // Return result if valid
                 if (bestScale > 0) {
                     // Recalculate final dimensions with same logic as test
                     const baseDim = Math.max(width, height);
@@ -556,38 +1012,92 @@ function findMaxRectangleAtAngle(polygon, angleDeg, debugMode = false, targetAre
                         console.log(`[EDGE-ACCEPT] 9.4° rect ${finalW.toFixed(1)}×${finalH.toFixed(1)} (${area.toFixed(1)} sq px) passed all edge samples`);
                     }
 
-                    if (area > bestArea) {
-                        bestArea = area;
+                    const rectCorners = [
+                        { x: centerX - finalW/2, y: centerY - finalH/2 },
+                        { x: centerX + finalW/2, y: centerY - finalH/2 },
+                        { x: centerX + finalW/2, y: centerY + finalH/2 },
+                        { x: centerX - finalW/2, y: centerY + finalH/2 }
+                    ];
 
-                        const rectCorners = [
-                            { x: centerX - finalW/2, y: centerY - finalH/2 },
-                            { x: centerX + finalW/2, y: centerY - finalH/2 },
-                            { x: centerX + finalW/2, y: centerY + finalH/2 },
-                            { x: centerX - finalW/2, y: centerY + finalH/2 }
-                        ];
+                    const originalCorners = rectCorners.map(p => ({
+                        x: p.x * cos - p.y * sin,
+                        y: p.x * sin + p.y * cos
+                    }));
 
-                        const originalCorners = rectCorners.map(p => ({
-                            x: p.x * cos - p.y * sin,
-                            y: p.x * sin + p.y * cos
-                        }));
+                    const origCentroid = {
+                        x: centerX * cos - centerY * sin,
+                        y: centerX * sin + centerY * cos
+                    };
 
-                        const origCentroid = {
-                            x: centerX * cos - centerY * sin,
-                            y: centerX * sin + centerY * cos
-                        };
+                    // Debug best rectangle updates at 9.4°
+                    if (Math.abs(angleDeg - 9.4) < 0.1) {
+                        console.log(`[ASPECT-TEST] 9.4° rect: ${finalW.toFixed(1)}×${finalH.toFixed(1)} = ${area.toFixed(1)} sq px, aspect=${aspectRatio.toFixed(2)}, centroid=(${origCentroid.x.toFixed(1)}, ${origCentroid.y.toFixed(1)})`);
+                    }
 
-                        bestRect = {
-                            corners: originalCorners,
-                            width: finalW,
-                            height: finalH,
-                            area: area,
-                            angle: angleDeg,
-                            centroid: origCentroid
-                        };
+                    return {
+                        corners: originalCorners,
+                        width: finalW,
+                        height: finalH,
+                        area: area,
+                        angle: angleDeg,
+                        centroid: origCentroid,
+                        aspectRatio: aspectRatio
+                    };
+                }
 
-                        // Debug best rectangle updates at 9.4°
+                return null;
+            };
+
+            // First pass: Test all predefined aspect ratios
+            let bestAspectRatio = null;
+            for (const aspectRatio of aspectRatios) {
+                const result = testAspectRatio(aspectRatio);
+                if (result && result.area > bestArea) {
+                    bestArea = result.area;
+                    bestRect = result;
+                    bestAspectRatio = aspectRatio;
+                }
+            }
+
+            // Second pass: Refine aspect ratio if we found a good result
+            if (bestAspectRatio !== null && bestRect !== null) {
+                const idx = aspectRatios.indexOf(bestAspectRatio);
+                let lowerBound, upperBound;
+
+                if (idx === 0) {
+                    // Best ratio is at the start of the list
+                    lowerBound = bestAspectRatio;
+                    upperBound = aspectRatios[idx + 1] || bestAspectRatio * 1.2;
+                } else if (idx === aspectRatios.length - 1) {
+                    // Best ratio is at the end of the list
+                    lowerBound = aspectRatios[idx - 1] || bestAspectRatio * 0.8;
+                    upperBound = bestAspectRatio;
+                } else {
+                    // Best ratio is in the middle
+                    lowerBound = aspectRatios[idx - 1];
+                    upperBound = aspectRatios[idx + 1];
+                }
+
+                // Test intermediate aspect ratios (5 samples)
+                const refinementSamples = 5;
+                const step = (upperBound - lowerBound) / (refinementSamples + 1);
+
+                for (let i = 1; i <= refinementSamples; i++) {
+                    const refinedAspect = lowerBound + i * step;
+
+                    // Skip if too close to an already-tested value
+                    if (aspectRatios.some(ar => Math.abs(ar - refinedAspect) < 0.01)) {
+                        continue;
+                    }
+
+                    const result = testAspectRatio(refinedAspect);
+                    if (result && result.area > bestArea) {
+                        bestArea = result.area;
+                        bestRect = result;
+
+                        // Debug refined aspect ratio improvements
                         if (Math.abs(angleDeg - 9.4) < 0.1) {
-                            console.log(`[NEW-BEST] 9.4° new best: ${finalW.toFixed(1)}×${finalH.toFixed(1)} = ${area.toFixed(1)} sq px, aspect=${aspectRatio.toFixed(2)}, centroid=(${origCentroid.x.toFixed(1)}, ${origCentroid.y.toFixed(1)})`);
+                            console.log(`[REFINED] 9.4° refined aspect ${refinedAspect.toFixed(3)} improved to ${result.area.toFixed(1)} sq px`);
                         }
                     }
                 }
@@ -1213,15 +1723,18 @@ function boundaryBasedInscribedRectangle(polygon, options = {}) {
             console.log(`[boundary-based] Polygon points:`, polygon.map(p => `(${p.x.toFixed(2)}, ${p.y.toFixed(2)})`).join(', '));
         }
 
-        // Check corners
+        // Check corners (use tolerance for boundary points)
+        const tolerance = 0.5;  // 0.5px tolerance for points on boundary
         for (let i = 0; i < corners.length; i++) {
-            const isInside = isPointInPolygonSlow(corners[i], polygon);
+            const isInside = isPointInPolygonWithTolerance(corners[i], polygon, tolerance);
             if (debugMode) {
                 console.log(`[boundary-based] Corner ${i} at (${corners[i].x.toFixed(2)}, ${corners[i].y.toFixed(2)}) - inside: ${isInside}`);
             }
             if (!isInside) {
                 isValid = false;
-                console.error(`[boundary-based] VALIDATION FAILED: Corner ${i} at (${corners[i].x.toFixed(2)}, ${corners[i].y.toFixed(2)}) is OUTSIDE polygon!`);
+                if (debugMode) {
+                    console.error(`[boundary-based] VALIDATION FAILED: Corner ${i} at (${corners[i].x.toFixed(2)}, ${corners[i].y.toFixed(2)}) is OUTSIDE polygon!`);
+                }
             }
         }
 
@@ -1238,9 +1751,11 @@ function boundaryBasedInscribedRectangle(polygon, options = {}) {
                         y: c1.y + (c2.y - c1.y) * t
                     };
 
-                    if (!isPointInPolygonSlow(sample, polygon)) {
+                    if (!isPointInPolygonWithTolerance(sample, polygon, tolerance)) {
                         isValid = false;
-                        console.error(`[boundary-based] VALIDATION FAILED: Edge ${i}→${(i+1)%corners.length} at t=${t.toFixed(2)} point (${sample.x.toFixed(2)}, ${sample.y.toFixed(2)}) is OUTSIDE polygon!`);
+                        if (debugMode) {
+                            console.error(`[boundary-based] VALIDATION FAILED: Edge ${i}→${(i+1)%corners.length} at t=${t.toFixed(2)} point (${sample.x.toFixed(2)}, ${sample.y.toFixed(2)}) is OUTSIDE polygon!`);
+                        }
                         break;
                     }
                 }
@@ -1282,10 +1797,10 @@ function boundaryBasedInscribedRectangle(polygon, options = {}) {
                     }
                 ];
 
-                // Validate shrunk rectangle
+                // Validate shrunk rectangle (with tolerance)
                 let shrunkValid = true;
                 for (const corner of shrunkCorners) {
-                    if (!isPointInPolygonSlow(corner, polygon)) {
+                    if (!isPointInPolygonWithTolerance(corner, polygon, tolerance)) {
                         shrunkValid = false;
                         break;
                     }
@@ -1303,7 +1818,7 @@ function boundaryBasedInscribedRectangle(polygon, options = {}) {
                                 y: c1.y + (c2.y - c1.y) * t
                             };
 
-                            if (!isPointInPolygonSlow(sample, polygon)) {
+                            if (!isPointInPolygonWithTolerance(sample, polygon, tolerance)) {
                                 shrunkValid = false;
                                 break;
                             }
@@ -1458,25 +1973,39 @@ function hybridInscribedRectangle(polygon, options = {}) {
     const endTime = performance.now();
     let bestResult = null;
 
+    // DEBUG: Force logging to see what's happening
+    console.log(`[hybrid] 🔍 Final selection:`);
+    console.log(`  boundaryResult: ${boundaryResult ? boundaryResult.area.toFixed(1) + ' sq px' : 'NULL'}`);
+    console.log(`  optimizedResult: ${optimizedResult ? optimizedResult.area.toFixed(1) + ' sq px' : 'NULL'}`);
+
     if (!boundaryResult && !optimizedResult) {
         console.error('[hybrid] Both algorithms failed');
         return null;
     }
 
     if (!optimizedResult) {
+        console.log(`[hybrid] ✅ Only boundary-based succeeded, using it`);
         bestResult = boundaryResult;
     } else if (!boundaryResult) {
+        console.log(`[hybrid] ✅ Only optimized succeeded, using it`);
         bestResult = optimizedResult;
         // Optimized result doesn't have type field, add it
         if (!bestResult.type) {
             bestResult.type = 'optimized';
         }
     } else {
-        // Both succeeded - ALWAYS prefer optimized result for pre-computation accuracy
-        bestResult = optimizedResult;
-        // Optimized result doesn't have type field, add it
-        if (!bestResult.type) {
-            bestResult.type = 'optimized';
+        // Both succeeded - choose the one with larger area
+        console.log(`[hybrid] 🤔 Both succeeded, comparing areas: ${boundaryResult.area.toFixed(1)} vs ${optimizedResult.area.toFixed(1)}`);
+        if (boundaryResult.area >= optimizedResult.area) {
+            bestResult = boundaryResult;
+            console.log(`[hybrid] ✅ Choosing boundary-based (${boundaryResult.area.toFixed(1)} sq px) over optimized (${optimizedResult.area.toFixed(1)} sq px)`);
+        } else {
+            bestResult = optimizedResult;
+            // Optimized result doesn't have type field, add it
+            if (!bestResult.type) {
+                bestResult.type = 'optimized';
+            }
+            console.log(`[hybrid] ✅ Choosing optimized (${optimizedResult.area.toFixed(1)} sq px) over boundary-based (${boundaryResult.area.toFixed(1)} sq px)`);
         }
     }
 

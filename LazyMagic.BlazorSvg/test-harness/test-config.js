@@ -35,7 +35,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3"
+    "description": "Ballroom_Room_1_Ballroom_Room_3"
   },
   {
     "name": "Combo_0005",
@@ -54,7 +54,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4"
+    "description": "Ballroom_Room_2_Ballroom_Room_4"
   },
   {
     "name": "Combo_0007",
@@ -82,7 +82,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_Aisle_12"
+    "description": "Ballroom_Aisle_12_Ballroom_Room_1"
   },
   {
     "name": "Combo_0010",
@@ -92,7 +92,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_Aisle_12"
+    "description": "Ballroom_Aisle_12_Ballroom_Room_2"
   },
   {
     "name": "Combo_0011",
@@ -103,7 +103,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_Aisle_12"
+    "description": "Ballroom_Aisle_12_Ballroom_Room_1_Ballroom_Room_2"
   },
   {
     "name": "Combo_0012",
@@ -114,7 +114,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_Aisle_12"
+    "description": "Ballroom_Aisle_12_Ballroom_Room_1_Ballroom_Room_3"
   },
   {
     "name": "Combo_0013",
@@ -126,7 +126,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_Aisle_12"
+    "description": "Ballroom_Aisle_12_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3"
   },
   {
     "name": "Combo_0014",
@@ -137,7 +137,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_Aisle_12"
+    "description": "Ballroom_Aisle_12_Ballroom_Room_2_Ballroom_Room_4"
   },
   {
     "name": "Combo_0015",
@@ -149,7 +149,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_4_Ballroom_Aisle_12"
+    "description": "Ballroom_Aisle_12_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4"
   },
   {
     "name": "Combo_0016",
@@ -159,7 +159,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_Aisle_34"
+    "description": "Ballroom_Aisle_34_Ballroom_Room_3"
   },
   {
     "name": "Combo_0017",
@@ -170,7 +170,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_Aisle_34"
+    "description": "Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_3"
   },
   {
     "name": "Combo_0018",
@@ -180,7 +180,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_4_Ballroom_Aisle_34"
+    "description": "Ballroom_Aisle_34_Ballroom_Room_4"
   },
   {
     "name": "Combo_0019",
@@ -191,7 +191,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_Aisle_34"
+    "description": "Ballroom_Aisle_34_Ballroom_Room_2_Ballroom_Room_4"
   },
   {
     "name": "Combo_0020",
@@ -202,7 +202,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_4_Ballroom_Aisle_34"
+    "description": "Ballroom_Aisle_34_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0021",
@@ -214,7 +214,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_Aisle_34"
+    "description": "Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0022",
@@ -226,7 +226,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_34"
+    "description": "Ballroom_Aisle_34_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0023",
@@ -238,7 +238,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_Aisle_12_Ballroom_Aisle_34"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_3"
   },
   {
     "name": "Combo_0024",
@@ -251,7 +251,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_Aisle_12_Ballroom_Aisle_34"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3"
   },
   {
     "name": "Combo_0025",
@@ -263,7 +263,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_2_Ballroom_Room_4"
   },
   {
     "name": "Combo_0026",
@@ -276,7 +276,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4"
   },
   {
     "name": "Combo_0027",
@@ -289,7 +289,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0028",
@@ -302,7 +302,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0029",
@@ -316,7 +316,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0030",
@@ -326,7 +326,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_35_Ballroom_Room_3"
   },
   {
     "name": "Combo_0031",
@@ -337,7 +337,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3"
   },
   {
     "name": "Combo_0032",
@@ -347,7 +347,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_5_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_35_Ballroom_Room_5"
   },
   {
     "name": "Combo_0033",
@@ -358,7 +358,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_5_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_35_Ballroom_Room_3_Ballroom_Room_5"
   },
   {
     "name": "Combo_0034",
@@ -370,7 +370,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_5_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5"
   },
   {
     "name": "Combo_0035",
@@ -382,7 +382,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_Aisle_12_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3"
   },
   {
     "name": "Combo_0036",
@@ -395,7 +395,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_Aisle_12_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3"
   },
   {
     "name": "Combo_0037",
@@ -408,7 +408,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5"
   },
   {
     "name": "Combo_0038",
@@ -422,7 +422,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5"
   },
   {
     "name": "Combo_0039",
@@ -433,7 +433,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_Aisle_34_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_3"
   },
   {
     "name": "Combo_0040",
@@ -445,7 +445,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_Aisle_34_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3"
   },
   {
     "name": "Combo_0041",
@@ -457,7 +457,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0042",
@@ -470,7 +470,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0043",
@@ -483,7 +483,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0044",
@@ -495,7 +495,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_3_Ballroom_Room_5"
   },
   {
     "name": "Combo_0045",
@@ -508,7 +508,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5"
   },
   {
     "name": "Combo_0046",
@@ -521,7 +521,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0047",
@@ -535,7 +535,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0048",
@@ -549,7 +549,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0049",
@@ -562,7 +562,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3"
   },
   {
     "name": "Combo_0050",
@@ -576,7 +576,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3"
   },
   {
     "name": "Combo_0051",
@@ -590,7 +590,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0052",
@@ -604,7 +604,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0053",
@@ -619,7 +619,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0054",
@@ -633,7 +633,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5"
   },
   {
     "name": "Combo_0055",
@@ -648,7 +648,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5"
   },
   {
     "name": "Combo_0056",
@@ -663,7 +663,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0057",
@@ -678,7 +678,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0058",
@@ -694,7 +694,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0059",
@@ -704,7 +704,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_4_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_46_Ballroom_Room_4"
   },
   {
     "name": "Combo_0060",
@@ -715,7 +715,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_4"
   },
   {
     "name": "Combo_0061",
@@ -725,7 +725,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_46_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0062",
@@ -736,7 +736,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_4_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_46_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0063",
@@ -748,7 +748,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0064",
@@ -760,7 +760,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_4"
   },
   {
     "name": "Combo_0065",
@@ -773,7 +773,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4"
   },
   {
     "name": "Combo_0066",
@@ -786,7 +786,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0067",
@@ -800,7 +800,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0068",
@@ -811,7 +811,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_4"
   },
   {
     "name": "Combo_0069",
@@ -823,7 +823,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_4"
   },
   {
     "name": "Combo_0070",
@@ -835,7 +835,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0071",
@@ -848,7 +848,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0072",
@@ -861,7 +861,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0073",
@@ -873,7 +873,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0074",
@@ -886,7 +886,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0075",
@@ -899,7 +899,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0076",
@@ -913,7 +913,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0077",
@@ -927,7 +927,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0078",
@@ -940,7 +940,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_4"
   },
   {
     "name": "Combo_0079",
@@ -954,7 +954,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4"
   },
   {
     "name": "Combo_0080",
@@ -968,7 +968,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0081",
@@ -982,7 +982,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0082",
@@ -997,7 +997,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0083",
@@ -1011,7 +1011,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0084",
@@ -1026,7 +1026,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0085",
@@ -1041,7 +1041,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0086",
@@ -1056,7 +1056,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0087",
@@ -1072,7 +1072,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0088",
@@ -1082,7 +1082,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_5_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_56_Ballroom_Room_5"
   },
   {
     "name": "Combo_0089",
@@ -1092,7 +1092,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_56_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0090",
@@ -1103,7 +1103,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_5_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_56_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0091",
@@ -1114,7 +1114,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_5_Ballroom_Aisle_35_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_5"
   },
   {
     "name": "Combo_0092",
@@ -1126,7 +1126,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_5_Ballroom_Aisle_35_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_3_Ballroom_Room_5"
   },
   {
     "name": "Combo_0093",
@@ -1139,7 +1139,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_5_Ballroom_Aisle_35_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5"
   },
   {
     "name": "Combo_0094",
@@ -1151,7 +1151,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_5_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0095",
@@ -1164,7 +1164,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_5_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0096",
@@ -1178,7 +1178,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_5_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0097",
@@ -1192,7 +1192,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5"
   },
   {
     "name": "Combo_0098",
@@ -1207,7 +1207,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5"
   },
   {
     "name": "Combo_0099",
@@ -1222,7 +1222,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0100",
@@ -1238,7 +1238,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0101",
@@ -1249,7 +1249,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0102",
@@ -1261,7 +1261,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_4_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0103",
@@ -1274,7 +1274,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0104",
@@ -1286,7 +1286,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_5_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0105",
@@ -1299,7 +1299,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_4_Ballroom_5_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0106",
@@ -1313,7 +1313,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_5_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0107",
@@ -1327,7 +1327,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0108",
@@ -1342,7 +1342,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0109",
@@ -1357,7 +1357,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0110",
@@ -1373,7 +1373,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0111",
@@ -1385,7 +1385,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_3"
   },
   {
     "name": "Combo_0112",
@@ -1398,7 +1398,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3"
   },
   {
     "name": "Combo_0113",
@@ -1411,7 +1411,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0114",
@@ -1425,7 +1425,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0115",
@@ -1439,7 +1439,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0116",
@@ -1452,7 +1452,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_5"
   },
   {
     "name": "Combo_0117",
@@ -1466,7 +1466,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5"
   },
   {
     "name": "Combo_0118",
@@ -1480,7 +1480,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0119",
@@ -1495,7 +1495,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0120",
@@ -1510,7 +1510,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0121",
@@ -1524,7 +1524,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3"
   },
   {
     "name": "Combo_0122",
@@ -1539,7 +1539,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3"
   },
   {
     "name": "Combo_0123",
@@ -1554,7 +1554,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0124",
@@ -1569,7 +1569,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0125",
@@ -1585,7 +1585,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0126",
@@ -1600,7 +1600,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5"
   },
   {
     "name": "Combo_0127",
@@ -1616,7 +1616,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5"
   },
   {
     "name": "Combo_0128",
@@ -1632,7 +1632,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0129",
@@ -1648,7 +1648,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0130",
@@ -1665,7 +1665,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0131",
@@ -1677,7 +1677,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_4"
   },
   {
     "name": "Combo_0132",
@@ -1690,7 +1690,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4"
   },
   {
     "name": "Combo_0133",
@@ -1703,7 +1703,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0134",
@@ -1717,7 +1717,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0135",
@@ -1731,7 +1731,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0136",
@@ -1744,7 +1744,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0137",
@@ -1758,7 +1758,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0138",
@@ -1772,7 +1772,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0139",
@@ -1787,7 +1787,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0140",
@@ -1802,7 +1802,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0141",
@@ -1816,7 +1816,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4"
   },
   {
     "name": "Combo_0142",
@@ -1831,7 +1831,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4"
   },
   {
     "name": "Combo_0143",
@@ -1846,7 +1846,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0144",
@@ -1861,7 +1861,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0145",
@@ -1877,7 +1877,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0146",
@@ -1892,7 +1892,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0147",
@@ -1908,7 +1908,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0148",
@@ -1924,7 +1924,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0149",
@@ -1940,7 +1940,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0150",
@@ -1957,7 +1957,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0151",
@@ -1971,7 +1971,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0152",
@@ -1986,7 +1986,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0153",
@@ -2001,7 +2001,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0154",
@@ -2016,7 +2016,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0155",
@@ -2032,7 +2032,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0156",
@@ -2048,7 +2048,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0157",
@@ -2063,7 +2063,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0158",
@@ -2079,7 +2079,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0159",
@@ -2095,7 +2095,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0160",
@@ -2111,7 +2111,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0161",
@@ -2127,7 +2127,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0162",
@@ -2144,7 +2144,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4"
   },
   {
     "name": "Combo_0163",
@@ -2161,7 +2161,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0164",
@@ -2178,7 +2178,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0165",
@@ -2196,7 +2196,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0166",
@@ -2213,7 +2213,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0167",
@@ -2230,7 +2230,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0168",
@@ -2248,7 +2248,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0169",
@@ -2260,7 +2260,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_5_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_5"
   },
   {
     "name": "Combo_0170",
@@ -2273,7 +2273,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_5_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_5"
   },
   {
     "name": "Combo_0171",
@@ -2287,7 +2287,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_5_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5"
   },
   {
     "name": "Combo_0172",
@@ -2300,7 +2300,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_5_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0173",
@@ -2314,7 +2314,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_5_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0174",
@@ -2329,7 +2329,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_5_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0175",
@@ -2344,7 +2344,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5"
   },
   {
     "name": "Combo_0176",
@@ -2360,7 +2360,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5"
   },
   {
     "name": "Combo_0177",
@@ -2376,7 +2376,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0178",
@@ -2393,7 +2393,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0179",
@@ -2407,7 +2407,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_5"
   },
   {
     "name": "Combo_0180",
@@ -2422,7 +2422,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5"
   },
   {
     "name": "Combo_0181",
@@ -2437,7 +2437,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0182",
@@ -2453,7 +2453,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0183",
@@ -2469,7 +2469,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0184",
@@ -2484,7 +2484,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0185",
@@ -2500,7 +2500,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0186",
@@ -2516,7 +2516,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5"
   },
   {
     "name": "Combo_0187",
@@ -2533,7 +2533,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5"
   },
   {
     "name": "Combo_0188",
@@ -2550,7 +2550,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0189",
@@ -2567,7 +2567,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0190",
@@ -2585,7 +2585,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0191",
@@ -2602,7 +2602,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0192",
@@ -2620,7 +2620,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0193",
@@ -2632,7 +2632,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0194",
@@ -2645,7 +2645,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_4_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0195",
@@ -2659,7 +2659,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0196",
@@ -2672,7 +2672,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_5_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0197",
@@ -2686,7 +2686,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_4_Ballroom_5_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0198",
@@ -2701,7 +2701,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_5_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0199",
@@ -2716,7 +2716,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0200",
@@ -2732,7 +2732,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0201",
@@ -2748,7 +2748,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0202",
@@ -2765,7 +2765,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0203",
@@ -2779,7 +2779,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0204",
@@ -2794,7 +2794,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0205",
@@ -2809,7 +2809,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0206",
@@ -2825,7 +2825,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0207",
@@ -2841,7 +2841,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0208",
@@ -2856,7 +2856,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_4_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0209",
@@ -2872,7 +2872,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0210",
@@ -2888,7 +2888,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0211",
@@ -2905,7 +2905,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0212",
@@ -2922,7 +2922,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0213",
@@ -2939,7 +2939,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0214",
@@ -2957,7 +2957,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0215",
@@ -2974,7 +2974,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0216",
@@ -2992,7 +2992,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0217",
@@ -3006,7 +3006,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_5_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0218",
@@ -3021,7 +3021,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_5_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0219",
@@ -3037,7 +3037,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_5_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0220",
@@ -3052,7 +3052,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_4_Ballroom_5_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0221",
@@ -3068,7 +3068,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_5_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0222",
@@ -3085,7 +3085,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0223",
@@ -3103,7 +3103,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0224",
@@ -3120,7 +3120,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0225",
@@ -3138,7 +3138,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0226",
@@ -3154,7 +3154,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0227",
@@ -3171,7 +3171,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0228",
@@ -3188,7 +3188,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0229",
@@ -3204,7 +3204,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0230",
@@ -3221,7 +3221,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0231",
@@ -3238,7 +3238,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0232",
@@ -3254,7 +3254,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0233",
@@ -3271,7 +3271,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0234",
@@ -3287,7 +3287,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_4_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0235",
@@ -3304,7 +3304,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0236",
@@ -3321,7 +3321,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0237",
@@ -3339,7 +3339,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0238",
@@ -3357,7 +3357,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0239",
@@ -3375,7 +3375,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0240",
@@ -3393,7 +3393,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0241",
@@ -3412,7 +3412,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5"
   },
   {
     "name": "Combo_0242",
@@ -3430,7 +3430,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0243",
@@ -3448,7 +3448,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0244",
@@ -3467,7 +3467,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0245",
@@ -3485,7 +3485,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0246",
@@ -3504,7 +3504,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0247",
@@ -3522,7 +3522,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0248",
@@ -3541,7 +3541,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0249",
@@ -3560,7 +3560,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0250",
@@ -3579,7 +3579,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   },
   {
     "name": "Combo_0251",
@@ -3599,7 +3599,7 @@ export const testCases = [
     ],
     "goalRectangle": null,
     "expectedShape": "",
-    "description": "Ballroom_1_Ballroom_2_Ballroom_3_Ballroom_4_Ballroom_5_Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_3456_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Grand"
+    "description": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand"
   }
 ];
 

@@ -1427,7 +1427,8 @@ function tryRectangleAtAngle(polygon, angleDeg, centroid, debugMode = false, asp
         console.log(`🔷 [RECT-DEBUG] >> Starting binary search with ${aspectRatios.length} aspect ratios`);
     }
 
-    for (const aspectRatio of aspectRatios) {
+    // Helper function to test a specific aspect ratio
+    const testAspectRatio = (aspectRatio) => {
         // NEW APPROACH: Start with aspect ratio at full dimensions, then scale down if needed
         // Determine rectangle dimensions based on aspect ratio and directional distances
         let rectWidth, rectHeight;
@@ -1490,52 +1491,113 @@ function tryRectangleAtAngle(polygon, angleDeg, centroid, debugMode = false, asp
             }
         }
 
-        // Check if this aspect ratio produced a better result
+        // Return result if valid
         if (validScale > 0) {
             const finalWidth = rectWidth * validScale;
             const finalHeight = rectHeight * validScale;
             const area = finalWidth * finalHeight;
 
-            if (debugMode && validScale > 0.5) {
-                console.log(`🔷 [RECT-DEBUG] >> Aspect ${aspectRatio.toFixed(1)}: validScale=${validScale.toFixed(3)}, dims=${finalWidth.toFixed(1)}×${finalHeight.toFixed(1)}, area=${area.toFixed(0)}`);
+            const finalMinX = centroid.x - finalWidth / 2;
+            const finalMinY = centroid.y - finalHeight / 2;
+
+            const finalCorners = [
+                { x: finalMinX, y: finalMinY },
+                { x: finalMinX + finalWidth, y: finalMinY },
+                { x: finalMinX + finalWidth, y: finalMinY + finalHeight },
+                { x: finalMinX, y: finalMinY + finalHeight }
+            ].map(c => {
+                const dx = c.x - centroid.x;
+                const dy = c.y - centroid.y;
+                return {
+                    x: centroid.x + dx * cos + dy * sin,
+                    y: centroid.y + dx * sin - dy * cos
+                };
+            });
+
+            return {
+                corners: finalCorners,
+                area: area,
+                width: finalWidth,
+                height: finalHeight,
+                angle: angleDeg,
+                aspectRatio: aspectRatio,
+                validScale: validScale
+            };
+        }
+        return null;
+    };
+
+    // First pass: Test all predefined aspect ratios
+    let bestAspectRatio = null;
+    for (const aspectRatio of aspectRatios) {
+        const result = testAspectRatio(aspectRatio);
+
+        if (result && result.area > bestArea) {
+            bestArea = result.area;
+            bestResult = result;
+            bestAspectRatio = aspectRatio;
+
+            if (debugMode && result.validScale > 0.5) {
+                console.log(`🔷 [RECT-DEBUG] >> Aspect ${aspectRatio.toFixed(2)}: validScale=${result.validScale.toFixed(3)}, dims=${result.width.toFixed(1)}×${result.height.toFixed(1)}, area=${result.area.toFixed(0)}`);
+            }
+        }
+    }
+
+    // Second pass: Refine aspect ratio if we found a good result
+    if (bestAspectRatio !== null && bestResult !== null) {
+        // Find neighbors in the aspect ratio list to determine refinement range
+        const idx = aspectRatios.indexOf(bestAspectRatio);
+        let lowerBound, upperBound;
+
+        if (idx === 0) {
+            // At the start, refine between bestAspectRatio and next
+            lowerBound = bestAspectRatio;
+            upperBound = aspectRatios[idx + 1] || bestAspectRatio * 1.2;
+        } else if (idx === aspectRatios.length - 1) {
+            // At the end, refine between previous and bestAspectRatio
+            lowerBound = aspectRatios[idx - 1] || bestAspectRatio * 0.8;
+            upperBound = bestAspectRatio;
+        } else {
+            // In the middle, refine between neighbors
+            lowerBound = aspectRatios[idx - 1];
+            upperBound = aspectRatios[idx + 1];
+        }
+
+        // Test intermediate aspect ratios (5 samples between best and its neighbors)
+        const refinementSamples = 5;
+        const step = (upperBound - lowerBound) / (refinementSamples + 1);
+
+        if (debugMode && (angleDeg === 9 || angleDeg === 22)) {
+            console.log(`🔷 [RECT-DEBUG] >> Refining aspect ratio around ${bestAspectRatio.toFixed(2)} in range [${lowerBound.toFixed(2)}, ${upperBound.toFixed(2)}]`);
+        }
+
+        for (let i = 1; i <= refinementSamples; i++) {
+            const refinedAspect = lowerBound + i * step;
+
+            // Skip if too close to an already-tested value
+            if (aspectRatios.some(ar => Math.abs(ar - refinedAspect) < 0.01)) {
+                continue;
             }
 
-            if (area > bestArea) {
-                bestArea = area;
+            const result = testAspectRatio(refinedAspect);
 
-                const finalMinX = centroid.x - finalWidth / 2;
-                const finalMinY = centroid.y - finalHeight / 2;
-
-                const finalCorners = [
-                    { x: finalMinX, y: finalMinY },
-                    { x: finalMinX + finalWidth, y: finalMinY },
-                    { x: finalMinX + finalWidth, y: finalMinY + finalHeight },
-                    { x: finalMinX, y: finalMinY + finalHeight }
-                ].map(c => {
-                    const dx = c.x - centroid.x;
-                    const dy = c.y - centroid.y;
-                    return {
-                        x: centroid.x + dx * cos + dy * sin,
-                        y: centroid.y + dx * sin - dy * cos
-                    };
-                });
-
-                bestResult = {
-                    corners: finalCorners,
-                    area: area,
-                    width: finalWidth,
-                    height: finalHeight,
-                    angle: angleDeg
-                };
+            if (result && result.area > bestArea) {
+                bestArea = result.area;
+                bestResult = result;
 
                 if (debugMode) {
-                    if (angleDeg === 9 || angleDeg === 22) {
-                        console.log(`🔷 [RECT-DEBUG] >> Angle ${angleDeg}° better result: aspect ${aspectRatio.toFixed(1)}, scale ${validScale.toFixed(3)}, dims ${finalWidth.toFixed(1)}×${finalHeight.toFixed(1)}, AREA=${area.toFixed(0)}`);
-                    } else {
-                        console.debug(`[fast-rectangle] Angle ${angleDeg}°: Better result found with aspect ${aspectRatio.toFixed(1)}, scale ${validScale.toFixed(3)}, area ${area.toFixed(1)}`);
-                    }
+                    console.log(`🔷 [RECT-DEBUG] >> Refined aspect ${refinedAspect.toFixed(3)}: IMPROVED area to ${result.area.toFixed(0)} (+${(result.area - bestArea).toFixed(0)})`);
                 }
             }
+        }
+    }
+
+    // Final logging
+    if (bestResult && debugMode) {
+        if (angleDeg === 9 || angleDeg === 22) {
+            console.log(`🔷 [RECT-DEBUG] >> Angle ${angleDeg}° BEST: aspect ${bestResult.aspectRatio.toFixed(3)}, scale ${bestResult.validScale.toFixed(3)}, dims ${bestResult.width.toFixed(1)}×${bestResult.height.toFixed(1)}, AREA=${bestResult.area.toFixed(0)}`);
+        } else {
+            console.debug(`[fast-rectangle] Angle ${angleDeg}°: Best result with aspect ${bestResult.aspectRatio.toFixed(3)}, scale ${bestResult.validScale.toFixed(3)}, area ${bestResult.area.toFixed(1)}`);
         }
     }
 

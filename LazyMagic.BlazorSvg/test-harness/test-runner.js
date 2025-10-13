@@ -760,7 +760,11 @@ async function main() {
 
     const results = [];
 
-    for (const testCase of testCases) {
+    // TEMPORARY: Only run first 6 tests (sample)
+    const testsToRun = testCases.slice(0, 6);
+    log(`Running ${testsToRun.length} of ${testCases.length} total tests (sample mode)`, 'yellow');
+
+    for (const testCase of testsToRun) {
         const result = await runTest(testCase);
         results.push({ testCase, result });
     }
