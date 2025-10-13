@@ -128,3 +128,4 @@ dotnet run --project MudBlazorTest.WASM/MudBlazorTest.WASM.csproj
 - LazyMagic.Service.DynamoDBRepo
 - LazyMagic.Service.Shared
 - LazyMagic.Shared
+- Find the latest screen shots here: C:\Users\TimothyMay\OneDrive - Insight Sciences Corporation\Pictures\Screenshots

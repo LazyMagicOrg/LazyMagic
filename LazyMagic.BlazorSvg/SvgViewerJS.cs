@@ -1,4 +1,4 @@
-using Microsoft.JSInterop;
+﻿using Microsoft.JSInterop;
 using System.IO;
 
 namespace LazyMagic.BlazorSvg
@@ -95,5 +95,4 @@ namespace LazyMagic.BlazorSvg
         public delegate void AllInsideSelectedChangedEventHandler(bool allInsideSelected);
 
     }
-
 }

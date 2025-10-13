@@ -1,14 +1,17 @@
 ﻿@namespace BlazorUI
 @page "/SVGTestPage"
+@using LazyMagic.BlazorSvg
 
 <PageTitle>SVGTest</PageTitle>
 
 <h1>SVGTestPage</h1>
 
 <div class="alert alert-info mb-3">
-    <strong>Initial State Test:</strong> Starting with paths "Ballroom_1" and "Ballroom_3" selected.
+    <strong>Real-time Selection Test:</strong> This page demonstrates SVG real-time selection and bounding box functionality.
     <br />
-    This creates a bounding box that may contain other unselected paths, demonstrating that AllInsideSelected is properly calculated on initial display.
+    <strong>Initial State:</strong> Starting with paths "Ballroom_1" and "Ballroom_3" selected.
+    <br />
+    <strong>Features:</strong> Real-time grouping and bounding box visualization for selected paths.
 </div>
 
 <SvgViewer @ref="@svgViewer"
@@ -37,15 +40,23 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
 }
 
 <div class="mt-4">
-    <h5>Test Instructions:</h5>
-    <ul>
-        <li><strong>Initial State:</strong> Should show "AllInsideSelected = ❌ NO" because Ballroom_1 and Ballroom_3 create a bounding box that may contain Ballroom_2 (if it exists and is unselected).</li>
-        <li><strong>Click TestSelect:</strong> Adds Ballroom_2 to selection, which should make "AllInsideSelected = ✅ YES" if all paths in the bounding box are now selected.</li>
-        <li><strong>Manual Selection:</strong> Click on SVG paths to see how AllInsideSelected changes dynamically.</li>
-    </ul>
+    <h5>Test Controls:</h5>
+    <div class="row">
+        <div class="col-md-6">
+            <button class="btn btn-info mb-2" @onclick="TestSelect">TestSelect (Add Ballroom_2)</button>
+        </div>
+    </div>
 </div>
 
-<button class="btn btn-primary" @onclick="TestSelect">TestSelect (Add Ballroom_2)</button>
+<div class="mt-4">
+    <h5>Test Instructions:</h5>
+    <ul>
+        <li><strong>Real-time Selection:</strong> Click on SVG paths to select/unselect them</li>
+        <li><strong>Bounding Box:</strong> Automatically displays around selected paths with overlap detection</li>
+        <li><strong>Visual Indicators:</strong> Selected paths change color and bounding box appears</li>
+        <li><strong>Auto-grouping:</strong> Real-time grouping visualization shows automatically for selections</li>
+    </ul>
+</div>
 
 @code {
     private List<string> currentPaths = new();
@@ -55,10 +66,12 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
     // AllInsideSelected should be false initially
     private List<string> initialPaths = new List<string> { "Ballroom_1", "Ballroom_3" };
     private bool allInsideSelected = false;
+
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
     }
+
     protected async override Task OnAfterRenderAsync(bool firstRender)
     {
        await base.OnAfterRenderAsync(firstRender);
@@ -68,9 +81,11 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
     {
         currentPaths = paths;
     }
+
     private async Task TestSelect()
     {
         var paths = new List<string> { "Ballroom_2" };
         await svgViewer!.SelectPaths(paths);
     }
+
 }
