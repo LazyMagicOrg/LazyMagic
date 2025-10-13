@@ -40,6 +40,19 @@ public class LazyOidcConfig : IOidcConfig
         }
     }
 
+    public virtual Dictionary<string, JObject> EventsApis
+    {
+        get
+        {
+            if (_loadedConfig != null)
+                return _loadedConfig.EventsApis;
+
+            // Return empty dictionary to avoid deadlock - configuration should be loaded asynchronously
+            LogMessage($"Config accessed before loading completed, returning empty dictionary");
+            return new Dictionary<string, JObject>();
+        }
+    }
+
     public virtual string SelectedAuthConfig
     {
         get
@@ -71,6 +84,15 @@ public class LazyOidcConfig : IOidcConfig
         {
             return authConfig;
         }
+        return null;
+    }
+
+    public virtual string? GetCurrentEventsApiUrl()
+    {
+        if (_loadedConfig != null)
+            return _loadedConfig.GetCurrentEventsApiUrl();
+
+        LogMessage($"Config accessed before loading completed, returning null");
         return null;
     }
 
