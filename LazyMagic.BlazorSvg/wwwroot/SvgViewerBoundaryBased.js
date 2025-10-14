@@ -75,6 +75,229 @@ function extractBoundaryEdges(polygon) {
 }
 
 /**
+ * Calculate cross product of vectors (p1->p2) and (p2->p3)
+ * Positive = left turn (convex), Negative = right turn (concave), Zero = collinear
+ */
+function calculateCrossProduct(p1, p2, p3) {
+    const dx1 = p2.x - p1.x;
+    const dy1 = p2.y - p1.y;
+    const dx2 = p3.x - p2.x;
+    const dy2 = p3.y - p2.y;
+    return dx1 * dy2 - dy1 * dx2;
+}
+
+/**
+ * Check if a line segment from p1 to p2 is completely inside the polygon
+ * Uses ray casting to verify multiple points along the segment
+ * Also checks that the segment doesn't intersect any polygon edges
+ */
+function isSegmentInsidePolygon(p1, p2, polygon) {
+    // Check 10 points along the segment for thorough coverage
+    for (let t = 0; t <= 1; t += 0.1) {
+        const testPoint = {
+            x: p1.x + t * (p2.x - p1.x),
+            y: p1.y + t * (p2.y - p1.y)
+        };
+
+        if (!isPointInPolygon(testPoint, polygon)) {
+            return false;
+        }
+    }
+
+    // Also check for edge intersections (chord shouldn't cross polygon edges)
+    for (let i = 0; i < polygon.length; i++) {
+        const edgeStart = polygon[i];
+        const edgeEnd = polygon[(i + 1) % polygon.length];
+
+        // Skip if the chord shares an endpoint with this edge
+        if (pointsEqual(p1, edgeStart) || pointsEqual(p1, edgeEnd) ||
+            pointsEqual(p2, edgeStart) || pointsEqual(p2, edgeEnd)) {
+            continue;
+        }
+
+        if (segmentsIntersect(p1, p2, edgeStart, edgeEnd)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+/**
+ * Check if two points are equal (within tolerance)
+ */
+function pointsEqual(p1, p2, tolerance = 0.1) {
+    return Math.abs(p1.x - p2.x) < tolerance && Math.abs(p1.y - p2.y) < tolerance;
+}
+
+/**
+ * Check if two line segments intersect (not including endpoints)
+ */
+function segmentsIntersect(p1, p2, p3, p4) {
+    const denom = (p4.y - p3.y) * (p2.x - p1.x) - (p4.x - p3.x) * (p2.y - p1.y);
+
+    // Parallel lines
+    if (Math.abs(denom) < 0.0001) return false;
+
+    const ua = ((p4.x - p3.x) * (p1.y - p3.y) - (p4.y - p3.y) * (p1.x - p3.x)) / denom;
+    const ub = ((p2.x - p1.x) * (p1.y - p3.y) - (p2.y - p1.y) * (p1.x - p3.x)) / denom;
+
+    // Check if intersection point is within both segments (excluding endpoints)
+    return ua > 0.01 && ua < 0.99 && ub > 0.01 && ub < 0.99;
+}
+
+/**
+ * Point-in-polygon test using ray casting algorithm
+ */
+function isPointInPolygon(point, polygon) {
+    let inside = false;
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+        const xi = polygon[i].x, yi = polygon[i].y;
+        const xj = polygon[j].x, yj = polygon[j].y;
+
+        const intersect = ((yi > point.y) !== (yj > point.y))
+            && (point.x < (xj - xi) * (point.y - yi) / (yj - yi) + xi);
+        if (intersect) inside = !inside;
+    }
+    return inside;
+}
+
+/**
+ * Generate optimal chord edges that straighten boundary segments
+ * Finds the best chords that span sequences of vertices at any angle
+ */
+function generateShortcutEdges(polygon, debugMode = false) {
+    const shortcuts = [];
+    const n = polygon.length;
+
+    // For each starting vertex, try to find optimal chords spanning 3+ vertices
+    for (let startIdx = 0; startIdx < n; startIdx++) {
+        // Try chord lengths from 3 to n-2 vertices (can span almost the entire polygon)
+        const maxSpan = n - 2; // Allow chords to span most of the polygon
+
+        for (let span = 3; span <= maxSpan; span++) {
+            const endIdx = (startIdx + span) % n;
+
+            // Calculate the boundary path length
+            let boundaryLength = 0;
+            for (let k = 0; k < span; k++) {
+                const idx1 = (startIdx + k) % n;
+                const idx2 = (startIdx + k + 1) % n;
+                const dx = polygon[idx2].x - polygon[idx1].x;
+                const dy = polygon[idx2].y - polygon[idx1].y;
+                boundaryLength += Math.sqrt(dx * dx + dy * dy);
+            }
+
+            // Try the direct chord
+            const p1 = polygon[startIdx];
+            const p2 = polygon[endIdx];
+            const dx = p2.x - p1.x;
+            const dy = p2.y - p1.y;
+            const chordLength = Math.sqrt(dx * dx + dy * dy);
+
+            // Only consider if chord is significantly shorter than boundary path
+            // (i.e., the boundary is NOT already straight)
+            const straightnessRatio = chordLength / boundaryLength;
+            if (straightnessRatio > 0.95) continue; // Already nearly straight
+
+            // Skip very short chords
+            if (chordLength < 20) continue;
+
+            // Try the direct chord first
+            if (isSegmentInsidePolygon(p1, p2, polygon)) {
+                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                const normalizedAngle = angle < 0 ? angle + 180 : angle;
+
+                shortcuts.push({
+                    p1,
+                    p2,
+                    length: chordLength,
+                    angle: normalizedAngle,
+                    dx,
+                    dy,
+                    index: -1,
+                    isShortcut: true,
+                    chainStartIndex: startIdx,
+                    chainEndIndex: endIdx,
+                    chainVertexCount: span + 1
+                });
+
+                if (debugMode) {
+                    console.log(`[boundary-based] Chord p${startIdx}->p${endIdx}: ${chordLength.toFixed(1)}px at ${normalizedAngle.toFixed(1)}° (spans ${span + 1} vertices, straightness ${(straightnessRatio * 100).toFixed(1)}%)`);
+                }
+            } else {
+                // If direct chord fails, try adjusting endpoints by moving along boundary
+                // Move start point clockwise (next vertex)
+                const altStart1 = (startIdx + 1) % n;
+                const p1Alt1 = polygon[altStart1];
+                const dx1 = p2.x - p1Alt1.x;
+                const dy1 = p2.y - p1Alt1.y;
+                const length1 = Math.sqrt(dx1 * dx1 + dy1 * dy1);
+
+                if (length1 >= 20 && isSegmentInsidePolygon(p1Alt1, p2, polygon)) {
+                    const angle = Math.atan2(dy1, dx1) * 180 / Math.PI;
+                    const normalizedAngle = angle < 0 ? angle + 180 : angle;
+
+                    shortcuts.push({
+                        p1: p1Alt1,
+                        p2,
+                        length: length1,
+                        angle: normalizedAngle,
+                        dx: dx1,
+                        dy: dy1,
+                        index: -1,
+                        isShortcut: true,
+                        chainStartIndex: altStart1,
+                        chainEndIndex: endIdx,
+                        chainVertexCount: span
+                    });
+
+                    if (debugMode) {
+                        console.log(`[boundary-based] Adjusted chord p${altStart1}->p${endIdx}: ${length1.toFixed(1)}px at ${normalizedAngle.toFixed(1)}° (adjusted start CW)`);
+                    }
+                }
+
+                // Move end point counter-clockwise (previous vertex)
+                const altEnd1 = (endIdx - 1 + n) % n;
+                const p2Alt1 = polygon[altEnd1];
+                const dx2 = p2Alt1.x - p1.x;
+                const dy2 = p2Alt1.y - p1.y;
+                const length2 = Math.sqrt(dx2 * dx2 + dy2 * dy2);
+
+                if (length2 >= 20 && isSegmentInsidePolygon(p1, p2Alt1, polygon)) {
+                    const angle = Math.atan2(dy2, dx2) * 180 / Math.PI;
+                    const normalizedAngle = angle < 0 ? angle + 180 : angle;
+
+                    shortcuts.push({
+                        p1,
+                        p2: p2Alt1,
+                        length: length2,
+                        angle: normalizedAngle,
+                        dx: dx2,
+                        dy: dy2,
+                        index: -1,
+                        isShortcut: true,
+                        chainStartIndex: startIdx,
+                        chainEndIndex: altEnd1,
+                        chainVertexCount: span
+                    });
+
+                    if (debugMode) {
+                        console.log(`[boundary-based] Adjusted chord p${startIdx}->p${altEnd1}: ${length2.toFixed(1)}px at ${normalizedAngle.toFixed(1)}° (adjusted end CCW)`);
+                    }
+                }
+            }
+        }
+    }
+
+    if (debugMode) {
+        console.log(`[boundary-based] Generated ${shortcuts.length} chord edges total`);
+    }
+
+    return shortcuts;
+}
+
+/**
  * Find dominant angles in the polygon
  * Groups similar angles and returns the most significant ones
  */
@@ -670,7 +893,7 @@ function detectTrapezoid(rotated, tolerance = 0.1) {
  * Find the largest axis-aligned bounding box that fits inside the polygon
  * when rotated by the given angle
  */
-function findMaxRectangleAtAngle(polygon, angleDeg, debugMode = false, targetArea = null, adaptiveGridSteps = 10, adaptiveAspectRatios = [0.5, 0.6, 0.7, 0.85, 1.0, 1.2, 1.4, 1.5, 1.7, 2.0, 2.3], centroidStrategy = "uniform", pathCount = 2) {
+function findMaxRectangleAtAngle(polygon, angleDeg, debugMode = false, targetArea = null, adaptiveGridSteps = 10, adaptiveAspectRatios = [0.5, 0.6, 0.7, 0.85, 1.0, 1.2, 1.4, 1.5, 1.7, 2.0, 2.3], centroidStrategy = "uniform", pathCount = 2, chordEdges = []) {
     const angleRad = (angleDeg * Math.PI) / 180;
     const cos = Math.cos(angleRad);
     const sin = Math.sin(angleRad);
@@ -684,51 +907,79 @@ function findMaxRectangleAtAngle(polygon, angleDeg, debugMode = false, targetAre
         y: -p.x * sin + p.y * cos
     }));
 
-    // Try edge-based rectangles for 4-vertex polygons
+    // Try edge-based rectangles for all polygons (PRIMARY ALGORITHM)
     // For each edge, try placing a rectangle with that edge as one side
-    if (rotated.length === 4) {
-        let edgeBestRect = null;
-        let edgeBestArea = 0;
+    // This uses ray-tracing/binary search expansion perpendicular from each edge
+    let edgeBestRect = null;
+    let edgeBestArea = 0;
 
-        // Try each edge as a potential rectangle edge
-        for (let i = 0; i < rotated.length; i++) {
-            const p1 = rotated[i];
-            const p2 = rotated[(i + 1) % rotated.length];
-            const edge = { p1, p2, index: [i, (i + 1) % rotated.length] };
+    // Try each polygon boundary edge as a potential rectangle edge
+    for (let i = 0; i < rotated.length; i++) {
+        const p1 = rotated[i];
+        const p2 = rotated[(i + 1) % rotated.length];
+        const edge = { p1, p2, index: [i, (i + 1) % rotated.length] };
 
-            const rect = findRectangleFromEdge(edge, rotated, forceDebug);
+        const rect = findRectangleFromEdge(edge, rotated, forceDebug);
+        if (rect && rect.area > edgeBestArea) {
+            edgeBestArea = rect.area;
+            edgeBestRect = rect;
+        }
+    }
+
+    // Also try chord edges that match this angle (within tolerance)
+    const angleTolerance = 5; // degrees
+    for (const chord of chordEdges) {
+        // Check if this chord's angle matches the current test angle
+        const angleDiff = Math.abs(chord.angle - angleDeg);
+        if (angleDiff < angleTolerance || angleDiff > (180 - angleTolerance)) {
+            // Rotate the chord endpoints
+            const rotatedP1 = {
+                x: chord.p1.x * cos + chord.p1.y * sin,
+                y: -chord.p1.x * sin + chord.p1.y * cos
+            };
+            const rotatedP2 = {
+                x: chord.p2.x * cos + chord.p2.y * sin,
+                y: -chord.p2.x * sin + chord.p2.y * cos
+            };
+
+            const chordEdge = { p1: rotatedP1, p2: rotatedP2, index: [-1, -1], isChord: true };
+
+            const rect = findRectangleFromEdge(chordEdge, rotated, forceDebug);
             if (rect && rect.area > edgeBestArea) {
                 edgeBestArea = rect.area;
                 edgeBestRect = rect;
+                if (forceDebug) {
+                    console.log(`[findMaxRect] ✨ Chord edge improved result: ${rect.width.toFixed(1)} × ${rect.height.toFixed(1)} = ${rect.area.toFixed(1)} sq px`);
+                }
             }
         }
+    }
 
-        if (edgeBestRect && edgeBestArea > 0) {
-            // Rotate corners back to original space
-            const originalCorners = edgeBestRect.corners.map(p => ({
-                x: p.x * cos - p.y * sin,
-                y: p.x * sin + p.y * cos
-            }));
+    if (edgeBestRect && edgeBestArea > 0) {
+        // Rotate corners back to original space
+        const originalCorners = edgeBestRect.corners.map(p => ({
+            x: p.x * cos - p.y * sin,
+            y: p.x * sin + p.y * cos
+        }));
 
-            const origCentroid = {
-                x: (originalCorners[0].x + originalCorners[1].x + originalCorners[2].x + originalCorners[3].x) / 4,
-                y: (originalCorners[0].y + originalCorners[1].y + originalCorners[2].y + originalCorners[3].y) / 4
-            };
+        const origCentroid = {
+            x: (originalCorners[0].x + originalCorners[1].x + originalCorners[2].x + originalCorners[3].x) / 4,
+            y: (originalCorners[0].y + originalCorners[1].y + originalCorners[2].y + originalCorners[3].y) / 4
+        };
 
-            if (forceDebug) {
-                console.log(`[findMaxRect] ✅ Edge-based expansion found ${edgeBestRect.width.toFixed(1)} × ${edgeBestRect.height.toFixed(1)} = ${edgeBestArea.toFixed(1)} sq px`);
-            }
-
-            return {
-                corners: originalCorners,
-                width: edgeBestRect.width,
-                height: edgeBestRect.height,
-                area: edgeBestArea,
-                angle: angleDeg,
-                centroid: origCentroid,
-                aspectRatio: edgeBestRect.width / edgeBestRect.height
-            };
+        if (forceDebug) {
+            console.log(`[findMaxRect] ✅ Edge-based expansion found ${edgeBestRect.width.toFixed(1)} × ${edgeBestRect.height.toFixed(1)} = ${edgeBestArea.toFixed(1)} sq px`);
         }
+
+        return {
+            corners: originalCorners,
+            width: edgeBestRect.width,
+            height: edgeBestRect.height,
+            area: edgeBestArea,
+            angle: angleDeg,
+            centroid: origCentroid,
+            aspectRatio: edgeBestRect.width / edgeBestRect.height
+        };
     }
 
     // Find bounding box of rotated polygon
@@ -1273,12 +1524,14 @@ function isPointInPolygonSlow(point, polygon) {
  * If a point is very close to the boundary (within tolerance), consider it inside
  */
 function isPointInPolygonWithTolerance(point, polygon, tolerance = 0.5) {
-    // First check if point is inside
+    // First check if point is inside - this is the primary test
     if (isPointInPolygonSlow(point, polygon)) {
         return true;
     }
 
-    // If not inside, check if it's very close to any edge
+    // If not strictly inside, check if it's ON the boundary (within tolerance)
+    // This handles floating-point precision issues where a point might be on an edge
+    // but register as slightly outside due to rounding
     for (let i = 0; i < polygon.length; i++) {
         const p1 = polygon[i];
         const p2 = polygon[(i + 1) % polygon.length];
@@ -1300,8 +1553,10 @@ function isPointInPolygonWithTolerance(point, polygon, tolerance = 0.5) {
         const distY = point.y - projY;
         const dist = Math.sqrt(distX * distX + distY * distY);
 
+        // If point is very close to the edge, consider it valid
+        // This is acceptable because we're testing if a rectangle corner lands exactly on the boundary
         if (dist <= tolerance) {
-            return true; // Point is very close to boundary, consider it inside
+            return true;
         }
     }
 
@@ -1599,18 +1854,28 @@ function boundaryBasedInscribedRectangle(polygon, options = {}) {
     // Extract boundary edges
     const edges = extractBoundaryEdges(polygon);
 
+    // Generate shortcut edges across convex chains
+    const shortcuts = generateShortcutEdges(polygon, forceDebug);
+
+    // Combine original edges with shortcuts for angle analysis
+    const allEdges = [...edges, ...shortcuts];
+
+    // Re-sort combined edges by length
+    allEdges.sort((a, b) => b.length - a.length);
+
     if (forceDebug) {
-        console.log(`[boundary-based] Polygon has ${polygon.length} vertices, ${edges.length} edges`);
-        console.log(`[boundary-based] Longest edge: ${edges[0].length.toFixed(1)}px at ${edges[0].angle.toFixed(1)}°`);
+        console.log(`[boundary-based] Polygon has ${polygon.length} vertices, ${edges.length} original edges, ${shortcuts.length} shortcut edges`);
+        console.log(`[boundary-based] Longest edge: ${allEdges[0].length.toFixed(1)}px at ${allEdges[0].angle.toFixed(1)}°${allEdges[0].isShortcut ? ' (shortcut)' : ''}`);
         console.log(`[boundary-based] All edges (sorted by length):`);
-        for (let i = 0; i < Math.min(10, edges.length); i++) {
-            const e = edges[i];
-            console.log(`  ${i+1}. Edge ${e.index}: ${e.length.toFixed(1)}px at ${e.angle.toFixed(1)}° from (${e.p1.x.toFixed(1)}, ${e.p1.y.toFixed(1)}) to (${e.p2.x.toFixed(1)}, ${e.p2.y.toFixed(1)})`);
+        for (let i = 0; i < Math.min(10, allEdges.length); i++) {
+            const e = allEdges[i];
+            const edgeType = e.isShortcut ? ` (shortcut p${e.chainStartIndex}->p${e.chainEndIndex})` : ` (edge ${e.index})`;
+            console.log(`  ${i+1}. ${edgeType}: ${e.length.toFixed(1)}px at ${e.angle.toFixed(1)}° from (${e.p1.x.toFixed(1)}, ${e.p1.y.toFixed(1)}) to (${e.p2.x.toFixed(1)}, ${e.p2.y.toFixed(1)})`);
         }
     }
 
-    // Find dominant angles
-    const angleGroups = findDominantAngles(edges, angleTolerance);
+    // Find dominant angles (now includes shortcut edges)
+    const angleGroups = findDominantAngles(allEdges, angleTolerance);
 
     if (forceDebug) {
         console.log(`[boundary-based] Found ${angleGroups.length} angle groups:`);
@@ -1675,7 +1940,7 @@ function boundaryBasedInscribedRectangle(polygon, options = {}) {
             break;
         }
 
-        const rect = findMaxRectangleAtAngle(polygon, angle, forceDebug, targetArea, adaptiveGridSteps, adaptiveAspectRatios, centroidStrategy, pathCount || 2);
+        const rect = findMaxRectangleAtAngle(polygon, angle, forceDebug, targetArea, adaptiveGridSteps, adaptiveAspectRatios, centroidStrategy, pathCount || 2, shortcuts);
 
         if (forceDebug) {
             if (rect) {
@@ -1946,6 +2211,18 @@ function hybridInscribedRectangle(polygon, options = {}) {
         // This assumes fastInscribedRectangle is available in the same context
         if (typeof fastInscribedRectangle !== 'undefined') {
             try {
+                // SEEDING: Pass boundary-based results as seed parameters to optimize starting point
+                // This ensures optimized algorithm always tests the boundary-based solution first
+                const seedCentroid = boundaryResult ? boundaryResult.centroid : null;
+                const seedAngle = boundaryResult ? boundaryResult.angle : null;
+                const seedAspectRatio = (boundaryResult && boundaryResult.width && boundaryResult.height)
+                    ? boundaryResult.width / boundaryResult.height
+                    : null;
+
+                if (seedCentroid && debugMode) {
+                    console.log(`🌱 [HYBRID-SEED] Seeding optimized with boundary-based centroid (${seedCentroid.x.toFixed(1)}, ${seedCentroid.y.toFixed(1)}), angle ${seedAngle}°, aspect ratio ${seedAspectRatio ? seedAspectRatio.toFixed(3) : 'N/A'}`);
+                }
+
                 optimizedResult = fastInscribedRectangle(polygon, {
                     debugLog: false,
                     maxTime,
@@ -1953,7 +2230,10 @@ function hybridInscribedRectangle(polygon, options = {}) {
                     polylabelPrecision,
                     aspectRatios,
                     binarySearchPrecision,
-                    binarySearchMaxIterations
+                    binarySearchMaxIterations,
+                    seedCentroid,      // NEW: Seed centroid from boundary-based result
+                    seedAngle,         // NEW: Seed angle from boundary-based result
+                    seedAspectRatio    // NEW: Seed aspect ratio from boundary-based result
                 });
             } catch (error) {
                 console.error('[hybrid] Error running optimized algorithm:', error.message);

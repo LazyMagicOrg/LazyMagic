@@ -24,19 +24,58 @@ Current test cases:
 
 ## Running Tests
 
+### Understanding the Test System
+
+The test harness has **two parallel execution paths**:
+
+#### Full Test Suite (251 combinations)
+- **Config**: `test-config.js` (auto-generated, 251 test cases)
+- **Runner**: `test-runner.js` (imports from `test-config.js`)
+- **Source**: Generated from `valid-combinations.json`
+- **Command**: `node test-runner.js`
+
+#### Sample Test Suite (7 combinations)
+- **Config**: `test-config-sample.js` (manually maintained, currently 7 test cases)
+- **Runner**: `test-runner-sample.js` (imports from `test-config-sample.js`)
+- **Source**: Uses `valid-combinations-sample.json`
+- **Command**: `node test-runner-sample.js`
+
+**Important Notes**:
+- `test-runner-sample.js` is currently a stub that only lists tests without executing them
+- To actually **run** sample tests, use `node compute-sample.js` instead
+- `compute-sample.js` workflow:
+  1. Loads test cases from `valid-combinations-sample.json`
+  2. Temporarily backs up and overwrites `test-config.js`
+  3. Runs the full `test-runner.js` with sample data
+  4. Restores original `test-config.js` from backup
+
+**Common Confusion**: The presence of both `test-runner.js` and `test-runner-sample.js` suggests they run different test sets, but actually:
+- `test-runner.js` always loads from `test-config.js`
+- What matters is what's **in** `test-config.js` at runtime
+- `compute-sample.js` swaps the config file to run samples through the full runner
+
+### Quick Reference
+
+| What I Want | Command to Run | Config File Used | Test Count |
+|-------------|---------------|------------------|------------|
+| Run sample tests (currently 7) | `node compute-sample.js` | `valid-combinations-sample.json` | 7 |
+| Run all tests | `node test-runner.js` | `test-config.js` (251 combos) | 251 |
+| Update sample tests | Edit `valid-combinations-sample.json` then run `compute-sample.js` | - | - |
+| Generate full test config | `node compute-all-combinations.js` | Generates `valid-combinations.json` | 251 |
+
 ### Main Test Scripts
 
 ```bash
+# Run full test suite (ALL 251 combinations)
+node test-runner.js
+
+# Run sample tests (uses valid-combinations-sample.json)
+node compute-sample.js
+
 # Run browser-based test runner (opens browser, generates visual SVG output)
 node browser-test-runner.js
 
-# Run all 251 combination tests (comprehensive test suite)
-node compute-inscribed-rectangles.js
-
-# Test a specific combination
-node compute-sample.js
-
-# Generate all valid combinations
+# Generate all valid combinations (creates valid-combinations.json with 251 combos)
 node compute-all-combinations.js
 
 # Run parameter sweep for algorithm tuning

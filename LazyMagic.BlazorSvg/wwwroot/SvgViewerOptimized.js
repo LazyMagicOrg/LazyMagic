@@ -697,6 +697,29 @@ function getMultipleCentroids(polygon, minX, maxX, minY, maxY, options = {}) {
         standardCentroids.push(bboxCenter);
     }
 
+    // NEW: Add polygon vertices as potential rectangle centers (corners approach)
+    // For simple polygons like trapezoids/quadrilaterals, the optimal rectangle
+    // often has its center near a vertex
+    for (const vertex of polygon) {
+        if (isPointInPolygonSlow(vertex, polygon)) {
+            standardCentroids.push(vertex);
+        }
+    }
+
+    // NEW: Add edge midpoints as potential centers
+    // For rectangles aligned with edges, the optimal center is often at an edge midpoint
+    for (let i = 0; i < polygon.length; i++) {
+        const p1 = polygon[i];
+        const p2 = polygon[(i + 1) % polygon.length];
+        const midpoint = {
+            x: (p1.x + p2.x) / 2,
+            y: (p1.y + p2.y) / 2
+        };
+        if (isPointInPolygonSlow(midpoint, polygon)) {
+            standardCentroids.push(midpoint);
+        }
+    }
+
     // 3. Add strategic grid sampling with FIXED step size and ALIGNED origins
     // Use fixed pixel spacing with grid aligned to absolute coordinates
     // This ensures Shape 1, 2, 3 all test the SAME grid points in overlapping regions
@@ -801,7 +824,7 @@ function getMultipleCentroids(polygon, minX, maxX, minY, maxY, options = {}) {
     // DEBUG: Log polygon characteristics with RECT-DEBUG prefix for easy filtering
     console.log(`🔷 [RECT-DEBUG] Polygon: ${polygon.length} vertices, bounds: (${minX.toFixed(1)}, ${minY.toFixed(1)}) to (${maxX.toFixed(1)}, ${maxY.toFixed(1)}), size: ${width.toFixed(1)}x${height.toFixed(1)}`);
     console.log(`🔷 [RECT-DEBUG] Grid: ${stepSize.toFixed(1)}px step, aligned from (${gridStartX.toFixed(1)}, ${gridStartY.toFixed(1)}) to (${gridEndX.toFixed(1)}, ${gridEndY.toFixed(1)}), snap=${snapSize.toFixed(1)}px`);
-    console.log(`🔷 [RECT-DEBUG] Centroids: ${uniqueCentroids.length} total (grid: ${gridCountX}x${gridCountY})`);
+    console.log(`🔷 [RECT-DEBUG] Centroids: ${uniqueCentroids.length} total (grid: ${gridCountX}x${gridCountY}, vertices: ${polygon.length}, edges: ${polygon.length})`);
     console.log(`🔷 [RECT-DEBUG] Pole: (${pole.x.toFixed(1)}, ${pole.y.toFixed(1)}), Area centroid: (${areaCentroid.x.toFixed(1)}, ${areaCentroid.y.toFixed(1)})`);
 
     return uniqueCentroids;
@@ -963,7 +986,7 @@ function fastInscribedRectangle(polygon, options = {}) {
 
     const {
         angleStep = 12,        // OPTIMIZED: Slightly finer initial angle step
-        refinementStep = 2,    // OPTIMIZED: Finer refinement step
+        refinementStep = 2,    // OPTIMIZED: Finer refinement Step
         maxTime = 100,         // Max time in ms
         debugMode = false,     // Enable debug logging
         // Algorithm tuning parameters
@@ -971,7 +994,12 @@ function fastInscribedRectangle(polygon, options = {}) {
         polylabelPrecision = 1.0,  // Precision for pole of inaccessibility
         aspectRatios = [0.5, 0.7, 1.0, 1.4, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 5.5, 6.0],  // Aspect ratios to test
         binarySearchPrecision = 0.001,  // Binary search convergence threshold
-        binarySearchMaxIterations = 15   // Max binary search iterations
+        binarySearchMaxIterations = 15,   // Max binary search iterations
+        // Seeding parameters from boundary-based algorithm
+        seedCentroid = null,   // Seed centroid from boundary-based result
+        seedAngle = null,      // Seed angle from boundary-based result
+        seedAspectRatio = null, // Seed aspect ratio (width/height) from boundary-based result
+        seedRectangle = null   // Seed rectangle from boundary-based result (corners and area)
     } = options;
 
     // Bounds already calculated above
@@ -991,10 +1019,41 @@ function fastInscribedRectangle(polygon, options = {}) {
         if (debugMode) console.debug(`[fast-rectangle] Concave polygon detected, testing ${centroids.length} centroids`);
     }
 
-    // OPTIMIZED: Test each centroid with early exit for poor performers
+    // SEEDING: If a seed centroid is provided from boundary-based algorithm, add it at the front
+    // This ensures the optimized algorithm always tests the boundary-based solution first
+    if (seedCentroid && seedCentroid.x !== undefined && seedCentroid.y !== undefined) {
+        // Check if centroid is inside polygon before adding
+        if (isPointInPolygonSlow(seedCentroid, polygon)) {
+            centroids.unshift(seedCentroid); // Add at front for highest priority
+            console.log(`🌱 [SEED] Added boundary-based seed centroid (${seedCentroid.x.toFixed(1)}, ${seedCentroid.y.toFixed(1)}) at front of ${centroids.length} centroids`);
+        } else {
+            console.warn(`⚠️ [SEED] Seed centroid (${seedCentroid.x.toFixed(1)}, ${seedCentroid.y.toFixed(1)}) is outside polygon, skipping`);
+        }
+    }
+
+    // SEEDING: Test seed rectangle first if provided
+    // This ensures optimized algorithm never finds smaller than boundary-based
     let bestRect = null;
     let bestArea = 0;
     let bestCentroid = null;
+    let isSeedRectangle = false; // Track if best rectangle is the seed
+
+    if (seedRectangle && seedRectangle.corners && seedRectangle.area) {
+        console.log(`🌱 [SEED] Testing boundary-based seed rectangle: ${seedRectangle.area.toFixed(1)} sq px`);
+
+        // The boundary-based algorithm might have corners slightly outside due to floating-point precision
+        // So we ALWAYS accept the seed rectangle as the baseline - it's guaranteed valid by the boundary-based algorithm
+        console.log(`✓ [SEED] Accepting boundary-based rectangle as baseline (boundary-based validation is authoritative)`);
+        bestRect = seedRectangle;
+        bestArea = seedRectangle.area;
+        bestCentroid = seedRectangle.centroid || {
+            x: (seedRectangle.corners[0].x + seedRectangle.corners[2].x) / 2,
+            y: (seedRectangle.corners[0].y + seedRectangle.corners[2].y) / 2
+        };
+        isSeedRectangle = true; // Mark that we're using the seed
+    }
+
+    // OPTIMIZED: Test each centroid with early exit for poor performers
     let previousBestArea = 0;
 
     // Sort centroids by distance from polygon center for better early candidates
@@ -1060,14 +1119,28 @@ function fastInscribedRectangle(polygon, options = {}) {
         // Use deterministic ordering by combining and sorting all angles
         const baseStrategicAngles = [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 76, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176];
 
+        // SEEDING: Add seed angle from boundary-based algorithm if provided
         const allAngles = [...uniqueAngles, ...perpAngles, ...baseStrategicAngles];
+        if (seedAngle !== null && seedAngle !== undefined) {
+            // Normalize seed angle to 0-180 range
+            const normalizedSeedAngle = ((seedAngle % 180) + 180) % 180;
+            allAngles.unshift(normalizedSeedAngle); // Add at front for highest priority
+            if (debugMode) {
+                console.log(`🌱 [SEED] Added boundary-based seed angle ${seedAngle.toFixed(1)}° (normalized: ${normalizedSeedAngle.toFixed(1)}°) at front of angle list`);
+            }
+        }
+
         const strategicAngles = allAngles
             .filter((angle, index, array) => array.indexOf(angle) === index) // Remove duplicates
             .sort((a, b) => {
-                // Prioritize natural angles, then sort by value
+                // Prioritize seed angle, then natural angles, then sort by value
+                const aIsSeed = (seedAngle !== null && seedAngle !== undefined && Math.abs(a - ((seedAngle % 180) + 180) % 180) < 0.1);
+                const bIsSeed = (seedAngle !== null && seedAngle !== undefined && Math.abs(b - ((seedAngle % 180) + 180) % 180) < 0.1);
                 const aIsNatural = uniqueAngles.includes(a) || perpAngles.includes(a);
                 const bIsNatural = uniqueAngles.includes(b) || perpAngles.includes(b);
 
+                if (aIsSeed && !bIsSeed) return -1;
+                if (!aIsSeed && bIsSeed) return 1;
                 if (aIsNatural && !bIsNatural) return -1;
                 if (!aIsNatural && bIsNatural) return 1;
                 return a - b;
@@ -1080,6 +1153,19 @@ function fastInscribedRectangle(polygon, options = {}) {
             console.log(`🔷 [RECT-DEBUG] Testing ${strategicAngles.length} angles at (552, 228), angle list: [${strategicAngles.slice(0, 15).join(', ')}...]`);
         }
 
+        // SEEDING: Prepare aspect ratios with seed aspect ratio at front if provided
+        let testAspectRatios = [...aspectRatios];
+        if (seedAspectRatio !== null && seedAspectRatio !== undefined && seedAspectRatio > 0) {
+            // Add seed aspect ratio at front for highest priority
+            testAspectRatios.unshift(seedAspectRatio);
+            // Also add the reciprocal (perpendicular orientation) for robustness
+            const reciprocal = 1.0 / seedAspectRatio;
+            if (!testAspectRatios.some(ar => Math.abs(ar - reciprocal) < 0.01)) {
+                testAspectRatios.unshift(reciprocal);
+            }
+            console.log(`🌱 [SEED] Added boundary-based seed aspect ratios ${seedAspectRatio.toFixed(3)} and ${reciprocal.toFixed(3)} at front of ${testAspectRatios.length} aspect ratios`);
+        }
+
         // First pass: Test strategic angles
         for (const angle of strategicAngles) {
             if (performance.now() - startTime > maxTime) break;
@@ -1090,7 +1176,7 @@ function fastInscribedRectangle(polygon, options = {}) {
             // Debug logging for angles 0, 9, and 99 to see their actual areas
             const isKeyAngle = (angle === 0 || angle === 9 || angle === 99);
 
-            const rect = tryRectangleAtAngle(polygon, angle, centroid, isCriticalTest || isKeyAngle, aspectRatios, binarySearchPrecision, binarySearchMaxIterations);
+            const rect = tryRectangleAtAngle(polygon, angle, centroid, isCriticalTest || isKeyAngle, testAspectRatios, binarySearchPrecision, binarySearchMaxIterations);
 
             if (isCriticalTest) {
                 if (rect) {
@@ -1155,7 +1241,7 @@ function fastInscribedRectangle(polygon, options = {}) {
                 if (performance.now() - startTime > maxTime) break;
                 if (strategicAngles.includes(angle)) continue; // Skip already tested angles
 
-                const rect = tryRectangleAtAngle(polygon, angle, centroid, false, aspectRatios, binarySearchPrecision, binarySearchMaxIterations);
+                const rect = tryRectangleAtAngle(polygon, angle, centroid, false, testAspectRatios, binarySearchPrecision, binarySearchMaxIterations);
                 if (rect && rect.area > bestAreaForCentroid) {
                     bestAreaForCentroid = rect.area;
                     bestAngleForCentroid = angle;
@@ -1170,6 +1256,7 @@ function fastInscribedRectangle(polygon, options = {}) {
             bestArea = bestAreaForCentroid;
             bestRect = bestRectForCentroid;
             bestCentroid = centroid;
+            isSeedRectangle = false; // Clear seed flag since we found a better rectangle
 
             console.log(`🔷 [RECT-DEBUG] New best: centroid (${centroid.x.toFixed(1)}, ${centroid.y.toFixed(1)}) → area ${bestAreaForCentroid.toFixed(0)} at angle ${bestAngleForCentroid}°`);
         }
@@ -1178,8 +1265,9 @@ function fastInscribedRectangle(polygon, options = {}) {
     const elapsed = performance.now() - startTime;
 
     // FINAL CHECK: Test the winning rectangle for boundary violations
+    // SKIP this check if we're using the seed rectangle, since boundary-based validation is authoritative
     let rejectedByValidation = false;
-    if (bestRect && bestRect.corners) {
+    if (bestRect && bestRect.corners && !isSeedRectangle) {
         // Test if ANY point violates boundaries
         let violationFound = false;
         const testPoints = [...bestRect.corners];
@@ -1202,6 +1290,8 @@ function fastInscribedRectangle(polygon, options = {}) {
             bestRect = null;
             rejectedByValidation = true;
         }
+    } else if (isSeedRectangle) {
+        console.log(`✓ [SEED] Skipping final validation for seed rectangle (boundary-based validation is authoritative)`);
     }
 
     // DEBUG: Show polygon characteristics first

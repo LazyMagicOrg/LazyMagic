@@ -406,43 +406,113 @@ async function runTest(testCase) {
         log(`    (${v.x.toFixed(1)}, ${v.y.toFixed(1)})`, 'yellow');
     }
 
-    // Calculate inscribed rectangle using hybrid approach (tries boundary-based first)
-    log(`\n  Calculating inscribed rectangle with hybrid algorithm...`, 'cyan');
-    const startTime = performance.now();
+    // Calculate inscribed rectangle using BOTH algorithms for comparison
+    log(`\n  Calculating inscribed rectangles with BOTH algorithms...`, 'cyan');
 
-    // SMART HYBRID: Use boundary-based for simple shapes, optimized for complex concave shapes
-    // Detect complexity: vertex count and concavity
-    const vertexCount = polygon.length;
-    const isComplex = vertexCount >= 10;  // 10+ vertices = complex polygon, likely concave
-
-    const rectangle = hybridInscribedRectangle(polygon, {
+    // Run boundary-based algorithm
+    log(`\n  [1/2] Running boundary-based algorithm...`, 'cyan');
+    const boundaryStartTime = performance.now();
+    const boundaryOptions = {
         debugMode: false,
-        // Smart threshold: Use boundary-based for simple shapes, optimized for complex
-        coverageThreshold: isComplex ? 0.0 : 0.85,  // Complex = force optimized, Simple = allow boundary
-        targetArea: goalRectangle ? goalRectangle.area : null,
-        pathCount: pathData.length,
-
-        // Boundary-based options (fast for simple shapes)
         maxAngles: 36,  // Test every 10° for edge alignment
         angleTolerance: 2,
-        testPerpendicular: true,
+        testPerpendicular: true
+    };
+    const boundaryRectangle = boundaryBasedInscribedRectangle(polygon, boundaryOptions);
+    const boundaryEndTime = performance.now();
+    const boundaryTime = boundaryEndTime - boundaryStartTime;
 
-        // Optimized grid-based algorithm (for complex concave shapes)
+    // Run optimized algorithm WITH SEEDING from boundary-based results
+    log(`\n  [2/2] Running optimized algorithm...`, 'cyan');
+    const optimizedStartTime = performance.now();
+
+    // Extract seed parameters from boundary-based results
+    const seedCentroid = boundaryRectangle ? boundaryRectangle.centroid : null;
+    const seedAngle = boundaryRectangle ? boundaryRectangle.angle : null;
+    // Calculate aspect ratio from boundary-based result (width / height)
+    const seedAspectRatio = (boundaryRectangle && boundaryRectangle.width && boundaryRectangle.height)
+        ? boundaryRectangle.width / boundaryRectangle.height
+        : null;
+    // Pass entire rectangle as seed to ensure optimized never finds smaller
+    const seedRectangle = boundaryRectangle || null;
+
+    const optimizedOptions = {
+        debugMode: false,
         maxTime: 60000,  // 60 seconds for complex shapes
         gridStep: 10.0,
         polylabelPrecision: 0.5,
         aspectRatios: [0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.7, 2.0, 2.5, 3.0],
         binarySearchPrecision: 0.01,
-        binarySearchMaxIterations: 25
-    });
-    const endTime = performance.now();
-    const calculationTime = endTime - startTime;
+        binarySearchMaxIterations: 25,
+        seedCentroid,      // Seed centroid from boundary-based result
+        seedAngle,         // Seed angle from boundary-based result
+        seedAspectRatio,   // Seed aspect ratio (width/height) from boundary-based result
+        seedRectangle      // Entire boundary-based rectangle to use as baseline
+    };
+    const optimizedRectangle = fastInscribedRectangle(polygon, optimizedOptions);
+    const optimizedEndTime = performance.now();
+    const optimizedTime = optimizedEndTime - optimizedStartTime;
 
-    if (!rectangle) {
-        log(`  ❌ Failed to calculate inscribed rectangle`, 'red');
+    // Process boundary-based result
+    if (boundaryRectangle) {
+        if (!boundaryRectangle.centroid && boundaryRectangle.corners) {
+            const cx = boundaryRectangle.corners.reduce((sum, c) => sum + c.x, 0) / boundaryRectangle.corners.length;
+            const cy = boundaryRectangle.corners.reduce((sum, c) => sum + c.y, 0) / boundaryRectangle.corners.length;
+            boundaryRectangle.centroid = { x: cx, y: cy };
+        }
+        if (!boundaryRectangle.type) {
+            boundaryRectangle.type = 'boundary-based';
+        }
+        log(`  ✓ Boundary-based found rectangle`, 'green');
+        log(`    Area: ${boundaryRectangle.area.toFixed(1)} sq px`, 'green');
+        log(`    Time: ${boundaryTime.toFixed(1)} ms`, 'green');
+    } else {
+        log(`  ✗ Boundary-based failed`, 'red');
+    }
+
+    // Process optimized result
+    if (optimizedRectangle) {
+        if (!optimizedRectangle.centroid && optimizedRectangle.corners) {
+            const cx = optimizedRectangle.corners.reduce((sum, c) => sum + c.x, 0) / optimizedRectangle.corners.length;
+            const cy = optimizedRectangle.corners.reduce((sum, c) => sum + c.y, 0) / optimizedRectangle.corners.length;
+            optimizedRectangle.centroid = { x: cx, y: cy };
+        }
+        if (!optimizedRectangle.type) {
+            optimizedRectangle.type = 'optimized';
+        }
+        log(`  ✓ Optimized found rectangle`, 'green');
+        log(`    Area: ${optimizedRectangle.area.toFixed(1)} sq px`, 'green');
+        log(`    Time: ${optimizedTime.toFixed(1)} ms`, 'green');
+    } else {
+        log(`  ✗ Optimized failed`, 'red');
+    }
+
+    // Determine best rectangle for primary result
+    let bestRectangle = null;
+    let bestTime = 0;
+    if (boundaryRectangle && optimizedRectangle) {
+        if (boundaryRectangle.area >= optimizedRectangle.area) {
+            bestRectangle = boundaryRectangle;
+            bestTime = boundaryTime;
+            log(`\n  ✓ Boundary-based is best: ${boundaryRectangle.area.toFixed(1)} sq px`, 'green');
+        } else {
+            bestRectangle = optimizedRectangle;
+            bestTime = optimizedTime;
+            log(`\n  ✓ Optimized is best: ${optimizedRectangle.area.toFixed(1)} sq px`, 'green');
+        }
+    } else if (boundaryRectangle) {
+        bestRectangle = boundaryRectangle;
+        bestTime = boundaryTime;
+    } else if (optimizedRectangle) {
+        bestRectangle = optimizedRectangle;
+        bestTime = optimizedTime;
+    }
+
+    if (!bestRectangle) {
+        log(`  ❌ Both algorithms failed to calculate inscribed rectangle`, 'red');
         return {
             success: false,
-            error: 'Rectangle calculation failed',
+            error: 'Both algorithms failed',
             polygon,
             pathCount: pathData.length,
             vertexCount: polygon.length,
@@ -452,51 +522,37 @@ async function runTest(testCase) {
         };
     }
 
-    // Calculate centroid from corners if not provided
-    if (!rectangle.centroid && rectangle.corners) {
-        const cx = rectangle.corners.reduce((sum, c) => sum + c.x, 0) / rectangle.corners.length;
-        const cy = rectangle.corners.reduce((sum, c) => sum + c.y, 0) / rectangle.corners.length;
-        rectangle.centroid = { x: cx, y: cy };
-    }
-
-    // Set type if not provided
-    if (!rectangle.type) {
-        rectangle.type = 'optimized';
-    }
-
-    log(`  ✓ Found ${rectangle.type} rectangle`, 'green');
-    log(`    Dimensions: ${rectangle.width.toFixed(1)} × ${rectangle.height.toFixed(1)}`, 'green');
-    log(`    Area: ${rectangle.area.toFixed(1)} sq px`, 'green');
-    log(`    Angle: ${rectangle.angle.toFixed(1)}°`, 'green');
-    log(`    Centroid: (${rectangle.centroid.x.toFixed(1)}, ${rectangle.centroid.y.toFixed(1)})`, 'green');
-    log(`    Time: ${calculationTime.toFixed(1)} ms`, 'green');
+    log(`\n  Best Rectangle:`, 'yellow');
+    log(`    Type: ${bestRectangle.type}`, 'yellow');
+    log(`    Dimensions: ${bestRectangle.width.toFixed(1)} × ${bestRectangle.height.toFixed(1)}`, 'yellow');
+    log(`    Area: ${bestRectangle.area.toFixed(1)} sq px`, 'yellow');
+    log(`    Angle: ${bestRectangle.angle.toFixed(1)}°`, 'yellow');
+    log(`    Time: ${bestTime.toFixed(1)} ms`, 'yellow');
 
     // Show goal comparison if goal rectangle exists
     if (goalRectangle) {
-        const gap = ((rectangle.area - goalRectangle.area) / goalRectangle.area * 100);
+        const gap = ((bestRectangle.area - goalRectangle.area) / goalRectangle.area * 100);
         log(`\n  Goal Comparison:`, 'yellow');
-        log(`    Inscribed Area: ${rectangle.area.toFixed(1)} sq px`, 'yellow');
+        log(`    Best Area:      ${bestRectangle.area.toFixed(1)} sq px`, 'yellow');
         log(`    Goal Area:      ${goalRectangle.area.toFixed(1)} sq px`, 'yellow');
         log(`    Gap:            ${gap >= 0 ? '+' : ''}${gap.toFixed(1)}%`, gap >= -5 ? 'green' : 'red');
-    }
-
-    log(`\n  Rectangle corners:`, 'yellow');
-    for (let i = 0; i < rectangle.corners.length; i++) {
-        const c = rectangle.corners[i];
-        log(`    [${i}] (${c.x.toFixed(1)}, ${c.y.toFixed(1)})`, 'yellow');
     }
 
     return {
         success: true,
         polygon,
-        rectangle,
+        rectangle: bestRectangle,
+        boundaryRectangle,
+        optimizedRectangle,
+        boundaryTime,
+        optimizedTime,
         goalRectangle,
         pathCount: pathData.length,
         vertexCount: polygon.length,
         pathData,
         svgContent,
         viewBox,
-        calculationTime
+        calculationTime: bestTime
     };
 }
 
@@ -510,15 +566,23 @@ function extractTestPathsContent(pathData) {
 }
 
 function generateSvgVisualization(testCase, result) {
-    const { polygon, rectangle, pathData, viewBox, calculationTime, goalRectangle } = result;
+    const { polygon, rectangle, boundaryRectangle, optimizedRectangle, boundaryTime, optimizedTime, pathData, viewBox, calculationTime, goalRectangle } = result;
 
     // Calculate bounds from the polygon to create an appropriate viewBox
     const bounds = calculateBounds(polygon);
     const padding = 50;
+    const tableHeight = 120; // Space for table at bottom
+    const compactTableWidth = 300; // Compact width for table
+    const keyHeight = 80; // Space for key under title
+    const horizontalMargin = 20; // Left and right margins for table
+
     const vbX = bounds.minX - padding;
     const vbY = bounds.minY - padding;
-    const vbWidth = bounds.maxX - bounds.minX + 2 * padding;
-    const vbHeight = bounds.maxY - bounds.minY + 2 * padding;
+    const polygonWidth = bounds.maxX - bounds.minX + 2 * padding;
+    // Calculate required width based on table + margins
+    const requiredWidth = compactTableWidth + horizontalMargin * 2;
+    const vbWidth = Math.max(polygonWidth, requiredWidth);
+    const vbHeight = bounds.maxY - bounds.minY + 2 * padding + keyHeight + tableHeight;
 
     // Create clean path elements from path data
     const testPathsContent = extractTestPathsContent(pathData);
@@ -556,9 +620,146 @@ function generateSvgVisualization(testCase, result) {
 </svg>`;
     }
 
-    // Rectangle found case
+    // Rectangle found case - show both boundary-based and optimized
     const polygonPoints = polygon.map(p => `${p.x},${p.y}`).join(' ');
-    const rectanglePoints = rectangle.corners.map(c => `${c.x},${c.y}`).join(' ');
+
+    // Build rectangles display
+    let rectanglesDisplay = '';
+
+    // Add boundary-based rectangle if available
+    if (boundaryRectangle) {
+        const boundaryPoints = boundaryRectangle.corners.map(c => `${c.x},${c.y}`).join(' ');
+        rectanglesDisplay += `
+  <!-- Boundary-Based Rectangle -->
+  <polygon points="${boundaryPoints}"
+           fill="rgba(255, 100, 100, 0.25)"
+           stroke="#ff4040"
+           stroke-width="2"
+           stroke-dasharray="none"/>
+
+  <!-- Boundary-Based Centroid -->
+  <circle cx="${boundaryRectangle.centroid.x}" cy="${boundaryRectangle.centroid.y}" r="4" fill="#ff0000"/>
+  <text x="${boundaryRectangle.centroid.x + 8}" y="${boundaryRectangle.centroid.y - 8}" font-size="8" fill="#ff0000">boundary</text>
+
+  <!-- Boundary-Based Corners -->
+  ${boundaryRectangle.corners.map((c, i) => `
+  <circle cx="${c.x}" cy="${c.y}" r="3" fill="#ff4040"/>
+  <text x="${c.x - 15}" y="${c.y + 15}" font-size="8" fill="#ff4040">b${i}</text>`).join('')}
+`;
+    }
+
+    // Add optimized rectangle if available
+    if (optimizedRectangle) {
+        const optimizedPoints = optimizedRectangle.corners.map(c => `${c.x},${c.y}`).join(' ');
+        rectanglesDisplay += `
+  <!-- Optimized Rectangle -->
+  <polygon points="${optimizedPoints}"
+           fill="rgba(100, 255, 100, 0.25)"
+           stroke="#40ff40"
+           stroke-width="2"
+           stroke-dasharray="5,5"/>
+
+  <!-- Optimized Centroid -->
+  <circle cx="${optimizedRectangle.centroid.x}" cy="${optimizedRectangle.centroid.y}" r="4" fill="#00aa00"/>
+  <text x="${optimizedRectangle.centroid.x + 8}" y="${optimizedRectangle.centroid.y - 8}" font-size="8" fill="#00aa00">optimized</text>
+
+  <!-- Optimized Corners -->
+  ${optimizedRectangle.corners.map((c, i) => `
+  <circle cx="${c.x}" cy="${c.y}" r="3" fill="#40ff40"/>
+  <text x="${c.x + 10}" y="${c.y}" font-size="8" fill="#00aa00">o${i}</text>`).join('')}
+`;
+    }
+
+    // Build key and comparison table at bottom
+    const keyY = bounds.maxY + padding + 10; // Start key below the polygon
+    const tableY = keyY + 40; // Start table below the key (reduced space)
+    const tableX = vbX + 10;
+    const fixedTableWidth = 300; // Fixed compact width for table
+
+    // Title and Combinations Key
+    const pathsKey = testCase.paths.join(' + ');
+    let comparisonTable = `
+  <!-- Title -->
+  <text x="${tableX}" y="${keyY}" font-size="14" font-weight="bold">${testCase.name} - Algorithm Comparison</text>
+
+  <!-- Combinations Key -->
+  <text x="${tableX}" y="${keyY + 20}" font-size="9" fill="#666">Paths: ${pathsKey}</text>
+
+  <!-- Table Header Background -->
+  <rect x="${tableX}" y="${tableY}" width="${fixedTableWidth}" height="20" fill="#f0f0f0" stroke="#333" stroke-width="1"/>
+
+  <!-- Table Header -->
+  <text x="${tableX + 10}" y="${tableY + 14}" font-size="9" font-weight="bold">Algo</text>
+  <text x="${tableX + 70}" y="${tableY + 14}" font-size="9" font-weight="bold">Area</text>
+  <text x="${tableX + 150}" y="${tableY + 14}" font-size="9" font-weight="bold">Time</text>
+  <text x="${tableX + 230}" y="${tableY + 14}" font-size="9" font-weight="bold">Status</text>
+`;
+
+    let rowY = tableY + 20;
+
+    // Boundary-based row - ALWAYS show
+    const bbIsBest = boundaryRectangle && (!optimizedRectangle || boundaryRectangle.area >= optimizedRectangle.area);
+    const bbBgColor = bbIsBest ? 'rgba(255, 100, 100, 0.15)' : 'white';
+    const bbAreaText = boundaryRectangle ? boundaryRectangle.area.toFixed(1) : 'FAIL';
+    const bbTimeText = boundaryRectangle ? `${boundaryTime.toFixed(1)} ms` : 'FAIL';
+    const bbStatusColor = boundaryRectangle ? (bbIsBest ? '#008800' : '#666') : '#cc0000';
+    const bbStatusText = boundaryRectangle ? (bbIsBest ? '✓' : '') : '✗';
+    comparisonTable += `
+  <!-- Boundary-Based Row -->
+  <rect x="${tableX}" y="${rowY}" width="${fixedTableWidth}" height="18" fill="${bbBgColor}" stroke="#333" stroke-width="1"/>
+  <circle cx="${tableX + 15}" cy="${rowY + 9}" r="3" fill="#ff4040"/>
+  <text x="${tableX + 23}" y="${rowY + 12}" font-size="8" fill="#ff4040">BB</text>
+  <text x="${tableX + 70}" y="${rowY + 12}" font-size="8">${bbAreaText}</text>
+  <text x="${tableX + 150}" y="${rowY + 12}" font-size="8">${bbTimeText}</text>
+  <text x="${tableX + 230}" y="${rowY + 12}" font-size="8" fill="${bbStatusColor}">${bbStatusText}</text>
+`;
+    rowY += 18;
+
+    // Optimized row - ALWAYS show
+    const optIsBest = optimizedRectangle && (!boundaryRectangle || optimizedRectangle.area > boundaryRectangle.area);
+    const optBgColor = optIsBest ? 'rgba(100, 255, 100, 0.15)' : 'white';
+    const optAreaText = optimizedRectangle ? optimizedRectangle.area.toFixed(1) : 'FAIL';
+    const optTimeText = optimizedRectangle ? `${optimizedTime.toFixed(1)} ms` : 'FAIL';
+    const optStatusColor = optimizedRectangle ? (optIsBest ? '#008800' : '#666') : '#cc0000';
+    const optStatusText = optimizedRectangle ? (optIsBest ? '✓' : '') : '✗';
+    comparisonTable += `
+  <!-- Optimized Row -->
+  <rect x="${tableX}" y="${rowY}" width="${fixedTableWidth}" height="18" fill="${optBgColor}" stroke="#333" stroke-width="1"/>
+  <circle cx="${tableX + 15}" cy="${rowY + 9}" r="3" fill="#40ff40"/>
+  <text x="${tableX + 23}" y="${rowY + 12}" font-size="8" fill="#00aa00">Opt</text>
+  <text x="${tableX + 70}" y="${rowY + 12}" font-size="8">${optAreaText}</text>
+  <text x="${tableX + 150}" y="${rowY + 12}" font-size="8">${optTimeText}</text>
+  <text x="${tableX + 230}" y="${rowY + 12}" font-size="8" fill="${optStatusColor}">${optStatusText}</text>
+`;
+    rowY += 18;
+
+    // Summary row
+    if (boundaryRectangle && optimizedRectangle) {
+        const areaDiff = Math.abs(boundaryRectangle.area - optimizedRectangle.area);
+        const areaDiffPercent = (areaDiff / Math.max(boundaryRectangle.area, optimizedRectangle.area)) * 100;
+        comparisonTable += `
+  <!-- Summary Row -->
+  <rect x="${tableX}" y="${rowY}" width="${fixedTableWidth}" height="18" fill="#f8f8f8" stroke="#333" stroke-width="1"/>
+  <text x="${tableX + 10}" y="${rowY + 12}" font-size="8" font-weight="bold">Diff:</text>
+  <text x="${tableX + 70}" y="${rowY + 12}" font-size="8">${areaDiff.toFixed(1)} (${areaDiffPercent.toFixed(1)}%)</text>
+`;
+        rowY += 18;
+    }
+
+    // Goal comparison if available
+    if (goalRectangle) {
+        const gap = ((rectangle.area - goalRectangle.area) / goalRectangle.area * 100);
+        const gapStatus = gap >= -5 ? '✓ PASS' : '✗ FAIL';
+        const gapColor = gap >= -5 ? '#00aa00' : '#cc0000';
+        comparisonTable += `
+  <!-- Goal Row -->
+  <rect x="${tableX}" y="${rowY}" width="${fixedTableWidth}" height="18" fill="#fff8e0" stroke="#333" stroke-width="1"/>
+  <text x="${tableX + 10}" y="${rowY + 12}" font-size="8" font-weight="bold">Goal:</text>
+  <text x="${tableX + 70}" y="${rowY + 12}" font-size="8">${goalRectangle.area.toFixed(1)}</text>
+  <text x="${tableX + 150}" y="${rowY + 12}" font-size="8">Gap: ${gap.toFixed(1)}%</text>
+  <text x="${tableX + 230}" y="${rowY + 12}" font-size="8" fill="${gapColor}" font-weight="bold">${gapStatus}</text>
+`;
+    }
 
     return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="${vbX} ${vbY} ${vbWidth} ${vbHeight}" width="${vbWidth}" height="${vbHeight}">
@@ -579,35 +780,14 @@ function generateSvgVisualization(testCase, result) {
            stroke-width="1"
            stroke-dasharray="5,5"/>
 
-  <!-- Inscribed Rectangle -->
-  <polygon points="${rectanglePoints}"
-           fill="rgba(255, 100, 100, 0.3)"
-           stroke="#ff4040"
-           stroke-width="1"/>
-
-  <!-- Rectangle Centroid -->
-  <circle cx="${rectangle.centroid.x}" cy="${rectangle.centroid.y}" r="4" fill="#ff0000"/>
-  <text x="${rectangle.centroid.x + 8}" y="${rectangle.centroid.y - 8}" font-size="8" fill="#ff0000">centroid</text>
+  ${rectanglesDisplay}
 
   <!-- Boundary Vertices -->
   ${polygon.map((v, i) => `
   <circle cx="${v.x}" cy="${v.y}" r="3" fill="#4080ff"/>
-  <text x="${v.x + 6}" y="${v.y - 6}" font-size="8" fill="#4080ff">b${i}</text>`).join('')}
+  <text x="${v.x + 6}" y="${v.y - 6}" font-size="8" fill="#4080ff">p${i}</text>`).join('')}
 
-  <!-- Rectangle Corners -->
-  ${rectangle.corners.map((c, i) => `
-  <circle cx="${c.x}" cy="${c.y}" r="3" fill="#ff4040"/>
-  <text x="${c.x - 15}" y="${c.y + 15}" font-size="8" fill="#ff4040">r${i}</text>`).join('')}
-
-  <!-- Legend -->
-  <text x="${vbX + 10}" y="${vbY + 30}" font-size="12" font-weight="bold">${testCase.name}</text>
-  <text x="${vbX + 10}" y="${vbY + 50}" font-size="10">Type: ${rectangle.type}</text>
-  <text x="${vbX + 10}" y="${vbY + 65}" font-size="10">Size: ${rectangle.width.toFixed(1)} × ${rectangle.height.toFixed(1)} px</text>
-  <text x="${vbX + 10}" y="${vbY + 80}" font-size="10">Area: ${rectangle.area.toFixed(1)} sq px</text>
-  <text x="${vbX + 10}" y="${vbY + 95}" font-size="10">Angle: ${rectangle.angle.toFixed(1)}°</text>
-  <text x="${vbX + 10}" y="${vbY + 110}" font-size="10">Time: ${calculationTime.toFixed(1)} ms</text>${goalRectangle ? `
-  <text x="${vbX + 10}" y="${vbY + 135}" font-size="10" font-weight="bold">Goal: ${goalRectangle.area.toFixed(1)} sq px</text>
-  <text x="${vbX + 10}" y="${vbY + 150}" font-size="10" fill="${((rectangle.area - goalRectangle.area) / goalRectangle.area * 100) >= -5 ? '#00aa00' : '#cc0000'}">Gap: ${((rectangle.area - goalRectangle.area) / goalRectangle.area * 100).toFixed(1)}% ${((rectangle.area - goalRectangle.area) / goalRectangle.area * 100) >= -5 ? '✓ PASS' : '✗ FAIL'}</text>` : ''}
+  ${comparisonTable}
 </svg>`;
 }
 
@@ -625,10 +805,11 @@ function calculateBounds(points) {
     return { minX, maxX, minY, maxY };
 }
 
-function generateResultsFile(results, testResultsDir) {
+function generateResultsFile(results, testResultsDir, totalRuntimeMs) {
     let output = `INSCRIBED RECTANGLE TEST RESULTS
 ${'='.repeat(80)}
 Latest Test Run: ${new Date().toLocaleString()}
+Total Runtime: ${(totalRuntimeMs / 1000).toFixed(2)} seconds (${results.length} tests)
 
 GOAL COMPARISON RESULTS
 ${'='.repeat(80)}
@@ -665,13 +846,40 @@ Gap Categories:
   Fail (4-10%):       ${gapsWithGoals.filter(g => g <= -4 && g >= -10).length} tests
   Fail (>10%):        ${gapsWithGoals.filter(g => g < -10).length} tests
 
-ALL TEST RESULTS
+ALGORITHM COMPARISON RESULTS
+${'='.repeat(80)}
+Test | BB Area   | BB Time  | Opt Area  | Opt Time  | Winner | Diff %
+-----|-----------|----------|-----------|-----------|--------|--------
+`;
+
+    // Algorithm comparison table - ALWAYS show both algorithms
+    for (const { testCase, result } of results) {
+        if (result.success) {
+            const bbArea = result.boundaryRectangle ? result.boundaryRectangle.area.toFixed(1).padStart(9) : '    FAIL'.padStart(9);
+            const bbTime = result.boundaryRectangle ? result.boundaryTime.toFixed(1).padStart(7) : '   FAIL'.padStart(7);
+            const optArea = result.optimizedRectangle ? result.optimizedRectangle.area.toFixed(1).padStart(9) : '    FAIL'.padStart(9);
+            const optTime = result.optimizedRectangle ? result.optimizedTime.toFixed(1).padStart(8) : '    FAIL'.padStart(8);
+
+            let winner = '  -   ';
+            let diffPercent = '    -';
+            if (result.boundaryRectangle && result.optimizedRectangle) {
+                winner = result.rectangle.type === 'boundary-based' ? 'BB' : 'Opt';
+                const diff = Math.abs(result.boundaryRectangle.area - result.optimizedRectangle.area);
+                diffPercent = (diff / Math.max(result.boundaryRectangle.area, result.optimizedRectangle.area) * 100).toFixed(1);
+            }
+
+            output += `${testCase.name.padEnd(4)} | ${bbArea} | ${bbTime} ms | ${optArea} | ${optTime} ms | ${winner.padEnd(6)} | ${diffPercent.padStart(5)}%\n`;
+        }
+    }
+
+    output += `
+ALL TEST RESULTS (BEST ALGORITHM)
 ${'='.repeat(80)}
 Test | Area      | Speed    | Strategy        | Goal Area  | Gap
 -----|-----------|----------|-----------------|------------|--------
 `;
 
-    // All tests table
+    // All tests table (best algorithm only)
     for (const { testCase, result } of results) {
         if (result.success && result.rectangle) {
             const strategy = result.rectangle.type || 'boundary-based';
@@ -735,6 +943,8 @@ ${'='.repeat(80)}
 }
 
 async function main() {
+    const mainStartTime = performance.now();
+
     log('\n' + '='.repeat(60), 'cyan');
     log('SVG Inscribed Rectangle Test Harness', 'cyan');
     log('='.repeat(60), 'cyan');
@@ -760,9 +970,9 @@ async function main() {
 
     const results = [];
 
-    // TEMPORARY: Only run first 6 tests (sample)
-    const testsToRun = testCases.slice(0, 6);
-    log(`Running ${testsToRun.length} of ${testCases.length} total tests (sample mode)`, 'yellow');
+    // Run all sample tests
+    const testsToRun = testCases;
+    log(`Running ${testsToRun.length} tests from sample config`, 'yellow');
 
     for (const testCase of testsToRun) {
         const result = await runTest(testCase);
@@ -814,11 +1024,14 @@ async function main() {
 
     // Generate comprehensive results.txt
     log('\n  Generating results.txt...', 'cyan');
-    generateResultsFile(results, testResultsDir);
+    const mainEndTime = performance.now();
+    const totalRuntimeMs = mainEndTime - mainStartTime;
+    generateResultsFile(results, testResultsDir, totalRuntimeMs);
     log(`  ✓ Saved results to results.txt`, 'green');
 
     log('\n' + '='.repeat(60), 'cyan');
     log(`Test results saved to: ${testResultsDir}`, 'cyan');
+    log(`Total Runtime: ${(totalRuntimeMs / 1000).toFixed(2)} seconds`, 'cyan');
     log('='.repeat(60), 'cyan');
 }
 

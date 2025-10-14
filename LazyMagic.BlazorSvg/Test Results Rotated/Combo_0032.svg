@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="447.44 29.848231 342.16256000000004 475.271309" width="342.16256000000004" height="475.271309">
+  <title>Combo_0032</title>
+
+  <!-- White Background -->
+  <rect x="447.44" y="29.848231" width="342.16256000000004" height="475.271309" fill="white"/>
+
+  <!-- Test Paths -->
+  <g opacity="0.3">
+    <path id="Ballroom_Room_5" d="M 739.60256,166.95328 702.07273,255.11954 515.71334,175.79173 553.24317,87.625471 Z" fill="none" stroke="#808080" stroke-width="1"/>
+    <path id="Ballroom_Aisle_35" d="m 534.97264,79.848231 18.27053,7.77724 -37.52983,88.166259 -18.27053,-7.77724 z" fill="none" stroke="#808080" stroke-width="1"/>
+  </g>
+
+  <!-- Boundary Polygon (outer boundary) -->
+  <polygon points="497.44,168.01 534.97264,79.848231 739.60256,166.95328 702.07273,255.11954 515.71334,175.79173"
+           fill="rgba(100, 150, 255, 0.2)"
+           stroke="#4080ff"
+           stroke-width="1"
+           stroke-dasharray="5,5"/>
+
+  
+  <!-- Boundary-Based Rectangle -->
+  <polygon points="534.97264,79.848231 739.60256,166.95328 701.9932908904949,255.30615755979014 497.36337089049476,168.20110855979013"
+           fill="rgba(255, 100, 100, 0.25)"
+           stroke="#ff4040"
+           stroke-width="2"
+           stroke-dasharray="none"/>
+
+  <!-- Boundary-Based Centroid -->
+  <circle cx="618.4829654452475" cy="167.57719427989505" r="4" fill="#ff0000"/>
+  <text x="626.4829654452475" y="159.57719427989505" font-size="8" fill="#ff0000">boundary</text>
+
+  <!-- Boundary-Based Corners -->
+  
+  <circle cx="534.97264" cy="79.848231" r="3" fill="#ff4040"/>
+  <text x="519.97264" y="94.848231" font-size="8" fill="#ff4040">b0</text>
+  <circle cx="739.60256" cy="166.95328" r="3" fill="#ff4040"/>
+  <text x="724.60256" y="181.95328" font-size="8" fill="#ff4040">b1</text>
+  <circle cx="701.9932908904949" cy="255.30615755979014" r="3" fill="#ff4040"/>
+  <text x="686.9932908904949" y="270.3061575597901" font-size="8" fill="#ff4040">b2</text>
+  <circle cx="497.36337089049476" cy="168.20110855979013" r="3" fill="#ff4040"/>
+  <text x="482.36337089049476" y="183.20110855979013" font-size="8" fill="#ff4040">b3</text>
+
+  <!-- Optimized Rectangle -->
+  <polygon points="534.97264,79.848231 739.60256,166.95328 701.9932908904949,255.30615755979014 497.36337089049476,168.20110855979013"
+           fill="rgba(100, 255, 100, 0.25)"
+           stroke="#40ff40"
+           stroke-width="2"
+           stroke-dasharray="5,5"/>
+
+  <!-- Optimized Centroid -->
+  <circle cx="618.4829654452475" cy="167.57719427989505" r="4" fill="#00aa00"/>
+  <text x="626.4829654452475" y="159.57719427989505" font-size="8" fill="#00aa00">optimized</text>
+
+  <!-- Optimized Corners -->
+  
+  <circle cx="534.97264" cy="79.848231" r="3" fill="#40ff40"/>
+  <text x="544.97264" y="79.848231" font-size="8" fill="#00aa00">o0</text>
+  <circle cx="739.60256" cy="166.95328" r="3" fill="#40ff40"/>
+  <text x="749.60256" y="166.95328" font-size="8" fill="#00aa00">o1</text>
+  <circle cx="701.9932908904949" cy="255.30615755979014" r="3" fill="#40ff40"/>
+  <text x="711.9932908904949" y="255.30615755979014" font-size="8" fill="#00aa00">o2</text>
+  <circle cx="497.36337089049476" cy="168.20110855979013" r="3" fill="#40ff40"/>
+  <text x="507.36337089049476" y="168.20110855979013" font-size="8" fill="#00aa00">o3</text>
+
+
+  <!-- Boundary Vertices -->
+  
+  <circle cx="497.44" cy="168.01" r="3" fill="#4080ff"/>
+  <text x="503.44" y="162.01" font-size="8" fill="#4080ff">p0</text>
+  <circle cx="534.97264" cy="79.848231" r="3" fill="#4080ff"/>
+  <text x="540.97264" y="73.848231" font-size="8" fill="#4080ff">p1</text>
+  <circle cx="739.60256" cy="166.95328" r="3" fill="#4080ff"/>
+  <text x="745.60256" y="160.95328" font-size="8" fill="#4080ff">p2</text>
+  <circle cx="702.07273" cy="255.11954" r="3" fill="#4080ff"/>
+  <text x="708.07273" y="249.11954" font-size="8" fill="#4080ff">p3</text>
+  <circle cx="515.71334" cy="175.79173" r="3" fill="#4080ff"/>
+  <text x="521.71334" y="169.79173" font-size="8" fill="#4080ff">p4</text>
+
+  
+  <!-- Title -->
+  <text x="457.44" y="315.11954000000003" font-size="14" font-weight="bold">Combo_0032 - Algorithm Comparison</text>
+
+  <!-- Combinations Key -->
+  <text x="457.44" y="335.11954000000003" font-size="9" fill="#666">Paths: Ballroom_Room_5 + Ballroom_Aisle_35</text>
+
+  <!-- Table Header Background -->
+  <rect x="457.44" y="355.11954000000003" width="300" height="20" fill="#f0f0f0" stroke="#333" stroke-width="1"/>
+
+  <!-- Table Header -->
+  <text x="467.44" y="369.11954000000003" font-size="9" font-weight="bold">Algo</text>
+  <text x="527.44" y="369.11954000000003" font-size="9" font-weight="bold">Area</text>
+  <text x="607.44" y="369.11954000000003" font-size="9" font-weight="bold">Time</text>
+  <text x="687.44" y="369.11954000000003" font-size="9" font-weight="bold">Status</text>
+
+  <!-- Boundary-Based Row -->
+  <rect x="457.44" y="375.11954000000003" width="300" height="18" fill="rgba(255, 100, 100, 0.15)" stroke="#333" stroke-width="1"/>
+  <circle cx="472.44" cy="384.11954000000003" r="3" fill="#ff4040"/>
+  <text x="480.44" y="387.11954000000003" font-size="8" fill="#ff4040">BB</text>
+  <text x="527.44" y="387.11954000000003" font-size="8">21355.6</text>
+  <text x="607.44" y="387.11954000000003" font-size="8">0.3 ms</text>
+  <text x="687.44" y="387.11954000000003" font-size="8" fill="#008800">✓</text>
+
+  <!-- Optimized Row -->
+  <rect x="457.44" y="393.11954000000003" width="300" height="18" fill="white" stroke="#333" stroke-width="1"/>
+  <circle cx="472.44" cy="402.11954000000003" r="3" fill="#40ff40"/>
+  <text x="480.44" y="405.11954000000003" font-size="8" fill="#00aa00">Opt</text>
+  <text x="527.44" y="405.11954000000003" font-size="8">21355.6</text>
+  <text x="607.44" y="405.11954000000003" font-size="8">8.5 ms</text>
+  <text x="687.44" y="405.11954000000003" font-size="8" fill="#666"></text>
+
+  <!-- Summary Row -->
+  <rect x="457.44" y="411.11954000000003" width="300" height="18" fill="#f8f8f8" stroke="#333" stroke-width="1"/>
+  <text x="467.44" y="423.11954000000003" font-size="8" font-weight="bold">Diff:</text>
+  <text x="527.44" y="423.11954000000003" font-size="8">0.0 (0.0%)</text>
+
+</svg>
