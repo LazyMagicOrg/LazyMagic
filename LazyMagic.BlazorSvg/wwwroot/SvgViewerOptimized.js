@@ -798,21 +798,14 @@ function getMultipleCentroids(polygon, minX, maxX, minY, maxY, options = {}) {
     // Add all standard centroids
     centroids.push(...standardCentroids);
 
-    // Snap all centroids to match the base grid for consistency across shape extensions
-    // This ensures Shape 1, 2, 3 test EXACTLY the same centroid coordinates
-    // CRITICAL: snap size must equal grid step size for perfect alignment
-    const snapSize = stepSize; // Use same 12-pixel snap as grid step
-    const snappedCentroids = centroids.map(c => ({
-        x: Math.round(c.x / snapSize) * snapSize,
-        y: Math.round(c.y / snapSize) * snapSize
-    }));
-
-    // Remove duplicates after snapping
+    // Remove duplicates (without snapping to preserve precise centroid locations)
+    // This is important for rotation-invariance - don't force centroids to grid points
     const uniqueCentroids = [];
     const seenKeys = new Set();
 
-    for (const centroid of snappedCentroids) {
-        const key = `${centroid.x},${centroid.y}`;
+    for (const centroid of centroids) {
+        // Use rounded key for duplicate detection (0.1 pixel tolerance)
+        const key = `${Math.round(centroid.x * 10)},${Math.round(centroid.y * 10)}`;
         if (!seenKeys.has(key)) {
             seenKeys.add(key);
             uniqueCentroids.push(centroid);
@@ -823,8 +816,8 @@ function getMultipleCentroids(polygon, minX, maxX, minY, maxY, options = {}) {
 
     // DEBUG: Log polygon characteristics with RECT-DEBUG prefix for easy filtering
     console.log(`🔷 [RECT-DEBUG] Polygon: ${polygon.length} vertices, bounds: (${minX.toFixed(1)}, ${minY.toFixed(1)}) to (${maxX.toFixed(1)}, ${maxY.toFixed(1)}), size: ${width.toFixed(1)}x${height.toFixed(1)}`);
-    console.log(`🔷 [RECT-DEBUG] Grid: ${stepSize.toFixed(1)}px step, aligned from (${gridStartX.toFixed(1)}, ${gridStartY.toFixed(1)}) to (${gridEndX.toFixed(1)}, ${gridEndY.toFixed(1)}), snap=${snapSize.toFixed(1)}px`);
-    console.log(`🔷 [RECT-DEBUG] Centroids: ${uniqueCentroids.length} total (grid: ${gridCountX}x${gridCountY}, vertices: ${polygon.length}, edges: ${polygon.length})`);
+    console.log(`🔷 [RECT-DEBUG] Grid: ${stepSize.toFixed(1)}px step, ${gridCountX}x${gridCountY} points (ALIGNED to origin)`);
+    console.log(`🔷 [RECT-DEBUG] Centroids: ${uniqueCentroids.length} total (grid: ${gridCountX * gridCountY}, vertices: ${polygon.length}, edges: ${polygon.length})`);
     console.log(`🔷 [RECT-DEBUG] Pole: (${pole.x.toFixed(1)}, ${pole.y.toFixed(1)}), Area centroid: (${areaCentroid.x.toFixed(1)}, ${areaCentroid.y.toFixed(1)})`);
 
     return uniqueCentroids;
@@ -1115,9 +1108,22 @@ function fastInscribedRectangle(polygon, options = {}) {
             console.debug(`[edge-angle] Perpendicular angles: [${perpAngles.join(', ')}]`);
         }
 
-        // ENHANCED: Strategic angles with natural parallelogram angles prioritized
-        // Use deterministic ordering by combining and sorting all angles
-        const baseStrategicAngles = [0, 8, 16, 24, 32, 40, 48, 56, 64, 72, 76, 80, 82, 84, 86, 88, 90, 92, 94, 96, 98, 104, 112, 120, 128, 136, 144, 152, 160, 168, 176];
+        // ROTATION-AWARE: DISABLED - Testing hypothesis that rotation offset is harmful
+        // The problem: aligning strategic angles with polygon edges makes us rediscover the boundary-box solution
+        // The solution: DON'T rotate - the algorithm finds better rectangles when it tests non-aligned angles
+        let rotationOffset = 0;
+
+        console.log(`🔄 [ROTATION-DISABLED] Detected edge angles: [${uniqueAngles.join(', ')}°]`);
+        console.log(`🔄 [ROTATION-DISABLED] Using NO rotation offset (testing hypothesis that offset is harmful)`);
+
+        // Generate strategic angles WITHOUT rotation offset
+        // Base pattern: test angles every 4° for good coverage across all orientations
+        // This ensures we don't miss optimal angles regardless of polygon rotation
+        const basePattern = [];
+        for (let angle = 0; angle < 180; angle += 4) {
+            basePattern.push(angle);
+        }
+        const baseStrategicAngles = basePattern; // No rotation offset applied
 
         // SEEDING: Add seed angle from boundary-based algorithm if provided
         const allAngles = [...uniqueAngles, ...perpAngles, ...baseStrategicAngles];

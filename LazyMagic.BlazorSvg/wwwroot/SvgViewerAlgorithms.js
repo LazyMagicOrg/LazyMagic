@@ -58,6 +58,8 @@
             }
 
             // Step 2: Remove collinear points (points that lie on a straight line between neighbors)
+            // DISABLED: Keeping all vertices to preserve geometric information
+            /*
             const simplified = [];
             const collinearTolerance = 0.1; // Cross product threshold for collinearity
 
@@ -90,6 +92,11 @@
             if (simplified.length < cleaned.length) {
                 console.debug(`[winding] Removed ${cleaned.length - simplified.length} collinear points (${cleaned.length} → ${simplified.length})`);
             }
+            */
+
+            // Skip collinear removal, just use cleaned points
+            const finalPoints = cleaned;
+            console.debug(`[winding] Skipped collinear point removal, keeping all ${cleaned.length} vertices`);
 
             // Step 3: Detect corrupted polygon structures
             if (finalPoints.length === 6) {
@@ -107,6 +114,58 @@
             }
 
             return finalPoints;
+        },
+
+        /**
+         * Remove collinear points from a polygon
+         * If three consecutive points are on the same line, removes the middle point
+         * Uses cross-product to detect collinearity more reliably than angle calculation
+         * @param {Array} polygon - Array of {x, y} points
+         * @param {number} tolerance - Distance tolerance for cross-product (default: 0.1 pixels)
+         * @returns {Array} - Simplified polygon with collinear points removed
+         */
+        removeCollinearPoints(polygon, tolerance = 0.1) {
+            if (!polygon || polygon.length <= 3) return polygon; // Can't simplify triangles
+
+            const result = [];
+            const n = polygon.length;
+
+            for (let i = 0; i < n; i++) {
+                const prev = polygon[(i - 1 + n) % n];
+                const curr = polygon[i];
+                const next = polygon[(i + 1) % n];
+
+                // Calculate vectors from prev to curr and curr to next
+                const v1x = curr.x - prev.x;
+                const v1y = curr.y - prev.y;
+                const v2x = next.x - curr.x;
+                const v2y = next.y - curr.y;
+
+                // Calculate cross product (if zero, points are collinear)
+                const crossProduct = Math.abs(v1x * v2y - v1y * v2x);
+
+                // Calculate the lengths for normalization
+                const len1 = Math.sqrt(v1x * v1x + v1y * v1y);
+                const len2 = Math.sqrt(v2x * v2x + v2y * v2y);
+
+                // Avoid division by zero
+                if (len1 < 0.01 || len2 < 0.01) {
+                    // One of the edges is too short, keep the point
+                    result.push(curr);
+                    continue;
+                }
+
+                // Normalize cross product by edge lengths to get perpendicular distance
+                const normalizedCross = crossProduct / (len1 + len2);
+
+                // If normalized cross product is greater than tolerance, points are NOT collinear
+                if (normalizedCross > tolerance) {
+                    result.push(curr);
+                }
+                // else: collinear, skip this point
+            }
+
+            return result.length >= 3 ? result : polygon; // Safety check
         },
 
         // ===== Rectangle/Geometric Helper Functions =====

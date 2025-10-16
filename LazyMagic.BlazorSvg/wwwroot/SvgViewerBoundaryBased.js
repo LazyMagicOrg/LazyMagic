@@ -39,10 +39,122 @@ function selectCentroidStrategy(pathCount, vertexCount, polygonArea) {
 }
 
 /**
+ * Remove collinear points from a polygon
+ * If three consecutive points are on the same line, removes the middle point
+ * Uses cross-product to detect collinearity more reliably than angle calculation
+ * @param {Array} polygon - Array of {x, y} points
+ * @param {number} tolerance - Distance tolerance for cross-product (default: 0.1 pixels)
+ * @returns {Array} - Simplified polygon with collinear points removed
+ */
+function removeCollinearPoints(polygon, tolerance = 0.1) {
+    if (polygon.length <= 3) return polygon; // Can't simplify triangles
+
+    const result = [];
+    const n = polygon.length;
+
+    for (let i = 0; i < n; i++) {
+        const prev = polygon[(i - 1 + n) % n];
+        const curr = polygon[i];
+        const next = polygon[(i + 1) % n];
+
+        // Calculate vectors from prev to curr and curr to next
+        const v1x = curr.x - prev.x;
+        const v1y = curr.y - prev.y;
+        const v2x = next.x - curr.x;
+        const v2y = next.y - curr.y;
+
+        // Calculate cross product (if zero, points are collinear)
+        // Cross product magnitude = |v1| * |v2| * sin(angle)
+        const crossProduct = Math.abs(v1x * v2y - v1y * v2x);
+
+        // Calculate the lengths for normalization
+        const len1 = Math.sqrt(v1x * v1x + v1y * v1y);
+        const len2 = Math.sqrt(v2x * v2x + v2y * v2y);
+
+        // Avoid division by zero
+        if (len1 < 0.01 || len2 < 0.01) {
+            // One of the edges is too short, keep the point
+            result.push(curr);
+            continue;
+        }
+
+        // Normalize cross product by edge lengths to get perpendicular distance
+        const normalizedCross = crossProduct / (len1 + len2);
+
+        // If normalized cross product is greater than tolerance, points are NOT collinear
+        if (normalizedCross > tolerance) {
+            result.push(curr);
+        }
+        // else: collinear, skip this point
+    }
+
+    return result.length >= 3 ? result : polygon; // Safety check
+}
+
+/**
+ * Compute the principal axis of a polygon (rotation-invariant reference direction)
+ * Uses the longest edge as the reference direction, merging consecutive collinear edges
+ * This ensures that the same logical polygon shape produces the same angles
+ * regardless of coordinate system rotation
+ */
+function computePrincipalAxis(polygon) {
+    let maxLength = 0;
+    let principalAngle = 0;
+    const angleThreshold = 0.5; // degrees - threshold for considering edges collinear
+
+    // For each starting vertex, try to extend forward as far as collinear edges allow
+    for (let i = 0; i < polygon.length; i++) {
+        const startPoint = polygon[i];
+        let endPoint = polygon[(i + 1) % polygon.length];
+        let currentAngle = Math.atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x) * 180 / Math.PI;
+
+        // Try to extend this edge by merging collinear segments
+        // Check up to polygon.length edges to handle fully collinear shapes
+        for (let count = 1; count < polygon.length; count++) {
+            const nextIdx = (i + count + 1) % polygon.length;
+            const prevIdx = (i + count) % polygon.length;
+            const nextPoint = polygon[nextIdx];
+            const prevPoint = polygon[prevIdx];
+
+            const nextAngle = Math.atan2(nextPoint.y - prevPoint.y, nextPoint.x - prevPoint.x) * 180 / Math.PI;
+
+            // Check if angles are within threshold (accounting for angle wraparound)
+            let angleDiff = Math.abs(nextAngle - currentAngle);
+            if (angleDiff > 180) angleDiff = 360 - angleDiff;
+
+            if (angleDiff < angleThreshold) {
+                // Collinear! Extend to this point
+                endPoint = nextPoint;
+            } else {
+                // Not collinear, stop extending
+                break;
+            }
+        }
+
+        // Calculate length of the (possibly extended) edge
+        const dx = endPoint.x - startPoint.x;
+        const dy = endPoint.y - startPoint.y;
+        const length = Math.sqrt(dx * dx + dy * dy);
+
+        if (length > maxLength) {
+            maxLength = length;
+            principalAngle = Math.atan2(dy, dx) * 180 / Math.PI;
+        }
+    }
+
+    console.log(`[boundary] Principal axis angle: ${principalAngle.toFixed(1)}° (from longest merged edge: ${maxLength.toFixed(1)}px)`);
+    return principalAngle;
+}
+
+/**
  * Extract significant edges from polygon boundary
  * Returns edges sorted by length (longest first)
+ * Angles are computed RELATIVE to the polygon's principal axis for rotation invariance
  */
 function extractBoundaryEdges(polygon) {
+    // Compute the principal axis for rotation-invariant angle calculation
+    const principalAngle = computePrincipalAxis(polygon);
+
     const edges = [];
 
     for (let i = 0; i < polygon.length; i++) {
@@ -53,15 +165,20 @@ function extractBoundaryEdges(polygon) {
         const dy = p2.y - p1.y;
         const length = Math.sqrt(dx * dx + dy * dy);
 
-        // Calculate angle of this edge (in degrees, 0-180 range)
-        let angle = Math.atan2(dy, dx) * 180 / Math.PI;
-        if (angle < 0) angle += 180; // Normalize to 0-180
+        // Calculate angle RELATIVE to principal axis (rotation-invariant)
+        let absoluteAngle = Math.atan2(dy, dx) * 180 / Math.PI;
+        let angle = absoluteAngle - principalAngle;
+
+        // Normalize to 0-180 range
+        while (angle < 0) angle += 180;
+        while (angle >= 180) angle -= 180;
 
         edges.push({
             p1,
             p2,
             length,
             angle,
+            absoluteAngle,  // Keep absolute angle for debugging
             dx,
             dy,
             index: i
@@ -70,6 +187,9 @@ function extractBoundaryEdges(polygon) {
 
     // Sort by length (longest first)
     edges.sort((a, b) => b.length - a.length);
+
+    console.log(`[boundary] Extracted ${edges.length} edges with angles relative to principal axis`);
+    console.log(`[boundary] Edge angles (relative): ${edges.slice(0, 5).map(e => e.angle.toFixed(1) + '°').join(', ')}${edges.length > 5 ? '...' : ''}`);
 
     return edges;
 }
@@ -486,8 +606,12 @@ function generateConvexHullInterior(convexHull, numSamples = 30) {
  * Find near-90-degree corners in a polygon
  * Returns array of { vertexIndex, angle, edge1Dir, edge2Dir }
  */
-function findRightAngleCorners(rotated, angleTolerance = 2.0) {
+function findRightAngleCorners(rotated, angleTolerance = 2.0, debugMode = false) {
     const corners = [];
+
+    if (debugMode) {
+        console.log(`[findRightAngleCorners] Checking ${rotated.length} vertices for 90° convex corners`);
+    }
 
     for (let i = 0; i < rotated.length; i++) {
         const prev = rotated[(i - 1 + rotated.length) % rotated.length];
@@ -513,8 +637,17 @@ function findRightAngleCorners(rotated, angleTolerance = 2.0) {
         const dot = v1.x * v2.x + v1.y * v2.y;
         const angle = Math.acos(Math.max(-1, Math.min(1, dot))) * 180 / Math.PI;
 
-        // Check if angle is close to 90 degrees
-        if (Math.abs(angle - 90) <= angleTolerance) {
+        // Calculate cross product to determine if corner is convex (inward) or concave (outward)
+        // v1 and v2 point FROM current vertex TO neighbors
+        // For a CCW polygon: cross product < 0 means convex (right turn inward), > 0 means concave (left turn outward)
+        const cross = v1.x * v2.y - v1.y * v2.x;
+
+        if (debugMode && Math.abs(angle - 90) <= angleTolerance) {
+            console.log(`[findRightAngleCorners] Vertex ${i}: angle=${angle.toFixed(1)}°, cross=${cross.toFixed(3)} ${cross < 0 ? '(CONVEX ✓)' : '(CONCAVE ✗)'}`);
+        }
+
+        // Check if angle is close to 90 degrees AND corner is convex (cross product < 0)
+        if (Math.abs(angle - 90) <= angleTolerance && cross < 0) {
             corners.push({
                 vertexIndex: i,
                 vertex: curr,
@@ -522,7 +655,14 @@ function findRightAngleCorners(rotated, angleTolerance = 2.0) {
                 edge1Dir: { x: -v1.x, y: -v1.y }, // Direction away from prev
                 edge2Dir: { x: -v2.x, y: -v2.y }  // Direction away from next
             });
+            if (debugMode) {
+                console.log(`[findRightAngleCorners] ✓ Added convex corner at vertex ${i}`);
+            }
         }
+    }
+
+    if (debugMode) {
+        console.log(`[findRightAngleCorners] Found ${corners.length} convex 90° corners`);
     }
 
     return corners;
@@ -898,8 +1038,8 @@ function findMaxRectangleAtAngle(polygon, angleDeg, debugMode = false, targetAre
     const cos = Math.cos(angleRad);
     const sin = Math.sin(angleRad);
 
-    // Force debug for Test17 at specific angles and Combo_0002 (4-vertex trapezoid)
-    const forceDebug = debugMode || (polygon.length === 15 && (Math.abs(angleDeg - 25.9) < 1 || Math.abs(angleDeg - 9.4) < 0.1 || Math.abs(angleDeg - 99.4) < 0.1)) || (polygon.length === 4 && Math.abs(angleDeg - 90) < 1);
+    // Force debug for Test17 at specific angles, Combo_0002 (4-vertex trapezoid), and Combo_0049 (7-vertex)
+    const forceDebug = debugMode || (polygon.length === 15 && (Math.abs(angleDeg - 25.9) < 1 || Math.abs(angleDeg - 9.4) < 0.1 || Math.abs(angleDeg - 99.4) < 0.1)) || (polygon.length === 4 && Math.abs(angleDeg - 90) < 1) || (polygon.length === 7 && Math.abs(angleDeg - 0) < 1);
 
     // Rotate all polygon points to align with angle
     const rotated = polygon.map(p => ({
@@ -907,7 +1047,60 @@ function findMaxRectangleAtAngle(polygon, angleDeg, debugMode = false, targetAre
         y: -p.x * sin + p.y * cos
     }));
 
-    // Try edge-based rectangles for all polygons (PRIMARY ALGORITHM)
+    // PRIORITY 1: Try corner-based expansion (best for polygons with right-angle corners)
+    // Find near-90-degree corners and expand rectangles from them
+    let cornerBestRect = null;
+    let cornerBestArea = 0;
+
+    const corners = findRightAngleCorners(rotated, 2.0, forceDebug);
+    if (forceDebug) {
+        if (corners.length > 0) {
+            console.log(`[findMaxRect] Found ${corners.length} convex near-90° corners to expand from`);
+        } else {
+            console.log(`[findMaxRect] ⚠️  No convex 90° corners found, will fall back to edge-based approach`);
+        }
+    }
+
+    for (const corner of corners) {
+        const rect = expandRectangleFromCorner(corner, polygon, rotated, forceDebug);
+        if (rect && rect.area > cornerBestArea) {
+            cornerBestArea = rect.area;
+            cornerBestRect = rect;
+            if (forceDebug) {
+                console.log(`[findMaxRect] 🔲 Corner expansion improved: ${rect.width.toFixed(1)} × ${rect.height.toFixed(1)} = ${rect.area.toFixed(1)} sq px`);
+            }
+        }
+    }
+
+    // If corner-based expansion found a good result, return it immediately
+    if (cornerBestRect && cornerBestArea > 0) {
+        // Rotate corners back to original space
+        const originalCorners = cornerBestRect.corners.map(p => ({
+            x: p.x * cos - p.y * sin,
+            y: p.x * sin + p.y * cos
+        }));
+
+        const origCentroid = {
+            x: (originalCorners[0].x + originalCorners[1].x + originalCorners[2].x + originalCorners[3].x) / 4,
+            y: (originalCorners[0].y + originalCorners[1].y + originalCorners[2].y + originalCorners[3].y) / 4
+        };
+
+        if (forceDebug) {
+            console.log(`[findMaxRect] ✅ Corner-based expansion found ${cornerBestRect.width.toFixed(1)} × ${cornerBestRect.height.toFixed(1)} = ${cornerBestArea.toFixed(1)} sq px`);
+        }
+
+        return {
+            corners: originalCorners,
+            width: cornerBestRect.width,
+            height: cornerBestRect.height,
+            area: cornerBestArea,
+            angle: angleDeg,
+            centroid: origCentroid,
+            aspectRatio: cornerBestRect.width / cornerBestRect.height
+        };
+    }
+
+    // PRIORITY 2: Try edge-based rectangles (fallback if no corners found)
     // For each edge, try placing a rectangle with that edge as one side
     // This uses ray-tracing/binary search expansion perpendicular from each edge
     let edgeBestRect = null;
@@ -1802,7 +1995,8 @@ function boundaryBasedInscribedRectangle(polygon, options = {}) {
         maxAngles = 6,  // Test top N dominant angles (slightly more for better coverage)
         angleTolerance = 5,  // Degrees tolerance for grouping angles
         testPerpendicular = true,  // Also test angles perpendicular to dominant edges
-        targetArea = null  // Optional target area for focused search
+        targetArea = null,  // Optional target area for focused search
+        usePrincipalAxisOnly = false  // Only test principal axis orientation (disabled - causes quality degradation)
     } = options;
 
     // Adaptive parameters based on path complexity
@@ -1824,8 +2018,18 @@ function boundaryBasedInscribedRectangle(polygon, options = {}) {
 
     const startTime = performance.now();
 
+    // Preprocess: Remove collinear points to simplify the polygon
+    const originalVertexCount = polygon.length;
+    polygon = removeCollinearPoints(polygon);
+    const simplifiedVertexCount = polygon.length;
+
     // Force debug for Test17 (15-vertex polygon)
-    const forceDebug = debugMode || polygon.length === 15;
+    const forceDebug = debugMode || originalVertexCount === 15;
+
+    // Always log collinear point removal
+    if (simplifiedVertexCount !== originalVertexCount) {
+        console.log(`[boundary-based] Removed ${originalVertexCount - simplifiedVertexCount} collinear points (${originalVertexCount} → ${simplifiedVertexCount} vertices)`);
+    }
 
     // Calculate polygon bounding box area (approximation for strategy selection)
     let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
@@ -1851,71 +2055,92 @@ function boundaryBasedInscribedRectangle(polygon, options = {}) {
         console.log(`  - Bounding box area: ${boundingBoxArea.toFixed(0)} sq px`);
     }
 
-    // Extract boundary edges
-    const edges = extractBoundaryEdges(polygon);
-
-    // Generate shortcut edges across convex chains
-    const shortcuts = generateShortcutEdges(polygon, forceDebug);
-
-    // Combine original edges with shortcuts for angle analysis
-    const allEdges = [...edges, ...shortcuts];
-
-    // Re-sort combined edges by length
-    allEdges.sort((a, b) => b.length - a.length);
-
-    if (forceDebug) {
-        console.log(`[boundary-based] Polygon has ${polygon.length} vertices, ${edges.length} original edges, ${shortcuts.length} shortcut edges`);
-        console.log(`[boundary-based] Longest edge: ${allEdges[0].length.toFixed(1)}px at ${allEdges[0].angle.toFixed(1)}°${allEdges[0].isShortcut ? ' (shortcut)' : ''}`);
-        console.log(`[boundary-based] All edges (sorted by length):`);
-        for (let i = 0; i < Math.min(10, allEdges.length); i++) {
-            const e = allEdges[i];
-            const edgeType = e.isShortcut ? ` (shortcut p${e.chainStartIndex}->p${e.chainEndIndex})` : ` (edge ${e.index})`;
-            console.log(`  ${i+1}. ${edgeType}: ${e.length.toFixed(1)}px at ${e.angle.toFixed(1)}° from (${e.p1.x.toFixed(1)}, ${e.p1.y.toFixed(1)}) to (${e.p2.x.toFixed(1)}, ${e.p2.y.toFixed(1)})`);
-        }
-    }
-
-    // Find dominant angles (now includes shortcut edges)
-    const angleGroups = findDominantAngles(allEdges, angleTolerance);
-
-    if (forceDebug) {
-        console.log(`[boundary-based] Found ${angleGroups.length} angle groups:`);
-        for (let i = 0; i < Math.min(10, angleGroups.length); i++) {
-            const g = angleGroups[i];
-            console.log(`  ${i+1}. ${g.angle.toFixed(1)}° (${g.edges.length} edges, total ${g.totalLength.toFixed(1)}px)`);
-        }
-    }
+    // Get principal axis angle (from longest merged collinear edge)
+    const principalAxisAngle = computePrincipalAxis(polygon);
 
     // Collect angles to test
     const anglesToTest = new Set();
 
-    // Add dominant angles (use adaptive max angles based on path count)
-    for (let i = 0; i < Math.min(adaptiveMaxAngles, angleGroups.length); i++) {
-        anglesToTest.add(angleGroups[i].angle);
+    // Initialize shortcuts (needed for findMaxRectangleAtAngle)
+    let shortcuts = [];
+    let angleGroups = [];  // Will be populated in original mode
 
-        // Also test perpendicular to dominant angles
-        if (testPerpendicular) {
-            const perpAngle = (angleGroups[i].angle + 90) % 180;
-            anglesToTest.add(perpAngle);
+    if (usePrincipalAxisOnly) {
+        // NEW: Only test principal axis and its perpendicular
+        anglesToTest.add(principalAxisAngle);
+        const perpAngle = (principalAxisAngle + 90) % 180;
+        anglesToTest.add(perpAngle);
+
+        if (forceDebug) {
+            console.log(`[boundary-based] Using PRINCIPAL AXIS ONLY mode`);
+            console.log(`[boundary-based] Testing angles: ${principalAxisAngle.toFixed(1)}° and ${perpAngle.toFixed(1)}° (perpendicular)`);
         }
-    }
+    } else {
+        // ORIGINAL: Extract boundary edges and test multiple angles
+        const edges = extractBoundaryEdges(polygon);
 
-    // Also add perpendicular pairs
-    if (angleGroups.length >= 2 && testPerpendicular) {
-        for (let i = 0; i < Math.min(3, angleGroups.length); i++) {
-            for (let j = i + 1; j < Math.min(4, angleGroups.length); j++) {
-                if (arePerpendicularAngles(angleGroups[i].angle, angleGroups[j].angle)) {
-                    anglesToTest.add(angleGroups[i].angle);
-                    anglesToTest.add(angleGroups[j].angle);
-                    if (debugMode) {
-                        console.log(`[boundary-based] Found perpendicular pair: ${angleGroups[i].angle.toFixed(1)}° and ${angleGroups[j].angle.toFixed(1)}°`);
-                    }
-                }
+        // Generate shortcut edges across convex chains
+        shortcuts = generateShortcutEdges(polygon, forceDebug);
+
+        // Combine original edges with shortcuts for angle analysis
+        const allEdges = [...edges, ...shortcuts];
+
+        // Re-sort combined edges by length
+        allEdges.sort((a, b) => b.length - a.length);
+
+        if (forceDebug) {
+            console.log(`[boundary-based] Polygon has ${polygon.length} vertices, ${edges.length} original edges, ${shortcuts.length} shortcut edges`);
+            console.log(`[boundary-based] Longest edge: ${allEdges[0].length.toFixed(1)}px at ${allEdges[0].angle.toFixed(1)}°${allEdges[0].isShortcut ? ' (shortcut)' : ''}`);
+            console.log(`[boundary-based] All edges (sorted by length):`);
+            for (let i = 0; i < Math.min(10, allEdges.length); i++) {
+                const e = allEdges[i];
+                const edgeType = e.isShortcut ? ` (shortcut p${e.chainStartIndex}->p${e.chainEndIndex})` : ` (edge ${e.index})`;
+                console.log(`  ${i+1}. ${edgeType}: ${e.length.toFixed(1)}px at ${e.angle.toFixed(1)}° from (${e.p1.x.toFixed(1)}, ${e.p1.y.toFixed(1)}) to (${e.p2.x.toFixed(1)}, ${e.p2.y.toFixed(1)})`);
+            }
+        }
+
+        // Find dominant angles (now includes shortcut edges)
+        angleGroups = findDominantAngles(allEdges, angleTolerance);
+
+        if (forceDebug) {
+            console.log(`[boundary-based] Found ${angleGroups.length} angle groups:`);
+            for (let i = 0; i < Math.min(10, angleGroups.length); i++) {
+                const g = angleGroups[i];
+                console.log(`  ${i+1}. ${g.angle.toFixed(1)}° (${g.edges.length} edges, total ${g.totalLength.toFixed(1)}px)`);
+            }
+        }
+
+        // Add dominant angles (use adaptive max angles based on path count)
+        for (let i = 0; i < Math.min(adaptiveMaxAngles, angleGroups.length); i++) {
+            anglesToTest.add(angleGroups[i].angle);
+
+            // Also test perpendicular to dominant angles
+            if (testPerpendicular) {
+                const perpAngle = (angleGroups[i].angle + 90) % 180;
+                anglesToTest.add(perpAngle);
             }
         }
     }
 
-    // Always test axis-aligned (0°)
-    anglesToTest.add(0);
+    if (!usePrincipalAxisOnly) {
+        // Also add perpendicular pairs (only in original mode)
+        if (angleGroups.length >= 2 && testPerpendicular) {
+            for (let i = 0; i < Math.min(3, angleGroups.length); i++) {
+                for (let j = i + 1; j < Math.min(4, angleGroups.length); j++) {
+                    if (arePerpendicularAngles(angleGroups[i].angle, angleGroups[j].angle)) {
+                        anglesToTest.add(angleGroups[i].angle);
+                        anglesToTest.add(angleGroups[j].angle);
+                        if (debugMode) {
+                            console.log(`[boundary-based] Found perpendicular pair: ${angleGroups[i].angle.toFixed(1)}° and ${angleGroups[j].angle.toFixed(1)}°`);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Always test axis-aligned (0°) in original mode
+        anglesToTest.add(0);
+    }
 
     const angles = Array.from(anglesToTest).sort((a, b) => a - b);
 
