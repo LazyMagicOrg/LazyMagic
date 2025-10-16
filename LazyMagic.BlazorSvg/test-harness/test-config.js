@@ -3605,7 +3605,7 @@ export const testCases = [
 
 export const config = {
     // Path to the SVG file
-    svgPath: "../../BlazorTest.WASM/wwwroot/Level1.svg",
+    svgPath: "../../BlazorTest.WASM/wwwroot/Level1-normal.svg",
 
     // Path to the SvgViewer.js library
     svgViewerPath: "../wwwroot/SvgViewer.js",

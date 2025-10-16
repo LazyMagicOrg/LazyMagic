@@ -164,6 +164,93 @@ For a given centroid and angle:
 - **Current:** 87% normal (20/23), 30% rotated (7/23)
 - **Gap to close:** Improve rotated by ~50% win rate without degrading normal
 
+## Precomputed Rectangles Embedding (NEW - 2025-10-16)
+
+### Overview
+Precomputed rectangle data is now embedded directly in SVG files, eliminating the need for a separate JSON HTTP request at runtime. The system supports both embedded data (preferred) and external JSON files (fallback).
+
+### Workflow for Production Deployment (251 Combinations)
+
+1. **Generate Full Test Results** (when ready to deploy all 251 combos)
+   ```bash
+   cd test-harness
+   node test-runner-normal.js  # Generate all 251 SVGs in TestResultsNormal/
+   ```
+
+2. **Extract BEST Algorithm Results**
+   ```bash
+   node extract-precomputed-rectangles.js
+   ```
+   - **Fixed bug:** Now extracts the WINNING algorithm (BB or Optimized), not just BB
+   - Reads from: `TestResultsNormal/Combo_XXXX.svg` files
+   - Generates: `test-harness/precomputed-rectangles.json`
+   - Output: 251 rectangles with corners, centroids, areas, angles, types
+
+3. **Embed Data in Production SVG Files**
+   ```bash
+   node embed-rectangles-in-svg.js
+   ```
+   - Reads: `BlazorTest.WASM/wwwroot/precomputed-rectangles.json`
+   - Updates: `Level1-normal.svg`, `Level1-rotated.svg`, `Level2.svg`
+   - Embeds JSON in `<script type="application/json" id="precomputed-rectangles">` tag
+   - File size increase: ~262 KB per SVG (for full 251 combos)
+
+4. **Deploy**
+   - Copy embedded SVG files to production
+   - Optional: Keep external `precomputed-rectangles.json` as fallback
+   - Runtime: SVG files are ~340 KB each (78 KB + 262 KB data)
+
+### Current State (23 Test Combos)
+The embedding has been tested with the current 23-combo rotation sensitivity test set:
+- Extracted: 23/251 combos from TestResultsNormal
+- All 23 are "optimized" type (winners over BB)
+- File sizes: Level1-normal.svg grew from 76.5 KB → 87.1 KB (+10.5 KB)
+- Embedded data location: Lines 39-41 in Level1-normal.svg
+
+### How It Works at Runtime
+
+**SvgViewer.js Loading Strategy:**
+1. **First:** Check for `<script id="precomputed-rectangles">` in loaded SVG
+2. **If found:** Parse embedded JSON (no HTTP request needed)
+3. **If not found:** Fallback to external `precomputed-rectangles.json`
+4. **Result:** Cached in `this.precomputedRectangles` for fast lookups
+
+**Console Messages:**
+- Embedded: `[precomputed] ✓ Loaded from embedded SVG data: 251 rectangles`
+- External: `[precomputed] ✓ Loaded from external JSON: 251 rectangles`
+
+### Key Files Modified
+- **`test-harness/extract-precomputed-rectangles.js`**
+  - Fixed: Now extracts best algorithm (not just BB)
+  - Fixed: Path updated to TestResultsNormal
+  - New logic: Compares BB vs Opt areas, selects winner
+
+- **`test-harness/embed-rectangles-in-svg.js`** (NEW)
+  - Embeds JSON in SVG `<defs>` section
+  - Handles multiple SVG files
+  - Removes existing embedded data before re-embedding
+
+- **`wwwroot/SvgViewer.js`**
+  - New: Checks for embedded data in SVG first
+  - Fallback: Loads external JSON if needed
+  - Backward compatible with old external-only approach
+
+### Benefits
+✅ Single file deployment (SVG contains all data)
+✅ No separate JSON HTTP request (faster initial load)
+✅ Version coherence (rectangles always match SVG paths)
+✅ Backward compatible (falls back to external JSON)
+
+### Drawbacks
+⚠️ Larger SVG file size (+262 KB for 251 combos)
+⚠️ Must re-embed when updating rectangle data
+⚠️ SVG editor (Inkscape) may strip `<script>` tags on save
+
+### For Next Session
+- **TODO:** Test in live app to verify embedded data loads correctly
+- **TODO:** Run full 251-combo test suite when rotation sensitivity is fixed
+- **TODO:** Re-extract and re-embed with full 251 results
+
 ## Files Requiring Updates
 
 ### Analysis Tools
@@ -188,12 +275,12 @@ For a given centroid and angle:
    - Value: Useful for browser-based debugging and screenshot capture
 
 ### Data Extraction Tools
-4. **`test-harness/extract-precomputed-rectangles.js`** - Path needs updating
-   - Current: Expects `../TestResults` (old structure)
-   - Should be: `../TestResultsNormal` or `../TestResultsRotated` (current structure)
+4. **`test-harness/extract-precomputed-rectangles.js`** - ✅ FIXED (2025-10-16)
+   - ✅ Updated: Now reads from `../TestResultsNormal` (current structure)
+   - ✅ Fixed: Extracts BEST algorithm (BB or Optimized), not just BB
    - Purpose: Extracts rectangle data from SVG test results to generate `precomputed-rectangles.json`
-   - Used by: `compute-all-combinations.js` and `compute-inscribed-rectangles.js`
-   - Status: Outdated path, but precomputed-rectangles.json files exist in multiple locations (wwwroot, test-harness, bin folders)
+   - Used by: Workflow for embedding rectangles in production SVG files
+   - New companion: `embed-rectangles-in-svg.js` embeds the JSON directly in SVG files
 
 ### Documentation
 5. **`test-harness/testharness.md`** - Outdated testing methodology documentation
