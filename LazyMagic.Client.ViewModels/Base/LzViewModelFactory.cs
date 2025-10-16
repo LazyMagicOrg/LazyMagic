@@ -31,7 +31,7 @@ public static class LzViewModelFactory
                     switch (scope)
                     {
                         case "Singleton":
-                            services.TryAddSingleton(serviceInterface, type);
+                            services.TryAddScoped(serviceInterface, type);
                             break;
                         case "Transient":
                             services.TryAddTransient(serviceInterface, type);

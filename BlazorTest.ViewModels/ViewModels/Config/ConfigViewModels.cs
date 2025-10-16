@@ -4,7 +4,7 @@ public static class ConfigViewModels
 {
     public static IServiceCollection AddViewModels(this IServiceCollection services)
     {
-        services.AddSingleton<ISessionViewModel, SessionViewModel>();
+        services.TryAddScoped<ISessionViewModel, SessionViewModel>();
 
         // The LazyMagic.Client.FactoryGenerator generates Factory classes
         // for ViewModels using the [Factory] attribute. To avoid using 

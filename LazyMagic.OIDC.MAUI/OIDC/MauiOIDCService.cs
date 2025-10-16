@@ -26,7 +26,13 @@ public class MauiOIDCService : IOIDCService, IDisposable
     public event EventHandler<OIDCAuthenticationStateChangedEventArgs>? AuthenticationStateChanged;
     public event Action<string>? OnAuthenticationRequested;
 
-    public MauiOIDCService(ILogger<MauiOIDCService> logger, ILoggerFactory loggerFactory, IOidcConfig oidcConfig, ITokenStorageService tokenStorage, IDynamicConfigurationProvider configProvider, IWebViewAuthenticationProvider? webViewProvider = null, ITokenRefreshService? tokenRefreshService = null)
+    public MauiOIDCService(ILogger<MauiOIDCService> logger, 
+        ILoggerFactory loggerFactory, 
+        IOidcConfig oidcConfig, 
+        ITokenStorageService tokenStorage, 
+        IDynamicConfigurationProvider configProvider, 
+        IWebViewAuthenticationProvider? webViewProvider = null, 
+        ITokenRefreshService? tokenRefreshService = null)
     {
         _logger = logger;
         _loggerFactory = loggerFactory;
