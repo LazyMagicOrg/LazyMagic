@@ -88,6 +88,14 @@ function parseSvgRectangle(svgPath) {
         const parser = new DOMParser();
         const doc = parser.parseFromString(svgContent, 'text/xml');
 
+        // Extract area data from comments
+        let polygonArea = null;
+        let rectangleArea = null;
+        const polygonAreaMatch = svgContent.match(/<!--\s*polygonArea:\s*([0-9.]+)\s*-->/);
+        const rectangleAreaMatch = svgContent.match(/<!--\s*rectangleArea:\s*([0-9.]+)\s*-->/);
+        if (polygonAreaMatch) polygonArea = parseFloat(polygonAreaMatch[1]);
+        if (rectangleAreaMatch) rectangleArea = parseFloat(rectangleAreaMatch[1]);
+
         // Extract results for both algorithms
         const bbResult = extractAlgorithmResult(doc, 'BB');
         const optResult = extractAlgorithmResult(doc, 'Opt');
@@ -190,7 +198,9 @@ function parseSvgRectangle(svgPath) {
             angle: Math.round(angle * 10) / 10,
             centroid,
             type,
-            computationTimeMs: winningResult.time
+            computationTimeMs: winningResult.time,
+            polygonArea,           // NEW: Polygon area in square SVG inches
+            rectangleArea          // NEW: Rectangle area in square SVG inches
         };
 
     } catch (error) {
@@ -300,6 +310,8 @@ async function main() {
                 centroid: r.rectangle.centroid,
                 type: r.rectangle.type
             },
+            polygonArea: r.rectangle.polygonArea,           // NEW: Polygon area in square SVG inches
+            rectangleArea: r.rectangle.rectangleArea,       // NEW: Rectangle area in square SVG inches
             computationTimeMs: r.rectangle.computationTimeMs
         }))
     };

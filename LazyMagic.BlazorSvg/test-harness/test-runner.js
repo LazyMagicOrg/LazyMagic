@@ -56,6 +56,54 @@ function log(message, color = 'reset') {
     console.log(`${colors[color]}${message}${colors.reset}`);
 }
 
+/**
+ * Calculate polygon area in square SVG inches using shoelace formula
+ * @param {Array} polygon - Array of {x, y} points in pre-transform coordinates
+ * @param {number} scaleFactor - SVG layer scale factor (default 48.345845)
+ * @returns {number} Area in square SVG inches
+ */
+function calculatePolygonAreaInSvgInches(polygon, scaleFactor = 48.345845) {
+    const UNITS_PER_INCH = 96;
+
+    // Calculate area in pre-transform coordinates using shoelace formula
+    let areaPreTransform = 0;
+    for (let i = 0; i < polygon.length; i++) {
+        const j = (i + 1) % polygon.length;
+        areaPreTransform += polygon[i].x * polygon[j].y;
+        areaPreTransform -= polygon[j].x * polygon[i].y;
+    }
+    areaPreTransform = Math.abs(areaPreTransform) / 2;
+
+    // Convert to square user units by scaling up
+    const areaUserUnits = areaPreTransform * (scaleFactor * scaleFactor);
+
+    // Convert to square SVG inches
+    const areaSvgInches = areaUserUnits / (UNITS_PER_INCH * UNITS_PER_INCH);
+
+    return areaSvgInches;
+}
+
+/**
+ * Calculate rectangle area in square SVG inches
+ * @param {Object} rectangle - Rectangle with width and height in pre-transform coordinates
+ * @param {number} scaleFactor - SVG layer scale factor (default 48.345845)
+ * @returns {number} Area in square SVG inches
+ */
+function calculateRectangleAreaInSvgInches(rectangle, scaleFactor = 48.345845) {
+    const UNITS_PER_INCH = 96;
+
+    // Rectangle area in pre-transform coordinates
+    const areaPreTransform = rectangle.width * rectangle.height;
+
+    // Convert to square user units by scaling up
+    const areaUserUnits = areaPreTransform * (scaleFactor * scaleFactor);
+
+    // Convert to square SVG inches
+    const areaSvgInches = areaUserUnits / (UNITS_PER_INCH * UNITS_PER_INCH);
+
+    return areaSvgInches;
+}
+
 function extractPathData(svgContent, pathIds) {
     const paths = [];
 
@@ -406,6 +454,10 @@ async function runTest(testCase) {
         log(`    (${v.x.toFixed(1)}, ${v.y.toFixed(1)})`, 'yellow');
     }
 
+    // Calculate polygon area in square SVG inches
+    const polygonArea = calculatePolygonAreaInSvgInches(polygon);
+    log(`\n  Polygon area: ${polygonArea.toFixed(2)} square SVG inches`, 'cyan');
+
     // Calculate inscribed rectangle using BOTH algorithms for comparison
     log(`\n  Calculating inscribed rectangles with BOTH algorithms...`, 'cyan');
 
@@ -522,12 +574,16 @@ async function runTest(testCase) {
         };
     }
 
+    // Calculate rectangle area in square SVG inches
+    const rectangleArea = calculateRectangleAreaInSvgInches(bestRectangle);
+
     log(`\n  Best Rectangle:`, 'yellow');
     log(`    Type: ${bestRectangle.type}`, 'yellow');
     log(`    Dimensions: ${bestRectangle.width.toFixed(1)} × ${bestRectangle.height.toFixed(1)}`, 'yellow');
-    log(`    Area: ${bestRectangle.area.toFixed(1)} sq px`, 'yellow');
+    log(`    Area: ${bestRectangle.area.toFixed(1)} sq px (${rectangleArea.toFixed(2)} sq inches)`, 'yellow');
     log(`    Angle: ${bestRectangle.angle.toFixed(1)}°`, 'yellow');
     log(`    Time: ${bestTime.toFixed(1)} ms`, 'yellow');
+    log(`    Fill ratio: ${(rectangleArea / polygonArea * 100).toFixed(1)}%`, 'yellow');
 
     // Show goal comparison if goal rectangle exists
     if (goalRectangle) {
@@ -541,7 +597,9 @@ async function runTest(testCase) {
     return {
         success: true,
         polygon,
+        polygonArea,           // NEW: Polygon area in square SVG inches
         rectangle: bestRectangle,
+        rectangleArea,         // NEW: Rectangle area in square SVG inches
         boundaryRectangle,
         optimizedRectangle,
         boundaryTime,
@@ -566,7 +624,7 @@ function extractTestPathsContent(pathData) {
 }
 
 function generateSvgVisualization(testCase, result) {
-    const { polygon, rectangle, boundaryRectangle, optimizedRectangle, boundaryTime, optimizedTime, pathData, viewBox, calculationTime, goalRectangle } = result;
+    const { polygon, polygonArea, rectangle, rectangleArea, boundaryRectangle, optimizedRectangle, boundaryTime, optimizedTime, pathData, viewBox, calculationTime, goalRectangle } = result;
 
     // Calculate bounds from the polygon to create an appropriate viewBox
     const bounds = calculateBounds(polygon);
@@ -764,6 +822,10 @@ function generateSvgVisualization(testCase, result) {
     return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="${vbX} ${vbY} ${vbWidth} ${vbHeight}" width="${vbWidth}" height="${vbHeight}">
   <title>${testCase.name}</title>
+
+  <!-- Area Data (Square SVG Inches) -->
+  <!-- polygonArea: ${polygonArea.toFixed(4)} -->
+  <!-- rectangleArea: ${rectangleArea.toFixed(4)} -->
 
   <!-- White Background -->
   <rect x="${vbX}" y="${vbY}" width="${vbWidth}" height="${vbHeight}" fill="white"/>
