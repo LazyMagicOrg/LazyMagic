@@ -24,6 +24,25 @@
     <div>Initial Paths: <code>@(string.Join(", ", initialPaths))</code></div>
     <div>Currently Selected: <code>@(string.Join(", ", currentPaths.Any() ? currentPaths : initialPaths))</code></div>
     <div>All Inside Selected: <strong>@(allInsideSelected ? "✅ YES - All paths within bounding box are selected" : "❌ NO - Some paths within bounding box are NOT selected")</strong></div>
+    @if (areaData != null && areaData.PolygonArea.HasValue && areaData.RectangleArea.HasValue)
+    {
+        var comboArea = areaData.PolygonArea.Value;
+        var rectArea = areaData.RectangleArea.Value;
+
+        // If rectangle area is larger than combo area (algorithm error), use combo area for both
+        if (rectArea > comboArea)
+        {
+            rectArea = comboArea;
+        }
+
+        <div class="mt-2">
+            <strong>Area Measurements (Square SVG Inches):</strong>
+            <div class="ms-3">
+                <div>Combo Area: <code>@($"{comboArea:F2}")</code> sq in</div>
+                <div>Inscribed Rectangle Area: <code>@($"{rectArea:F2}")</code> sq in</div>
+            </div>
+        </div>
+    }
 </div>
 
 @if (allInsideSelected)
@@ -66,6 +85,7 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
     // AllInsideSelected should be false initially
     private List<string> initialPaths = new List<string> { "Ballroom_Room_1", "Ballroom_Room_3" };
     private bool allInsideSelected = false;
+    private AreaData? areaData = null;
 
     protected override async Task OnInitializedAsync()
     {
@@ -75,11 +95,28 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
     protected async override Task OnAfterRenderAsync(bool firstRender)
     {
        await base.OnAfterRenderAsync(firstRender);
+
+       if (firstRender)
+       {
+           // Give the SVG time to initialize
+           await Task.Delay(500);
+           await UpdateAreaData();
+       }
     }
 
-    private void OnPathsChanged(List<string> paths)
+    private async void OnPathsChanged(List<string> paths)
     {
         currentPaths = paths;
+        await UpdateAreaData();
+        StateHasChanged();
+    }
+
+    private async Task UpdateAreaData()
+    {
+        if (svgViewer != null)
+        {
+            areaData = await svgViewer.GetAreaDataAsync();
+        }
     }
 
     private async Task TestSelect()

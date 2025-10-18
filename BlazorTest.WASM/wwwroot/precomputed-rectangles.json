@@ -1,10 +1,10 @@
 {
-  "generatedAt": "2025-10-16T17:51:37.707Z",
+  "generatedAt": "2025-10-18T18:23:42.358Z",
   "totalCombinations": 251,
   "successfulComputations": 251,
   "failedComputations": 0,
-  "totalComputationTimeMs": 879050.9000000003,
-  "averageComputationTimeMs": 3502.1948207171326,
+  "totalComputationTimeMs": 898916.6000000002,
+  "averageComputationTimeMs": 3581.3410358565748,
   "statistics": {
     "boundaryBasedCount": 0,
     "optimizedCount": 251
@@ -44,7 +44,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 53.4
+      "polygonArea": 2822.8891,
+      "rectangleArea": 2830.9513,
+      "computationTimeMs": 52.6
     },
     {
       "key": "Ballroom_Room_2",
@@ -80,7 +82,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 14.9
+      "polygonArea": 2493.5761,
+      "rectangleArea": 2302.675,
+      "computationTimeMs": 15.2
     },
     {
       "key": "Ballroom_Room_3",
@@ -116,7 +120,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 14.5
+      "polygonArea": 2605.7788,
+      "rectangleArea": 2617.7881,
+      "computationTimeMs": 14.6
     },
     {
       "key": "Ballroom_Room_1_Ballroom_Room_3",
@@ -153,7 +159,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 14
+      "polygonArea": 5428.713,
+      "rectangleArea": 5440.2908,
+      "computationTimeMs": 13.4
     },
     {
       "key": "Ballroom_Room_4",
@@ -189,7 +197,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 11.1
+      "polygonArea": 2754.07,
+      "rectangleArea": 2495.5172,
+      "computationTimeMs": 11.2
     },
     {
       "key": "Ballroom_Room_2_Ballroom_Room_4",
@@ -226,7 +236,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1320.1
+      "polygonArea": 5247.5759,
+      "rectangleArea": 4421.8301,
+      "computationTimeMs": 1364.3
     },
     {
       "key": "Ballroom_Room_5",
@@ -262,7 +274,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 11.8
+      "polygonArea": 4921.9448,
+      "rectangleArea": 4932.5302,
+      "computationTimeMs": 11.9
     },
     {
       "key": "Ballroom_Room_Grand",
@@ -298,7 +312,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 11
+      "polygonArea": 6122.2873,
+      "rectangleArea": 4775.448,
+      "computationTimeMs": 11.1
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Room_1",
@@ -335,7 +351,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 14.1
+      "polygonArea": 3407.8892,
+      "rectangleArea": 3417.6041,
+      "computationTimeMs": 13.7
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Room_2",
@@ -372,7 +390,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 12.3
+      "polygonArea": 3078.4875,
+      "rectangleArea": 2889.123,
+      "computationTimeMs": 12.6
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Room_1_Ballroom_Room_2",
@@ -410,7 +430,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 13.4
+      "polygonArea": 5901.4226,
+      "rectangleArea": 5720.0272,
+      "computationTimeMs": 13.6
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Room_1_Ballroom_Room_3",
@@ -448,7 +470,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1245.5
+      "polygonArea": 6013.7131,
+      "rectangleArea": 5440.2465,
+      "computationTimeMs": 1232.2
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3",
@@ -487,7 +511,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1865
+      "polygonArea": 8507.2464,
+      "rectangleArea": 5720.0272,
+      "computationTimeMs": 1769.5
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Room_2_Ballroom_Room_4",
@@ -525,7 +551,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1351.8
+      "polygonArea": 5832.4873,
+      "rectangleArea": 4114.4859,
+      "computationTimeMs": 1370.9
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4",
@@ -564,7 +592,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1978.7
+      "polygonArea": 8655.4224,
+      "rectangleArea": 5720.0272,
+      "computationTimeMs": 1899.8
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Room_3",
@@ -601,7 +631,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 872
+      "polygonArea": 3145.7788,
+      "rectangleArea": 3160.2674,
+      "computationTimeMs": 579.7
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_3",
@@ -639,7 +671,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1724.1
+      "polygonArea": 5968.713,
+      "rectangleArea": 5440.2465,
+      "computationTimeMs": 1192.6
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Room_4",
@@ -676,7 +710,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1039.2
+      "polygonArea": 3293.9647,
+      "rectangleArea": 3037.8072,
+      "computationTimeMs": 680.9
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Room_2_Ballroom_Room_4",
@@ -714,7 +750,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1961.8
+      "polygonArea": 5787.5759,
+      "rectangleArea": 4421.8301,
+      "computationTimeMs": 1304.6
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Room_3_Ballroom_Room_4",
@@ -752,7 +790,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1705.6
+      "polygonArea": 5899.7786,
+      "rectangleArea": 5655.5517,
+      "computationTimeMs": 1140.2
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4",
@@ -791,7 +831,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2608.6
+      "polygonArea": 8722.7128,
+      "rectangleArea": 5440.2465,
+      "computationTimeMs": 1718.8
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
@@ -830,7 +872,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2668.3
+      "polygonArea": 8393.3998,
+      "rectangleArea": 5632.8012,
+      "computationTimeMs": 1796.5
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_3",
@@ -869,7 +913,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 15.8
+      "polygonArea": 6553.7131,
+      "rectangleArea": 6572.2347,
+      "computationTimeMs": 11.2
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3",
@@ -909,7 +955,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2841.6
+      "polygonArea": 9047.2465,
+      "rectangleArea": 6572.1811,
+      "computationTimeMs": 1898.7
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_2_Ballroom_Room_4",
@@ -948,7 +996,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2191.3
+      "polygonArea": 6372.4873,
+      "rectangleArea": 5550.6791,
+      "computationTimeMs": 1467.6
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4",
@@ -988,7 +1038,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2969.5
+      "polygonArea": 9195.4224,
+      "rectangleArea": 5720.0272,
+      "computationTimeMs": 2018.7
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4",
@@ -1028,7 +1080,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2815.9
+      "polygonArea": 9307.7129,
+      "rectangleArea": 6572.1811,
+      "computationTimeMs": 1873.9
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
@@ -1068,7 +1122,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2923.8
+      "polygonArea": 8978.3111,
+      "rectangleArea": 5632.8012,
+      "computationTimeMs": 1969.3
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
@@ -1109,7 +1165,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3432.1
+      "polygonArea": 11801.2463,
+      "rectangleArea": 10989.4871,
+      "computationTimeMs": 2277.2
     },
     {
       "key": "Ballroom_Aisle_35_Ballroom_Room_3",
@@ -1146,7 +1204,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 18.1
+      "polygonArea": 3088.3388,
+      "rectangleArea": 3094.9506,
+      "computationTimeMs": 13.5
     },
     {
       "key": "Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3",
@@ -1184,7 +1244,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 16.4
+      "polygonArea": 5911.273,
+      "rectangleArea": 5923.8722,
+      "computationTimeMs": 12.5
     },
     {
       "key": "Ballroom_Aisle_35_Ballroom_Room_5",
@@ -1221,7 +1283,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 16.7
+      "polygonArea": 5404.6442,
+      "rectangleArea": 5416.1116,
+      "computationTimeMs": 12.5
     },
     {
       "key": "Ballroom_Aisle_35_Ballroom_Room_3_Ballroom_Room_5",
@@ -1259,7 +1323,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 16.5
+      "polygonArea": 8010.4507,
+      "rectangleArea": 8027.4808,
+      "computationTimeMs": 12.8
     },
     {
       "key": "Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5",
@@ -1298,7 +1364,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 15.8
+      "polygonArea": 10833.3849,
+      "rectangleArea": 10856.4024,
+      "computationTimeMs": 12.6
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3",
@@ -1337,7 +1405,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2025.4
+      "polygonArea": 6496.2731,
+      "rectangleArea": 5923.8279,
+      "computationTimeMs": 1354.5
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3",
@@ -1377,7 +1447,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2819.3
+      "polygonArea": 8989.8065,
+      "rectangleArea": 5923.8279,
+      "computationTimeMs": 1917.6
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5",
@@ -1417,7 +1489,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3471.1
+      "polygonArea": 11418.385,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 2357.3
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5",
@@ -1458,7 +1532,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4536.5
+      "polygonArea": 13911.9184,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 3147.6
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_3",
@@ -1496,7 +1572,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1030.9
+      "polygonArea": 3628.3388,
+      "rectangleArea": 3160.147,
+      "computationTimeMs": 684.4
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3",
@@ -1535,7 +1613,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2022.9
+      "polygonArea": 6451.273,
+      "rectangleArea": 5923.8279,
+      "computationTimeMs": 1333.1
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_3_Ballroom_Room_4",
@@ -1574,7 +1654,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2043.3
+      "polygonArea": 6382.3386,
+      "rectangleArea": 5655.5517,
+      "computationTimeMs": 1370.1
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4",
@@ -1614,7 +1696,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2813
+      "polygonArea": 9205.2729,
+      "rectangleArea": 5923.8279,
+      "computationTimeMs": 2306.2
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
@@ -1654,7 +1738,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2782.5
+      "polygonArea": 8875.9598,
+      "rectangleArea": 5655.6721,
+      "computationTimeMs": 2727.6
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_3_Ballroom_Room_5",
@@ -1693,7 +1779,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2566.6
+      "polygonArea": 8550.4507,
+      "rectangleArea": 8027.4808,
+      "computationTimeMs": 2554.2
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5",
@@ -1733,7 +1821,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3532.6
+      "polygonArea": 11373.3849,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 3454.8
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -1773,7 +1863,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3552.7
+      "polygonArea": 11304.4505,
+      "rectangleArea": 8027.4808,
+      "computationTimeMs": 3473.8
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -1814,7 +1906,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4574.2
+      "polygonArea": 14127.3848,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 4521
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -1855,7 +1949,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4699.1
+      "polygonArea": 13798.0717,
+      "rectangleArea": 8027.4511,
+      "computationTimeMs": 4657.6
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3",
@@ -1895,7 +1991,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2004.9
+      "polygonArea": 7036.2731,
+      "rectangleArea": 6572.2347,
+      "computationTimeMs": 1967.8
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3",
@@ -1936,7 +2034,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3035.5
+      "polygonArea": 9529.8065,
+      "rectangleArea": 5923.8279,
+      "computationTimeMs": 2986.6
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4",
@@ -1977,7 +2077,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3026.1
+      "polygonArea": 9790.2729,
+      "rectangleArea": 6562.5801,
+      "computationTimeMs": 2932.3
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
@@ -2018,7 +2120,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2989.9
+      "polygonArea": 9460.8712,
+      "rectangleArea": 5655.6721,
+      "computationTimeMs": 2990.6
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
@@ -2060,7 +2164,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3650.7
+      "polygonArea": 12283.8063,
+      "rectangleArea": 10984.1765,
+      "computationTimeMs": 3579.7
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5",
@@ -2101,7 +2207,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3612.3
+      "polygonArea": 11958.385,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 3558.4
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5",
@@ -2143,7 +2251,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4645.9
+      "polygonArea": 14451.9184,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 4637.5
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -2185,7 +2295,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4710.8
+      "polygonArea": 14712.3848,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 4685.6
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -2227,7 +2339,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4802.6
+      "polygonArea": 14382.9831,
+      "rectangleArea": 8027.4511,
+      "computationTimeMs": 4761
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -2270,7 +2384,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4130.8
+      "polygonArea": 17205.9182,
+      "rectangleArea": 10984.1765,
+      "computationTimeMs": 5417.7
     },
     {
       "key": "Ballroom_Aisle_46_Ballroom_Room_4",
@@ -2307,7 +2423,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 714.6
+      "polygonArea": 3325.32,
+      "rectangleArea": 2953.5943,
+      "computationTimeMs": 1083.3
     },
     {
       "key": "Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_4",
@@ -2345,7 +2463,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1454.4
+      "polygonArea": 5818.8259,
+      "rectangleArea": 4816.7635,
+      "computationTimeMs": 2107.7
     },
     {
       "key": "Ballroom_Aisle_46_Ballroom_Room_Grand",
@@ -2382,7 +2502,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1653.5
+      "polygonArea": 6693.4908,
+      "rectangleArea": 5181.9593,
+      "computationTimeMs": 2383.6
     },
     {
       "key": "Ballroom_Aisle_46_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -2420,7 +2542,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2441.6
+      "polygonArea": 9447.5698,
+      "rectangleArea": 6875.7546,
+      "computationTimeMs": 3427
     },
     {
       "key": "Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -2459,7 +2583,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3460.6
+      "polygonArea": 11941.0757,
+      "rectangleArea": 8245.9418,
+      "computationTimeMs": 4725
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_4",
@@ -2498,7 +2624,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1706
+      "polygonArea": 6403.7373,
+      "rectangleArea": 4803.8521,
+      "computationTimeMs": 2388.5
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4",
@@ -2538,7 +2666,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2142.6
+      "polygonArea": 9226.6724,
+      "rectangleArea": 5720.0272,
+      "computationTimeMs": 3097.7
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -2578,7 +2708,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3535.4
+      "polygonArea": 12525.9871,
+      "rectangleArea": 8303.1188,
+      "computationTimeMs": 4839.6
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -2619,7 +2751,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4380.9
+      "polygonArea": 15348.9222,
+      "rectangleArea": 8303.1188,
+      "computationTimeMs": 5899.9
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_4",
@@ -2657,7 +2791,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 805.9
+      "polygonArea": 3865.2147,
+      "rectangleArea": 2955.0234,
+      "computationTimeMs": 1212.3
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_4",
@@ -2696,7 +2832,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1552.8
+      "polygonArea": 6358.8259,
+      "rectangleArea": 4816.7635,
+      "computationTimeMs": 2234.2
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_3_Ballroom_Room_4",
@@ -2735,7 +2873,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1517.3
+      "polygonArea": 6471.0286,
+      "rectangleArea": 5655.5517,
+      "computationTimeMs": 2131.6
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4",
@@ -2775,7 +2915,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1991.8
+      "polygonArea": 9293.9629,
+      "rectangleArea": 5440.2465,
+      "computationTimeMs": 2967.6
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
@@ -2815,7 +2957,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2043.7
+      "polygonArea": 8964.6498,
+      "rectangleArea": 5655.6721,
+      "computationTimeMs": 2979.3
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -2854,7 +2998,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2641.2
+      "polygonArea": 9987.4645,
+      "rectangleArea": 7349.9433,
+      "computationTimeMs": 3686
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -2894,7 +3040,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3501.6
+      "polygonArea": 12481.0757,
+      "rectangleArea": 8245.9418,
+      "computationTimeMs": 4830.2
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -2934,7 +3082,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3287.6
+      "polygonArea": 12593.2784,
+      "rectangleArea": 7349.9433,
+      "computationTimeMs": 4526
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -2975,7 +3125,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4202.3
+      "polygonArea": 15416.2126,
+      "rectangleArea": 7349.9433,
+      "computationTimeMs": 5729.2
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -3016,7 +3168,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4343.5
+      "polygonArea": 15086.8995,
+      "rectangleArea": 8245.9418,
+      "computationTimeMs": 5811.2
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_4",
@@ -3056,7 +3210,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1695.4
+      "polygonArea": 6943.7373,
+      "rectangleArea": 5550.6791,
+      "computationTimeMs": 2440.9
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4",
@@ -3097,7 +3253,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2310.4
+      "polygonArea": 9766.6724,
+      "rectangleArea": 5720.0272,
+      "computationTimeMs": 3318.5
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4",
@@ -3138,7 +3296,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2144.1
+      "polygonArea": 9878.9629,
+      "rectangleArea": 6572.1811,
+      "computationTimeMs": 3109.1
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
@@ -3179,7 +3339,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2223.6
+      "polygonArea": 9549.5612,
+      "rectangleArea": 5655.6721,
+      "computationTimeMs": 3185
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
@@ -3221,7 +3383,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2578.4
+      "polygonArea": 12372.4963,
+      "rectangleArea": 10989.4871,
+      "computationTimeMs": 3749.8
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -3262,7 +3426,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3779.1
+      "polygonArea": 13065.9871,
+      "rectangleArea": 8716.6882,
+      "computationTimeMs": 5051
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -3304,7 +3470,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4175.6
+      "polygonArea": 15888.9222,
+      "rectangleArea": 9161.4878,
+      "computationTimeMs": 5809.1
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -3346,7 +3514,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4262.4
+      "polygonArea": 16001.2127,
+      "rectangleArea": 7349.9433,
+      "computationTimeMs": 5814.9
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -3388,7 +3558,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4186.4
+      "polygonArea": 15671.8109,
+      "rectangleArea": 8568.9142,
+      "computationTimeMs": 5725
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -3431,7 +3603,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4826.4
+      "polygonArea": 18494.7461,
+      "rectangleArea": 10989.4871,
+      "computationTimeMs": 6618
     },
     {
       "key": "Ballroom_Aisle_56_Ballroom_Room_5",
@@ -3468,7 +3642,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 11.2
+      "polygonArea": 5926.9449,
+      "rectangleArea": 5783.5663,
+      "computationTimeMs": 15.5
     },
     {
       "key": "Ballroom_Aisle_56_Ballroom_Room_Grand",
@@ -3505,7 +3681,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1529.2
+      "polygonArea": 7127.1664,
+      "rectangleArea": 5594.9522,
+      "computationTimeMs": 2271.1
     },
     {
       "key": "Ballroom_Aisle_56_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -3543,7 +3721,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2490.3
+      "polygonArea": 12049.1946,
+      "rectangleArea": 9550.8659,
+      "computationTimeMs": 3714.2
     },
     {
       "key": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_5",
@@ -3581,7 +3761,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1180.2
+      "polygonArea": 6409.6442,
+      "rectangleArea": 5783.5663,
+      "computationTimeMs": 1811.9
     },
     {
       "key": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_3_Ballroom_Room_5",
@@ -3620,7 +3802,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1864
+      "polygonArea": 9015.4508,
+      "rectangleArea": 8027.4808,
+      "computationTimeMs": 2712.1
     },
     {
       "key": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5",
@@ -3660,7 +3844,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2554.2
+      "polygonArea": 11838.385,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 3721
     },
     {
       "key": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -3699,7 +3885,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2826.3
+      "polygonArea": 12531.894,
+      "rectangleArea": 8759.8773,
+      "computationTimeMs": 4092.5
     },
     {
       "key": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -3739,7 +3927,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3436.9
+      "polygonArea": 15137.7005,
+      "rectangleArea": 8759.8773,
+      "computationTimeMs": 4889.4
     },
     {
       "key": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -3780,7 +3970,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4253.6
+      "polygonArea": 17960.6347,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 6077.6
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5",
@@ -3821,7 +4013,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2701.6
+      "polygonArea": 12423.385,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 3901.1
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5",
@@ -3863,7 +4057,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3542.9
+      "polygonArea": 14916.9184,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 4990.5
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -3905,7 +4101,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4500.7
+      "polygonArea": 18545.6348,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 6293.2
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -3948,7 +4146,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 5347.7
+      "polygonArea": 21039.1682,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 7438.9
     },
     {
       "key": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_Grand",
@@ -3986,7 +4186,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1749.3
+      "polygonArea": 7698.4909,
+      "rectangleArea": 5595.0682,
+      "computationTimeMs": 2531.3
     },
     {
       "key": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -4025,7 +4227,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2599.1
+      "polygonArea": 10452.5698,
+      "rectangleArea": 6875.7546,
+      "computationTimeMs": 3704.7
     },
     {
       "key": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -4065,7 +4269,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3563.9
+      "polygonArea": 12946.0757,
+      "rectangleArea": 8245.9418,
+      "computationTimeMs": 4882.5
     },
     {
       "key": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -4104,7 +4310,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2722.6
+      "polygonArea": 12620.6028,
+      "rectangleArea": 9747.0961,
+      "computationTimeMs": 4052.8
     },
     {
       "key": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -4144,7 +4352,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3414.6
+      "polygonArea": 15374.6817,
+      "rectangleArea": 9551.0478,
+      "computationTimeMs": 4935.2
     },
     {
       "key": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -4185,7 +4395,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4506.3
+      "polygonArea": 17868.1876,
+      "rectangleArea": 9551.0478,
+      "computationTimeMs": 6229.1
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -4226,7 +4438,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3747.7
+      "polygonArea": 13530.9871,
+      "rectangleArea": 8303.1188,
+      "computationTimeMs": 5122.8
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -4268,7 +4482,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4629.8
+      "polygonArea": 16353.9222,
+      "rectangleArea": 8303.1188,
+      "computationTimeMs": 6411.1
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -4310,7 +4526,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4534.1
+      "polygonArea": 18453.099,
+      "rectangleArea": 8711.4644,
+      "computationTimeMs": 6471.9
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -4353,7 +4571,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 5491.5
+      "polygonArea": 21276.0341,
+      "rectangleArea": 8711.4644,
+      "computationTimeMs": 7617.7
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_3",
@@ -4392,7 +4612,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 741.2
+      "polygonArea": 3728.3388,
+      "rectangleArea": 3738.907,
+      "computationTimeMs": 1105.3
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3",
@@ -4432,7 +4654,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1372.4
+      "polygonArea": 6551.2731,
+      "rectangleArea": 5923.8279,
+      "computationTimeMs": 2016.6
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4",
@@ -4472,7 +4696,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1425.9
+      "polygonArea": 6482.3387,
+      "rectangleArea": 5655.5517,
+      "computationTimeMs": 2091.3
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4",
@@ -4513,7 +4739,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1938.8
+      "polygonArea": 9305.2729,
+      "rectangleArea": 5923.8279,
+      "computationTimeMs": 2839
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
@@ -4554,7 +4782,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1925.5
+      "polygonArea": 8975.9598,
+      "rectangleArea": 5655.6721,
+      "computationTimeMs": 2846.9
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_5",
@@ -4594,7 +4824,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1754.1
+      "polygonArea": 8650.4507,
+      "rectangleArea": 8027.4808,
+      "computationTimeMs": 2645.5
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5",
@@ -4635,7 +4867,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2433.4
+      "polygonArea": 11473.385,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 3581.9
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -4676,7 +4910,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2469.2
+      "polygonArea": 11404.4506,
+      "rectangleArea": 8027.4808,
+      "computationTimeMs": 3587.2
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -4718,7 +4954,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3219.6
+      "polygonArea": 14227.3848,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 4618.3
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -4760,7 +4998,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3344.6
+      "polygonArea": 13898.0717,
+      "rectangleArea": 8027.4511,
+      "computationTimeMs": 4732
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3",
@@ -4801,7 +5041,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 14.4
+      "polygonArea": 7136.2731,
+      "rectangleArea": 7156.4333,
+      "computationTimeMs": 17.5
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3",
@@ -4843,7 +5085,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2125.9
+      "polygonArea": 9629.8065,
+      "rectangleArea": 7156.3798,
+      "computationTimeMs": 3120.3
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4",
@@ -4885,7 +5129,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2127
+      "polygonArea": 9890.2729,
+      "rectangleArea": 7156.3798,
+      "computationTimeMs": 3088.1
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
@@ -4927,7 +5173,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2141.4
+      "polygonArea": 9560.8712,
+      "rectangleArea": 5655.6721,
+      "computationTimeMs": 3056.7
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
@@ -4970,7 +5218,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2575.4
+      "polygonArea": 12383.8063,
+      "rectangleArea": 10984.1765,
+      "computationTimeMs": 3615.6
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5",
@@ -5012,7 +5262,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2449.9
+      "polygonArea": 12058.385,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 3601
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5",
@@ -5055,7 +5307,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3277.1
+      "polygonArea": 14551.9184,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 4741.7
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -5098,7 +5352,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3286.1
+      "polygonArea": 14812.3848,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 4785.3
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -5141,7 +5397,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3353.2
+      "polygonArea": 14482.9831,
+      "rectangleArea": 8027.4511,
+      "computationTimeMs": 4818.3
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -5185,7 +5443,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3855.6
+      "polygonArea": 17305.9182,
+      "rectangleArea": 10984.1765,
+      "computationTimeMs": 5535.4
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_4",
@@ -5224,7 +5484,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 883.2
+      "polygonArea": 3965.2147,
+      "rectangleArea": 3597.5507,
+      "computationTimeMs": 1298.6
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4",
@@ -5264,7 +5526,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1570.4
+      "polygonArea": 6458.8259,
+      "rectangleArea": 4816.7635,
+      "computationTimeMs": 2242.7
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4",
@@ -5304,7 +5568,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1557.8
+      "polygonArea": 6571.0287,
+      "rectangleArea": 5655.5517,
+      "computationTimeMs": 2228
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4",
@@ -5345,7 +5611,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2042.9
+      "polygonArea": 9393.9629,
+      "rectangleArea": 5440.2465,
+      "computationTimeMs": 2973.1
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
@@ -5386,7 +5654,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2123.2
+      "polygonArea": 9064.6498,
+      "rectangleArea": 5655.6721,
+      "computationTimeMs": 2980.6
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -5426,7 +5696,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2586.2
+      "polygonArea": 10087.4645,
+      "rectangleArea": 7523.5301,
+      "computationTimeMs": 3622.6
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -5467,7 +5739,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3585.3
+      "polygonArea": 12581.0757,
+      "rectangleArea": 8245.9418,
+      "computationTimeMs": 4907.4
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -5508,7 +5782,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3327.6
+      "polygonArea": 12693.2784,
+      "rectangleArea": 7660.63,
+      "computationTimeMs": 4543
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -5550,7 +5826,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4210.7
+      "polygonArea": 15516.2126,
+      "rectangleArea": 7660.63,
+      "computationTimeMs": 5660
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -5592,7 +5870,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4415.8
+      "polygonArea": 15186.8996,
+      "rectangleArea": 8245.9418,
+      "computationTimeMs": 4339.5
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4",
@@ -5633,7 +5913,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1706.5
+      "polygonArea": 7043.7373,
+      "rectangleArea": 6044.0769,
+      "computationTimeMs": 1709.5
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4",
@@ -5675,7 +5957,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2348.8
+      "polygonArea": 9866.6725,
+      "rectangleArea": 5797.0142,
+      "computationTimeMs": 2353.9
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4",
@@ -5717,7 +6001,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2199.5
+      "polygonArea": 9978.963,
+      "rectangleArea": 6572.1811,
+      "computationTimeMs": 2218.6
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
@@ -5759,7 +6045,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2249.1
+      "polygonArea": 9649.5612,
+      "rectangleArea": 6043.5026,
+      "computationTimeMs": 2235
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
@@ -5802,7 +6090,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2646.1
+      "polygonArea": 12472.4963,
+      "rectangleArea": 10989.4871,
+      "computationTimeMs": 2628.5
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -5844,7 +6134,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3629.2
+      "polygonArea": 13165.9871,
+      "rectangleArea": 8716.6882,
+      "computationTimeMs": 3656.5
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -5887,7 +6179,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4287.7
+      "polygonArea": 15988.9222,
+      "rectangleArea": 9404.7756,
+      "computationTimeMs": 4286.4
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -5930,7 +6224,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4373.4
+      "polygonArea": 16101.2127,
+      "rectangleArea": 7660.63,
+      "computationTimeMs": 4262.1
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -5973,7 +6269,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4174.9
+      "polygonArea": 15771.8109,
+      "rectangleArea": 8576.0865,
+      "computationTimeMs": 4226.4
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -6017,7 +6315,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4892.3
+      "polygonArea": 18594.7461,
+      "rectangleArea": 10989.4871,
+      "computationTimeMs": 5507.1
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4",
@@ -6058,7 +6358,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1487.2
+      "polygonArea": 7053.5887,
+      "rectangleArea": 6678.9397,
+      "computationTimeMs": 2207.9
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4",
@@ -6100,7 +6402,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2113.4
+      "polygonArea": 9876.5229,
+      "rectangleArea": 5923.8279,
+      "computationTimeMs": 3106.6
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
@@ -6142,7 +6446,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2162.7
+      "polygonArea": 9547.2098,
+      "rectangleArea": 6679.0818,
+      "computationTimeMs": 3116
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -6184,7 +6490,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2683.7
+      "polygonArea": 11975.7006,
+      "rectangleArea": 8027.4808,
+      "computationTimeMs": 3838.5
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -6227,7 +6535,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3459.4
+      "polygonArea": 14798.6348,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 4916
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -6270,7 +6580,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3532.9
+      "polygonArea": 14469.3217,
+      "rectangleArea": 8027.4511,
+      "computationTimeMs": 4950.9
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -6312,7 +6624,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3431.3
+      "polygonArea": 13175.8384,
+      "rectangleArea": 7660.63,
+      "computationTimeMs": 4786.6
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -6355,7 +6669,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4223.7
+      "polygonArea": 15998.7727,
+      "rectangleArea": 7660.63,
+      "computationTimeMs": 5860.8
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -6398,7 +6714,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4437.1
+      "polygonArea": 15669.4596,
+      "rectangleArea": 8245.9418,
+      "computationTimeMs": 5997.4
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4",
@@ -6441,7 +6759,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2292.5
+      "polygonArea": 10461.523,
+      "rectangleArea": 7156.3798,
+      "computationTimeMs": 3271.2
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
@@ -6484,7 +6804,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2360.9
+      "polygonArea": 10132.1212,
+      "rectangleArea": 6679.0818,
+      "computationTimeMs": 3359.8
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
@@ -6528,7 +6850,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2789.3
+      "polygonArea": 12955.0563,
+      "rectangleArea": 11966.3384,
+      "computationTimeMs": 4016.2
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -6572,7 +6896,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3616.4
+      "polygonArea": 15383.6349,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 5098.6
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -6616,7 +6942,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3591.2
+      "polygonArea": 15054.2331,
+      "rectangleArea": 8027.4511,
+      "computationTimeMs": 5087.9
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -6661,7 +6989,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4176.9
+      "polygonArea": 17877.1682,
+      "rectangleArea": 11965.2225,
+      "computationTimeMs": 5759.5
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -6705,7 +7035,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4392.1
+      "polygonArea": 16583.7727,
+      "rectangleArea": 7660.63,
+      "computationTimeMs": 5029.3
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -6749,7 +7081,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4393.6
+      "polygonArea": 16254.371,
+      "rectangleArea": 8171.0973,
+      "computationTimeMs": 4557.1
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -6794,7 +7128,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4903.8
+      "polygonArea": 19077.3061,
+      "rectangleArea": 11966.3384,
+      "computationTimeMs": 5045.3
     },
     {
       "key": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_5",
@@ -6833,7 +7169,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 13.9
+      "polygonArea": 6509.6442,
+      "rectangleArea": 6367.765,
+      "computationTimeMs": 13.1
     },
     {
       "key": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_5",
@@ -6873,7 +7211,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 1953.5
+      "polygonArea": 9115.4508,
+      "rectangleArea": 8027.4808,
+      "computationTimeMs": 2244.1
     },
     {
       "key": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5",
@@ -6914,7 +7254,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2614.4
+      "polygonArea": 11938.385,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 2849.9
     },
     {
       "key": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -6954,7 +7296,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2893.6
+      "polygonArea": 12631.894,
+      "rectangleArea": 8759.8773,
+      "computationTimeMs": 2964.3
     },
     {
       "key": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -6995,7 +7339,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3524
+      "polygonArea": 15237.7005,
+      "rectangleArea": 8759.8773,
+      "computationTimeMs": 3978.5
     },
     {
       "key": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -7037,7 +7383,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 5428.2
+      "polygonArea": 18060.6347,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 4643.2
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5",
@@ -7079,7 +7427,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4010.3
+      "polygonArea": 12523.3851,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 2811.9
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5",
@@ -7122,7 +7472,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 5102.3
+      "polygonArea": 15016.9184,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 3694.9
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -7165,7 +7517,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 6412.2
+      "polygonArea": 18645.6348,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 4641.4
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -7209,7 +7563,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 7563.3
+      "polygonArea": 21139.1682,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 5652.6
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_5",
@@ -7250,7 +7606,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2928.6
+      "polygonArea": 9655.4508,
+      "rectangleArea": 9522.4374,
+      "computationTimeMs": 2166.5
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5",
@@ -7292,7 +7650,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3775.9
+      "polygonArea": 12478.385,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 2708.8
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -7334,7 +7694,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3967.8
+      "polygonArea": 12409.4506,
+      "rectangleArea": 8949.5155,
+      "computationTimeMs": 2900.4
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -7377,7 +7739,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4995.3
+      "polygonArea": 15232.3848,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 3940.8
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -7420,7 +7784,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 5011.2
+      "polygonArea": 14903.0717,
+      "rectangleArea": 9507.9053,
+      "computationTimeMs": 3649.8
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -7462,7 +7828,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 5202.5
+      "polygonArea": 15777.7005,
+      "rectangleArea": 9507.5433,
+      "computationTimeMs": 3756.6
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -7505,7 +7873,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 6290.2
+      "polygonArea": 18600.6348,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 4557.9
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5",
@@ -7548,7 +7918,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 17.5
+      "polygonArea": 13063.3851,
+      "rectangleArea": 12939.9996,
+      "computationTimeMs": 14.5
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5",
@@ -7592,7 +7964,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 5179.3
+      "polygonArea": 15556.9184,
+      "rectangleArea": 12103.3739,
+      "computationTimeMs": 3792.7
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -7636,7 +8010,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 5234.5
+      "polygonArea": 15817.3849,
+      "rectangleArea": 12909.9764,
+      "computationTimeMs": 3779.3
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -7680,7 +8056,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 5162.4
+      "polygonArea": 15487.9831,
+      "rectangleArea": 8949.5024,
+      "computationTimeMs": 3666.4
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -7725,7 +8103,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 6164.8
+      "polygonArea": 18310.9183,
+      "rectangleArea": 12103.3739,
+      "computationTimeMs": 4471.6
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -7769,7 +8149,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 6499.4
+      "polygonArea": 19185.6348,
+      "rectangleArea": 12909.9764,
+      "computationTimeMs": 4704.7
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -7814,7 +8196,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 7805.7
+      "polygonArea": 21679.1682,
+      "rectangleArea": 12103.3739,
+      "computationTimeMs": 5768.6
     },
     {
       "key": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_Grand",
@@ -7853,7 +8237,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2627.3
+      "polygonArea": 7798.4893,
+      "rectangleArea": 6106.952,
+      "computationTimeMs": 1862
     },
     {
       "key": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -7893,7 +8279,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3774.5
+      "polygonArea": 10552.5698,
+      "rectangleArea": 6875.7546,
+      "computationTimeMs": 2701.5
     },
     {
       "key": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -7934,7 +8322,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4984.1
+      "polygonArea": 13046.0757,
+      "rectangleArea": 8245.9418,
+      "computationTimeMs": 3942.9
     },
     {
       "key": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -7974,7 +8364,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4039.8
+      "polygonArea": 12720.6012,
+      "rectangleArea": 9793.9422,
+      "computationTimeMs": 2905.5
     },
     {
       "key": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -8015,7 +8407,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 5121.5
+      "polygonArea": 15474.6817,
+      "rectangleArea": 9551.0478,
+      "computationTimeMs": 3672.8
     },
     {
       "key": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -8057,7 +8451,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 6406.2
+      "polygonArea": 17968.1876,
+      "rectangleArea": 9551.0478,
+      "computationTimeMs": 4694.2
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -8099,7 +8495,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 5355.7
+      "polygonArea": 13630.9871,
+      "rectangleArea": 8303.1188,
+      "computationTimeMs": 3989.3
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -8142,7 +8540,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 6437.5
+      "polygonArea": 16453.9223,
+      "rectangleArea": 8303.1188,
+      "computationTimeMs": 5152.4
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -8185,7 +8585,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 6513.2
+      "polygonArea": 18553.099,
+      "rectangleArea": 8962.6826,
+      "computationTimeMs": 4844.8
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -8229,7 +8631,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 7693.6
+      "polygonArea": 21376.0341,
+      "rectangleArea": 8962.6826,
+      "computationTimeMs": 5747.9
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -8270,7 +8674,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4049.5
+      "polygonArea": 11092.4645,
+      "rectangleArea": 8369.895,
+      "computationTimeMs": 3263.5
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -8312,7 +8718,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 5134.9
+      "polygonArea": 13586.0757,
+      "rectangleArea": 8245.9418,
+      "computationTimeMs": 3783.7
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -8354,7 +8762,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4830.7
+      "polygonArea": 13698.2785,
+      "rectangleArea": 8938.3677,
+      "computationTimeMs": 3985.8
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -8397,7 +8807,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 6090.6
+      "polygonArea": 16521.2127,
+      "rectangleArea": 8938.3677,
+      "computationTimeMs": 4390.6
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -8440,7 +8852,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 6105.5
+      "polygonArea": 16191.8996,
+      "rectangleArea": 9211.9925,
+      "computationTimeMs": 4543.7
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -8482,7 +8896,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 5405.2
+      "polygonArea": 16014.5764,
+      "rectangleArea": 9551.0478,
+      "computationTimeMs": 3904.5
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -8525,7 +8941,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 6344.4
+      "polygonArea": 18508.1876,
+      "rectangleArea": 8962.6826,
+      "computationTimeMs": 4558.5
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -8568,7 +8986,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4915.7
+      "polygonArea": 14170.9871,
+      "rectangleArea": 10346.0281,
+      "computationTimeMs": 3996.6
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -8612,7 +9032,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4658.7
+      "polygonArea": 16993.9223,
+      "rectangleArea": 10263.3326,
+      "computationTimeMs": 4837.1
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -8656,7 +9078,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4423.4
+      "polygonArea": 17106.2128,
+      "rectangleArea": 8938.3677,
+      "computationTimeMs": 5252.5
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -8700,7 +9124,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4408.8
+      "polygonArea": 16776.811,
+      "rectangleArea": 10346.0281,
+      "computationTimeMs": 4597.3
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -8745,7 +9171,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 5089.5
+      "polygonArea": 19599.7461,
+      "rectangleArea": 11190.0485,
+      "computationTimeMs": 5090.2
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -8789,7 +9217,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4930
+      "polygonArea": 19093.099,
+      "rectangleArea": 10346.0281,
+      "computationTimeMs": 5058.5
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -8834,7 +9264,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 5948
+      "polygonArea": 21916.0342,
+      "rectangleArea": 10263.3326,
+      "computationTimeMs": 6046.9
     },
     {
       "key": "Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -8875,7 +9307,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 2939
+      "polygonArea": 13203.144,
+      "rectangleArea": 10572.0805,
+      "computationTimeMs": 3478.3
     },
     {
       "key": "Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -8917,7 +9351,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3962.4
+      "polygonArea": 15808.9506,
+      "rectangleArea": 9890.6254,
+      "computationTimeMs": 4032.4
     },
     {
       "key": "Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -8960,7 +9396,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4604
+      "polygonArea": 18631.8848,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 5241.1
     },
     {
       "key": "Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -9002,7 +9440,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3900.2
+      "polygonArea": 15957.2417,
+      "rectangleArea": 10572.2858,
+      "computationTimeMs": 5533.9
     },
     {
       "key": "Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -9045,7 +9485,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4821.9
+      "polygonArea": 18450.7477,
+      "rectangleArea": 10572.2858,
+      "computationTimeMs": 6631.4
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -9089,7 +9531,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 5025.8
+      "polygonArea": 19216.8849,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 6947.1
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -9134,7 +9578,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 5997
+      "polygonArea": 21710.4182,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 7258.4
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -9178,7 +9624,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4979.5
+      "polygonArea": 19035.6591,
+      "rectangleArea": 10572.2858,
+      "computationTimeMs": 5016.6
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -9223,7 +9671,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 6357.2
+      "polygonArea": 21858.5942,
+      "rectangleArea": 10572.2858,
+      "computationTimeMs": 6060.5
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -9266,7 +9716,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3094.7
+      "polygonArea": 12980.7006,
+      "rectangleArea": 8949.5155,
+      "computationTimeMs": 3416.5
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -9310,7 +9762,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4408.4
+      "polygonArea": 15803.6348,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 3880.5
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -9354,7 +9808,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 3958.4
+      "polygonArea": 15474.3218,
+      "rectangleArea": 9507.9053,
+      "computationTimeMs": 4296.1
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -9397,7 +9853,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4257.8
+      "polygonArea": 14180.8385,
+      "rectangleArea": 9105.6318,
+      "computationTimeMs": 4153.6
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -9441,7 +9899,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 4682.5
+      "polygonArea": 17003.7727,
+      "rectangleArea": 9158.9491,
+      "computationTimeMs": 4579.8
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -9485,7 +9945,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 6117.1
+      "polygonArea": 16674.4596,
+      "rectangleArea": 8994.9777,
+      "computationTimeMs": 4812.5
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -9528,7 +9990,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 6099.1
+      "polygonArea": 16348.9506,
+      "rectangleArea": 9890.6254,
+      "computationTimeMs": 4420.5
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -9572,7 +10036,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 6873.5
+      "polygonArea": 19171.8848,
+      "rectangleArea": 10856.3581,
+      "computationTimeMs": 4868.6
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -9615,7 +10081,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 5780.8
+      "polygonArea": 16497.1365,
+      "rectangleArea": 10572.2858,
+      "computationTimeMs": 4340.3
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -9633,33 +10101,35 @@
       "rectangle": {
         "corners": [
           {
-            "x": 458.19863,
-            "y": 32.255595
+            "x": 479.0187080419841,
+            "y": 46.913071262472556
           },
           {
-            "x": 458.19863,
-            "y": 259.13292
+            "x": 424.57831577896576,
+            "y": 236.7692815688878
           },
           {
-            "x": 641.9378878125,
-            "y": 259.13291999999996
+            "x": 620.9812919580158,
+            "y": 293.0869287375275
           },
           {
-            "x": 641.9378878125,
-            "y": 32.255594999999985
+            "x": 675.4216842210342,
+            "y": 103.23071843111222
           }
         ],
-        "width": 226.9,
-        "height": 183.7,
-        "area": 41686.3,
-        "angle": 90,
+        "width": 197.5,
+        "height": 204.3,
+        "area": 40354.3,
+        "angle": 106,
         "centroid": {
-          "x": 550.06825890625,
-          "y": 145.69425749999996
+          "x": 550,
+          "y": 170.00000000000003
         },
         "type": "optimized"
       },
-      "computationTimeMs": 6717
+      "polygonArea": 18990.7477,
+      "rectangleArea": 10234.472,
+      "computationTimeMs": 4545.5
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -9703,7 +10173,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 6518.2
+      "polygonArea": 19102.9504,
+      "rectangleArea": 15582.4152,
+      "computationTimeMs": 4981.2
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -9748,7 +10220,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 7754.9
+      "polygonArea": 21925.8846,
+      "rectangleArea": 14707.3724,
+      "computationTimeMs": 5616.6
     },
     {
       "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -9793,7 +10267,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 8446.6
+      "polygonArea": 21596.5715,
+      "rectangleArea": 15582.7468,
+      "computationTimeMs": 6418.5
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -9838,7 +10314,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 6044.6
+      "polygonArea": 16388.6349,
+      "rectangleArea": 12909.9764,
+      "computationTimeMs": 4548.7
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -9883,7 +10361,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 5556.9
+      "polygonArea": 16059.2332,
+      "rectangleArea": 8949.5024,
+      "computationTimeMs": 4015.8
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
@@ -9929,7 +10409,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 6786
+      "polygonArea": 18882.1683,
+      "rectangleArea": 11965.2225,
+      "computationTimeMs": 4839.8
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -9948,8 +10430,8 @@
       "rectangle": {
         "corners": [
           {
-            "x": 351.4898549436915,
-            "y": 235.6445180393124
+            "x": 351.4898549436914,
+            "y": 235.64451803931237
           },
           {
             "x": 621.1728368186697,
@@ -9960,8 +10442,8 @@
             "y": 164.35548196068757
           },
           {
-            "x": 378.8271631813303,
-            "y": 107.0325945924233
+            "x": 378.8271631813302,
+            "y": 107.03259459242327
           }
         ],
         "width": 275.7,
@@ -9969,12 +10451,14 @@
         "area": 36251.5,
         "angle": 12,
         "centroid": {
-          "x": 500,
+          "x": 499.99999999999994,
           "y": 199.99999999999997
         },
         "type": "optimized"
       },
-      "computationTimeMs": 6357.3
+      "polygonArea": 17588.7728,
+      "rectangleArea": 9193.9435,
+      "computationTimeMs": 4678.9
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -10019,7 +10503,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 6615.3
+      "polygonArea": 17259.371,
+      "rectangleArea": 10346.0281,
+      "computationTimeMs": 5074.3
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
@@ -10040,18 +10526,18 @@
         "corners": [
           {
             "x": 234.81,
-            "y": 32.26
+            "y": 32.25999999999999
           },
           {
-            "x": 478.05555999999996,
+            "x": 478.05556,
             "y": 32.255595
           },
           {
-            "x": 478.05907270358495,
+            "x": 478.059072703585,
             "y": 226.22825121819375
           },
           {
-            "x": 234.81351270358496,
+            "x": 234.813512703585,
             "y": 226.23265621819374
           }
         ],
@@ -10065,7 +10551,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 7077.4
+      "polygonArea": 20082.3061,
+      "rectangleArea": 11966.3384,
+      "computationTimeMs": 5302.8
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -10110,7 +10598,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 7097.8
+      "polygonArea": 19756.8849,
+      "rectangleArea": 12909.9764,
+      "computationTimeMs": 5027
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -10156,7 +10646,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 8812.1
+      "polygonArea": 22250.4182,
+      "rectangleArea": 12103.3739,
+      "computationTimeMs": 6008.2
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -10201,7 +10693,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 7322.3
+      "polygonArea": 19575.6591,
+      "rectangleArea": 10572.2858,
+      "computationTimeMs": 5284.7
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -10247,7 +10741,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 8130.2
+      "polygonArea": 22398.5942,
+      "rectangleArea": 10572.2858,
+      "computationTimeMs": 6155.2
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -10293,7 +10789,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 7631.3
+      "polygonArea": 22510.8847,
+      "rectangleArea": 14805.9867,
+      "computationTimeMs": 5923.6
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -10339,7 +10837,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 7809.5
+      "polygonArea": 22181.4829,
+      "rectangleArea": 15765.5797,
+      "computationTimeMs": 6122.2
     },
     {
       "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
@@ -10386,7 +10886,9 @@
         },
         "type": "optimized"
       },
-      "computationTimeMs": 9164.6
+      "polygonArea": 25004.418,
+      "rectangleArea": 20483.5732,
+      "computationTimeMs": 8934.6
     }
   ]
 }

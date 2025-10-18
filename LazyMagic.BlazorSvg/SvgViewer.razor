@@ -103,7 +103,8 @@
         await InvokeAsync(StateHasChanged);
     }
 
-    
+    public async Task<AreaData?> GetAreaDataAsync() => await svgViewerJS!.GetAreaDataAsync();
+
     public async ValueTask DisposeAsync()
     {
         if (svgViewerJS != null)

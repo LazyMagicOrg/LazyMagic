@@ -285,10 +285,29 @@ class SvgViewerInstance {
                     console.log(`[precomputed] ✓ Loaded from external JSON: ${data.rectangles.length} rectangles`);
                 }
 
-                // Create lookup map by section key
+                console.log('[precomputed] Data structure:', {
+                    hasRectangles: !!data.rectangles,
+                    rectanglesLength: data.rectangles?.length,
+                    firstRectKeys: data.rectangles?.[0] ? Object.keys(data.rectangles[0]) : []
+                });
+
+                // Create lookup map by section key (store full rect data with areas)
                 const lookup = new Map();
                 for (const rect of data.rectangles) {
-                    lookup.set(rect.key, rect.rectangle);
+                    if (lookup.size === 0) {
+                        // Log first one as sample
+                        console.log('[precomputed] Sample rect data:', rect.key, {
+                            polygonArea: rect.polygonArea,
+                            rectangleArea: rect.rectangleArea,
+                            computationTimeMs: rect.computationTimeMs
+                        });
+                    }
+                    lookup.set(rect.key, {
+                        rectangle: rect.rectangle,
+                        polygonArea: rect.polygonArea,
+                        rectangleArea: rect.rectangleArea,
+                        computationTimeMs: rect.computationTimeMs
+                    });
                 }
 
                 this.precomputedRectangles = {
@@ -324,10 +343,10 @@ class SvgViewerInstance {
         // Create sorted key to match precomputed format
         const sortedKey = pathIds.slice().sort().join('_');
 
-        const rectangle = this.precomputedRectangles.lookup.get(sortedKey);
-        if (rectangle) {
+        const rectData = this.precomputedRectangles.lookup.get(sortedKey);
+        if (rectData) {
             console.log(`[precomputed] ✓ Found precomputed rectangle for ${pathIds.length} sections`);
-            return rectangle;
+            return rectData.rectangle;  // Return just the rectangle shape for drawing
         }
 
         console.debug(`[precomputed] ✗ No precomputed data for: ${sortedKey}`);
@@ -2124,51 +2143,11 @@ class SvgViewerInstance {
             // Try to lookup precomputed rectangle first
             let largestRect = await this.lookupPrecomputedRectangle(pathIds);
 
-            // If not found in precomputed data, calculate it
+            // Only draw rectangle if precomputed data exists (valid combination)
+            // Invalid combinations (no precomputed data) will not show inscribed rectangle
             if (!largestRect) {
-                // Find largest inscribed rectangle
-                const polygon = unifiedBoundary || hull;
-                if (polygon && polygon.length >= 3) {
-                // Detect the actual orientation of the polygon for better angle estimation
-                const orientationAngle = this._detectPolygonOrientation(polygon);
-                console.debug(`[outline] Detected polygon orientation: ${orientationAngle.toFixed(1)}°`);
-
-                // Special case: For 4-vertex polygons (parallelograms), calculate exact dimensions
-                if (polygon.length === 4) {
-                    console.warn(`🔍 [EXACT-RECT-DEBUG] About to call _calculateParallelogramRectangle with orientationAngle=${orientationAngle.toFixed(1)}°`);
-                    const exactRect = this._calculateParallelogramRectangle(polygon, orientationAngle);
-                    console.warn(`🔍 [EXACT-RECT-DEBUG] _calculateParallelogramRectangle returned:`, exactRect);
-                    if (exactRect) {
-                        console.warn(`🔍 [EXACT-RECT-DEBUG] exactRect is truthy, should use it!`);
-                        console.debug(`[outline] Using exact parallelogram rectangle: ${exactRect.width.toFixed(1)}×${exactRect.height.toFixed(1)} at ${exactRect.angle}°`);
-                        largestRect = exactRect;
-                    } else {
-                        console.warn(`🔍 [EXACT-RECT-DEBUG] exactRect is null/falsy, trying trapezoid calculation`);
-
-                        // Try trapezoid calculation
-                        const trapezoidRect = this._calculateTrapezoidRectangle(polygon, orientationAngle);
-                        if (trapezoidRect) {
-                            console.warn(`🔍 [TRAPEZOID-DEBUG] Trapezoid calculation succeeded!`);
-                            console.debug(`[outline] Using trapezoid rectangle: ${trapezoidRect.width.toFixed(1)}×${trapezoidRect.height.toFixed(1)} at ${trapezoidRect.angle}°`);
-                            largestRect = trapezoidRect;
-                        } else {
-                            console.warn(`🔍 [TRAPEZOID-DEBUG] Trapezoid calculation also failed, falling back to optimized algorithm`);
-                        }
-                    }
-                }
-
-                // Fallback to general inscribed rectangle algorithm if exact calculation failed
-                if (!largestRect) {
-                    largestRect = this.findLargestInscribedRectangle(polygon, {
-                        gridSize: 20,
-                        minArea: 100,
-                        debugLog: debugVisible,
-                        hintAngle: orientationAngle,
-                        pathCount: groupPaths.length  // Pass original path count for adaptive tuning
-                    });
-                }
-                }
-            } // End of "if not precomputed" block
+                console.log('[outline] No precomputed rectangle found - skipping inscription for invalid combination');
+            }
 
             // Create the merged path element
             const unifiedPath = scope.path(pathData);
@@ -2805,6 +2784,45 @@ export function setShowBoundingBox(containerId, show) {
     if (!instance) return false;
     instance.showBoundingBox = show;
     return true;
+}
+
+export async function getAreaData(containerId) {
+    const instance = instances.get(containerId);
+    if (!instance) {
+        console.log('[getAreaData] No instance found for container:', containerId);
+        return null;
+    }
+
+    // Get selected path IDs from the Set
+    if (!instance.selectedIds || instance.selectedIds.size === 0) {
+        console.log('[getAreaData] No selected paths');
+        return null;
+    }
+
+    const selectedPaths = Array.from(instance.selectedIds);
+    console.log('[getAreaData] Selected paths:', selectedPaths);
+
+    // Ensure precomputed data is loaded
+    await instance.loadPrecomputedRectangles();
+
+    // Create sorted key to match precomputed format
+    const sortedKey = selectedPaths.slice().sort().join('_');
+    console.log('[getAreaData] Looking up key:', sortedKey);
+
+    const rectData = instance.precomputedRectangles.lookup.get(sortedKey);
+    if (rectData) {
+        console.log('[getAreaData] Found rectData:', rectData);
+        const result = {
+            polygonArea: rectData.polygonArea,
+            rectangleArea: rectData.rectangleArea,
+            computationTimeMs: rectData.computationTimeMs
+        };
+        console.log('[getAreaData] Returning:', result);
+        return result;
+    }
+
+    console.log('[getAreaData] No data found for key:', sortedKey);
+    return null;
 }
 
 export function disposeInstance(containerId) {

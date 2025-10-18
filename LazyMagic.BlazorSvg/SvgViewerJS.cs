@@ -94,5 +94,24 @@ namespace LazyMagic.BlazorSvg
         public event AllInsideSelectedChangedEventHandler? AllInsideSelectedChangedEvent;
         public delegate void AllInsideSelectedChangedEventHandler(bool allInsideSelected);
 
+        public async ValueTask<AreaData?> GetAreaDataAsync()
+        {
+            if (containerId == null) throw new InvalidOperationException("InitAsync must be called first");
+            var module = await moduleTask.Value;
+            var result = await module.InvokeAsync<AreaData?>("getAreaData", containerId);
+            return result;
+        }
+    }
+
+    public class AreaData
+    {
+        [System.Text.Json.Serialization.JsonPropertyName("polygonArea")]
+        public double? PolygonArea { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("rectangleArea")]
+        public double? RectangleArea { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("computationTimeMs")]
+        public double? ComputationTimeMs { get; set; }
     }
 }
