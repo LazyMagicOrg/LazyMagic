@@ -65,6 +65,23 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
             <button class="btn btn-info mb-2" @onclick="TestSelect">TestSelect (Add Ballroom_Room_2)</button>
         </div>
     </div>
+    <div class="row mt-2">
+        <div class="col-md-12">
+            <h6>Layout Display Toggles:</h6>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="showRectangle" @bind="showRectangle" @bind:after="OnToggleRectangle">
+                <label class="form-check-label" for="showRectangle">
+                    Show Max Inscribed Rectangle (Orange)
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="showBoardroom" @bind="showBoardroom" @bind:after="OnToggleBoardroom">
+                <label class="form-check-label" for="showBoardroom">
+                    Show Boardroom Layout (Blue)
+                </label>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="mt-4">
@@ -86,6 +103,8 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
     private List<string> initialPaths = new List<string> { "Ballroom_Room_1", "Ballroom_Room_3" };
     private bool allInsideSelected = false;
     private AreaData? areaData = null;
+    private bool showRectangle = true;
+    private bool showBoardroom = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -123,6 +142,22 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
     {
         var paths = new List<string> { "Ballroom_Room_2" };
         await svgViewer!.SelectPaths(paths);
+    }
+
+    private async Task OnToggleRectangle()
+    {
+        if (svgViewer != null)
+        {
+            await svgViewer.SetShowRectangleAsync(showRectangle);
+        }
+    }
+
+    private async Task OnToggleBoardroom()
+    {
+        if (svgViewer != null)
+        {
+            await svgViewer.SetShowBoardroomAsync(showBoardroom);
+        }
     }
 
 }

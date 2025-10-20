@@ -44,30 +44,31 @@ function parseSvgBoardroom(svgPath) {
         if (tablesMatch) tables = parseInt(tablesMatch[1], 10);
         if (timeMatch) computationTimeMs = parseFloat(timeMatch[1]);
 
-        // Extract boardroom rectangle path (has class="boardroom-rect")
-        const paths = doc.getElementsByTagName('path');
-        let boardroomPath = null;
+        // Extract boardroom rectangle polygon (comment: "Boardroom Layout Rectangle")
+        // Look for polygon with orange stroke (#ff8800)
+        const polygons = doc.getElementsByTagName('polygon');
+        let boardroomPoints = null;
 
-        for (let i = 0; i < paths.length; i++) {
-            const pathClass = paths[i].getAttribute('class');
-            if (pathClass && pathClass.includes('boardroom-rect')) {
-                boardroomPath = paths[i].getAttribute('d');
+        for (let i = 0; i < polygons.length; i++) {
+            const stroke = polygons[i].getAttribute('stroke');
+            if (stroke === '#ff8800') {
+                boardroomPoints = polygons[i].getAttribute('points');
                 break;
             }
         }
 
-        if (!boardroomPath) {
+        if (!boardroomPoints) {
             console.warn(`Warning: No boardroom rectangle found in ${svgPath}`);
             return null;
         }
 
-        // Parse rectangle corners from path data
-        // Path format: M x1,y1 L x2,y2 L x3,y3 L x4,y4 Z
+        // Parse rectangle corners from points attribute
+        // Points format: "x1,y1 x2,y2 x3,y3 x4,y4"
         const coordRegex = /([+-]?\d+\.?\d*),([+-]?\d+\.?\d*)/g;
         const corners = [];
         let match;
 
-        while ((match = coordRegex.exec(boardroomPath)) !== null) {
+        while ((match = coordRegex.exec(boardroomPoints)) !== null) {
             corners.push({
                 x: parseFloat(match[1]),
                 y: parseFloat(match[2])

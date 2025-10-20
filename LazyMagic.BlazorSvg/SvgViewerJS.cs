@@ -101,6 +101,20 @@ namespace LazyMagic.BlazorSvg
             var result = await module.InvokeAsync<AreaData?>("getAreaData", containerId);
             return result;
         }
+
+        public async ValueTask SetShowRectangleAsync(bool show)
+        {
+            if (containerId == null) throw new InvalidOperationException("InitAsync must be called first");
+            var module = await moduleTask.Value;
+            await module.InvokeVoidAsync("setShowRectangle", containerId, show);
+        }
+
+        public async ValueTask SetShowBoardroomAsync(bool show)
+        {
+            if (containerId == null) throw new InvalidOperationException("InitAsync must be called first");
+            var module = await moduleTask.Value;
+            await module.InvokeVoidAsync("setShowBoardroom", containerId, show);
+        }
     }
 
     public class AreaData

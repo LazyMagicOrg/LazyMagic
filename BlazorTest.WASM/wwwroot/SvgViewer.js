@@ -98,6 +98,27 @@ async function loadOptimizationLibraries() {
         fastInscribedRectangle = window.fastInscribedRectangle;
     }
 
+    // Load boardroom layout algorithms
+    if (typeof window.findBoardroomLayout === 'undefined') {
+        console.warn('[LOADING-DEBUG] Attempting to load SvgViewerBoardroom.js...');
+        const boardroomScript = document.createElement('script');
+        boardroomScript.src = './_content/LazyMagic.BlazorSvg/SvgViewerBoardroom.js';
+        console.warn('[LOADING-DEBUG] Script src set to:', boardroomScript.src);
+        const boardroomPromise = new Promise((resolve) => {
+            boardroomScript.onload = () => {
+                console.log('[boardroom] Boardroom layout algorithm loaded successfully');
+                resolve(true);
+            };
+            boardroomScript.onerror = (error) => {
+                console.warn('[LOADING-DEBUG] Failed to load SvgViewerBoardroom.js, error:', error);
+                console.warn('[boardroom] Failed to load boardroom algorithm');
+                resolve(false);
+            };
+        });
+        document.head.appendChild(boardroomScript);
+        loadPromises.push(boardroomPromise);
+    }
+
     if (loadPromises.length > 0) {
         await Promise.all(loadPromises);
     }
@@ -169,6 +190,18 @@ class SvgViewerInstance {
         this.precomputedRectangles = null;  // Will be loaded on first use
         this.precomputedRectanglesPromise = null;  // Track loading promise
         this.svgUrl = null;  // Store resolved SVG URL for deriving precomputed path
+
+        // Precomputed boardroom layouts cache
+        this.precomputedBoardrooms = null;  // Will be loaded on first use
+        this.precomputedBoardroomsPromise = null;  // Track loading promise
+
+        // Display toggles
+        this.showRectangle = true;  // Show max inscribed rectangle
+        this.showBoardroom = true;  // Show boardroom layout
+
+        // SVG elements for layouts
+        this.rectangleGroup = null;  // Group for max rectangle
+        this.boardroomGroup = null;  // Group for boardroom layout
     }
 
     // Return the inner <svg> if present, otherwise the paper itself
@@ -285,10 +318,29 @@ class SvgViewerInstance {
                     console.log(`[precomputed] ✓ Loaded from external JSON: ${data.rectangles.length} rectangles`);
                 }
 
-                // Create lookup map by section key
+                console.log('[precomputed] Data structure:', {
+                    hasRectangles: !!data.rectangles,
+                    rectanglesLength: data.rectangles?.length,
+                    firstRectKeys: data.rectangles?.[0] ? Object.keys(data.rectangles[0]) : []
+                });
+
+                // Create lookup map by section key (store full rect data with areas)
                 const lookup = new Map();
                 for (const rect of data.rectangles) {
-                    lookup.set(rect.key, rect.rectangle);
+                    if (lookup.size === 0) {
+                        // Log first one as sample
+                        console.log('[precomputed] Sample rect data:', rect.key, {
+                            polygonArea: rect.polygonArea,
+                            rectangleArea: rect.rectangleArea,
+                            computationTimeMs: rect.computationTimeMs
+                        });
+                    }
+                    lookup.set(rect.key, {
+                        rectangle: rect.rectangle,
+                        polygonArea: rect.polygonArea,
+                        rectangleArea: rect.rectangleArea,
+                        computationTimeMs: rect.computationTimeMs
+                    });
                 }
 
                 this.precomputedRectangles = {
@@ -312,6 +364,99 @@ class SvgViewerInstance {
         return this.precomputedRectanglesPromise;
     }
 
+    // Load precomputed boardroom layouts (similar to rectangles)
+    async loadPrecomputedBoardrooms() {
+        // Return cached data if already loaded
+        if (this.precomputedBoardrooms) {
+            return this.precomputedBoardrooms;
+        }
+
+        // Return existing promise if currently loading
+        if (this.precomputedBoardroomsPromise) {
+            return this.precomputedBoardroomsPromise;
+        }
+
+        // Start loading
+        this.precomputedBoardroomsPromise = (async () => {
+            try {
+                let data = null;
+
+                // STRATEGY 1: Check for embedded data in the parsed SVG DOM
+                console.log('[boardroom] Checking for embedded data...');
+                console.log('[boardroom] this.svg:', this.svg);
+                console.log('[boardroom] this.svg.node:', this.svg ? this.svg.node : 'null');
+
+                if (this.svg && this.svg.node) {
+                    const scriptElement = this.svg.node.querySelector('script[id="precomputed-boardroom"]');
+                    console.log('[boardroom] Script element found:', scriptElement);
+
+                    if (scriptElement) {
+                        try {
+                            // Extract JSON from CDATA or text content
+                            let jsonText = scriptElement.textContent || scriptElement.innerHTML;
+                            console.log('[boardroom] JSON text length:', jsonText.length);
+                            // Remove CDATA wrappers if present
+                            jsonText = jsonText.replace(/<!\[CDATA\[|\]\]>/g, '').trim();
+                            data = JSON.parse(jsonText);
+                            console.log(`[boardroom] ✓ Loaded from embedded SVG DOM: ${data.boardroomLayouts.length} layouts`);
+                        } catch (parseError) {
+                            console.warn('[boardroom] Failed to parse embedded data:', parseError.message);
+                            // Fall through to external JSON fetch
+                        }
+                    } else {
+                        console.log('[boardroom] No script element with id="precomputed-boardroom" found in SVG DOM');
+                    }
+                } else {
+                    console.log('[boardroom] SVG node not available yet');
+                }
+
+                // STRATEGY 2: Fallback to external JSON file
+                if (!data) {
+                    let precomputedUrl = 'precomputed-boardroom.json';  // Default fallback
+
+                    if (this.svgUrl) {
+                        const lastSlashIndex = this.svgUrl.lastIndexOf('/');
+                        if (lastSlashIndex >= 0) {
+                            precomputedUrl = this.svgUrl.substring(0, lastSlashIndex + 1) + 'precomputed-boardroom.json';
+                        }
+                    }
+
+                    console.log(`[boardroom] Loading from external JSON: ${precomputedUrl}`);
+                    const response = await fetch(precomputedUrl);
+                    if (!response.ok) {
+                        throw new Error(`Failed to load: ${response.status}`);
+                    }
+                    data = await response.json();
+                    console.log(`[boardroom] ✓ Loaded from external JSON: ${data.boardroomLayouts.length} layouts`);
+                }
+
+                // Create lookup map by section key
+                const lookup = new Map();
+                for (const boardroom of data.boardroomLayouts) {
+                    lookup.set(boardroom.key, boardroom);
+                }
+
+                this.precomputedBoardrooms = {
+                    boardroomLayouts: data.boardroomLayouts,
+                    lookup: lookup,
+                    metadata: {
+                        generatedAt: data.generatedAt,
+                        totalCombinations: data.totalCombinations,
+                        successfulComputations: data.successfulComputations
+                    }
+                };
+
+                return this.precomputedBoardrooms;
+            } catch (error) {
+                console.warn('[boardroom] Failed to load precomputed boardrooms:', error.message);
+                this.precomputedBoardrooms = { boardroomLayouts: [], lookup: new Map(), metadata: {} };
+                return this.precomputedBoardrooms;
+            }
+        })();
+
+        return this.precomputedBoardroomsPromise;
+    }
+
     // Lookup precomputed rectangle for a set of path IDs
     async lookupPrecomputedRectangle(pathIds) {
         if (!pathIds || pathIds.length === 0) {
@@ -324,14 +469,59 @@ class SvgViewerInstance {
         // Create sorted key to match precomputed format
         const sortedKey = pathIds.slice().sort().join('_');
 
-        const rectangle = this.precomputedRectangles.lookup.get(sortedKey);
-        if (rectangle) {
+        const rectData = this.precomputedRectangles.lookup.get(sortedKey);
+        if (rectData) {
             console.log(`[precomputed] ✓ Found precomputed rectangle for ${pathIds.length} sections`);
-            return rectangle;
+            return rectData.rectangle;  // Return just the rectangle shape for drawing
         }
 
         console.debug(`[precomputed] ✗ No precomputed data for: ${sortedKey}`);
         return null;
+    }
+
+    // Lookup precomputed boardroom layout for a set of path IDs
+    async lookupPrecomputedBoardroom(pathIds) {
+        if (!pathIds || pathIds.length === 0) {
+            console.log('[boardroom] lookupPrecomputedBoardroom: No pathIds provided');
+            return null;
+        }
+
+        // Ensure data is loaded
+        await this.loadPrecomputedBoardrooms();
+
+        console.log('[boardroom] Boardrooms loaded:', this.precomputedBoardrooms);
+        console.log('[boardroom] Lookup map size:', this.precomputedBoardrooms.lookup.size);
+        console.log('[boardroom] First 5 keys in map:', Array.from(this.precomputedBoardrooms.lookup.keys()).slice(0, 5));
+
+        // Create sorted key to match precomputed format
+        const sortedKey = pathIds.slice().sort().join('_');
+        console.log('[boardroom] Looking up key:', sortedKey);
+
+        const boardroomData = this.precomputedBoardrooms.lookup.get(sortedKey);
+        if (boardroomData) {
+            console.log(`[boardroom] ✓ Found precomputed boardroom for ${pathIds.length} sections (${boardroomData.boardroomLayout.sets} sets, ${boardroomData.boardroomLayout.tables} tables)`);
+            return boardroomData.boardroomLayout;  // Return just the boardroom layout for drawing
+        }
+
+        console.debug(`[boardroom] ✗ No precomputed data for: ${sortedKey}`);
+        return null;
+    }
+
+    // Toggle methods for showing/hiding layouts
+    setShowRectangle(show) {
+        this.showRectangle = show;
+        if (this.rectangleGroup) {
+            this.rectangleGroup.attr({ display: show ? 'block' : 'none' });
+        }
+        console.log(`[display] Max inscribed rectangle ${show ? 'shown' : 'hidden'}`);
+    }
+
+    setShowBoardroom(show) {
+        this.showBoardroom = show;
+        if (this.boardroomGroup) {
+            this.boardroomGroup.attr({ display: show ? 'block' : 'none' });
+        }
+        console.log(`[display] Boardroom layout ${show ? 'shown' : 'hidden'}`);
     }
 
     // Active scope = current layer group (or inner <svg>/paper if none detected)
@@ -2124,56 +2314,26 @@ class SvgViewerInstance {
             // Try to lookup precomputed rectangle first
             let largestRect = await this.lookupPrecomputedRectangle(pathIds);
 
-            // If not found in precomputed data, calculate it
+            // Only draw rectangle if precomputed data exists (valid combination)
+            // Invalid combinations (no precomputed data) will not show inscribed rectangle
             if (!largestRect) {
-                // Find largest inscribed rectangle
-                const polygon = unifiedBoundary || hull;
-                if (polygon && polygon.length >= 3) {
-                // Detect the actual orientation of the polygon for better angle estimation
-                const orientationAngle = this._detectPolygonOrientation(polygon);
-                console.debug(`[outline] Detected polygon orientation: ${orientationAngle.toFixed(1)}°`);
-
-                // Special case: For 4-vertex polygons (parallelograms), calculate exact dimensions
-                if (polygon.length === 4) {
-                    console.warn(`🔍 [EXACT-RECT-DEBUG] About to call _calculateParallelogramRectangle with orientationAngle=${orientationAngle.toFixed(1)}°`);
-                    const exactRect = this._calculateParallelogramRectangle(polygon, orientationAngle);
-                    console.warn(`🔍 [EXACT-RECT-DEBUG] _calculateParallelogramRectangle returned:`, exactRect);
-                    if (exactRect) {
-                        console.warn(`🔍 [EXACT-RECT-DEBUG] exactRect is truthy, should use it!`);
-                        console.debug(`[outline] Using exact parallelogram rectangle: ${exactRect.width.toFixed(1)}×${exactRect.height.toFixed(1)} at ${exactRect.angle}°`);
-                        largestRect = exactRect;
-                    } else {
-                        console.warn(`🔍 [EXACT-RECT-DEBUG] exactRect is null/falsy, trying trapezoid calculation`);
-
-                        // Try trapezoid calculation
-                        const trapezoidRect = this._calculateTrapezoidRectangle(polygon, orientationAngle);
-                        if (trapezoidRect) {
-                            console.warn(`🔍 [TRAPEZOID-DEBUG] Trapezoid calculation succeeded!`);
-                            console.debug(`[outline] Using trapezoid rectangle: ${trapezoidRect.width.toFixed(1)}×${trapezoidRect.height.toFixed(1)} at ${trapezoidRect.angle}°`);
-                            largestRect = trapezoidRect;
-                        } else {
-                            console.warn(`🔍 [TRAPEZOID-DEBUG] Trapezoid calculation also failed, falling back to optimized algorithm`);
-                        }
-                    }
-                }
-
-                // Fallback to general inscribed rectangle algorithm if exact calculation failed
-                if (!largestRect) {
-                    largestRect = this.findLargestInscribedRectangle(polygon, {
-                        gridSize: 20,
-                        minArea: 100,
-                        debugLog: debugVisible,
-                        hintAngle: orientationAngle,
-                        pathCount: groupPaths.length  // Pass original path count for adaptive tuning
-                    });
-                }
-                }
-            } // End of "if not precomputed" block
+                console.log('[outline] No precomputed rectangle found - skipping inscription for invalid combination');
+            }
 
             // Create the merged path element
             const unifiedPath = scope.path(pathData);
 
             if (debugVisible) {
+                // Clean up previous rectangle and boardroom visualizations
+                if (this.rectangleGroup) {
+                    this.rectangleGroup.remove();
+                    this.rectangleGroup = null;
+                }
+                if (this.boardroomGroup) {
+                    this.boardroomGroup.remove();
+                    this.boardroomGroup = null;
+                }
+
                 // Debug mode: Make it visible with distinctive styling
                 unifiedPath.attr({
                     fill: 'rgba(255, 0, 255, 0.3)',     // Semi-transparent magenta fill
@@ -2192,9 +2352,9 @@ class SvgViewerInstance {
                 console.debug('[outline] Debug mode: Merged SVG path made visible with magenta styling (non-interactive)');
 
                 // Visualize the largest inscribed rectangle if found
-                if (largestRect) {
+                if (largestRect && this.showRectangle) {
                     let rectPath;
-                    
+
                     if (largestRect.corners) {
                         // Rotated rectangle - create a polygon from corners
                         const corners = largestRect.corners;
@@ -2210,7 +2370,7 @@ class SvgViewerInstance {
                         rectPath = scope.rect(largestRect.x, largestRect.y, largestRect.width, largestRect.height);
                         console.debug(`[outline] Debug mode: Visualized AXIS-ALIGNED inscribed rectangle (${largestRect.width.toFixed(1)}x${largestRect.height.toFixed(1)})`);
                     }
-                    
+
                     rectPath.attr({
                         fill: 'rgba(255, 165, 0, 0.2)',    // Semi-transparent orange fill
                         stroke: '#FF8800',                  // Orange border
@@ -2227,11 +2387,68 @@ class SvgViewerInstance {
                         'stroke-width: 3px !important; ' +
                         'stroke-dasharray: 5,5 !important; ' +
                         'fill: rgba(255, 165, 0, 0.2) !important; ' +
-                        'pointer-events: none !important;'
+                        'pointer-events: none !important; ' +
+                        'z-index: 9999 !important;'
                     );
 
                     rectPath.addClass("debug-inscribed-rectangle");
+
+                    // Append to parent scope and bring to front
                     parentScope.appendChild(rectPath.node);
+                    rectPath.node.parentNode.appendChild(rectPath.node); // Move to end (on top)
+                    this.rectangleGroup = rectPath;  // Store reference
+                }
+
+                // Try to lookup precomputed boardroom layout
+                let boardroomLayout = await this.lookupPrecomputedBoardroom(pathIds);
+                console.log(`[boardroom] Lookup result:`, boardroomLayout);
+                console.log(`[boardroom] showBoardroom flag:`, this.showBoardroom);
+
+                // Visualize the boardroom layout if found
+                if (boardroomLayout && this.showBoardroom) {
+                    console.log(`[boardroom] Rendering boardroom layout...`);
+                    let boardroomPath;
+
+                    if (boardroomLayout.corners) {
+                        // Create a polygon from corners
+                        const corners = boardroomLayout.corners;
+                        const pathData = `M ${corners[0].x} ${corners[0].y} ` +
+                                       `L ${corners[1].x} ${corners[1].y} ` +
+                                       `L ${corners[2].x} ${corners[2].y} ` +
+                                       `L ${corners[3].x} ${corners[3].y} Z`;
+                        boardroomPath = scope.path(pathData);
+                        console.debug(`[boardroom] Debug mode: Visualized boardroom layout (${boardroomLayout.width.toFixed(1)}x${boardroomLayout.height.toFixed(1)}) - ${boardroomLayout.sets} sets`);
+                        console.debug(`[boardroom] Boardroom path data:`, pathData);
+                    }
+
+                    if (boardroomPath) {
+                        boardroomPath.attr({
+                            fill: 'rgba(0, 128, 255, 0.15)',    // Semi-transparent blue fill
+                            stroke: '#0080FF',                   // Blue border
+                            strokeWidth: 3,
+                            'fill-opacity': 0.15,
+                            'stroke-opacity': 1.0,
+                            'pointer-events': 'none',
+                            'stroke-dasharray': '10,5'           // Different dash pattern from rectangle
+                        });
+
+                        // Set style attribute directly to ensure it's not overridden
+                        boardroomPath.node.setAttribute('style',
+                            'stroke: #0080FF !important; ' +
+                            'stroke-width: 3px !important; ' +
+                            'stroke-dasharray: 10,5 !important; ' +
+                            'fill: rgba(0, 128, 255, 0.15) !important; ' +
+                            'pointer-events: none !important; ' +
+                            'z-index: 10000 !important;'
+                        );
+
+                        boardroomPath.addClass("debug-boardroom-layout");
+
+                        // Append to parent scope and bring to front (after rectangle)
+                        parentScope.appendChild(boardroomPath.node);
+                        boardroomPath.node.parentNode.appendChild(boardroomPath.node); // Move to end (on top)
+                        this.boardroomGroup = boardroomPath;  // Store reference
+                    }
                 }
             } else {
                 // Normal mode: Hidden
@@ -2805,6 +3022,59 @@ export function setShowBoundingBox(containerId, show) {
     if (!instance) return false;
     instance.showBoundingBox = show;
     return true;
+}
+
+export function setShowRectangle(containerId, show) {
+    const instance = instances.get(containerId);
+    if (!instance) return false;
+    instance.setShowRectangle(show);
+    return true;
+}
+
+export function setShowBoardroom(containerId, show) {
+    const instance = instances.get(containerId);
+    if (!instance) return false;
+    instance.setShowBoardroom(show);
+    return true;
+}
+
+export async function getAreaData(containerId) {
+    const instance = instances.get(containerId);
+    if (!instance) {
+        console.log('[getAreaData] No instance found for container:', containerId);
+        return null;
+    }
+
+    // Get selected path IDs from the Set
+    if (!instance.selectedIds || instance.selectedIds.size === 0) {
+        console.log('[getAreaData] No selected paths');
+        return null;
+    }
+
+    const selectedPaths = Array.from(instance.selectedIds);
+    console.log('[getAreaData] Selected paths:', selectedPaths);
+
+    // Ensure precomputed data is loaded
+    await instance.loadPrecomputedRectangles();
+
+    // Create sorted key to match precomputed format
+    const sortedKey = selectedPaths.slice().sort().join('_');
+    console.log('[getAreaData] Looking up key:', sortedKey);
+
+    const rectData = instance.precomputedRectangles.lookup.get(sortedKey);
+    if (rectData) {
+        console.log('[getAreaData] Found rectData:', rectData);
+        const result = {
+            polygonArea: rectData.polygonArea,
+            rectangleArea: rectData.rectangleArea,
+            computationTimeMs: rectData.computationTimeMs
+        };
+        console.log('[getAreaData] Returning:', result);
+        return result;
+    }
+
+    console.log('[getAreaData] No data found for key:', sortedKey);
+    return null;
 }
 
 export function disposeInstance(containerId) {

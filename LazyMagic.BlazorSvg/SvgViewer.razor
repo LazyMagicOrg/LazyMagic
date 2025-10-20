@@ -105,6 +105,10 @@
 
     public async Task<AreaData?> GetAreaDataAsync() => await svgViewerJS!.GetAreaDataAsync();
 
+    public async Task SetShowRectangleAsync(bool show) => await svgViewerJS!.SetShowRectangleAsync(show);
+
+    public async Task SetShowBoardroomAsync(bool show) => await svgViewerJS!.SetShowBoardroomAsync(show);
+
     public async ValueTask DisposeAsync()
     {
         if (svgViewerJS != null)
