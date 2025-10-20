@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="300.97 -17.744405 429.62622999999996 395.821595" width="429.62622999999996" height="395.821595">
+  <title>Combo_0033</title>
+
+  <!-- Area Data (Square SVG Inches) -->
+  <!-- polygonArea: 8010.4507 -->
+  <!-- boardroomArea: 1094.6046 -->
+  <!-- sets: 54 -->
+  <!-- tables: 108 -->
+  <!-- computationTimeMs: 1306.4 -->
+
+  <!-- White Background -->
+  <rect x="300.97" y="-17.744405" width="429.62622999999996" height="395.821595" fill="white"/>
+
+  <!-- Test Paths -->
+  <g opacity="0.3">
+    <path id="Ballroom_Room_3" d="m 458.19863,32.255595 0,95.821595 H 350.97122 V 32.255595 Z" fill="none" stroke="#808080" stroke-width="1"/>
+    <path id="Ballroom_Room_5" d="m 680.59623,32.255595 0,95.821595 H 478.05556 V 32.255595 Z" fill="none" stroke="#808080" stroke-width="1"/>
+    <path id="Ballroom_Aisle_35" d="m 458.19863,32.255595 h 19.85693 l 0,95.821595 h -19.85693 z" fill="none" stroke="#808080" stroke-width="1"/>
+  </g>
+
+  <!-- Boundary Polygon (outer boundary) -->
+  <polygon points="350.97,32.26 458.19863,32.255595 478.05556,32.255595 680.59623,32.255595 680.59623,128.07719 478.05556,128.07719 458.19863,128.07719 350.97122,128.07719"
+           fill="rgba(100, 150, 255, 0.2)"
+           stroke="#4080ff"
+           stroke-width="1"
+           stroke-dasharray="5,5"/>
+
+
+  <!-- Boardroom Layout Rectangle -->
+  <polygon points="353.43374115480844,33.88320672809484 680.3899151548616,91.5344017135157 678.1324888451915,104.3369025026744 351.17631484513834,46.68570751725355"
+           fill="rgba(255, 165, 0, 0.25)"
+           stroke="#ff8800"
+           stroke-width="2"
+           stroke-dasharray="none"/>
+
+  <!-- Boardroom Centroid -->
+  <circle cx="515.783115" cy="69.11005461538463" r="4" fill="#ff8800"/>
+  <text x="523.783115" y="61.11005461538463" font-size="8" fill="#ff6600">boardroom</text>
+
+  <!-- Boardroom Corners -->
+  
+  <circle cx="353.43374115480844" cy="33.88320672809484" r="3" fill="#ff8800"/>
+  <text x="359.43374115480844" y="48.88320672809484" font-size="8" fill="#ff6600">br0</text>
+  <circle cx="680.3899151548616" cy="91.5344017135157" r="3" fill="#ff8800"/>
+  <text x="660.3899151548616" y="106.5344017135157" font-size="8" fill="#ff6600">br1</text>
+  <circle cx="678.1324888451915" cy="104.3369025026744" r="3" fill="#ff8800"/>
+  <text x="684.1324888451915" y="99.3369025026744" font-size="8" fill="#ff6600">br2</text>
+  <circle cx="351.17631484513834" cy="46.68570751725355" r="3" fill="#ff8800"/>
+  <text x="331.17631484513834" y="41.68570751725355" font-size="8" fill="#ff6600">br3</text>
+
+  <!-- Boundary Vertices -->
+  
+  <circle cx="350.97" cy="32.26" r="3" fill="#4080ff"/>
+  <text x="356.97" y="26.259999999999998" font-size="8" fill="#4080ff">p0</text>
+  <circle cx="458.19863" cy="32.255595" r="3" fill="#4080ff"/>
+  <text x="464.19863" y="26.255595" font-size="8" fill="#4080ff">p1</text>
+  <circle cx="478.05556" cy="32.255595" r="3" fill="#4080ff"/>
+  <text x="484.05556" y="26.255595" font-size="8" fill="#4080ff">p2</text>
+  <circle cx="680.59623" cy="32.255595" r="3" fill="#4080ff"/>
+  <text x="686.59623" y="26.255595" font-size="8" fill="#4080ff">p3</text>
+  <circle cx="680.59623" cy="128.07719" r="3" fill="#4080ff"/>
+  <text x="686.59623" y="122.07719" font-size="8" fill="#4080ff">p4</text>
+  <circle cx="478.05556" cy="128.07719" r="3" fill="#4080ff"/>
+  <text x="484.05556" y="122.07719" font-size="8" fill="#4080ff">p5</text>
+  <circle cx="458.19863" cy="128.07719" r="3" fill="#4080ff"/>
+  <text x="464.19863" y="122.07719" font-size="8" fill="#4080ff">p6</text>
+  <circle cx="350.97122" cy="128.07719" r="3" fill="#4080ff"/>
+  <text x="356.97122" y="122.07719" font-size="8" fill="#4080ff">p7</text>
+
+
+  <!-- Title -->
+  <text x="310.97" y="248.07718999999997" font-size="14" font-weight="bold">Combo_0033 - Boardroom Layout</text>
+
+  <!-- Combinations Key -->
+  <text x="310.97" y="228.07718999999997" font-size="9" fill="#666">Paths: Ballroom_Room_3, Ballroom_Room_5, Ballroom_Aisle_35</text>
+
+  <!-- Table Header Background -->
+  <rect x="310.97" y="258.07719" width="300" height="20" fill="#f0f0f0" stroke="#333" stroke-width="1"/>
+
+  <!-- Table Header -->
+  <text x="320.97" y="272.07719" font-size="9" font-weight="bold">Metric</text>
+  <text x="430.97" y="272.07719" font-size="9" font-weight="bold">Value</text>
+
+  <!-- Data Row 1: Sets/Tables -->
+  <rect x="310.97" y="278.07719" width="300" height="18" fill="rgba(255, 165, 0, 0.15)" stroke="#333" stroke-width="1"/>
+  <circle cx="325.97" cy="287.07719" r="3" fill="#ff8800"/>
+  <text x="333.97" y="290.07719" font-size="8" fill="#ff6600">Sets/Tables</text>
+  <text x="430.97" y="290.07719" font-size="8">54 sets (108 tables)</text>
+
+  <!-- Data Row 2: Dimensions -->
+  <rect x="310.97" y="296.07719" width="300" height="18" fill="white" stroke="#333" stroke-width="1"/>
+  <text x="320.97" y="308.07719" font-size="8">Dimensions</text>
+  <text x="430.97" y="308.07719" font-size="8">332.0 × 13.0 ft</text>
+
+  <!-- Data Row 3: Boardroom Area -->
+  <rect x="310.97" y="314.07719" width="300" height="18" fill="white" stroke="#333" stroke-width="1"/>
+  <text x="320.97" y="326.07719" font-size="8">Boardroom Area</text>
+  <text x="430.97" y="326.07719" font-size="8">1094.60 sq in</text>
+
+  <!-- Data Row 4: Polygon Area -->
+  <rect x="310.97" y="332.07719" width="300" height="18" fill="white" stroke="#333" stroke-width="1"/>
+  <text x="320.97" y="344.07719" font-size="8">Polygon Area</text>
+  <text x="430.97" y="344.07719" font-size="8">8010.45 sq in</text>
+
+  <!-- Summary Row: Fill Ratio -->
+  <rect x="310.97" y="350.07719" width="300" height="18" fill="#f8f8f8" stroke="#333" stroke-width="1"/>
+  <text x="320.97" y="362.07719" font-size="8" font-weight="bold">Fill Ratio:</text>
+  <text x="430.97" y="362.07719" font-size="8">13.7%</text>
+
+</svg>

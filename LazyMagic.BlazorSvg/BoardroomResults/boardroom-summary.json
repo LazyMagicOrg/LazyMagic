@@ -1,0 +1,2019 @@
+{
+  "timestamp": "2025-10-20T20:16:15.691Z",
+  "totalTests": 251,
+  "successful": 251,
+  "failed": 0,
+  "totalTimeSeconds": 380.054,
+  "totalComputationTimeMs": 368921.0183000004,
+  "averageComputationTimeMs": 1469.8048537848622,
+  "results": [
+    {
+      "testCase": "Combo_0001",
+      "success": true,
+      "sets": 21,
+      "tables": 42,
+      "area": 441.7982540697625,
+      "computationTime": 968.0293
+    },
+    {
+      "testCase": "Combo_0002",
+      "success": true,
+      "sets": 21,
+      "tables": 42,
+      "area": 441.7982540697625,
+      "computationTime": 856.6514
+    },
+    {
+      "testCase": "Combo_0003",
+      "success": true,
+      "sets": 20,
+      "tables": 40,
+      "area": 422.01624269350447,
+      "computationTime": 943.2233999999999
+    },
+    {
+      "testCase": "Combo_0004",
+      "success": true,
+      "sets": 37,
+      "tables": 74,
+      "area": 758.3104360898909,
+      "computationTime": 1373.1986000000006
+    },
+    {
+      "testCase": "Combo_0005",
+      "success": true,
+      "sets": 21,
+      "tables": 42,
+      "area": 441.7982540697625,
+      "computationTime": 876.6745000000001
+    },
+    {
+      "testCase": "Combo_0006",
+      "success": true,
+      "sets": 38,
+      "tables": 76,
+      "area": 778.0924474661489,
+      "computationTime": 1101.6242000000002
+    },
+    {
+      "testCase": "Combo_0007",
+      "success": true,
+      "sets": 34,
+      "tables": 68,
+      "area": 698.9644019611168,
+      "computationTime": 1054.9620000000004
+    },
+    {
+      "testCase": "Combo_0008",
+      "success": true,
+      "sets": 33,
+      "tables": 66,
+      "area": 679.1823905848588,
+      "computationTime": 1080.9519
+    },
+    {
+      "testCase": "Combo_0009",
+      "success": true,
+      "sets": 23,
+      "tables": 46,
+      "area": 481.36227682227855,
+      "computationTime": 1109.2443000000003
+    },
+    {
+      "testCase": "Combo_0010",
+      "success": true,
+      "sets": 22,
+      "tables": 44,
+      "area": 461.5802654460206,
+      "computationTime": 1025.500399999999
+    },
+    {
+      "testCase": "Combo_0011",
+      "success": true,
+      "sets": 35,
+      "tables": 70,
+      "area": 718.7464133373747,
+      "computationTime": 1192.5989000000009
+    },
+    {
+      "testCase": "Combo_0012",
+      "success": true,
+      "sets": 38,
+      "tables": 76,
+      "area": 778.0924474661489,
+      "computationTime": 1093.2907999999989
+    },
+    {
+      "testCase": "Combo_0013",
+      "success": true,
+      "sets": 43,
+      "tables": 86,
+      "area": 877.002504347439,
+      "computationTime": 1205.732
+    },
+    {
+      "testCase": "Combo_0014",
+      "success": true,
+      "sets": 39,
+      "tables": 78,
+      "area": 797.8744588424069,
+      "computationTime": 934.9610999999986
+    },
+    {
+      "testCase": "Combo_0015",
+      "success": true,
+      "sets": 46,
+      "tables": 92,
+      "area": 936.348538476213,
+      "computationTime": 1116.0452000000005
+    },
+    {
+      "testCase": "Combo_0016",
+      "success": true,
+      "sets": 22,
+      "tables": 44,
+      "area": 461.5802654460206,
+      "computationTime": 1082.029700000001
+    },
+    {
+      "testCase": "Combo_0017",
+      "success": true,
+      "sets": 38,
+      "tables": 76,
+      "area": 778.0924474661489,
+      "computationTime": 1134.8579000000027
+    },
+    {
+      "testCase": "Combo_0018",
+      "success": true,
+      "sets": 23,
+      "tables": 46,
+      "area": 481.36227682227855,
+      "computationTime": 1087.374100000001
+    },
+    {
+      "testCase": "Combo_0019",
+      "success": true,
+      "sets": 38,
+      "tables": 76,
+      "area": 778.0924474661489,
+      "computationTime": 943.1748000000007
+    },
+    {
+      "testCase": "Combo_0020",
+      "success": true,
+      "sets": 37,
+      "tables": 74,
+      "area": 758.3104360898909,
+      "computationTime": 1161.643
+    },
+    {
+      "testCase": "Combo_0021",
+      "success": true,
+      "sets": 42,
+      "tables": 84,
+      "area": 857.220492971181,
+      "computationTime": 1108.5705000000016
+    },
+    {
+      "testCase": "Combo_0022",
+      "success": true,
+      "sets": 39,
+      "tables": 78,
+      "area": 797.8744588424069,
+      "computationTime": 1070.5434999999998
+    },
+    {
+      "testCase": "Combo_0023",
+      "success": true,
+      "sets": 38,
+      "tables": 76,
+      "area": 778.0924474661489,
+      "computationTime": 1276.1301000000021
+    },
+    {
+      "testCase": "Combo_0024",
+      "success": true,
+      "sets": 45,
+      "tables": 90,
+      "area": 916.5665270999551,
+      "computationTime": 1350.7776999999987
+    },
+    {
+      "testCase": "Combo_0025",
+      "success": true,
+      "sets": 39,
+      "tables": 78,
+      "area": 797.8744588424069,
+      "computationTime": 1132.2113000000027
+    },
+    {
+      "testCase": "Combo_0026",
+      "success": true,
+      "sets": 48,
+      "tables": 96,
+      "area": 975.912561228729,
+      "computationTime": 1252.4062000000013
+    },
+    {
+      "testCase": "Combo_0027",
+      "success": true,
+      "sets": 45,
+      "tables": 90,
+      "area": 916.5665270999551,
+      "computationTime": 1298.3474999999999
+    },
+    {
+      "testCase": "Combo_0028",
+      "success": true,
+      "sets": 42,
+      "tables": 84,
+      "area": 857.220492971181,
+      "computationTime": 1262.9267
+    },
+    {
+      "testCase": "Combo_0029",
+      "success": true,
+      "sets": 48,
+      "tables": 96,
+      "area": 975.912561228729,
+      "computationTime": 1826.6661999999997
+    },
+    {
+      "testCase": "Combo_0030",
+      "success": true,
+      "sets": 22,
+      "tables": 44,
+      "area": 461.5802654460206,
+      "computationTime": 1178.2858999999953
+    },
+    {
+      "testCase": "Combo_0031",
+      "success": true,
+      "sets": 40,
+      "tables": 80,
+      "area": 817.6564702186649,
+      "computationTime": 1295.6950999999972
+    },
+    {
+      "testCase": "Combo_0032",
+      "success": true,
+      "sets": 37,
+      "tables": 74,
+      "area": 758.3104360898909,
+      "computationTime": 1260.0167999999976
+    },
+    {
+      "testCase": "Combo_0033",
+      "success": true,
+      "sets": 54,
+      "tables": 108,
+      "area": 1094.6046294862772,
+      "computationTime": 1306.3616000000038
+    },
+    {
+      "testCase": "Combo_0034",
+      "success": true,
+      "sets": 73,
+      "tables": 146,
+      "area": 1470.4628456351795,
+      "computationTime": 1732.4962999999989
+    },
+    {
+      "testCase": "Combo_0035",
+      "success": true,
+      "sets": 41,
+      "tables": 82,
+      "area": 837.4384815949229,
+      "computationTime": 1505.6644000000015
+    },
+    {
+      "testCase": "Combo_0036",
+      "success": true,
+      "sets": 45,
+      "tables": 90,
+      "area": 916.5665270999551,
+      "computationTime": 1383.6857999999993
+    },
+    {
+      "testCase": "Combo_0037",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1681.4488999999958
+    },
+    {
+      "testCase": "Combo_0038",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1313.2721999999994
+    },
+    {
+      "testCase": "Combo_0039",
+      "success": true,
+      "sets": 25,
+      "tables": 50,
+      "area": 520.9262995747946,
+      "computationTime": 1159.2978000000003
+    },
+    {
+      "testCase": "Combo_0040",
+      "success": true,
+      "sets": 40,
+      "tables": 80,
+      "area": 817.6564702186649,
+      "computationTime": 1476.934000000001
+    },
+    {
+      "testCase": "Combo_0041",
+      "success": true,
+      "sets": 37,
+      "tables": 74,
+      "area": 758.3104360898909,
+      "computationTime": 1476.2787000000026
+    },
+    {
+      "testCase": "Combo_0042",
+      "success": true,
+      "sets": 42,
+      "tables": 84,
+      "area": 857.220492971181,
+      "computationTime": 1307.3088999999964
+    },
+    {
+      "testCase": "Combo_0043",
+      "success": true,
+      "sets": 43,
+      "tables": 86,
+      "area": 877.002504347439,
+      "computationTime": 1326.8899999999994
+    },
+    {
+      "testCase": "Combo_0044",
+      "success": true,
+      "sets": 55,
+      "tables": 110,
+      "area": 1114.3866408625354,
+      "computationTime": 1535.6489999999976
+    },
+    {
+      "testCase": "Combo_0045",
+      "success": true,
+      "sets": 73,
+      "tables": 146,
+      "area": 1470.4628456351795,
+      "computationTime": 1691.500500000002
+    },
+    {
+      "testCase": "Combo_0046",
+      "success": true,
+      "sets": 55,
+      "tables": 110,
+      "area": 1114.3866408625354,
+      "computationTime": 1173.9841000000015
+    },
+    {
+      "testCase": "Combo_0047",
+      "success": true,
+      "sets": 73,
+      "tables": 146,
+      "area": 1470.4628456351795,
+      "computationTime": 1229.8534999999974
+    },
+    {
+      "testCase": "Combo_0048",
+      "success": true,
+      "sets": 76,
+      "tables": 152,
+      "area": 1529.8088797639537,
+      "computationTime": 1182.8039999999964
+    },
+    {
+      "testCase": "Combo_0049",
+      "success": true,
+      "sets": 41,
+      "tables": 82,
+      "area": 837.4384815949229,
+      "computationTime": 1674.4530000000013
+    },
+    {
+      "testCase": "Combo_0050",
+      "success": true,
+      "sets": 47,
+      "tables": 94,
+      "area": 956.1305498524712,
+      "computationTime": 1505.0447000000058
+    },
+    {
+      "testCase": "Combo_0051",
+      "success": true,
+      "sets": 45,
+      "tables": 90,
+      "area": 916.5665270999551,
+      "computationTime": 1450.0363999999972
+    },
+    {
+      "testCase": "Combo_0052",
+      "success": true,
+      "sets": 46,
+      "tables": 92,
+      "area": 936.348538476213,
+      "computationTime": 1397.2163
+    },
+    {
+      "testCase": "Combo_0053",
+      "success": true,
+      "sets": 48,
+      "tables": 96,
+      "area": 975.912561228729,
+      "computationTime": 2010.1889999999985
+    },
+    {
+      "testCase": "Combo_0054",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1773.3475999999937
+    },
+    {
+      "testCase": "Combo_0055",
+      "success": true,
+      "sets": 75,
+      "tables": 150,
+      "area": 1510.0268683876957,
+      "computationTime": 1396.3147999999928
+    },
+    {
+      "testCase": "Combo_0056",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1337.8522000000085
+    },
+    {
+      "testCase": "Combo_0057",
+      "success": true,
+      "sets": 76,
+      "tables": 152,
+      "area": 1529.8088797639537,
+      "computationTime": 1256.7651000000042
+    },
+    {
+      "testCase": "Combo_0058",
+      "success": true,
+      "sets": 76,
+      "tables": 152,
+      "area": 1529.8088797639537,
+      "computationTime": 1659.3908999999985
+    },
+    {
+      "testCase": "Combo_0059",
+      "success": true,
+      "sets": 24,
+      "tables": 48,
+      "area": 501.1442881985365,
+      "computationTime": 1083.1325999999972
+    },
+    {
+      "testCase": "Combo_0060",
+      "success": true,
+      "sets": 41,
+      "tables": 82,
+      "area": 837.4384815949229,
+      "computationTime": 1038.5353999999934
+    },
+    {
+      "testCase": "Combo_0061",
+      "success": true,
+      "sets": 35,
+      "tables": 70,
+      "area": 718.7464133373747,
+      "computationTime": 1172.8925000000017
+    },
+    {
+      "testCase": "Combo_0062",
+      "success": true,
+      "sets": 52,
+      "tables": 104,
+      "area": 1055.0406067337613,
+      "computationTime": 1323.0877000000037
+    },
+    {
+      "testCase": "Combo_0063",
+      "success": true,
+      "sets": 70,
+      "tables": 140,
+      "area": 1411.1168115064056,
+      "computationTime": 1366.561600000001
+    },
+    {
+      "testCase": "Combo_0064",
+      "success": true,
+      "sets": 42,
+      "tables": 84,
+      "area": 857.220492971181,
+      "computationTime": 1251.9361000000063
+    },
+    {
+      "testCase": "Combo_0065",
+      "success": true,
+      "sets": 47,
+      "tables": 94,
+      "area": 956.1305498524712,
+      "computationTime": 1271.2681000000011
+    },
+    {
+      "testCase": "Combo_0066",
+      "success": true,
+      "sets": 70,
+      "tables": 140,
+      "area": 1411.1168115064056,
+      "computationTime": 1433.4957999999897
+    },
+    {
+      "testCase": "Combo_0067",
+      "success": true,
+      "sets": 70,
+      "tables": 140,
+      "area": 1411.1168115064056,
+      "computationTime": 1282.160600000003
+    },
+    {
+      "testCase": "Combo_0068",
+      "success": true,
+      "sets": 26,
+      "tables": 52,
+      "area": 540.7083109510527,
+      "computationTime": 1124.9630000000034
+    },
+    {
+      "testCase": "Combo_0069",
+      "success": true,
+      "sets": 41,
+      "tables": 82,
+      "area": 837.4384815949229,
+      "computationTime": 1288.0825999999943
+    },
+    {
+      "testCase": "Combo_0070",
+      "success": true,
+      "sets": 39,
+      "tables": 78,
+      "area": 797.8744588424069,
+      "computationTime": 1529.6972999999998
+    },
+    {
+      "testCase": "Combo_0071",
+      "success": true,
+      "sets": 46,
+      "tables": 92,
+      "area": 936.348538476213,
+      "computationTime": 1240.6225000000122
+    },
+    {
+      "testCase": "Combo_0072",
+      "success": true,
+      "sets": 41,
+      "tables": 82,
+      "area": 837.4384815949229,
+      "computationTime": 1244.9020000000019
+    },
+    {
+      "testCase": "Combo_0073",
+      "success": true,
+      "sets": 52,
+      "tables": 104,
+      "area": 1055.0406067337613,
+      "computationTime": 1384.7614999999932
+    },
+    {
+      "testCase": "Combo_0074",
+      "success": true,
+      "sets": 70,
+      "tables": 140,
+      "area": 1411.1168115064056,
+      "computationTime": 1422.438300000009
+    },
+    {
+      "testCase": "Combo_0075",
+      "success": true,
+      "sets": 54,
+      "tables": 108,
+      "area": 1094.6046294862772,
+      "computationTime": 1269.5639000000083
+    },
+    {
+      "testCase": "Combo_0076",
+      "success": true,
+      "sets": 75,
+      "tables": 150,
+      "area": 1510.0268683876957,
+      "computationTime": 1264.0161999999982
+    },
+    {
+      "testCase": "Combo_0077",
+      "success": true,
+      "sets": 70,
+      "tables": 140,
+      "area": 1411.1168115064056,
+      "computationTime": 1248.9546000000119
+    },
+    {
+      "testCase": "Combo_0078",
+      "success": true,
+      "sets": 42,
+      "tables": 84,
+      "area": 857.220492971181,
+      "computationTime": 1458.7437999999966
+    },
+    {
+      "testCase": "Combo_0079",
+      "success": true,
+      "sets": 51,
+      "tables": 102,
+      "area": 1035.258595357503,
+      "computationTime": 1419.2272999999986
+    },
+    {
+      "testCase": "Combo_0080",
+      "success": true,
+      "sets": 49,
+      "tables": 98,
+      "area": 995.6945726049871,
+      "computationTime": 1419.1317999999883
+    },
+    {
+      "testCase": "Combo_0081",
+      "success": true,
+      "sets": 42,
+      "tables": 84,
+      "area": 857.220492971181,
+      "computationTime": 1343.9530999999988
+    },
+    {
+      "testCase": "Combo_0082",
+      "success": true,
+      "sets": 51,
+      "tables": 102,
+      "area": 1035.258595357503,
+      "computationTime": 2179.475900000005
+    },
+    {
+      "testCase": "Combo_0083",
+      "success": true,
+      "sets": 70,
+      "tables": 140,
+      "area": 1411.1168115064056,
+      "computationTime": 1676.5130999999965
+    },
+    {
+      "testCase": "Combo_0084",
+      "success": true,
+      "sets": 71,
+      "tables": 142,
+      "area": 1430.8988228826636,
+      "computationTime": 1444.7162000000098
+    },
+    {
+      "testCase": "Combo_0085",
+      "success": true,
+      "sets": 75,
+      "tables": 150,
+      "area": 1510.0268683876957,
+      "computationTime": 1409.5160000000033
+    },
+    {
+      "testCase": "Combo_0086",
+      "success": true,
+      "sets": 70,
+      "tables": 140,
+      "area": 1411.1168115064056,
+      "computationTime": 1423.984500000006
+    },
+    {
+      "testCase": "Combo_0087",
+      "success": true,
+      "sets": 75,
+      "tables": 150,
+      "area": 1510.0268683876957,
+      "computationTime": 1776.1738000000041
+    },
+    {
+      "testCase": "Combo_0088",
+      "success": true,
+      "sets": 35,
+      "tables": 70,
+      "area": 718.7464133373747,
+      "computationTime": 1378.7793999999994
+    },
+    {
+      "testCase": "Combo_0089",
+      "success": true,
+      "sets": 35,
+      "tables": 70,
+      "area": 718.7464133373747,
+      "computationTime": 1269.0651999999973
+    },
+    {
+      "testCase": "Combo_0090",
+      "success": true,
+      "sets": 46,
+      "tables": 92,
+      "area": 936.348538476213,
+      "computationTime": 1756.1935000000085
+    },
+    {
+      "testCase": "Combo_0091",
+      "success": true,
+      "sets": 37,
+      "tables": 74,
+      "area": 758.3104360898909,
+      "computationTime": 1289.6242999999959
+    },
+    {
+      "testCase": "Combo_0092",
+      "success": true,
+      "sets": 55,
+      "tables": 110,
+      "area": 1114.3866408625354,
+      "computationTime": 1570.9614999999903
+    },
+    {
+      "testCase": "Combo_0093",
+      "success": true,
+      "sets": 73,
+      "tables": 146,
+      "area": 1470.4628456351795,
+      "computationTime": 1701.6508999999933
+    },
+    {
+      "testCase": "Combo_0094",
+      "success": true,
+      "sets": 47,
+      "tables": 94,
+      "area": 956.1305498524712,
+      "computationTime": 1722.4891000000061
+    },
+    {
+      "testCase": "Combo_0095",
+      "success": true,
+      "sets": 56,
+      "tables": 112,
+      "area": 1134.1686522387934,
+      "computationTime": 1583.8678999999975
+    },
+    {
+      "testCase": "Combo_0096",
+      "success": true,
+      "sets": 73,
+      "tables": 146,
+      "area": 1470.4628456351795,
+      "computationTime": 1508.3036999999895
+    },
+    {
+      "testCase": "Combo_0097",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1991.3197999999975
+    },
+    {
+      "testCase": "Combo_0098",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1182.9505000000063
+    },
+    {
+      "testCase": "Combo_0099",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1712.4049999999988
+    },
+    {
+      "testCase": "Combo_0100",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 2114.753800000006
+    },
+    {
+      "testCase": "Combo_0101",
+      "success": true,
+      "sets": 38,
+      "tables": 76,
+      "area": 778.0924474661489,
+      "computationTime": 1303.0752000000211
+    },
+    {
+      "testCase": "Combo_0102",
+      "success": true,
+      "sets": 53,
+      "tables": 106,
+      "area": 1074.8226181100192,
+      "computationTime": 1385.9966999999888
+    },
+    {
+      "testCase": "Combo_0103",
+      "success": true,
+      "sets": 72,
+      "tables": 144,
+      "area": 1450.6808342589218,
+      "computationTime": 1391.813300000009
+    },
+    {
+      "testCase": "Combo_0104",
+      "success": true,
+      "sets": 49,
+      "tables": 98,
+      "area": 995.6945726049871,
+      "computationTime": 1746.2274000000034
+    },
+    {
+      "testCase": "Combo_0105",
+      "success": true,
+      "sets": 60,
+      "tables": 120,
+      "area": 1213.2966977438255,
+      "computationTime": 1624.65830000001
+    },
+    {
+      "testCase": "Combo_0106",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1530.5915999999852
+    },
+    {
+      "testCase": "Combo_0107",
+      "success": true,
+      "sets": 72,
+      "tables": 144,
+      "area": 1450.6808342589218,
+      "computationTime": 1610.0529000000097
+    },
+    {
+      "testCase": "Combo_0108",
+      "success": true,
+      "sets": 72,
+      "tables": 144,
+      "area": 1450.6808342589218,
+      "computationTime": 1413.2636999999813
+    },
+    {
+      "testCase": "Combo_0109",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1702.8263999999908
+    },
+    {
+      "testCase": "Combo_0110",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 2141.077100000024
+    },
+    {
+      "testCase": "Combo_0111",
+      "success": true,
+      "sets": 25,
+      "tables": 50,
+      "area": 520.9262995747946,
+      "computationTime": 1150.0803000000014
+    },
+    {
+      "testCase": "Combo_0112",
+      "success": true,
+      "sets": 41,
+      "tables": 82,
+      "area": 837.4384815949229,
+      "computationTime": 1447.9639000000025
+    },
+    {
+      "testCase": "Combo_0113",
+      "success": true,
+      "sets": 37,
+      "tables": 74,
+      "area": 758.3104360898909,
+      "computationTime": 1450.3172999999952
+    },
+    {
+      "testCase": "Combo_0114",
+      "success": true,
+      "sets": 42,
+      "tables": 84,
+      "area": 857.220492971181,
+      "computationTime": 1233.4523000000045
+    },
+    {
+      "testCase": "Combo_0115",
+      "success": true,
+      "sets": 43,
+      "tables": 86,
+      "area": 877.002504347439,
+      "computationTime": 1179.2941999999748
+    },
+    {
+      "testCase": "Combo_0116",
+      "success": true,
+      "sets": 55,
+      "tables": 110,
+      "area": 1114.3866408625354,
+      "computationTime": 1484.7029999999795
+    },
+    {
+      "testCase": "Combo_0117",
+      "success": true,
+      "sets": 73,
+      "tables": 146,
+      "area": 1470.4628456351795,
+      "computationTime": 1630.775500000018
+    },
+    {
+      "testCase": "Combo_0118",
+      "success": true,
+      "sets": 56,
+      "tables": 112,
+      "area": 1134.1686522387934,
+      "computationTime": 1145.512400000007
+    },
+    {
+      "testCase": "Combo_0119",
+      "success": true,
+      "sets": 73,
+      "tables": 146,
+      "area": 1470.4628456351795,
+      "computationTime": 1186.6206999999995
+    },
+    {
+      "testCase": "Combo_0120",
+      "success": true,
+      "sets": 77,
+      "tables": 154,
+      "area": 1549.5908911402119,
+      "computationTime": 1137.4378000000142
+    },
+    {
+      "testCase": "Combo_0121",
+      "success": true,
+      "sets": 41,
+      "tables": 82,
+      "area": 837.4384815949229,
+      "computationTime": 1644.3561000000045
+    },
+    {
+      "testCase": "Combo_0122",
+      "success": true,
+      "sets": 47,
+      "tables": 94,
+      "area": 956.1305498524712,
+      "computationTime": 1438.723800000007
+    },
+    {
+      "testCase": "Combo_0123",
+      "success": true,
+      "sets": 45,
+      "tables": 90,
+      "area": 916.5665270999551,
+      "computationTime": 1373.2606000000087
+    },
+    {
+      "testCase": "Combo_0124",
+      "success": true,
+      "sets": 46,
+      "tables": 92,
+      "area": 936.348538476213,
+      "computationTime": 1309.596900000004
+    },
+    {
+      "testCase": "Combo_0125",
+      "success": true,
+      "sets": 48,
+      "tables": 96,
+      "area": 975.912561228729,
+      "computationTime": 1925.4505000000063
+    },
+    {
+      "testCase": "Combo_0126",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1743.2742000000144
+    },
+    {
+      "testCase": "Combo_0127",
+      "success": true,
+      "sets": 75,
+      "tables": 150,
+      "area": 1510.0268683876957,
+      "computationTime": 1352.156399999978
+    },
+    {
+      "testCase": "Combo_0128",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1273.5158999999985
+    },
+    {
+      "testCase": "Combo_0129",
+      "success": true,
+      "sets": 77,
+      "tables": 154,
+      "area": 1549.5908911402119,
+      "computationTime": 1217.1680999999808
+    },
+    {
+      "testCase": "Combo_0130",
+      "success": true,
+      "sets": 77,
+      "tables": 154,
+      "area": 1549.5908911402119,
+      "computationTime": 1614.8138000000035
+    },
+    {
+      "testCase": "Combo_0131",
+      "success": true,
+      "sets": 26,
+      "tables": 52,
+      "area": 540.7083109510527,
+      "computationTime": 1053.1157999999996
+    },
+    {
+      "testCase": "Combo_0132",
+      "success": true,
+      "sets": 41,
+      "tables": 82,
+      "area": 837.4384815949229,
+      "computationTime": 1225.7649999999849
+    },
+    {
+      "testCase": "Combo_0133",
+      "success": true,
+      "sets": 39,
+      "tables": 78,
+      "area": 797.8744588424069,
+      "computationTime": 1472.2392999999865
+    },
+    {
+      "testCase": "Combo_0134",
+      "success": true,
+      "sets": 46,
+      "tables": 92,
+      "area": 936.348538476213,
+      "computationTime": 1232.171000000002
+    },
+    {
+      "testCase": "Combo_0135",
+      "success": true,
+      "sets": 41,
+      "tables": 82,
+      "area": 837.4384815949229,
+      "computationTime": 1201.425099999993
+    },
+    {
+      "testCase": "Combo_0136",
+      "success": true,
+      "sets": 52,
+      "tables": 104,
+      "area": 1055.0406067337613,
+      "computationTime": 1334.1458000000275
+    },
+    {
+      "testCase": "Combo_0137",
+      "success": true,
+      "sets": 70,
+      "tables": 140,
+      "area": 1411.1168115064056,
+      "computationTime": 1356.7349000000104
+    },
+    {
+      "testCase": "Combo_0138",
+      "success": true,
+      "sets": 58,
+      "tables": 116,
+      "area": 1173.7326749913093,
+      "computationTime": 1233.8576000000176
+    },
+    {
+      "testCase": "Combo_0139",
+      "success": true,
+      "sets": 75,
+      "tables": 150,
+      "area": 1510.0268683876957,
+      "computationTime": 1234.9932000000263
+    },
+    {
+      "testCase": "Combo_0140",
+      "success": true,
+      "sets": 70,
+      "tables": 140,
+      "area": 1411.1168115064056,
+      "computationTime": 1202.8657999999996
+    },
+    {
+      "testCase": "Combo_0141",
+      "success": true,
+      "sets": 42,
+      "tables": 84,
+      "area": 857.220492971181,
+      "computationTime": 1395.059899999993
+    },
+    {
+      "testCase": "Combo_0142",
+      "success": true,
+      "sets": 51,
+      "tables": 102,
+      "area": 1035.258595357503,
+      "computationTime": 1366.439699999988
+    },
+    {
+      "testCase": "Combo_0143",
+      "success": true,
+      "sets": 49,
+      "tables": 98,
+      "area": 995.6945726049871,
+      "computationTime": 1358.4564000000246
+    },
+    {
+      "testCase": "Combo_0144",
+      "success": true,
+      "sets": 42,
+      "tables": 84,
+      "area": 857.220492971181,
+      "computationTime": 1299.0684000000183
+    },
+    {
+      "testCase": "Combo_0145",
+      "success": true,
+      "sets": 51,
+      "tables": 102,
+      "area": 1035.258595357503,
+      "computationTime": 1902.2805999999982
+    },
+    {
+      "testCase": "Combo_0146",
+      "success": true,
+      "sets": 70,
+      "tables": 140,
+      "area": 1411.1168115064056,
+      "computationTime": 1453.740300000005
+    },
+    {
+      "testCase": "Combo_0147",
+      "success": true,
+      "sets": 71,
+      "tables": 142,
+      "area": 1430.8988228826636,
+      "computationTime": 1285.1428000000014
+    },
+    {
+      "testCase": "Combo_0148",
+      "success": true,
+      "sets": 75,
+      "tables": 150,
+      "area": 1510.0268683876957,
+      "computationTime": 1294.7575999999826
+    },
+    {
+      "testCase": "Combo_0149",
+      "success": true,
+      "sets": 70,
+      "tables": 140,
+      "area": 1411.1168115064056,
+      "computationTime": 1266.0440999999992
+    },
+    {
+      "testCase": "Combo_0150",
+      "success": true,
+      "sets": 75,
+      "tables": 150,
+      "area": 1510.0268683876957,
+      "computationTime": 1640.729800000001
+    },
+    {
+      "testCase": "Combo_0151",
+      "success": true,
+      "sets": 39,
+      "tables": 78,
+      "area": 797.8744588424069,
+      "computationTime": 1575.0990000000165
+    },
+    {
+      "testCase": "Combo_0152",
+      "success": true,
+      "sets": 46,
+      "tables": 92,
+      "area": 936.348538476213,
+      "computationTime": 1300.2479999999923
+    },
+    {
+      "testCase": "Combo_0153",
+      "success": true,
+      "sets": 43,
+      "tables": 86,
+      "area": 877.002504347439,
+      "computationTime": 1286.2097999999824
+    },
+    {
+      "testCase": "Combo_0154",
+      "success": true,
+      "sets": 56,
+      "tables": 112,
+      "area": 1134.1686522387934,
+      "computationTime": 1201.1450000000186
+    },
+    {
+      "testCase": "Combo_0155",
+      "success": true,
+      "sets": 73,
+      "tables": 146,
+      "area": 1470.4628456351795,
+      "computationTime": 1201.5157000000181
+    },
+    {
+      "testCase": "Combo_0156",
+      "success": true,
+      "sets": 76,
+      "tables": 152,
+      "area": 1529.8088797639537,
+      "computationTime": 1170.2459999999846
+    },
+    {
+      "testCase": "Combo_0157",
+      "success": true,
+      "sets": 58,
+      "tables": 116,
+      "area": 1173.7326749913093,
+      "computationTime": 1296.763100000011
+    },
+    {
+      "testCase": "Combo_0158",
+      "success": true,
+      "sets": 75,
+      "tables": 150,
+      "area": 1510.0268683876957,
+      "computationTime": 1267.6208000000042
+    },
+    {
+      "testCase": "Combo_0159",
+      "success": true,
+      "sets": 70,
+      "tables": 140,
+      "area": 1411.1168115064056,
+      "computationTime": 1237.7760000000126
+    },
+    {
+      "testCase": "Combo_0160",
+      "success": true,
+      "sets": 49,
+      "tables": 98,
+      "area": 995.6945726049871,
+      "computationTime": 1437.7443000000203
+    },
+    {
+      "testCase": "Combo_0161",
+      "success": true,
+      "sets": 46,
+      "tables": 92,
+      "area": 936.348538476213,
+      "computationTime": 1410.2541999999958
+    },
+    {
+      "testCase": "Combo_0162",
+      "success": true,
+      "sets": 51,
+      "tables": 102,
+      "area": 1035.258595357503,
+      "computationTime": 1991.2349000000104
+    },
+    {
+      "testCase": "Combo_0163",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1277.256299999979
+    },
+    {
+      "testCase": "Combo_0164",
+      "success": true,
+      "sets": 76,
+      "tables": 152,
+      "area": 1529.8088797639537,
+      "computationTime": 1250.172900000005
+    },
+    {
+      "testCase": "Combo_0165",
+      "success": true,
+      "sets": 76,
+      "tables": 152,
+      "area": 1529.8088797639537,
+      "computationTime": 1619.6105000000098
+    },
+    {
+      "testCase": "Combo_0166",
+      "success": true,
+      "sets": 75,
+      "tables": 150,
+      "area": 1510.0268683876957,
+      "computationTime": 1336.6098999999813
+    },
+    {
+      "testCase": "Combo_0167",
+      "success": true,
+      "sets": 70,
+      "tables": 140,
+      "area": 1411.1168115064056,
+      "computationTime": 1325.5920000000042
+    },
+    {
+      "testCase": "Combo_0168",
+      "success": true,
+      "sets": 75,
+      "tables": 150,
+      "area": 1510.0268683876957,
+      "computationTime": 1680.4645000000019
+    },
+    {
+      "testCase": "Combo_0169",
+      "success": true,
+      "sets": 38,
+      "tables": 76,
+      "area": 778.0924474661489,
+      "computationTime": 1261.0950000000012
+    },
+    {
+      "testCase": "Combo_0170",
+      "success": true,
+      "sets": 55,
+      "tables": 110,
+      "area": 1114.3866408625354,
+      "computationTime": 1580.4955999999947
+    },
+    {
+      "testCase": "Combo_0171",
+      "success": true,
+      "sets": 73,
+      "tables": 146,
+      "area": 1470.4628456351795,
+      "computationTime": 1691.6087999999872
+    },
+    {
+      "testCase": "Combo_0172",
+      "success": true,
+      "sets": 47,
+      "tables": 94,
+      "area": 956.1305498524712,
+      "computationTime": 1711.325600000011
+    },
+    {
+      "testCase": "Combo_0173",
+      "success": true,
+      "sets": 57,
+      "tables": 114,
+      "area": 1153.9506636150513,
+      "computationTime": 1573.7517999999982
+    },
+    {
+      "testCase": "Combo_0174",
+      "success": true,
+      "sets": 73,
+      "tables": 146,
+      "area": 1470.4628456351795,
+      "computationTime": 1513.483899999992
+    },
+    {
+      "testCase": "Combo_0175",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1985.0172999999777
+    },
+    {
+      "testCase": "Combo_0176",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1179.9087
+    },
+    {
+      "testCase": "Combo_0177",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1693.2789999999804
+    },
+    {
+      "testCase": "Combo_0178",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 2089.1693999999843
+    },
+    {
+      "testCase": "Combo_0179",
+      "success": true,
+      "sets": 55,
+      "tables": 110,
+      "area": 1114.3866408625354,
+      "computationTime": 1716.3006999999925
+    },
+    {
+      "testCase": "Combo_0180",
+      "success": true,
+      "sets": 73,
+      "tables": 146,
+      "area": 1470.4628456351795,
+      "computationTime": 1831.353700000007
+    },
+    {
+      "testCase": "Combo_0181",
+      "success": true,
+      "sets": 57,
+      "tables": 114,
+      "area": 1153.9506636150513,
+      "computationTime": 1304.3565999999992
+    },
+    {
+      "testCase": "Combo_0182",
+      "success": true,
+      "sets": 73,
+      "tables": 146,
+      "area": 1470.4628456351795,
+      "computationTime": 1329.9817999999796
+    },
+    {
+      "testCase": "Combo_0183",
+      "success": true,
+      "sets": 77,
+      "tables": 154,
+      "area": 1549.5908911402119,
+      "computationTime": 1306.0777999999991
+    },
+    {
+      "testCase": "Combo_0184",
+      "success": true,
+      "sets": 57,
+      "tables": 114,
+      "area": 1153.9506636150513,
+      "computationTime": 1694.0426999999909
+    },
+    {
+      "testCase": "Combo_0185",
+      "success": true,
+      "sets": 73,
+      "tables": 146,
+      "area": 1470.4628456351795,
+      "computationTime": 1593.1426999999967
+    },
+    {
+      "testCase": "Combo_0186",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1945.6479000000108
+    },
+    {
+      "testCase": "Combo_0187",
+      "success": true,
+      "sets": 75,
+      "tables": 150,
+      "area": 1510.0268683876957,
+      "computationTime": 1484.426300000021
+    },
+    {
+      "testCase": "Combo_0188",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1395.6597000000183
+    },
+    {
+      "testCase": "Combo_0189",
+      "success": true,
+      "sets": 77,
+      "tables": 154,
+      "area": 1549.5908911402119,
+      "computationTime": 1357.3947000000044
+    },
+    {
+      "testCase": "Combo_0190",
+      "success": true,
+      "sets": 77,
+      "tables": 154,
+      "area": 1549.5908911402119,
+      "computationTime": 1750.728300000017
+    },
+    {
+      "testCase": "Combo_0191",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1642.9463000000105
+    },
+    {
+      "testCase": "Combo_0192",
+      "success": true,
+      "sets": 75,
+      "tables": 150,
+      "area": 1510.0268683876957,
+      "computationTime": 2101.7081999999937
+    },
+    {
+      "testCase": "Combo_0193",
+      "success": true,
+      "sets": 38,
+      "tables": 76,
+      "area": 778.0924474661489,
+      "computationTime": 1297.0380000000005
+    },
+    {
+      "testCase": "Combo_0194",
+      "success": true,
+      "sets": 53,
+      "tables": 106,
+      "area": 1074.8226181100192,
+      "computationTime": 1389.4425000000047
+    },
+    {
+      "testCase": "Combo_0195",
+      "success": true,
+      "sets": 72,
+      "tables": 144,
+      "area": 1450.6808342589218,
+      "computationTime": 1405.5705000000307
+    },
+    {
+      "testCase": "Combo_0196",
+      "success": true,
+      "sets": 49,
+      "tables": 98,
+      "area": 995.6945726049871,
+      "computationTime": 1750.9771000000183
+    },
+    {
+      "testCase": "Combo_0197",
+      "success": true,
+      "sets": 60,
+      "tables": 120,
+      "area": 1213.2966977438255,
+      "computationTime": 1661.2826999999816
+    },
+    {
+      "testCase": "Combo_0198",
+      "success": true,
+      "sets": 75,
+      "tables": 150,
+      "area": 1510.0268683876957,
+      "computationTime": 1547.9572000000044
+    },
+    {
+      "testCase": "Combo_0199",
+      "success": true,
+      "sets": 72,
+      "tables": 144,
+      "area": 1450.6808342589218,
+      "computationTime": 1624.08269999997
+    },
+    {
+      "testCase": "Combo_0200",
+      "success": true,
+      "sets": 72,
+      "tables": 144,
+      "area": 1450.6808342589218,
+      "computationTime": 1427.6125000000466
+    },
+    {
+      "testCase": "Combo_0201",
+      "success": true,
+      "sets": 75,
+      "tables": 150,
+      "area": 1510.0268683876957,
+      "computationTime": 1714.0515000000014
+    },
+    {
+      "testCase": "Combo_0202",
+      "success": true,
+      "sets": 75,
+      "tables": 150,
+      "area": 1510.0268683876957,
+      "computationTime": 2147.509299999976
+    },
+    {
+      "testCase": "Combo_0203",
+      "success": true,
+      "sets": 53,
+      "tables": 106,
+      "area": 1074.8226181100192,
+      "computationTime": 1501.6899999999441
+    },
+    {
+      "testCase": "Combo_0204",
+      "success": true,
+      "sets": 72,
+      "tables": 144,
+      "area": 1450.6808342589218,
+      "computationTime": 1513.61460000003
+    },
+    {
+      "testCase": "Combo_0205",
+      "success": true,
+      "sets": 59,
+      "tables": 118,
+      "area": 1193.5146863675673,
+      "computationTime": 1339.2299000000348
+    },
+    {
+      "testCase": "Combo_0206",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1314.245500000019
+    },
+    {
+      "testCase": "Combo_0207",
+      "success": true,
+      "sets": 72,
+      "tables": 144,
+      "area": 1450.6808342589218,
+      "computationTime": 1289.5173000000068
+    },
+    {
+      "testCase": "Combo_0208",
+      "success": true,
+      "sets": 60,
+      "tables": 120,
+      "area": 1213.2966977438255,
+      "computationTime": 1724.3925000000163
+    },
+    {
+      "testCase": "Combo_0209",
+      "success": true,
+      "sets": 76,
+      "tables": 152,
+      "area": 1529.8088797639537,
+      "computationTime": 1615.5464999999967
+    },
+    {
+      "testCase": "Combo_0210",
+      "success": true,
+      "sets": 72,
+      "tables": 144,
+      "area": 1450.6808342589218,
+      "computationTime": 1582.4665999999852
+    },
+    {
+      "testCase": "Combo_0211",
+      "success": true,
+      "sets": 72,
+      "tables": 144,
+      "area": 1450.6808342589218,
+      "computationTime": 1418.691999999981
+    },
+    {
+      "testCase": "Combo_0212",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1484.0256999999983
+    },
+    {
+      "testCase": "Combo_0213",
+      "success": true,
+      "sets": 72,
+      "tables": 144,
+      "area": 1450.6808342589218,
+      "computationTime": 1385.2552000000142
+    },
+    {
+      "testCase": "Combo_0214",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1760.6861999999965
+    },
+    {
+      "testCase": "Combo_0215",
+      "success": true,
+      "sets": 76,
+      "tables": 152,
+      "area": 1529.8088797639537,
+      "computationTime": 1680.208500000008
+    },
+    {
+      "testCase": "Combo_0216",
+      "success": true,
+      "sets": 76,
+      "tables": 152,
+      "area": 1529.8088797639537,
+      "computationTime": 2090.7189999999828
+    },
+    {
+      "testCase": "Combo_0217",
+      "success": true,
+      "sets": 49,
+      "tables": 98,
+      "area": 995.6945726049871,
+      "computationTime": 1844.5027000000118
+    },
+    {
+      "testCase": "Combo_0218",
+      "success": true,
+      "sets": 57,
+      "tables": 114,
+      "area": 1153.9506636150513,
+      "computationTime": 1655.2606999999844
+    },
+    {
+      "testCase": "Combo_0219",
+      "success": true,
+      "sets": 73,
+      "tables": 146,
+      "area": 1470.4628456351795,
+      "computationTime": 1589.4676000000327
+    },
+    {
+      "testCase": "Combo_0220",
+      "success": true,
+      "sets": 60,
+      "tables": 120,
+      "area": 1213.2966977438255,
+      "computationTime": 1724.4432999999844
+    },
+    {
+      "testCase": "Combo_0221",
+      "success": true,
+      "sets": 75,
+      "tables": 150,
+      "area": 1510.0268683876957,
+      "computationTime": 1581.4745000000112
+    },
+    {
+      "testCase": "Combo_0222",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1771.4639000000316
+    },
+    {
+      "testCase": "Combo_0223",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 2167.5115000000224
+    },
+    {
+      "testCase": "Combo_0224",
+      "success": true,
+      "sets": 75,
+      "tables": 150,
+      "area": 1510.0268683876957,
+      "computationTime": 1790.3826000000117
+    },
+    {
+      "testCase": "Combo_0225",
+      "success": true,
+      "sets": 75,
+      "tables": 150,
+      "area": 1510.0268683876957,
+      "computationTime": 2246.892300000007
+    },
+    {
+      "testCase": "Combo_0226",
+      "success": true,
+      "sets": 58,
+      "tables": 116,
+      "area": 1173.7326749913093,
+      "computationTime": 1405.847300000023
+    },
+    {
+      "testCase": "Combo_0227",
+      "success": true,
+      "sets": 73,
+      "tables": 146,
+      "area": 1470.4628456351795,
+      "computationTime": 1348.7190999999875
+    },
+    {
+      "testCase": "Combo_0228",
+      "success": true,
+      "sets": 77,
+      "tables": 154,
+      "area": 1549.5908911402119,
+      "computationTime": 1325.3581999999587
+    },
+    {
+      "testCase": "Combo_0229",
+      "success": true,
+      "sets": 59,
+      "tables": 118,
+      "area": 1193.5146863675673,
+      "computationTime": 1427.4931000000215
+    },
+    {
+      "testCase": "Combo_0230",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1382.2001000000164
+    },
+    {
+      "testCase": "Combo_0231",
+      "success": true,
+      "sets": 72,
+      "tables": 144,
+      "area": 1450.6808342589218,
+      "computationTime": 1356.9952000000048
+    },
+    {
+      "testCase": "Combo_0232",
+      "success": true,
+      "sets": 59,
+      "tables": 118,
+      "area": 1193.5146863675673,
+      "computationTime": 1764.7280000000028
+    },
+    {
+      "testCase": "Combo_0233",
+      "success": true,
+      "sets": 73,
+      "tables": 146,
+      "area": 1470.4628456351795,
+      "computationTime": 1695.3777999999584
+    },
+    {
+      "testCase": "Combo_0234",
+      "success": true,
+      "sets": 60,
+      "tables": 120,
+      "area": 1213.2966977438255,
+      "computationTime": 1794.8506000000052
+    },
+    {
+      "testCase": "Combo_0235",
+      "success": true,
+      "sets": 76,
+      "tables": 152,
+      "area": 1529.8088797639537,
+      "computationTime": 1679.6958999999915
+    },
+    {
+      "testCase": "Combo_0236",
+      "success": true,
+      "sets": 60,
+      "tables": 120,
+      "area": 1213.2966977438255,
+      "computationTime": 2211.3574999999837
+    },
+    {
+      "testCase": "Combo_0237",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 2104.8701
+    },
+    {
+      "testCase": "Combo_0238",
+      "success": true,
+      "sets": 76,
+      "tables": 152,
+      "area": 1529.8088797639537,
+      "computationTime": 2037.7285000000265
+    },
+    {
+      "testCase": "Combo_0239",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1470.6915000000154
+    },
+    {
+      "testCase": "Combo_0240",
+      "success": true,
+      "sets": 77,
+      "tables": 154,
+      "area": 1549.5908911402119,
+      "computationTime": 1410.628000000026
+    },
+    {
+      "testCase": "Combo_0241",
+      "success": true,
+      "sets": 77,
+      "tables": 154,
+      "area": 1549.5908911402119,
+      "computationTime": 1786.5440000000526
+    },
+    {
+      "testCase": "Combo_0242",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1453.3074999999953
+    },
+    {
+      "testCase": "Combo_0243",
+      "success": true,
+      "sets": 72,
+      "tables": 144,
+      "area": 1450.6808342589218,
+      "computationTime": 1459.5927000000374
+    },
+    {
+      "testCase": "Combo_0244",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1803.4230999999563
+    },
+    {
+      "testCase": "Combo_0245",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 1740.3199000000022
+    },
+    {
+      "testCase": "Combo_0246",
+      "success": true,
+      "sets": 75,
+      "tables": 150,
+      "area": 1510.0268683876957,
+      "computationTime": 2140.2131999999983
+    },
+    {
+      "testCase": "Combo_0247",
+      "success": true,
+      "sets": 76,
+      "tables": 152,
+      "area": 1529.8088797639537,
+      "computationTime": 1738.806500000006
+    },
+    {
+      "testCase": "Combo_0248",
+      "success": true,
+      "sets": 76,
+      "tables": 152,
+      "area": 1529.8088797639537,
+      "computationTime": 2185.713400000008
+    },
+    {
+      "testCase": "Combo_0249",
+      "success": true,
+      "sets": 74,
+      "tables": 148,
+      "area": 1490.2448570114377,
+      "computationTime": 2153.3947000000044
+    },
+    {
+      "testCase": "Combo_0250",
+      "success": true,
+      "sets": 76,
+      "tables": 152,
+      "area": 1529.8088797639537,
+      "computationTime": 2099.120500000019
+    },
+    {
+      "testCase": "Combo_0251",
+      "success": true,
+      "sets": 76,
+      "tables": 152,
+      "area": 1529.8088797639537,
+      "computationTime": 2538.0174000000115
+    }
+  ]
+}
