@@ -2572,6 +2572,18 @@ class SvgViewerInstance {
                 });
                 selectionOutline.addClass("group-outline"); // easy cleanup
             }
+        } else {
+            // No selections - clean up any lingering rectangle and boardroom visualizations
+            if (this.rectangleGroup) {
+                this.rectangleGroup.remove();
+                this.rectangleGroup = null;
+                console.debug('[cleanup] Removed rectangle visualization (no selections)');
+            }
+            if (this.boardroomGroup) {
+                this.boardroomGroup.remove();
+                this.boardroomGroup = null;
+                console.debug('[cleanup] Removed boardroom visualization (no selections)');
+            }
         }
 
         // 2) Reset path colors to original (unless selected)
@@ -3056,19 +3068,40 @@ export async function getAreaData(containerId) {
 
     // Ensure precomputed data is loaded
     await instance.loadPrecomputedRectangles();
+    await instance.loadPrecomputedBoardrooms();
 
     // Create sorted key to match precomputed format
     const sortedKey = selectedPaths.slice().sort().join('_');
     console.log('[getAreaData] Looking up key:', sortedKey);
 
+    // Get rectangle data
     const rectData = instance.precomputedRectangles.lookup.get(sortedKey);
+
+    // Get boardroom data
+    const boardroomData = instance.precomputedBoardrooms.lookup.get(sortedKey);
+
+    // Build result object
+    const result = {};
+
     if (rectData) {
         console.log('[getAreaData] Found rectData:', rectData);
-        const result = {
-            polygonArea: rectData.polygonArea,
-            rectangleArea: rectData.rectangleArea,
-            computationTimeMs: rectData.computationTimeMs
-        };
+        result.polygonArea = rectData.polygonArea;
+        result.rectangleArea = rectData.rectangleArea;
+        result.computationTimeMs = rectData.computationTimeMs;
+    }
+
+    if (boardroomData) {
+        console.log('[getAreaData] Found boardroomData:', boardroomData);
+        result.boardroomArea = boardroomData.boardroomLayout.area;
+        result.boardroomSets = boardroomData.boardroomLayout.sets;
+        result.boardroomTables = boardroomData.boardroomLayout.tables;
+        // Use polygon area from boardroom if rect data not available
+        if (!result.polygonArea) {
+            result.polygonArea = boardroomData.polygonArea;
+        }
+    }
+
+    if (Object.keys(result).length > 0) {
         console.log('[getAreaData] Returning:', result);
         return result;
     }

@@ -24,22 +24,37 @@
     <div>Initial Paths: <code>@(string.Join(", ", initialPaths))</code></div>
     <div>Currently Selected: <code>@(string.Join(", ", currentPaths.Any() ? currentPaths : initialPaths))</code></div>
     <div>All Inside Selected: <strong>@(allInsideSelected ? "✅ YES - All paths within bounding box are selected" : "❌ NO - Some paths within bounding box are NOT selected")</strong></div>
-    @if (areaData != null && areaData.PolygonArea.HasValue && areaData.RectangleArea.HasValue)
+    @if (areaData != null && areaData.PolygonArea.HasValue)
     {
         var comboArea = areaData.PolygonArea.Value;
-        var rectArea = areaData.RectangleArea.Value;
-
-        // If rectangle area is larger than combo area (algorithm error), use combo area for both
-        if (rectArea > comboArea)
-        {
-            rectArea = comboArea;
-        }
 
         <div class="mt-2">
             <strong>Area Measurements (Square SVG Inches):</strong>
             <div class="ms-3">
                 <div>Combo Area: <code>@($"{comboArea:F2}")</code> sq in</div>
-                <div>Inscribed Rectangle Area: <code>@($"{rectArea:F2}")</code> sq in</div>
+
+                @if (showRectangle && areaData.RectangleArea.HasValue)
+                {
+                    var rectArea = areaData.RectangleArea.Value;
+                    // If rectangle area is larger than combo area (algorithm error), use combo area
+                    if (rectArea > comboArea)
+                    {
+                        rectArea = comboArea;
+                    }
+                    <div>Max Inscribed Rectangle Area: <code>@($"{rectArea:F2}")</code> sq in</div>
+                }
+
+                @if (showBoardroom && areaData.BoardroomArea.HasValue)
+                {
+                    var boardroomArea = areaData.BoardroomArea.Value;
+                    <div>Boardroom Layout Area: <code>@($"{boardroomArea:F2}")</code> sq in</div>
+                    @if (areaData.BoardroomSets.HasValue && areaData.BoardroomTables.HasValue)
+                    {
+                        <div class="ms-3">
+                            <small>(@areaData.BoardroomSets sets, @areaData.BoardroomTables tables)</small>
+                        </div>
+                    }
+                }
             </div>
         </div>
     }
@@ -149,6 +164,7 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
         if (svgViewer != null)
         {
             await svgViewer.SetShowRectangleAsync(showRectangle);
+            StateHasChanged();
         }
     }
 
@@ -157,6 +173,7 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
         if (svgViewer != null)
         {
             await svgViewer.SetShowBoardroomAsync(showBoardroom);
+            StateHasChanged();
         }
     }
 

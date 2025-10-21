@@ -4,9 +4,118 @@
 
 This test harness validates inscribed rectangle algorithms for complex polygon shapes extracted from SVG files. It tests multiple algorithm implementations and tracks their performance, accuracy, and coverage metrics.
 
-## Architecture
+## ⚠️ Understanding the Test Runner Architecture (Important!)
 
-### Algorithm Implementations
+**Read this section first if you're confused about which test runner to use!**
+
+The test harness has a confusing architecture that creates ambiguity about which test set will run:
+
+### The Core Issue
+
+1. **Single Test Runner Implementation**: There is only ONE functional test runner: `test-runner.js`
+2. **Config File Swapping**: To run different test sets, the system swaps out the config file that `test-runner.js` imports
+3. **Misleading File Names**: The presence of `test-runner-sample.js` suggests a parallel runner, but it's just a stub
+
+### File Structure
+
+```
+test-harness/
+├── test-runner.js              # The ONLY functional test runner (imports test-config.js)
+├── test-runner-sample.js       # STUB - doesn't actually run tests
+├── test-config.js              # Generated file with 251 test cases (full suite)
+├── test-config-sample.js       # Hardcoded file with 6 test cases (NOT used by runners)
+├── valid-combinations.json     # Source data for full suite (251 combos)
+├── valid-combinations-sample.json  # Source data for sample tests (7 combos)
+└── compute-sample.js           # Script that swaps configs and runs test-runner.js
+```
+
+### The Actual Workflow
+
+#### Running Full Test Suite
+```bash
+node test-runner.js
+# Directly imports and uses test-config.js (251 tests)
+```
+
+#### Running Sample Test Suite
+```bash
+node compute-sample.js
+# 1. Loads valid-combinations-sample.json (7 tests)
+# 2. Backs up test-config.js → test-config.js.backup
+# 3. Generates temporary test-config.js with 7 tests
+# 4. Runs test-runner.js (which now loads the 7-test config)
+# 5. Restores test-config.js from backup
+```
+
+### Why This Is Confusing
+
+1. **File naming implies parallelism**: Having both `test-runner.js` and `test-runner-sample.js` suggests two independent runners
+2. **Config swapping is hidden**: The mechanism of temporarily overwriting `test-config.js` is not obvious
+3. **Unused files**: `test-config-sample.js` exists but isn't actually used by any runner
+4. **Indirect execution**: To run sample tests, you don't run `test-runner-sample.js`, you run `compute-sample.js`
+
+### The Correct Mental Model
+
+Think of it as:
+- **ONE test runner** (`test-runner.js`)
+- **ONE config slot** (`test-config.js`)
+- **TWO ways to populate the config slot**:
+  - Default: Contains 251 tests from `valid-combinations.json`
+  - Temporary: `compute-sample.js` swaps in 7 tests from `valid-combinations-sample.json`
+
+### How to Avoid Confusion
+
+**Before running any tests, ask yourself**:
+1. Do I want to run ALL 251 tests or just the sample?
+2. If sample → use `compute-sample.js` (not `test-runner-sample.js`)
+3. If full suite → use `test-runner.js`
+
+**To modify sample tests**:
+1. Edit `valid-combinations-sample.json` (add/remove combinations)
+2. Run `node compute-sample.js` (it will regenerate `test-config.js` temporarily)
+
+**Never**:
+- Run `test-runner-sample.js` directly (it's a stub)
+- Manually edit `test-config.js` (it's auto-generated)
+- Edit `test-config-sample.js` (it's not used)
+
+### Improvement Suggestion
+
+The architecture could be clearer if:
+1. `test-runner-sample.js` was deleted (it's misleading)
+2. `test-config-sample.js` was deleted (it's unused)
+3. `compute-sample.js` was renamed to `run-sample-tests.js` (clearer intent)
+4. OR: Make `test-runner.js` accept a `--config` parameter to specify which config to use
+
+## Quick Start
+
+### Running Tests
+
+```bash
+# Navigate to test harness directory
+cd test-harness
+
+# Run full test suite (251 tests)
+node test-runner.js
+
+# Run sample tests only (7 tests)
+node compute-sample.js
+
+# Compare boundary-based vs optimized algorithms
+node test-boundary-based.js
+
+# Run parameter optimization sweep
+node parameter-sweep.js
+```
+
+### Output Locations
+
+- **Console**: Pass/fail results, coverage percentages, timing
+- **TestResults/*.svg**: Visual representations of results
+- **TestResults/test-output.txt**: Full console log
+- **sweep-results-*.md**: Parameter sweep reports
+
+## Algorithm Implementations
 
 The test harness compares three algorithm approaches:
 
@@ -30,9 +139,9 @@ The test harness compares three algorithm approaches:
    - Returns the best result from both approaches
    - Balances speed and accuracy
 
-### Core Components
+## Core Components
 
-#### `test-runner.js`
+### `test-runner.js`
 Main test execution script that:
 - Loads test cases from `test-config.js`
 - Extracts SVG path data and builds boundary polygons
@@ -40,7 +149,7 @@ Main test execution script that:
 - Generates SVG visualizations in `TestResults/` folder
 - Reports coverage, timing, and validation results
 
-#### `test-config.js`
+### `test-config.js`
 Defines test cases and configuration:
 ```javascript
 {
@@ -51,25 +160,25 @@ Defines test cases and configuration:
 }
 ```
 
-#### `test-boundary-based.js`
+### `test-boundary-based.js`
 Comparison runner that:
 - Tests both boundary-based and optimized algorithms
 - Generates detailed performance comparisons
 - Reports speed improvements and coverage differences
 
-#### `parameter-sweep.js`
+### `parameter-sweep.js`
 Automated parameter optimization tool:
 - Tests multiple algorithm configurations
 - Generates markdown reports with results
 - Helps identify optimal parameter values
 
-#### `algorithm-params.js`
+### `algorithm-params.js`
 Predefined parameter configuration sets for testing different optimization strategies.
 
-#### `test-history.md`
+### `test-history.md`
 Log of all test runs with observations and findings.
 
-#### `OPTIMIZATION_SUMMARY.md`
+### `OPTIMIZATION_SUMMARY.md`
 Executive summary of optimization work and results.
 
 ## How the Algorithms Work
@@ -158,33 +267,6 @@ return boundaryResult.area > optimizedResult.area
   ? boundaryResult
   : optimizedResult;
 ```
-
-## Running Tests
-
-### Basic Test Run
-```bash
-cd test-harness
-node test-runner.js
-```
-
-**Output**:
-- Console: Pass/fail results, coverage percentages, timing
-- `TestResults/*.svg`: Visual representations of results
-- `TestResults/test-output.txt`: Full console log
-
-### Algorithm Comparison
-```bash
-node test-boundary-based.js
-```
-
-Compares boundary-based vs optimized algorithms side-by-side.
-
-### Parameter Sweep
-```bash
-node parameter-sweep.js
-```
-
-Tests multiple algorithm configurations and generates `sweep-results-*.md` report.
 
 ## Understanding Results
 
@@ -343,15 +425,20 @@ See `OPTIMIZATION_SUMMARY.md` and `test-history.md` for:
    - Find multiple rectangles
    - Useful for truly irregular polygons
 
-## File Structure
+## Complete File Structure
 
 ```
 test-harness/
-├── testharness.md              # This file
-├── test-runner.js              # Main test executor
+├── testharness.md              # This file - complete documentation
+├── test-runner.js              # Main test executor (imports test-config.js)
+├── test-runner-sample.js       # STUB - not functional
+├── compute-sample.js           # Sample test runner (swaps config)
 ├── test-boundary-based.js      # Algorithm comparison
 ├── parameter-sweep.js          # Parameter optimization
-├── test-config.js              # Test case definitions
+├── test-config.js              # Auto-generated test cases (251 tests)
+├── test-config-sample.js       # NOT USED - legacy file
+├── valid-combinations.json     # Source data for full suite
+├── valid-combinations-sample.json  # Source data for sample tests
 ├── algorithm-params.js         # Parameter configurations
 ├── test-history.md             # Test execution log
 └── OPTIMIZATION_SUMMARY.md     # Optimization findings
