@@ -13,6 +13,7 @@ LazyMagic is a comprehensive .NET framework/library ecosystem for building full-
 - **LazyMagic.Service.***: Server-side libraries for AWS services, data repositories, and WebSocket notifications
 - **LazyMagic.Shared.***: Shared interfaces and models between client and server
 - **LazyMagic.Blazor***: UI components for different Blazor frameworks
+- **LazyMagic.BlazorSvg**: SVG manipulation and visualization components with advanced geometric algorithms
 
 ### Core Patterns
 1. **MVVM with ReactiveUI**: All ViewModels inherit from NotifyBase and use ReactiveUI for state management
@@ -53,7 +54,7 @@ dotnet run --project MudBlazorTest.WASM/MudBlazorTest.WASM.csproj
 ```
 
 ### Package Management
-- Version is managed in CommonPackageHandling.targets (currently 3.0.0)
+- Version is managed in CommonPackageHandling.targets (currently 3.0.1)
 - Packages auto-build to ./Packages/ folder
 - All projects use Central Package Management via Directory.Packages.props
 
@@ -83,6 +84,14 @@ dotnet run --project MudBlazorTest.WASM/MudBlazorTest.WASM.csproj
 - JavaScript interop through IJSModule pattern
 - Localization through LzMessages system
 
+### SVG Components (LazyMagic.BlazorSvg)
+- **SvgViewer Component**: Interactive SVG rendering with pan/zoom capabilities
+- **Geometric Algorithms**: Max-inscribed rectangle computation, boardroom layout generation
+- **Build-Time Precomputation**: Node.js-based pipeline for SVG polygon analysis
+- **Embedded Data Pattern**: Precomputed geometric data embedded directly in SVG files
+- **Test Infrastructure**: Playwright-based automated testing for visual verification
+- **Documentation**: Comprehensive algorithm documentation in LazyMagic.BlazorSvg/Documentation/
+
 ## Important Conventions
 
 1. **Fody Integration**: ViewModels and other reactive classes use Fody.ReactiveUI - properties automatically implement INotifyPropertyChanged
@@ -91,41 +100,60 @@ dotnet run --project MudBlazorTest.WASM/MudBlazorTest.WASM.csproj
 4. **Model Generation**: Use partial classes with [LzModel] for automatic model generation
 5. **JavaScript Modules**: Place .js files in wwwroot and create corresponding C# wrapper classes
 
-## Recent Additions (V3.0.0)
+## Recent Features (V3.0.x)
 
-### New Features
-1. **ConnectivityService**: Added IConnectivityService for network connectivity monitoring
-2. **Cookie Management**: New cookie handling methods in LzJsUtilities (GetCookie, SetCookie, DeleteCookie)
+### Client Services
+1. **ConnectivityService**: IConnectivityService for network connectivity monitoring
+2. **Cookie Management**: Cookie handling methods in LzJsUtilities (GetCookie, SetCookie, DeleteCookie)
 3. **Window Management**: WindowFade and WindowResize components for responsive UI
-4. **Blazor Message Configuration**: AddLazyMagicBlazorMessages extension method for easier message setup
-5. **Browser Fingerprinting**: BrowserFingerprintService for device identification
-6. **Clipboard Service**: IClipboardService for clipboard operations
-7. **Static Assets Management**: IStaticAssets interface and BlazorStaticAssets implementation
+4. **Browser Fingerprinting**: BrowserFingerprintService for device identification
+5. **Clipboard Service**: IClipboardService for clipboard operations
+6. **Static Assets Management**: IStaticAssets interface and BlazorStaticAssets implementation
 
-### Additional Source Generators
+### SVG & Geometric Capabilities (LazyMagic.BlazorSvg)
+1. **Max-Inscribed Rectangle Algorithm**: Finds largest rectangle that fits within irregular polygons
+   - Binary search expansion with configurable aspect ratios
+   - Multiple centroid sampling for optimal placement
+   - Polylabel algorithm for optimal centroid selection
+2. **Boardroom Layout System**: Automatic furniture placement within complex room geometries
+   - Layout configuration via JSON
+   - Collision detection and boundary validation
+   - Support for tables, chairs, and other furniture elements
+3. **SVG Data Embedding**: Build-time precomputation pipeline
+   - Node.js scripts for polygon analysis
+   - Embedded data stored in SVG metadata
+   - Runtime lookup for instant access
+4. **Geometric Primitives**: Point-in-polygon, line intersection, bounding boxes, convex hull
+5. **Test Harness**: Playwright-based visual testing framework
+
+### Source Generators
 1. **LazyMagic.LzItemViewModelGenerator**: Generates ViewModel boilerplate code
 2. **LazyMagic.Client.TreeViewModel**: Tree view model generation with ILzTreeNode support
 
 ### Testing & Development
 - Three test applications demonstrating different UI frameworks:
-  - BlazorTest.WASM: Standard Blazor components
-  - BlazoriseTest.WASM: Blazorise framework integration (includes Camera component demo)
-  - MudBlazorTest.WASM: MudBlazor framework integration
+  - **BlazorTest.WASM**: Standard Blazor components (includes SVG test pages)
+  - **BlazoriseTest.WASM**: Blazorise framework integration (includes Camera component demo)
+  - **MudBlazorTest.WASM**: MudBlazor framework integration
 - All test apps share common ViewModels from BlazorTest.ViewModels project
+- Playwright test infrastructure in LazyMagic.BlazorSvg/test-harness/
 
 ### JavaScript Interop Patterns
-- Base class: LzBaseJSModule for all JS module wrappers
-- Standard pattern: Override ModuleFileName property to specify JS file path
-- Initialization: Use Initialize() method with DotNetObjectReference for callbacks
-- Safe invocation: InvokeSafeAsync/InvokeSafeVoidAsync methods for error handling
+- **Base class**: LzBaseJSModule for all JS module wrappers
+- **Standard pattern**: Override ModuleFileName property to specify JS file path
+- **Initialization**: Use Initialize() method with DotNetObjectReference for callbacks
+- **Safe invocation**: InvokeSafeAsync/InvokeSafeVoidAsync methods for error handling
+- **SVG-specific**: SvgViewerJS class wraps Snap.svg for interactive SVG manipulation
 
-## LibrariesToDocument
+## Key Documentation Locations
 
-- LazyMagic.Blazor
-- LazyMagic.Client.Base
-- LazyMagic.Client.FactoryGenerator
-- LazyMagic.Client.ViewModels
-- LazyMagic.Service.DynamoDBRepo
-- LazyMagic.Service.Shared
-- LazyMagic.Shared
-- Find the latest screen shots here: C:\Users\TimothyMay\OneDrive - Insight Sciences Corporation\Pictures\Screenshots
+### LazyMagic.BlazorSvg Documentation
+Located in `LazyMagic.BlazorSvg/Documentation/`:
+- **InscribedRectangle-Guide.md**: Complete system architecture and usage guide
+- **Algorithms-Implementation.md**: Low-level algorithm implementations with mathematical foundations
+- **BoardroomLayoutPipeline.md**: Boardroom layout system documentation
+- **EmbedData-QuickRef.md**: Quick command reference for data regeneration
+
+### General Documentation
+- **CLAUDE.md**: This file - guidance for AI assistants working with this codebase
+- **RUN_BOARDROOM_TEST.md**: Instructions for running boardroom layout tests
