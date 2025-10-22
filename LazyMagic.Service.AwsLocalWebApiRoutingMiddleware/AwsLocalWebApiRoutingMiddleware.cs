@@ -31,8 +31,9 @@ public class AwsLocalWebApiRoutingMiddleware
     private readonly IAmazonCloudFront _cloudFront;
     private readonly ILogger<AwsLocalWebApiRoutingMiddleware> _logger;
     private string _systemKey;
-    private string _kvsArn; 
+    private string _kvsArn;
     private string _defaultTenancy = "";
+    private string _defaultAuthname = "";
     private string _tenancyConfigPackedJson;
 
     public AwsLocalWebApiRoutingMiddleware(
@@ -46,7 +47,7 @@ public class AwsLocalWebApiRoutingMiddleware
         _cloudFrontKeyValueStore = cloudFrontKvs;
         _cloudFront = cloudFront;
         _logger = logger;
-        (_systemKey, _defaultTenancy) = ReadSystemConfig().Result;
+        (_systemKey, _defaultTenancy, _defaultAuthname) = ReadSystemConfig().Result;
         _kvsArn = GetKvsArnByNameAsync(_systemKey! + "---kvs").Result;
         _tenancyConfigPackedJson = GetTenancyConfigJsonAsync(_defaultTenancy).Result;
     }
@@ -65,10 +66,12 @@ public class AwsLocalWebApiRoutingMiddleware
             throw new Exception($"CloudFront error getting ARN for {kvsName}: {ex.Message}");
         }
     }
-    protected Task<(string systemKey, string defaultTenancy)> ReadSystemConfig()
+    protected Task<(string systemKey, string defaultTenancy, string defaultAuthname)> ReadSystemConfig()
     {
         var systemKey = "";
         var defaultTenancy = "";
+        var defaultAuthname = "tenantauth"; // Default value if not specified
+
         // Read systemconfig.yaml
         using (var reader = new StreamReader("../../systemconfig.yaml"))
         {
@@ -89,8 +92,14 @@ public class AwsLocalWebApiRoutingMiddleware
                 defaultTenancy = ((YamlScalarNode)tenantNode).Value!;
             }
             else throw new Exception("No default tenant found in systemconfig.yaml");
+
+            // Get Default Authname (optional - defaults to "tenantauth" if not specified)
+            if (mapping.Children.TryGetValue(new YamlScalarNode("DefaultAuthname"), out var authnameNode))
+            {
+                defaultAuthname = ((YamlScalarNode)authnameNode).Value!;
+            }
         }
-        return Task.FromResult((systemKey, defaultTenancy));
+        return Task.FromResult((systemKey, defaultTenancy, defaultAuthname));
     }
     public async Task<string> GetTenancyConfigJsonAsync(string key)
     {
@@ -116,7 +125,7 @@ public class AwsLocalWebApiRoutingMiddleware
         }
     }
     /// <summary>
-    /// InvokeAsync is called by the middleware pipeline. It adds headers to 
+    /// InvokeAsync is called by the middleware pipeline. It adds headers to
     /// each request process in the pipeline.
     /// </summary>
     /// <param name="context"></param>
@@ -130,7 +139,17 @@ public class AwsLocalWebApiRoutingMiddleware
         context.Request.Headers.Append("lz-tenantid", _defaultTenancy);
         context.Request.Headers.Append("lz-config", _tenancyConfigPackedJson);
 
-        // leaving lz-config-authorization out for now as it is only useful 
+        // Add lz-authname header for multi-tenant AppSync Events routing
+        // This allows AppSyncWsEventPublisher to route events to the correct EventsApi
+        // based on the authenticator (e.g., "tenantauth" or "consumerauth")
+        // Only add if not already present to avoid duplicates
+        if (!string.IsNullOrEmpty(_defaultAuthname) && !context.Request.Headers.ContainsKey("lz-authname"))
+        {
+            context.Request.Headers.Append("lz-authname", _defaultAuthname);
+            _logger.LogDebug("Added lz-authname header: {Authname}", _defaultAuthname);
+        }
+
+        // leaving lz-config-authorization out for now as it is only useful
         // for the legacy REST API when using v4 signing.
 
         // Remove the first segment of the path. 
