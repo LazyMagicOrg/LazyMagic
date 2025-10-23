@@ -58,6 +58,9 @@ if (!fs.existsSync(outputDir)) {
 
 console.log(`Output directory: ${outputDir}\n`);
 
+// Track total runtime
+const startTime = Date.now();
+
 // Helper functions
 function extractPathData(svgContent, pathIds) {
     const paths = [];
@@ -139,9 +142,9 @@ for (let i = 0; i < sampleCombinations.length; i++) {
 
         // Run hollow square layout algorithm (with dynamic limits!)
         const hollowSquareLayout = findHollowSquareLayout(polygon, {
-            // Use optimized sample density: 12 angles × 5 centroids for ~3.6x speedup
+            // Use 12 angles × 23×23 centroids = 6,348 positions for speed/quality balance
             angleSamples: 12,
-            centroidSamples: 5,
+            centroidSamples: 23,
             debugMode: false
         });
 
@@ -272,9 +275,35 @@ for (let i = 0; i < sampleCombinations.length; i++) {
     }
 }
 
+// Calculate total runtime
+const endTime = Date.now();
+const totalRuntimeMs = endTime - startTime;
+const totalRuntimeSec = (totalRuntimeMs / 1000).toFixed(2);
+
 console.log('\n' + '='.repeat(60));
 console.log('Summary');
 console.log('='.repeat(60));
 console.log(`Passed: ${passed}`);
 console.log(`Failed: ${failed}`);
+console.log(`Total Runtime: ${totalRuntimeSec}s`);
 console.log('');
+
+// Save summary JSON
+const summary = {
+    timestamp: new Date().toISOString(),
+    totalTests: sampleCombinations.length,
+    passed: passed,
+    failed: failed,
+    totalRuntimeMs: totalRuntimeMs,
+    totalRuntimeSec: parseFloat(totalRuntimeSec),
+    configuration: {
+        angleSamples: 12,
+        centroidSamples: 23,
+        totalPositions: 12 * 23 * 23,
+        gridSpacing: '23×23 = 529 centroids per angle'
+    }
+};
+
+const summaryPath = path.join(outputDir, 'hollowsquare-sample-summary.json');
+fs.writeFileSync(summaryPath, JSON.stringify(summary, null, 2), 'utf8');
+console.log(`Summary saved to: hollowsquare-sample-summary.json\n`);

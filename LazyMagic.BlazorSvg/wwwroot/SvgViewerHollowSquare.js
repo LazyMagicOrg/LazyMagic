@@ -205,14 +205,14 @@ function findHollowSquareLayout(polygon, options = {}) {
     // Calculate maximum possible runs based on polygon dimensions
     // For lengthRun: base width is 19ft, each additional run adds 6ft
     // For depthRun: base height is 14ft, each additional run adds 6ft
-    const maxPossibleLengthRun = Math.ceil((Math.max(polyWidth, polyHeight) - 19) / 6) + 5; // +5 for safety margin
-    const maxPossibleDepthRun = Math.ceil((Math.max(polyWidth, polyHeight) - 14) / 6) + 5;  // +5 for safety margin
+    const maxPossibleLengthRun = Math.ceil((Math.max(polyWidth, polyHeight) - 19) / 6);
+    const maxPossibleDepthRun = Math.ceil((Math.max(polyWidth, polyHeight) - 14) / 6);
 
     const {
         maxLengthRun = maxPossibleLengthRun,  // Dynamic maximum based on polygon size
         maxDepthRun = maxPossibleDepthRun,    // Dynamic maximum based on polygon size
-        angleSamples = 12,                     // Number of angles to test (0-180°) - reduced from 24 for performance
-        centroidSamples = 5,                   // Grid density for testing centroids (reduced from 9 for performance)
+        angleSamples = 12,                     // Number of angles to test (0-180°)
+        centroidSamples = 23,                  // Grid density for testing centroids (23×23 = 529 positions)
         debugMode = false
     } = options;
 
@@ -240,15 +240,15 @@ function findHollowSquareLayout(polygon, options = {}) {
     for (let angleIndex = 0; angleIndex < angleSamples; angleIndex++) {
         const angle = angleIndex * angleStep;
 
-        // For each angle, test different centroid positions in a grid
-        const xStep = (bounds.maxX - bounds.minX) / (centroidSamples + 1);
-        const yStep = (bounds.maxY - bounds.minY) / (centroidSamples + 1);
+        // Generate test centroids in a grid pattern across the bounding box
+        const xStep = (bounds.maxX - bounds.minX) / (centroidSamples - 1);
+        const yStep = (bounds.maxY - bounds.minY) / (centroidSamples - 1);
 
-        for (let xIndex = 1; xIndex <= centroidSamples; xIndex++) {
-            for (let yIndex = 1; yIndex <= centroidSamples; yIndex++) {
+        for (let xi = 0; xi < centroidSamples; xi++) {
+            for (let yi = 0; yi < centroidSamples; yi++) {
                 const testCentroid = {
-                    x: bounds.minX + xIndex * xStep,
-                    y: bounds.minY + yIndex * yStep
+                    x: bounds.minX + xi * xStep,
+                    y: bounds.minY + yi * yStep
                 };
 
                 // For this angle and centroid, test all combinations of lengthRun and depthRun
