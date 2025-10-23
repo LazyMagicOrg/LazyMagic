@@ -13,7 +13,7 @@ node test-runner-boardroom.js
 
 Generates 251 SVG files showing boardroom layouts for all valid combinations:
 
-- **Output Directory:** `LazyMagic.BlazorSvg/BoardroomResults/`
+- **Output Directory:** `LazyMagic.BlazorSvg/TestResults/BoardroomResults/`
 - **Files:** `Combo_0001.svg` through `Combo_0251.svg`
 - **Summary:** `boardroom-summary.json`
 - **Duration:** ~15-20 minutes
@@ -57,12 +57,12 @@ Open any SVG file in a browser or SVG viewer:
 
 ```bash
 # Example: View first result
-start BoardroomResults/Combo_0001.svg
+start TestResults/BoardroomResults/Combo_0001.svg
 ```
 
 Or navigate to the directory and open files manually:
 ```
-C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic\LazyMagic.BlazorSvg\BoardroomResults\
+C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic\LazyMagic.BlazorSvg\TestResults\BoardroomResults\
 ```
 
 ## Troubleshooting

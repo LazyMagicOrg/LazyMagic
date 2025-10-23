@@ -528,7 +528,7 @@ node test-runner.js
   2. Trigger inscribed rectangle calculation
   3. Capture result (corners, width, height, area, angle, type, time)
   4. Calculate polygon area and rectangle area in square SVG inches
-  5. Save visualization as SVG in `TestResults/Combo_XXXX.svg`
+  5. Save visualization as SVG in `TestResults/MaxInscribedResults/Combo_XXXX.svg`
   6. Append result to `results.txt`
 - Shuts down web server (if using run-tests.ps1)
 
@@ -545,8 +545,8 @@ Running 251 tests using 1 worker
 ```
 
 **Test output:**
-- `TestResults/Combo_XXXX.svg`: Visual representation with legend
-- `TestResults/results.txt`: Line-delimited JSON results
+- `TestResults/MaxInscribedResults/Combo_XXXX.svg`: Visual representation with legend
+- `TestResults/MaxInscribedResults/results.txt`: Line-delimited JSON results
 
 **Example SVG output:**
 ```xml
@@ -585,7 +585,7 @@ node extract-precomputed-rectangles.js
 **Duration:** ~30 seconds
 
 **What it does:**
-- Reads all 251 SVG files from `TestResults/`
+- Reads all 251 SVG files from `TestResults/MaxInscribedResults/`
 - Parses each SVG to extract:
   - Rectangle corners (from `<polygon>` element)
   - Width, height, area, angle (from `<text>` legend)
@@ -604,7 +604,7 @@ EXTRACTING PRE-COMPUTED RECTANGLES
 Step 1: Loading valid combinations...
   Loaded 251 combinations
 
-Step 2: Parsing SVG files from TestResults...
+Step 2: Parsing SVG files from TestResults/MaxInscribedResults...
   Processed 50/251 SVG files...
   Processed 100/251 SVG files...
   Processed 150/251 SVG files...
@@ -725,11 +725,15 @@ C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic\LazyMagic.BlazorSvg\test-ha
 ├── test-config.js                   # Test configuration (OUTPUT)
 ├── precomputed-rectangles.json      # Final precomputed data (OUTPUT)
 └── TestResults/
-    ├── Combo_0001.svg              # Visual result for combo 1
-    ├── Combo_0002.svg
-    ├── ...
-    ├── Combo_0251.svg
-    └── results.txt                 # Raw test results
+    ├── MaxInscribedResults/        # Max-inscribed rectangle test results
+    │   ├── Combo_0001.svg          # Visual result for combo 1
+    │   ├── Combo_0002.svg
+    │   ├── ...
+    │   ├── Combo_0251.svg
+    │   └── results.txt             # Raw test results
+    └── BoardroomResults/           # Boardroom layout test results
+        ├── Combo_XXXX.svg          # Visual boardroom layouts
+        └── boardroom-summary.json  # Test summary
 ```
 
 **Live Test Version:**

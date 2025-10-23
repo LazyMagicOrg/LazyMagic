@@ -111,8 +111,9 @@ node parameter-sweep.js
 ### Output Locations
 
 - **Console**: Pass/fail results, coverage percentages, timing
-- **TestResults/*.svg**: Visual representations of results
-- **TestResults/test-output.txt**: Full console log
+- **TestResults/MaxInscribedResults/*.svg**: Visual representations of max-inscribed rectangle results
+- **TestResults/BoardroomResults/*.svg**: Visual representations of boardroom layout results
+- **TestResults/MaxInscribedResults/test-output.txt**: Full console log for max-inscribed tests
 - **sweep-results-*.md**: Parameter sweep reports
 
 ## Algorithm Implementations
@@ -146,7 +147,7 @@ Main test execution script that:
 - Loads test cases from `test-config.js`
 - Extracts SVG path data and builds boundary polygons
 - Runs the hybrid algorithm on each test case
-- Generates SVG visualizations in `TestResults/` folder
+- Generates SVG visualizations in `TestResults/MaxInscribedResults/` folder
 - Reports coverage, timing, and validation results
 
 ### `test-config.js`
@@ -448,11 +449,16 @@ test-harness/
 ├── SvgViewerOptimized.js       # Optimized algorithm
 └── SvgViewerBoundaryBased.js   # Boundary & hybrid algorithms
 
-../TestResults/                 # Generated output
-├── Test01.svg
-├── Test02.svg
-├── Test03.svg
-└── test-output.txt
+../TestResults/                 # Generated output directory
+├── MaxInscribedResults/        # Max-inscribed rectangle test results
+│   ├── Combo_0001.svg
+│   ├── Combo_0002.svg
+│   ├── ...
+│   └── test-output.txt
+└── BoardroomResults/           # Boardroom layout test results
+    ├── Combo_0001.svg
+    ├── Combo_0002.svg
+    └── boardroom-summary.json
 ```
 
 ## Contributing

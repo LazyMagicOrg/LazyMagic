@@ -101,7 +101,7 @@ node test-runner.js
 **Duration:** 15-20 minutes
 
 **Output:**
-- 251 SVG files in `LazyMagic.BlazorSvg/TestResults/` directory
+- 251 SVG files in `LazyMagic.BlazorSvg/TestResults/MaxInscribedResults/` directory
 - Each file named `Combo_XXXX.svg` (e.g., Combo_0001.svg)
 - Each file contains XML comments with area data:
   ```xml
@@ -118,7 +118,7 @@ node test-runner.js
   - Determines which algorithm produced the best result
   - Calculates polygon and rectangle areas in square SVG inches
   - Generates comparison visualization SVG with embedded area data
-  - Saves result to TestResults directory
+  - Saves result to TestResults/MaxInscribedResults directory
 
 ### Step 2: Extract Precomputed Rectangles
 
@@ -138,7 +138,7 @@ node extract-precomputed-rectangles.js
 **What It Does:**
 - Loads valid combinations from `valid-combinations.json`
 - For each combination:
-  - Reads corresponding SVG file from TestResults directory
+  - Reads corresponding SVG file from TestResults/MaxInscribedResults directory
   - Extracts area data from XML comments using regex:
     - `<!-- polygonArea: ([0-9.]+) -->`
     - `<!-- rectangleArea: ([0-9.]+) -->`
@@ -237,15 +237,17 @@ The application should:
 - **Valid Combinations**: `LazyMagic.BlazorSvg/test-harness/valid-combinations.json`
 
 ### Generated Files
-- **Test Results**: `LazyMagic.BlazorSvg/TestResults/Combo_XXXX.svg` (251 files)
-- **Precomputed JSON**: `LazyMagic.BlazorSvg/test-harness/precomputed-rectangles.json`
+- **Max-Inscribed Test Results**: `LazyMagic.BlazorSvg/TestResults/MaxInscribedResults/Combo_XXXX.svg` (251 files)
+- **Boardroom Test Results**: `LazyMagic.BlazorSvg/TestResults/BoardroomResults/Combo_XXXX.svg` (251 files)
+- **Precomputed Rectangles JSON**: `LazyMagic.BlazorSvg/test-harness/precomputed-rectangles.json`
+- **Precomputed Boardroom JSON**: `LazyMagic.BlazorSvg/test-harness/precomputed-boardroom.json`
 - **Target SVG**: `BlazorTest.WASM/wwwroot/Level1.svg`
 
 ## Troubleshooting
 
 ### Test Harness Fails
 - Ensure `valid-combinations.json` exists and contains 251 combinations
-- Check that TestResults directory exists (create if missing)
+- Check that TestResults/MaxInscribedResults and TestResults/BoardroomResults directories exist (create if missing)
 - Verify all required dependencies are installed (`npm install`)
 
 ### Extraction Returns Null Areas

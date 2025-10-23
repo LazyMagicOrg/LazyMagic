@@ -78,7 +78,7 @@ The boardroom pipeline is a **parallel system** that mirrors the existing larges
 │   rectangles.js              │                                  │
 │ embed-rectangles-in-svg.js   │ embed-boardroom-in-svg.js        │
 │ precomputed-rectangles.json  │ precomputed-boardroom.json       │
-│ TestResults/                 │ BoardroomResults/                │
+│ TestResults/MaxInscribedResults/ │ TestResults/BoardroomResults/ │
 │ <script id="precomputed-     │ <script id="precomputed-         │
 │   rectangles">               │   boardroom">                    │
 └──────────────────────────────┴──────────────────────────────────┘
@@ -151,7 +151,7 @@ node test-runner-boardroom.js
 
 **Output:**
 
-- Directory: `LazyMagic.BlazorSvg/BoardroomResults/`
+- Directory: `LazyMagic.BlazorSvg/TestResults/BoardroomResults/`
 - Files: `Combo_0001.svg` through `Combo_0251.svg`
 - Summary: `boardroom-summary.json`
 
@@ -175,7 +175,7 @@ node test-runner-boardroom.js
 5. Calculate polygon area
 6. Run `findBoardroomLayout()` algorithm
 7. Generate visualization SVG
-8. Save to `BoardroomResults/`
+8. Save to `TestResults/BoardroomResults/`
 
 ### 3. Data Extraction (`extract-precomputed-boardroom.js`)
 
@@ -234,7 +234,7 @@ node extract-precomputed-boardroom.js
 
 1. Load `valid-combinations.json` (251 combos)
 2. For each combination:
-   - Read `BoardroomResults/Combo_XXXX.svg`
+   - Read `TestResults/BoardroomResults/Combo_XXXX.svg`
    - Extract area data from XML comments
    - Parse boardroom rectangle path
    - Calculate dimensions and properties
@@ -314,7 +314,7 @@ dotnet run --project BlazorTest.WASM/BlazorTest.WASM.csproj
 The boardroom pipeline is **completely independent** from the largest-rectangle pipeline:
 
 - Can run separately at different times
-- Uses different output directories (`BoardroomResults/` vs `TestResults/`)
+- Uses different output directories (`TestResults/BoardroomResults/` vs `TestResults/MaxInscribedResults/`)
 - Creates separate JSON files
 - Embeds in separate `<script>` elements
 - No conflicts or dependencies
@@ -670,7 +670,7 @@ grep -c "precomputed-boardroom" Level1.svg   # Should be 1
 
 ### 3. Keep Test Results
 
-Don't delete `BoardroomResults/` after extraction:
+Don't delete `TestResults/BoardroomResults/` after extraction:
 
 - Useful for debugging
 - Visual verification of layouts
@@ -689,7 +689,7 @@ Check `boardroom-summary.json` for outliers:
 Add to `.gitignore`:
 
 ```
-LazyMagic.BlazorSvg/BoardroomResults/
+LazyMagic.BlazorSvg/TestResults/BoardroomResults/
 LazyMagic.BlazorSvg/test-harness/precomputed-boardroom.json
 ```
 
@@ -851,7 +851,7 @@ node embed-boardroom-in-svg.js
 - Test Runner: `test-harness/test-runner-boardroom.js`
 - Extractor: `test-harness/extract-precomputed-boardroom.js`
 - Embedder: `test-harness/embed-boardroom-in-svg.js`
-- Output: `BoardroomResults/*.svg`
+- Output: `TestResults/BoardroomResults/*.svg`
 - JSON: `test-harness/precomputed-boardroom.json`
 - Embedded: `BlazorTest.WASM/wwwroot/Level1.svg`
 

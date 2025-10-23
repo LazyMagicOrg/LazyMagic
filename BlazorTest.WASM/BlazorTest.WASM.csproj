@@ -34,9 +34,7 @@
 
 
 	<Target Name="ProcessIndexTemplate" BeforeTargets="Build">
-		<WriteLinesToFile File="wwwroot/index.html"
-						  Lines="$([System.IO.File]::ReadAllText('wwwroot/index.template.html').Replace('{{BASE_HREF}}', '$(AppPath)'))"
-						  Overwrite="true" />
+		<WriteLinesToFile File="wwwroot/index.html" Lines="$([System.IO.File]::ReadAllText('wwwroot/index.template.html').Replace('{{BASE_HREF}}', '$(AppPath)'))" Overwrite="true" />
 	</Target>
 
 	<Target Name="FixCssPathsAfterPublish" AfterTargets="Publish" Condition="'$(AppPath)' != ''">
@@ -47,11 +45,7 @@
 		<Message Text="Fixing CSS import paths in $(PublishedCssPath)" Importance="high" />
 
 		<!-- Read the CSS file, replace relative paths with absolute paths, and write it back -->
-		<WriteLinesToFile
-			File="$(PublishedCssPath)"
-			Lines="$([System.IO.File]::ReadAllText('$(PublishedCssPath)').Replace('../_content/', '$(AppPath)_content/'))"
-			Overwrite="true"
-			Condition="Exists('$(PublishedCssPath)')" />
+		<WriteLinesToFile File="$(PublishedCssPath)" Lines="$([System.IO.File]::ReadAllText('$(PublishedCssPath)').Replace('../_content/', '$(AppPath)_content/'))" Overwrite="true" Condition="Exists('$(PublishedCssPath)')" />
 
 		<Message Text="CSS import paths have been fixed for /$(AppPath)/ base path" Importance="high" Condition="Exists('$(PublishedCssPath)')" />
 		<Warning Text="WASMApp.styles.css not found at $(PublishedCssPath)" Condition="!Exists('$(PublishedCssPath)')" />
