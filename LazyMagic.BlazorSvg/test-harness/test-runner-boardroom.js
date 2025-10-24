@@ -23,8 +23,21 @@ const require = createRequire(import.meta.url);
 // Load SvgViewerAlgorithms (contains parsing and merging functions)
 const SvgViewerAlgorithms = require('../wwwroot/SvgViewerAlgorithms.js');
 
+// Load dependencies for Optimized algorithm
+const { SpatialHash, SpatialGrid } = require('../wwwroot/kdtree.js');
+
+// Load Boundary-Based and Optimized algorithms
+const { boundaryBasedInscribedRectangle } = require('../wwwroot/SvgViewerBoundaryBased.js');
+const { fastInscribedRectangle } = require('../wwwroot/SvgViewerOptimized.js');
+
 // Load boardroom algorithm
 const { findBoardroomLayout } = require('../wwwroot/SvgViewerBoardroom.js');
+
+// Make dependencies globally available for boardroom algorithm
+global.SpatialGrid = SpatialGrid;
+global.SpatialHash = SpatialHash;
+global.boundaryBasedInscribedRectangle = boundaryBasedInscribedRectangle;
+global.fastInscribedRectangle = fastInscribedRectangle;
 
 // Color codes for console output
 const colors = {

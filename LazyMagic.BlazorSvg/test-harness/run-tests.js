@@ -21,10 +21,14 @@ const kdtree = require('../wwwroot/kdtree.js'); // Required by optimized algorit
 const unifiedAlgo = require('../wwwroot/SvgViewerInscribedRect.js');
 const boundaryBased = require('../wwwroot/SvgViewerBoundaryBased.js');
 const optimized = require('../wwwroot/SvgViewerOptimized.js');
+const boardroom = require('../wwwroot/SvgViewerBoardroom.js');
 
 // Make KDTree and SpatialGrid available globally for the algorithms
 global.KDTree = kdtree.KDTree;
 global.SpatialGrid = kdtree.SpatialGrid;
+global.SpatialHash = kdtree.SpatialHash;
+global.boundaryBasedInscribedRectangle = boundaryBased.boundaryBasedInscribedRectangle;
+global.fastInscribedRectangle = optimized.fastInscribedRectangle;
 
 /**
  * Extract path data from SVG content
@@ -585,8 +589,19 @@ function runTest(testConfig, combination, testIndex, totalTests) {
         if (testConfig.algorithm === 'maxinscribed') {
             // Max inscribed: Use hybrid approach (Boundary-Based + Optimized, no constraints)
             layout = runHybridWithConstraints(polygon, testConfig.algorithmOptions, testConfig.algorithm);
+        } else if (testConfig.algorithm === 'boardroom') {
+            // Boardroom: Use dual BB/Optimized approach with incremental expansion
+            const options = {
+                boardroomWidth: testConfig.algorithmOptions.width?.value || 13,
+                minLength: testConfig.algorithmOptions.height?.min || 14,
+                lengthIncrement: 6,
+                angleSamples: testConfig.algorithmOptions.angleSamples || 25,
+                centroidSamples: testConfig.algorithmOptions.centroidSamples || 25,
+                debugMode: testConfig.algorithmOptions.debugMode || false
+            };
+            layout = boardroom.findBoardroomLayout(polygon, options);
         } else {
-            // Boardroom/Hollow Square: Use Unified algorithm (handles dimension constraints)
+            // Hollow Square: Use Unified algorithm (handles dimension constraints)
             layout = unifiedAlgo.findInscribedRectangle(polygon, testConfig.algorithmOptions);
         }
 

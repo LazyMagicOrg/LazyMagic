@@ -14,7 +14,16 @@ const require = createRequire(import.meta.url);
 
 // Load required modules
 const SvgViewerAlgorithms = require('../wwwroot/SvgViewerAlgorithms.js');
+const { SpatialHash, SpatialGrid } = require('../wwwroot/kdtree.js');
+const { boundaryBasedInscribedRectangle } = require('../wwwroot/SvgViewerBoundaryBased.js');
+const { fastInscribedRectangle } = require('../wwwroot/SvgViewerOptimized.js');
 const { findBoardroomLayout } = require('../wwwroot/SvgViewerBoardroom.js');
+
+// Make dependencies globally available for boardroom algorithm
+global.SpatialGrid = SpatialGrid;
+global.SpatialHash = SpatialHash;
+global.boundaryBasedInscribedRectangle = boundaryBasedInscribedRectangle;
+global.fastInscribedRectangle = fastInscribedRectangle;
 
 // Define specific combo indices to test (1-based)
 const SAMPLE_COMBOS = [

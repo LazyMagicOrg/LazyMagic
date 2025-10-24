@@ -14,6 +14,7 @@
     [Parameter] public bool DisableSelection { get; set; } = false;
     [Parameter] public bool AllInsideSelected { get; set; } = false;
     [Parameter] public EventCallback<bool> AllInsideSelectedChanged { get; set; }
+    [Parameter] public string RectangleType { get; set; } = "none";
 
     private string containerId = $"svg-{Guid.NewGuid():N}";
     private string style = "";
