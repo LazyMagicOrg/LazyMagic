@@ -18,7 +18,8 @@
     InitialPaths="@initialPaths"
     SvgUrl="Level1.svg"
     PathsChanged="OnPathsChanged"
-    @bind-AllInsideSelected="@allInsideSelected"/>
+    @bind-AllInsideSelected="@allInsideSelected"
+    RectangleType="@rectangleType"/>
 
 <div class="mt-3">
     <div>Initial Paths: <code>@(string.Join(", ", initialPaths))</code></div>
@@ -33,7 +34,7 @@
             <div class="ms-3">
                 <div>Combo Area: <code>@($"{comboArea:F2}")</code> sq in</div>
 
-                @if (showRectangle && areaData.RectangleArea.HasValue)
+                @if (rectangleType == "maxinscribed" && areaData.RectangleArea.HasValue)
                 {
                     var rectArea = areaData.RectangleArea.Value;
                     // If rectangle area is larger than combo area (algorithm error), use combo area
@@ -44,7 +45,7 @@
                     <div>Max Inscribed Rectangle Area: <code>@($"{rectArea:F2}")</code> sq in</div>
                 }
 
-                @if (showBoardroom && areaData.BoardroomArea.HasValue)
+                @if (rectangleType == "boardroom" && areaData.BoardroomArea.HasValue)
                 {
                     var boardroomArea = areaData.BoardroomArea.Value;
                     <div>Boardroom Layout Area: <code>@($"{boardroomArea:F2}")</code> sq in</div>
@@ -82,18 +83,14 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
     </div>
     <div class="row mt-2">
         <div class="col-md-12">
-            <h6>Layout Display Toggles:</h6>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="showRectangle" @bind="showRectangle" @bind:after="OnToggleRectangle">
-                <label class="form-check-label" for="showRectangle">
-                    Show Max Inscribed Rectangle (Orange)
-                </label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" id="showBoardroom" @bind="showBoardroom" @bind:after="OnToggleBoardroom">
-                <label class="form-check-label" for="showBoardroom">
-                    Show Boardroom Layout (Blue)
-                </label>
+            <h6>Rectangle Display:</h6>
+            <div class="mb-2">
+                <label for="rectangleType" class="form-label">Select Rectangle Type:</label>
+                <select class="form-select" id="rectangleType" @bind="rectangleType" @bind:after="OnRectangleTypeChanged">
+                    <option value="none">None</option>
+                    <option value="maxinscribed">Max Inscribed Rectangle (Orange)</option>
+                    <option value="boardroom">Boardroom Layout (Blue)</option>
+                </select>
             </div>
         </div>
     </div>
@@ -118,8 +115,7 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
     private List<string> initialPaths = new List<string> { "Ballroom_Room_1", "Ballroom_Room_3" };
     private bool allInsideSelected = false;
     private AreaData? areaData = null;
-    private bool showRectangle = true;
-    private bool showBoardroom = true;
+    private string rectangleType = "none";
 
     protected override async Task OnInitializedAsync()
     {
@@ -159,20 +155,17 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
         await svgViewer!.SelectPaths(paths);
     }
 
-    private async Task OnToggleRectangle()
+    private async Task OnRectangleTypeChanged()
     {
         if (svgViewer != null)
         {
-            await svgViewer.SetShowRectangleAsync(showRectangle);
-            StateHasChanged();
-        }
-    }
+            // Directly update the rectangle type in the SvgViewer
+            await svgViewer.SetRectangleTypeAsync(rectangleType);
 
-    private async Task OnToggleBoardroom()
-    {
-        if (svgViewer != null)
-        {
-            await svgViewer.SetShowBoardroomAsync(showBoardroom);
+            // Refresh the area data display
+            await UpdateAreaData();
+
+            // Update the UI
             StateHasChanged();
         }
     }

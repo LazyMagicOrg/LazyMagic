@@ -2351,8 +2351,8 @@ class SvgViewerInstance {
                 parentScope.appendChild(unifiedPath.node);
                 console.debug('[outline] Debug mode: Merged SVG path made visible with magenta styling (non-interactive)');
 
-                // Visualize the largest inscribed rectangle if found
-                if (largestRect && this.showRectangle) {
+                // Visualize the largest inscribed rectangle if found (always create it, display state set later)
+                if (largestRect) {
                     let rectPath;
 
                     if (largestRect.corners) {
@@ -2397,6 +2397,9 @@ class SvgViewerInstance {
                     parentScope.appendChild(rectPath.node);
                     rectPath.node.parentNode.appendChild(rectPath.node); // Move to end (on top)
                     this.rectangleGroup = rectPath;  // Store reference
+
+                    // Set initial display state based on current showRectangle flag
+                    rectPath.attr({ display: this.showRectangle ? 'block' : 'none' });
                 }
 
                 // Try to lookup precomputed boardroom layout
@@ -2404,8 +2407,8 @@ class SvgViewerInstance {
                 console.log(`[boardroom] Lookup result:`, boardroomLayout);
                 console.log(`[boardroom] showBoardroom flag:`, this.showBoardroom);
 
-                // Visualize the boardroom layout if found
-                if (boardroomLayout && this.showBoardroom) {
+                // Visualize the boardroom layout if found (always create it, display state set later)
+                if (boardroomLayout) {
                     console.log(`[boardroom] Rendering boardroom layout...`);
                     let boardroomPath;
 
@@ -2448,6 +2451,9 @@ class SvgViewerInstance {
                         parentScope.appendChild(boardroomPath.node);
                         boardroomPath.node.parentNode.appendChild(boardroomPath.node); // Move to end (on top)
                         this.boardroomGroup = boardroomPath;  // Store reference
+
+                        // Set initial display state based on current showBoardroom flag
+                        boardroomPath.attr({ display: this.showBoardroom ? 'block' : 'none' });
                     }
                 }
             } else {
@@ -3047,6 +3053,26 @@ export function setShowBoardroom(containerId, show) {
     const instance = instances.get(containerId);
     if (!instance) return false;
     instance.setShowBoardroom(show);
+    return true;
+}
+
+export function setRectangleType(containerId, rectangleType) {
+    const instance = instances.get(containerId);
+    if (!instance) return false;
+
+    // Hide both rectangle types first
+    instance.setShowRectangle(false);
+    instance.setShowBoardroom(false);
+
+    // Show the selected type
+    if (rectangleType === 'maxinscribed') {
+        instance.setShowRectangle(true);
+    } else if (rectangleType === 'boardroom') {
+        instance.setShowBoardroom(true);
+    }
+    // If 'none', both remain hidden
+
+    console.log(`[display] Rectangle type set to: ${rectangleType}`);
     return true;
 }
 

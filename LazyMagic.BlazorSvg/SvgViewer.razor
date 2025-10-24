@@ -55,9 +55,16 @@
         {
             busy = true;
             await svgViewerJS!.SelectPaths(InitialPaths);
+            // Set initial rectangle type
+            await svgViewerJS!.SetRectangleTypeAsync(RectangleType);
+            lastRectangleType = RectangleType;
+            isInitialized = true;
             busy = false;
         }
     }
+
+    private string? lastRectangleType;
+    private bool isInitialized = false;
 
     protected override async Task OnParametersSetAsync()
     {
@@ -67,6 +74,13 @@
             throw new InvalidOperationException("svgViewerJS is null");
         if (SvgUrl is null)
             throw new InvalidOperationException("SvgUrl is null");
+
+        // Update rectangle type if it changed and component is initialized
+        if (isInitialized && !busy && lastRectangleType != RectangleType)
+        {
+            lastRectangleType = RectangleType;
+            await svgViewerJS.SetRectangleTypeAsync(RectangleType);
+        }
     }   
 
     public void OnPathSelected(string pathId)
@@ -106,9 +120,14 @@
 
     public async Task<AreaData?> GetAreaDataAsync() => await svgViewerJS!.GetAreaDataAsync();
 
-    public async Task SetShowRectangleAsync(bool show) => await svgViewerJS!.SetShowRectangleAsync(show);
-
-    public async Task SetShowBoardroomAsync(bool show) => await svgViewerJS!.SetShowBoardroomAsync(show);
+    public async Task SetRectangleTypeAsync(string rectangleType)
+    {
+        if (isInitialized && svgViewerJS != null)
+        {
+            await svgViewerJS.SetRectangleTypeAsync(rectangleType);
+            lastRectangleType = rectangleType;
+        }
+    }
 
     public async ValueTask DisposeAsync()
     {
