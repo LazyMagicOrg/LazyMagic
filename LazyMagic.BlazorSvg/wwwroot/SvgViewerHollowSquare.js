@@ -318,10 +318,81 @@ function findHollowSquareLayout(polygon, options = {}) {
     return bestLayout;
 }
 
+/**
+ * Wrapper for unified algorithm - provides backward compatibility
+ * Uses the new findInscribedRectangle with hollow square constraints
+ *
+ * @param {Array} polygon - Array of {x, y} points defining the polygon
+ * @param {Object} options - Configuration options (legacy format)
+ * @returns {Object} Hollow square layout
+ */
+function findHollowSquareLayoutUnified(polygon, options = {}) {
+    // Load unified algorithm if available
+    if (typeof findInscribedRectangle === 'undefined') {
+        // Fall back to legacy implementation if unified algorithm not loaded
+        return findHollowSquareLayout(polygon, options);
+    }
+
+    const {
+        maxLengthRun,
+        maxDepthRun,
+        angleSamples = 12,
+        centroidSamples = 25,
+        maxTime = null,
+        debugMode = false
+    } = options;
+
+    // Configure hollow square constraints using unified algorithm
+    const unifiedOptions = {
+        width: {
+            mode: 'discrete',
+            base: 19,           // Base: 6ft + 2×2.5ft + 2×4ft = 19ft
+            increment: 6,       // Each lengthRun adds 6ft
+            minIncrements: 0,   // Start with base (0 additional runs)
+            maxIncrements: maxLengthRun  // Optional limit
+        },
+        height: {
+            mode: 'discrete',
+            base: 14,           // Base: 6ft + 2×4ft = 14ft
+            increment: 6,       // Each depthRun adds 6ft
+            minIncrements: 0,   // Start with base (0 additional runs)
+            maxIncrements: maxDepthRun   // Optional limit
+        },
+        angleSamples: angleSamples,
+        centroidSamples: centroidSamples,
+        maxTime: maxTime,
+        debugMode: debugMode
+    };
+
+    const result = findInscribedRectangle(polygon, unifiedOptions);
+
+    if (!result) {
+        return null;
+    }
+
+    // Convert unified result to hollow square format
+    // Calculate lengthRun and depthRun from dimensions
+    const lengthRun = Math.round((result.width - 19) / 6);
+    const depthRun = Math.round((result.height - 14) / 6);
+
+    return {
+        corners: result.corners,
+        width: result.width,
+        height: result.height,
+        area: result.area,
+        angle: result.angle,
+        centroid: result.centroid,
+        lengthRun: lengthRun,
+        depthRun: depthRun,
+        tables: calculateHollowSquareTables(lengthRun + 1, depthRun + 1)
+    };
+}
+
 // Export for Node.js testing
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = {
         findHollowSquareLayout,
+        findHollowSquareLayoutUnified,
         calculateHollowSquareTables,
         calculateHollowSquareDimensions,
         isPointInPolygon,

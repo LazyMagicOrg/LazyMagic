@@ -1318,9 +1318,13 @@ function fastInscribedRectangle(polygon, options = {}) {
         console.log(`🔍 [SHAPE-DEBUG] FAILED: ${polygon.length} vertices, bounds (${minX.toFixed(1)}, ${minY.toFixed(1)}) to (${maxX.toFixed(1)}, ${maxY.toFixed(1)}), size ${polygonWidth.toFixed(1)}x${polygonHeight.toFixed(1)}, AREA: 0, TIME: ${elapsed.toFixed(1)}ms`);
     }
 
-    // Add elapsed time to result
+    // Add elapsed time and centroid to result
     if (bestRect) {
         bestRect.elapsed = elapsed;
+        // Ensure centroid is set (might be missing if bestRect came from tryRectangleAtAngle)
+        if (!bestRect.centroid && bestCentroid) {
+            bestRect.centroid = bestCentroid;
+        }
     }
 
     return bestRect;

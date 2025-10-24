@@ -10,6 +10,9 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 	</PropertyGroup>
+	<ItemGroup>
+	  <None Remove="test-harness\nul" />
+	</ItemGroup>
 
 
 	<ItemGroup>

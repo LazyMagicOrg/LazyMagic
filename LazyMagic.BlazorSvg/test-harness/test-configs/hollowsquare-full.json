@@ -1,0 +1,34 @@
+{
+  "testName": "Hollow Square Full Test Suite (Unified Algorithm)",
+  "algorithm": "hollowsquare",
+  "svgPath": "../../BlazorTest.WASM/wwwroot/Level1-normal.svg",
+  "outputDir": "../TestResults/HollowSquareResults",
+  "timeout": 3600000,
+
+  "algorithmOptions": {
+    "width": {
+      "mode": "discrete",
+      "base": 19,
+      "increment": 6,
+      "minIncrements": 0
+    },
+    "height": {
+      "mode": "discrete",
+      "base": 14,
+      "increment": 6,
+      "minIncrements": 0
+    },
+    "angleSamples": 25,
+    "centroidSamples": 25,
+    "debugMode": false
+  },
+
+  "combinationsFile": "../valid-combinations.json",
+
+  "outputOptions": {
+    "generateSVG": true,
+    "generateJSON": true,
+    "generateSummary": true,
+    "deleteExistingResults": true
+  }
+}
