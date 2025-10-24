@@ -16,25 +16,25 @@ public static class ConfigureLazyMagicOIDCWASM
         
         // Register OIDC service with fast auth dependency
         services.TryAddScoped<IOIDCService, BlazorOIDCService>();
-        services.TryAddSingleton<IRememberMeService, BlazorRememberMeService>();
+        services.TryAddScoped<IRememberMeService, BlazorRememberMeService>();
         services.TryAddTransient<UserProfileViewModel>();
 
-        services.TryAddSingleton<IPostConfigureOptions<RemoteAuthenticationOptions<OidcProviderOptions>>,
+        services.TryAddScoped<IPostConfigureOptions<RemoteAuthenticationOptions<OidcProviderOptions>>,
                                       DynamicOidcPostConfigureOptions>();
 
         // Register the lazy OIDC configuration as a singleton
-        services.TryAddSingleton<IOidcConfig>(provider =>
+        services.TryAddScoped<IOidcConfig>(provider =>
         {
             var lzHost = provider.GetRequiredService<ILzHost>();
-            var logger = provider.GetService<ILogger<LazyOidcConfig>>();
+            var logger = provider.GetRequiredService<ILogger<LazyOidcConfig>>();
             return new LazyOidcConfig(lzHost, logger);
         });
 
         // Register a configuration service that will hold the dynamic config once loaded
-        services.TryAddSingleton<DynamicOidcConfigHolder>();
+        services.TryAddScoped<DynamicOidcConfigHolder>();
 
         // Register a service to provide configuration values from dynamic config
-        services.TryAddSingleton<IDynamicConfigurationProvider>(provider =>
+        services.TryAddScoped<IDynamicConfigurationProvider>(provider =>
         {
             var oidcConfig = provider.GetRequiredService<IOidcConfig>();
             var logger = provider.GetRequiredService<ILogger<DynamicConfigurationProvider>>();
@@ -42,7 +42,7 @@ public static class ConfigureLazyMagicOIDCWASM
         });
 
         // Register profile management service
-        services.TryAddSingleton<IProfileManagementService, BlazorProfileManagementService>();
+        services.TryAddScoped<IProfileManagementService, BlazorProfileManagementService>();
 
         services.AddLazyMagicOIDCBase(); // Base OIDC services
 

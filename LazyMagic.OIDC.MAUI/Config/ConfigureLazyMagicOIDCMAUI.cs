@@ -10,25 +10,28 @@ public static class ConfigureLazyMagicOIDCMAUI
         // Add authorization services that AuthorizeView components need
         services.AddAuthorizationCore();
         
-        // We use TryAddSingleton to avoid overwriting existing registrations made to customize the UI
-        services.TryAddSingleton<IAuthenticationUI,DefaultAuthenticationUI>();
+        // We use TryAddScoped to avoid overwriting existing registrations made to customize the UI
+        services.TryAddScoped<IAuthenticationUI,DefaultAuthenticationUI>();
         // Register token storage service
-        services.TryAddSingleton<ITokenStorageService, TokenStorageService>();
+        services.TryAddScoped<ITokenStorageService, TokenStorageService>();
 
         // Register WebView authentication provider
         services.TryAddTransient<IWebViewAuthenticationProvider, MauiWebViewAuthenticationProvider>();
 
         // Register token refresh service for automatic token renewal
-        services.TryAddSingleton<ITokenRefreshService, Services.MauiTokenRefreshService>();
+        services.TryAddScoped<ITokenRefreshService, Services.MauiTokenRefreshService>();
 
         // Register OIDC service (MAUI implementation)
-        services.TryAddSingleton<IOIDCService, MauiOIDCService>();
+        services.TryAddScoped<IOIDCService, MauiOIDCService>();
 
         // Register RememberMe service (MAUI implementation)
-        services.TryAddSingleton<IRememberMeService, MauiRememberMeService>();
+        services.TryAddScoped<IRememberMeService, MauiRememberMeService>();
 
         // Register a service that will load OIDC configuration when first accessed
-        services.TryAddSingleton<IOidcConfig>(provider => 
+        // NOTE: Must be Singleton because it loads configuration asynchronously at startup
+        // and caches it for the lifetime of the application. If this were Scoped, each
+        // new scope would create a new instance without the loaded configuration.
+        services.TryAddSingleton<IOidcConfig>(provider =>
         {
             var lzHost = provider.GetRequiredService<ILzHost>();
             var logger = provider.GetRequiredService<ILogger<LazyOidcConfig>>();
@@ -36,11 +39,11 @@ public static class ConfigureLazyMagicOIDCMAUI
         });
 
         // Register dynamic configuration provider (MAUI implementation)  
-        services.TryAddSingleton<IDynamicConfigurationProvider, DynamicConfigurationProvider>();
+        services.TryAddScoped<IDynamicConfigurationProvider, DynamicConfigurationProvider>();
 
-        services.TryAddSingleton<IProfileManagementService, MauiProfileManagementService>();
+        services.TryAddScoped<IProfileManagementService, MauiProfileManagementService>();
 
-        services.TryAddSingleton<AuthenticationStateProvider, LazyMagic.OIDC.MAUI.MauiAuthenticationStateProvider>();
+        services.TryAddScoped<AuthenticationStateProvider, LazyMagic.OIDC.MAUI.MauiAuthenticationStateProvider>();
 
         services.AddLazyMagicOIDCBase(); // Base OIDC services
 

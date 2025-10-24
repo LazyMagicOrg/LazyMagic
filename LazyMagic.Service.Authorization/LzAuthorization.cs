@@ -114,7 +114,8 @@ public abstract class LzAuthorization : ILzAuthorization
         // config information from the AWS CF KVS and added it as the value for the lz-config header.
         // The local WebApi request pipeline does the same.
         var configJson = request.Headers["lz-config"];
-        var tenantId = request.Headers["lz-tenantid"]; // usually the host: tenant.tld or subtenant.tenant.tld 
+        var tenantId = request.Headers["lz-tenantid"]; // usually the host: tenant.tld or subtenant.tenant.tld
+        var authname = request.Headers["lz-authname"].FirstOrDefault(); // Get first value to avoid comma-separated duplicates
         var tenancyConfig = new TenancyConfig(configJson!, tenantId!);
 
         // CallerInfo contains tenancy information potentially useful to the repository layer. For instance,
@@ -132,6 +133,7 @@ public abstract class LzAuthorization : ILzAuthorization
         callerInfo.DefaultTenant = tenancyConfig.DefaultTenant;
         callerInfo.DefaultDB = tenancyConfig.DefaultDB;
         callerInfo.DefaultAssets = tenancyConfig.DefaultAssets;
+        callerInfo.Authname = authname;
 
         return Task.CompletedTask;
     }

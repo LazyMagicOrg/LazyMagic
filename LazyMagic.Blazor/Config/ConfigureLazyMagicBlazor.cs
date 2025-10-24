@@ -7,14 +7,14 @@ public static class ConfigureLazyMagicBlazor
         // TryAdd only succeeds if the service is not already registered
         // It is used here to allow the calling programs to register their own
         // implementations of these classes and to avoid multiple registrations.
-        services.TryAddSingleton<BrowserFingerprintService>();
-        services.TryAddSingleton<ClipboardService>();
-        services.TryAddSingleton<IConnectivityService, ConnectivityService>();
-        services.TryAddSingleton<ILzClientConfig, LzClientConfig>();
-        services.TryAddSingleton<ILzJsUtilities, LzJsUtilities>();
-        services.TryAddSingleton<ILzMessages, LzMessages>();
-        services.TryAddSingleton<IOSAccess, BlazorOSAccess>();
-        services.TryAddSingleton<IResizeListener, ResizeListener>();
+        services.TryAddScoped<BrowserFingerprintService>();
+        services.TryAddScoped<ClipboardService>();
+        services.TryAddScoped<IConnectivityService, ConnectivityService>();
+        services.TryAddScoped<ILzClientConfig, LzClientConfig>();
+        services.TryAddScoped<ILzJsUtilities, LzJsUtilities>();
+        services.TryAddScoped<ILzMessages, LzMessages>();
+        services.TryAddScoped<IOSAccess, BlazorOSAccess>();
+        services.TryAddScoped<IResizeListener, ResizeListener>();
 
         if(!services.IsServiceRegistered<IMediaQueryService>())  services.AddMediaQueryService();
         if(!services.IsServiceRegistered<IResizeListener>()) services.AddResizeListener();
