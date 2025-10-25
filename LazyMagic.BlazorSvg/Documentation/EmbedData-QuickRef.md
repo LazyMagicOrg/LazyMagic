@@ -22,6 +22,36 @@ node extract-precomputed-rectangles.js
 node embed-rectangles-in-svg.js
 ```
 
+### Boardroom Layouts (Optional)
+
+```bash
+node test-runner-boardroom.js
+```
+
+```bash
+node extract-precomputed-boardroom.js
+```
+
+```bash
+node embed-boardroom-in-svg.js
+```
+
+### Hollow Square Layouts (Optional)
+
+```bash
+node test-runner-hollowsquare.js
+```
+
+```bash
+node extract-precomputed-hollowsquare.js
+```
+
+```bash
+node embed-hollowsquare-in-svg.js
+```
+
+### Run Application
+
 ```bash
 cd "C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic"
 ```
@@ -30,31 +60,58 @@ cd "C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic"
 dotnet run --project BlazorTest.WASM/BlazorTest.WASM.csproj
 ```
 
-**Total time:** ~20 minutes (15-20 min for test harness, rest is under 1 minute)
+**Total time:**
+- Max-inscribed only: ~20 minutes
+- All three systems: ~60 minutes (15-20 min each)
 
 ---
 
 ## Overview
 
-The LazyMagic.BlazorSvg project provides interactive SVG floor plans with inscribed rectangle calculations. To improve performance and avoid runtime computation, we precompute inscribed rectangles for all valid path combinations and embed this data directly into the SVG files.
+The LazyMagic.BlazorSvg project provides interactive SVG floor plans with geometric layout calculations. To improve performance and avoid runtime computation, we precompute layouts for all valid path combinations and embed this data directly into the SVG files.
+
+### Three Parallel Systems
+
+1. **Max-Inscribed Rectangles** - Largest rectangle that fits in any polygon
+2. **Boardroom Layouts** - Fixed-width table arrangements (13 ft × variable length)
+3. **Hollow Square Layouts** - Perimeter table arrangements with open center
+
+All three systems follow the same pipeline: generate → extract → embed.
 
 ### What Gets Embedded
 
 For each of the 251 valid path combinations, the embedded data includes:
 
+**Max-Inscribed Rectangles:**
 - **Rectangle Visualization Data**
   - Corners (4 points with x, y coordinates)
   - Width and height
   - Angle of rotation
   - Centroid position
   - Algorithm type used (boundary-based or optimized)
-
 - **Area Measurements** (in square SVG inches)
   - Polygon area: Total area of the combined polygon
   - Rectangle area: Area of the inscribed rectangle
-
 - **Performance Metrics**
   - Computation time in milliseconds
+
+**Boardroom Layouts:**
+- **Layout Data**
+  - Corners, width (13 ft fixed), variable height
+  - Number of sets and total tables
+  - Angle and centroid
+- **Area Measurements**
+  - Polygon area and boardroom area
+- **Performance Metrics**
+
+**Hollow Square Layouts:**
+- **Layout Data**
+  - Outer rectangle corners, width, height
+  - Inner clearance dimensions
+  - Angle and centroid
+- **Area Measurements**
+  - Polygon area, outer area, inner area
+- **Performance Metrics**
 
 ### Key Technical Details
 
@@ -231,23 +288,42 @@ The application should:
 ## File Locations
 
 ### Source Files
-- **Test Harness**: `LazyMagic.BlazorSvg/test-harness/test-runner.js`
-- **Extraction Script**: `LazyMagic.BlazorSvg/test-harness/extract-precomputed-rectangles.js`
-- **Embedding Script**: `LazyMagic.BlazorSvg/test-harness/embed-rectangles-in-svg.js`
-- **Valid Combinations**: `LazyMagic.BlazorSvg/test-harness/valid-combinations.json`
+
+**Max-Inscribed Rectangles:**
+- Test Runner: `test-harness/test-runner.js`
+- Extractor: `test-harness/extract-precomputed-rectangles.js`
+- Embedder: `test-harness/embed-rectangles-in-svg.js`
+
+**Boardroom Layouts:**
+- Test Runner: `test-harness/test-runner-boardroom.js`
+- Extractor: `test-harness/extract-precomputed-boardroom.js`
+- Embedder: `test-harness/embed-boardroom-in-svg.js`
+
+**Hollow Square Layouts:**
+- Test Runner: `test-harness/test-runner-hollowsquare.js`
+- Extractor: `test-harness/extract-precomputed-hollowsquare.js`
+- Embedder: `test-harness/embed-hollowsquare-in-svg.js`
+
+**Common:**
+- Valid Combinations: `test-harness/valid-combinations.json`
 
 ### Generated Files
-- **Max-Inscribed Test Results**: `LazyMagic.BlazorSvg/TestResults/MaxInscribedResults/Combo_XXXX.svg` (251 files)
-- **Boardroom Test Results**: `LazyMagic.BlazorSvg/TestResults/BoardroomResults/Combo_XXXX.svg` (251 files)
-- **Precomputed Rectangles JSON**: `LazyMagic.BlazorSvg/test-harness/precomputed-rectangles.json`
-- **Precomputed Boardroom JSON**: `LazyMagic.BlazorSvg/test-harness/precomputed-boardroom.json`
+- **Max-Inscribed Test Results**: `TestResults/MaxInscribedResults/Combo_XXXX.svg` (251 files)
+- **Boardroom Test Results**: `TestResults/BoardroomResults/Combo_XXXX.svg` (251 files)
+- **Hollow Square Test Results**: `TestResults/HollowSquareResults/Combo_XXXX.svg` (251 files)
+- **Precomputed Rectangles JSON**: `test-harness/precomputed-rectangles.json`
+- **Precomputed Boardroom JSON**: `test-harness/precomputed-boardroom.json`
+- **Precomputed Hollow Square JSON**: `test-harness/precomputed-hollowsquare.json`
 - **Target SVG**: `BlazorTest.WASM/wwwroot/Level1.svg`
 
 ## Troubleshooting
 
 ### Test Harness Fails
 - Ensure `valid-combinations.json` exists and contains 251 combinations
-- Check that TestResults/MaxInscribedResults and TestResults/BoardroomResults directories exist (create if missing)
+- Check that TestResults directories exist (create if missing):
+  - `TestResults/MaxInscribedResults/`
+  - `TestResults/BoardroomResults/`
+  - `TestResults/HollowSquareResults/`
 - Verify all required dependencies are installed (`npm install`)
 
 ### Extraction Returns Null Areas
@@ -266,29 +342,35 @@ The application should:
 
 ### Areas Don't Display in Application
 - Check browser console for JavaScript errors
-- Verify that Level1.svg contains embedded `<script id="precomputed-rectangles">` element
+- Verify that Level1.svg contains embedded script elements:
+  - `<script id="precomputed-rectangles">`
+  - `<script id="precomputed-boardroom">`
+  - `<script id="precomputed-hollowsquare">`
 - Ensure the application's SVG loader is looking for embedded data
 
 ## Performance Notes
 
-### Timing
+### Timing (Per System)
 - **Test Harness**: 15-20 minutes (computing all 251 combinations)
 - **Extraction**: ~30 seconds (parsing 251 SVG files)
 - **Embedding**: ~5 seconds (writing JSON to SVG)
-- **Total Process**: ~20 minutes
+- **Total Process**: ~20 minutes per system
+- **All Three Systems**: ~60 minutes total
 
 ### File Sizes
 - Each test result SVG: ~3-5 KB
-- Precomputed JSON: 148 KB
-- Level1.svg with embedded data: 225 KB
-- Level1.svg increase: ~148 KB for embedded data
+- Precomputed JSON (each): ~150 KB
+- Level1.svg original: ~225 KB
+- Level1.svg with all three datasets: ~262.5 KB
+- Total increase: ~37.5 KB (17%)
 
 ### Runtime Benefits
 By precomputing and embedding the data:
-- Eliminates 898 seconds (15 minutes) of runtime computation
-- Reduces average load time per combination from 3.6 seconds to instant
-- Improves user experience with immediate rectangle display
-- No need for external JSON HTTP request
+- Eliminates runtime computation for all three systems
+- Instant lookup and display (< 1ms)
+- Improves user experience with immediate visualization
+- No need for external JSON HTTP requests
+- All data embedded in single SVG file
 
 ## Code Modifications
 

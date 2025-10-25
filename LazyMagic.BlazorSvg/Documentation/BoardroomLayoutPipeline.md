@@ -2,9 +2,15 @@
 
 ## Overview
 
-This document describes the parallel precomputation system for **boardroom-style inscribed rectangles** in SVG floor plan combinations. This system runs alongside the existing largest-rectangle system and follows the same architectural patterns.
+This document describes the parallel precomputation system for **boardroom-style inscribed rectangles** in SVG floor plan combinations. This system runs alongside the existing largest-rectangle and hollow square systems and follows the same architectural patterns.
+
+**Related Documentation:**
+- [InscribedRectangle-Guide.md](./InscribedRectangle-Guide.md) - Complete system architecture
+- [MaxInscribedLayoutPipeline.md](./MaxInscribedLayoutPipeline.md) - Max-inscribed rectangle system
+- [HollowSquareLayoutPipeline.md](./HollowSquareLayoutPipeline.md) - Hollow square layout system
 
 **Created:** 2025-10-20
+**Updated:** 2025-10-25
 
 ---
 
@@ -65,26 +71,35 @@ A boardroom layout consists of tables arranged back-to-back in a conference room
 
 ## Architecture Overview
 
-The boardroom pipeline is a **parallel system** that mirrors the existing largest-rectangle infrastructure:
+The boardroom pipeline is a **parallel system** that runs alongside the largest-rectangle and hollow square infrastructures:
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                    PARALLEL SYSTEMS                             │
-├──────────────────────────────┬──────────────────────────────────┤
-│   Largest Rectangles         │   Boardroom Layouts              │
-├──────────────────────────────┼──────────────────────────────────┤
-│ test-runner.js               │ test-runner-boardroom.js         │
-│ extract-precomputed-         │ extract-precomputed-boardroom.js │
-│   rectangles.js              │                                  │
-│ embed-rectangles-in-svg.js   │ embed-boardroom-in-svg.js        │
-│ precomputed-rectangles.json  │ precomputed-boardroom.json       │
-│ TestResults/MaxInscribedResults/ │ TestResults/BoardroomResults/ │
-│ <script id="precomputed-     │ <script id="precomputed-         │
-│   rectangles">               │   boardroom">                    │
-└──────────────────────────────┴──────────────────────────────────┘
+┌──────────────────────────────────────────────────────────────────────────┐
+│                           PARALLEL SYSTEMS                                │
+├──────────────────────┬──────────────────────┬─────────────────────────────┤
+│  Largest Rectangles  │  Boardroom Layouts   │  Hollow Square Layouts      │
+├──────────────────────┼──────────────────────┼─────────────────────────────┤
+│ test-runner.js       │ test-runner-         │ test-runner-hollowsquare.js │
+│                      │   boardroom.js       │                             │
+│ extract-precomputed- │ extract-precomputed- │ extract-precomputed-        │
+│   rectangles.js      │   boardroom.js       │   hollowsquare.js           │
+│ embed-rectangles-    │ embed-boardroom-     │ embed-hollowsquare-in-      │
+│   in-svg.js          │   in-svg.js          │   svg.js                    │
+│ precomputed-         │ precomputed-         │ precomputed-                │
+│   rectangles.json    │   boardroom.json     │   hollowsquare.json         │
+│ TestResults/         │ TestResults/         │ TestResults/                │
+│   MaxInscribedResults│   BoardroomResults   │   HollowSquareResults       │
+│ <script id=          │ <script id=          │ <script id=                 │
+│   "precomputed-      │   "precomputed-      │   "precomputed-             │
+│   rectangles">       │   boardroom">        │   hollowsquare">            │
+└──────────────────────┴──────────────────────┴─────────────────────────────┘
 ```
 
-Both systems can run **independently** and are **embedded together** in the same SVG file.
+All three systems can run **independently** and are **embedded together** in the same SVG file.
+
+**See Also:**
+- [MaxInscribedLayoutPipeline.md](./MaxInscribedLayoutPipeline.md) for the max-inscribed system
+- [HollowSquareLayoutPipeline.md](./HollowSquareLayoutPipeline.md) for the hollow square system
 
 ---
 
@@ -263,9 +278,14 @@ node embed-boardroom-in-svg.js
       {...}
     ]]></script>
 
-    <!-- NEW: Boardroom layouts data -->
+    <!-- Boardroom layouts data -->
     <script type="application/json" id="precomputed-boardroom"><![CDATA[
       {"generatedAt":"2025-10-20T12:00:00.000Z","totalCombinations":251,...}
+    ]]></script>
+
+    <!-- Hollow square layouts data -->
+    <script type="application/json" id="precomputed-hollowsquare"><![CDATA[
+      {"generatedAt":"2025-10-25T12:00:00.000Z","totalCombinations":251,...}
     ]]></script>
   </defs>
   <!-- Rest of SVG content -->
@@ -276,8 +296,9 @@ node embed-boardroom-in-svg.js
 
 - Original Level1.svg: ~225 KB
 - With rectangles data: ~237.5 KB (+12.5 KB)
-- With boardroom data: ~250 KB (+12.5 KB more)
-- **Total overhead: ~25 KB** (11% increase)
+- With boardroom data: ~250 KB (+12.5 KB)
+- With hollow square data: ~262.5 KB (+12.5 KB)
+- **Total overhead: ~37.5 KB** (17% increase)
 
 ---
 
@@ -311,17 +332,17 @@ dotnet run --project BlazorTest.WASM/BlazorTest.WASM.csproj
 
 ### Independent Operation
 
-The boardroom pipeline is **completely independent** from the largest-rectangle pipeline:
+The boardroom pipeline is **completely independent** from the other pipelines:
 
 - Can run separately at different times
-- Uses different output directories (`TestResults/BoardroomResults/` vs `TestResults/MaxInscribedResults/`)
-- Creates separate JSON files
-- Embeds in separate `<script>` elements
+- Uses different output directory (`TestResults/BoardroomResults/`)
+- Creates separate JSON file
+- Embeds in separate `<script>` element
 - No conflicts or dependencies
 
-### Running Both Pipelines
+### Running All Three Pipelines
 
-To update both datasets:
+To update all three datasets:
 
 ```bash
 cd "C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic\LazyMagic.BlazorSvg\test-harness"
@@ -336,7 +357,12 @@ node test-runner-boardroom.js
 node extract-precomputed-boardroom.js
 node embed-boardroom-in-svg.js
 
-# Total: ~40 minutes
+# Hollow square layouts (15-20 min)
+node test-runner-hollowsquare.js
+node extract-precomputed-hollowsquare.js
+node embed-hollowsquare-in-svg.js
+
+# Total: ~60 minutes
 ```
 
 ---
@@ -364,17 +390,18 @@ node embed-boardroom-in-svg.js
 }
 ```
 
-### Comparison: Boardroom vs Largest Rectangle
+### Comparison: Boardroom vs Other Layouts
 
-| Property | Largest Rectangle | Boardroom Layout |
-|----------|------------------|------------------|
-| **Width** | Variable | **13 ft (fixed)** |
-| **Height** | Variable | **14, 20, 26, 32... ft** |
-| **Goal** | Maximize area | Maximize sets (constrained) |
-| **Rotation** | 0-180° | 0-180° |
-| **Algorithm** | Boundary-based + Optimized | Grid search with incremental sizing |
-| **Type** | 'boundary-based' or 'optimized' | 'boardroom' |
-| **Extra Data** | None | `sets`, `tables` |
+| Property | Largest Rectangle | Boardroom Layout | Hollow Square Layout |
+|----------|------------------|------------------|---------------------|
+| **Width** | Variable | **13 ft (fixed)** | Variable (min 14 ft) |
+| **Height** | Variable | **14, 20, 26... ft** | Variable (min 14 ft) |
+| **Inner Space** | None | None | **4+ ft clearance** |
+| **Goal** | Maximize area | Maximize sets | Maximize outer area with inner clearance |
+| **Rotation** | 0-180° | 0-180° | 0-180° |
+| **Algorithm** | Boundary-based + Optimized | Grid search with incremental sizing | Binary search expansion |
+| **Type** | 'boundary-based' or 'optimized' | 'boardroom' | 'hollowsquare' |
+| **Extra Data** | None | `sets`, `tables` | `innerWidth`, `innerHeight`, `innerArea` |
 
 ---
 

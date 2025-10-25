@@ -4,10 +4,12 @@ This comprehensive guide covers the architecture, implementation, deployment, an
 
 **Related Documentation:**
 - [Algorithms-Implementation.md](./Algorithms-Implementation.md) - Low-level algorithm implementations and mathematical foundations
+- [MaxInscribedLayoutPipeline.md](./MaxInscribedLayoutPipeline.md) - Max-inscribed rectangle system
 - [BoardroomLayoutPipeline.md](./BoardroomLayoutPipeline.md) - Boardroom-specific layout system
+- [HollowSquareLayoutPipeline.md](./HollowSquareLayoutPipeline.md) - Hollow square layout system
 - [EmbedData-QuickRef.md](./EmbedData-QuickRef.md) - Quick command reference for data regeneration
 
-**Last Updated:** 2025-10-21
+**Last Updated:** 2025-10-25
 **Version:** LazyMagic.BlazorSvg 3.0.1
 
 ---
@@ -85,12 +87,16 @@ This system provides **interactive SVG path selection** with **automatic inscrib
 │  • SvgViewerAlgorithms.js (winding, convex hull, utilities)    │
 │  • SvgViewerBoundaryBased.js (fast boundary-based rectangles)   │
 │  • SvgViewerOptimized.js (slow but accurate optimization)       │
+│  • SvgViewerBoardroom.js (boardroom table layouts)              │
+│  • SvgViewerHollowSquare.js (hollow square table layouts)       │
 └─────────────────────────────────────────────────────────────────┘
                               ↓
 ┌─────────────────────────────────────────────────────────────────┐
 │                          Data Sources                            │
 │  • Level1.svg (SVG geometry from S3 or local)                   │
-│  • precomputed-rectangles.json (250 precomputed results)        │
+│  • precomputed-rectangles.json (max-inscribed rectangles)       │
+│  • precomputed-boardroom.json (boardroom layouts)               │
+│  • precomputed-hollowsquare.json (hollow square layouts)        │
 │  • Rooms.json (graph connectivity for validation)               │
 └─────────────────────────────────────────────────────────────────┘
 ```
@@ -258,6 +264,8 @@ This section provides high-level descriptions and usage patterns for each algori
 
 **Location:** `SvgViewerBoundaryBased.js:boundaryBasedInscribedRectangle()`
 
+**Related Documentation:** [MaxInscribedLayoutPipeline.md](./MaxInscribedLayoutPipeline.md)
+
 **Best for:**
 - Simple shapes (rectangles, L-shapes, T-shapes)
 - Shapes with clear dominant edge directions
@@ -384,6 +392,109 @@ if (improvementPercent >= 5%) {
 [hybrid] Optimized is 15.1% better, using optimized
 [hybrid] Total time: 2535ms
 ```
+
+---
+
+### 5. **Boardroom Layout Algorithm** (Constrained: 15-20 minutes build-time)
+
+**Location:** `SvgViewerBoardroom.js:findBoardroomLayout()`
+
+**Related Documentation:** [BoardroomLayoutPipeline.md](./BoardroomLayoutPipeline.md)
+
+**Purpose:** Find the largest boardroom-style table arrangement (fixed width, variable length).
+
+**Constraints:**
+- **Fixed Width:** 13 ft (2.5 ft tables × 2 + 4 ft aisles × 2)
+- **Variable Length:** 14 ft minimum, increases in 6 ft increments
+- **Rotation:** 0-180° tested
+- **Output:** Number of table sets and total tables
+
+**Algorithm:**
+- Grid search with angle testing (36 angles × 9 centroids)
+- Incremental size expansion (add 6 ft per set)
+- Test both orientations (13×L and L×13)
+- Precomputed for all 251 combinations
+
+**See:** BoardroomLayoutPipeline.md for complete documentation.
+
+---
+
+### 6. **Hollow Square Layout Algorithm** (Constrained: 15-20 minutes build-time)
+
+**Location:** `SvgViewerHollowSquare.js:findHollowSquareLayout()`
+
+**Related Documentation:** [HollowSquareLayoutPipeline.md](./HollowSquareLayoutPipeline.md)
+
+**Purpose:** Find the largest hollow square table arrangement (perimeter tables with open center).
+
+**Constraints:**
+- **Minimum Outer:** 14 ft × 14 ft
+- **Table Depth:** 2.5 ft (5 ft total on each side)
+- **Minimum Inner:** 4 ft × 4 ft clearance
+- **Variable Dimensions:** Both width and height expand independently
+- **Rotation:** 0-180° tested
+
+**Algorithm Strategy:**
+
+1. **Angle & Centroid Sampling:** Test 36 angles × 9 centroids
+2. **Binary Search Expansion:**
+   ```javascript
+   // Expand width while maintaining height
+   let low = 14, high = maxWidth;
+   while (high - low > 0.1) {
+       let mid = (low + high) / 2;
+       if (fitsInPolygon(mid, height)) {
+           width = mid; low = mid;
+       } else {
+           high = mid;
+       }
+   }
+   // Then expand height similarly
+   ```
+3. **Validate Inner Clearance:**
+   ```javascript
+   innerWidth = outerWidth - (2 × 5 ft)
+   innerHeight = outerHeight - (2 × 5 ft)
+
+   if (innerWidth < 4 ft || innerHeight < 4 ft) {
+       return null;  // Doesn't meet minimum
+   }
+   ```
+4. **Track Best Result:** Keep layout with maximum outer area
+
+**Output Data:**
+```javascript
+{
+  corners: [...],           // Outer rectangle corners
+  width: 26.0,             // Outer width (ft)
+  height: 80.0,            // Outer height (ft)
+  area: 2080.0,            // Outer area (pre-transform)
+  innerWidth: 16.0,        // Inner clearance width
+  innerHeight: 70.0,       // Inner clearance height
+  innerArea: 1120.0,       // Usable center space
+  angle: 0,
+  centroid: {x, y},
+  type: 'hollowsquare'
+}
+```
+
+**Performance:**
+- Build-time: 15-20 minutes for 251 combinations
+- Runtime: < 1ms (precomputed lookup)
+- Average computation: ~145 ms per combination
+
+**Console Output:**
+```
+[hollowsquare] Testing 36 angles...
+[hollowsquare] Angle 0°: Expanding from 14×14...
+[hollowsquare] Best: 26×80 ft (outer), 16×70 ft (inner) in 145ms
+```
+
+**See:** HollowSquareLayoutPipeline.md for complete documentation including:
+- Detailed algorithm walkthrough
+- Data extraction and embedding pipeline
+- C# interop integration
+- UI display examples
 
 ---
 
