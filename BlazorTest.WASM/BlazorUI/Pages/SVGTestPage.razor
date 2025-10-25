@@ -56,6 +56,12 @@
                         </div>
                     }
                 }
+
+                @if (rectangleType == "hollowsquare" && areaData.HollowSquareArea.HasValue)
+                {
+                    var hollowSquareArea = areaData.HollowSquareArea.Value;
+                    <div>Hollow Square Layout Area: <code>@($"{hollowSquareArea:F2}")</code> sq in</div>
+                }
             </div>
         </div>
     }
@@ -90,6 +96,7 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
                     <option value="none">None</option>
                     <option value="maxinscribed">Max Inscribed Rectangle (Orange)</option>
                     <option value="boardroom">Boardroom Layout (Blue)</option>
+                    <option value="hollowsquare">Hollow Square Layout (Purple)</option>
                 </select>
             </div>
         </div>

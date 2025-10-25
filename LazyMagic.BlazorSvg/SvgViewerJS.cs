@@ -127,6 +127,9 @@ namespace LazyMagic.BlazorSvg
         [System.Text.Json.Serialization.JsonPropertyName("boardroomTables")]
         public int? BoardroomTables { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("hollowSquareArea")]
+        public double? HollowSquareArea { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("computationTimeMs")]
         public double? ComputationTimeMs { get; set; }
     }

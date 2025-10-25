@@ -195,13 +195,19 @@ class SvgViewerInstance {
         this.precomputedBoardrooms = null;  // Will be loaded on first use
         this.precomputedBoardroomsPromise = null;  // Track loading promise
 
+        // Precomputed hollow square layouts cache
+        this.precomputedHollowSquares = null;  // Will be loaded on first use
+        this.precomputedHollowSquaresPromise = null;  // Track loading promise
+
         // Display toggles
         this.showRectangle = true;  // Show max inscribed rectangle
         this.showBoardroom = true;  // Show boardroom layout
+        this.showHollowSquare = true;  // Show hollow square layout
 
         // SVG elements for layouts
         this.rectangleGroup = null;  // Group for max rectangle
         this.boardroomGroup = null;  // Group for boardroom layout
+        this.hollowSquareGroup = null;  // Group for hollow square layout
     }
 
     // Return the inner <svg> if present, otherwise the paper itself
@@ -232,19 +238,37 @@ class SvgViewerInstance {
     // Extract embedded precomputed data from raw SVG text
     extractEmbeddedPrecomputedData(svgText) {
         try {
-            // Look for <script type="application/json" id="precomputed-rectangles">
-            const scriptMatch = svgText.match(/<script\s+type="application\/json"\s+id="precomputed-rectangles"[^>]*>([\s\S]*?)<\/script>/i);
-            if (scriptMatch) {
-                let jsonText = scriptMatch[1];
-                // Remove CDATA wrappers if present
+            // Extract MaxInscribed rectangles
+            const rectanglesMatch = svgText.match(/<script\s+type="application\/json"\s+id="precomputed-rectangles"[^>]*>([\s\S]*?)<\/script>/i);
+            if (rectanglesMatch) {
+                let jsonText = rectanglesMatch[1];
                 jsonText = jsonText.replace(/<!\[CDATA\[|\]\]>/g, '').trim();
                 const data = JSON.parse(jsonText);
-
-                // Cache the embedded data
                 this.embeddedPrecomputedData = data;
-                console.log(`[precomputed] ✓ Extracted embedded data from SVG: ${data.rectangles.length} rectangles`);
-                return true;
+                console.log(`[precomputed] ✓ Extracted embedded rectangles from SVG: ${data.rectangles.length} rectangles`);
             }
+
+            // Extract Boardroom layouts
+            const boardroomMatch = svgText.match(/<script\s+type="application\/json"\s+id="precomputed-boardroom"[^>]*>([\s\S]*?)<\/script>/i);
+            if (boardroomMatch) {
+                let jsonText = boardroomMatch[1];
+                jsonText = jsonText.replace(/<!\[CDATA\[|\]\]>/g, '').trim();
+                const data = JSON.parse(jsonText);
+                this.embeddedBoardroomData = data;
+                console.log(`[precomputed] ✓ Extracted embedded boardroom from SVG: ${data.boardroomLayouts.length} layouts`);
+            }
+
+            // Extract Hollow Square layouts
+            const hollowSquareMatch = svgText.match(/<script\s+type="application\/json"\s+id="precomputed-hollowsquare"[^>]*>([\s\S]*?)<\/script>/i);
+            if (hollowSquareMatch) {
+                let jsonText = hollowSquareMatch[1];
+                jsonText = jsonText.replace(/<!\[CDATA\[|\]\]>/g, '').trim();
+                const data = JSON.parse(jsonText);
+                this.embeddedHollowSquareData = data;
+                console.log(`[precomputed] ✓ Extracted embedded hollow square from SVG: ${data.hollowSquareLayouts.length} layouts`);
+            }
+
+            return true;
         } catch (error) {
             console.warn('[precomputed] Failed to extract embedded data:', error.message);
         }
@@ -381,46 +405,36 @@ class SvgViewerInstance {
             try {
                 let data = null;
 
-                // STRATEGY 1: Check for embedded data in the parsed SVG DOM
-                console.log('[boardroom] Checking for embedded data...');
-                console.log('[boardroom] this.svg:', this.svg);
-                console.log('[boardroom] this.svg.node:', this.svg ? this.svg.node : 'null');
+                // STRATEGY 1: Use cached embedded data (extracted during SVG load)
+                if (this.embeddedBoardroomData) {
+                    data = this.embeddedBoardroomData;
+                    console.log(`[boardroom] ✓ Using cached embedded SVG data: ${data.boardroomLayouts.length} layouts`);
+                }
 
-                if (this.svg && this.svg.node) {
+                // STRATEGY 2: Check for embedded data in the parsed SVG DOM (fallback)
+                if (!data && this.svg && this.svg.node) {
                     const scriptElement = this.svg.node.querySelector('script[id="precomputed-boardroom"]');
-                    console.log('[boardroom] Script element found:', scriptElement);
-
                     if (scriptElement) {
                         try {
-                            // Extract JSON from CDATA or text content
                             let jsonText = scriptElement.textContent || scriptElement.innerHTML;
-                            console.log('[boardroom] JSON text length:', jsonText.length);
-                            // Remove CDATA wrappers if present
                             jsonText = jsonText.replace(/<!\[CDATA\[|\]\]>/g, '').trim();
                             data = JSON.parse(jsonText);
                             console.log(`[boardroom] ✓ Loaded from embedded SVG DOM: ${data.boardroomLayouts.length} layouts`);
                         } catch (parseError) {
                             console.warn('[boardroom] Failed to parse embedded data:', parseError.message);
-                            // Fall through to external JSON fetch
                         }
-                    } else {
-                        console.log('[boardroom] No script element with id="precomputed-boardroom" found in SVG DOM');
                     }
-                } else {
-                    console.log('[boardroom] SVG node not available yet');
                 }
 
-                // STRATEGY 2: Fallback to external JSON file
+                // STRATEGY 3: Fallback to external JSON file
                 if (!data) {
-                    let precomputedUrl = 'precomputed-boardroom.json';  // Default fallback
-
+                    let precomputedUrl = 'precomputed-boardroom.json';
                     if (this.svgUrl) {
                         const lastSlashIndex = this.svgUrl.lastIndexOf('/');
                         if (lastSlashIndex >= 0) {
                             precomputedUrl = this.svgUrl.substring(0, lastSlashIndex + 1) + 'precomputed-boardroom.json';
                         }
                     }
-
                     console.log(`[boardroom] Loading from external JSON: ${precomputedUrl}`);
                     const response = await fetch(precomputedUrl);
                     if (!response.ok) {
@@ -455,6 +469,88 @@ class SvgViewerInstance {
         })();
 
         return this.precomputedBoardroomsPromise;
+    }
+
+    async loadPrecomputedHollowSquares() {
+        // Return cached data if already loaded
+        if (this.precomputedHollowSquares) {
+            return this.precomputedHollowSquares;
+        }
+
+        // Return existing promise if currently loading
+        if (this.precomputedHollowSquaresPromise) {
+            return this.precomputedHollowSquaresPromise;
+        }
+
+        // Start loading
+        this.precomputedHollowSquaresPromise = (async () => {
+            try {
+                let data = null;
+
+                // STRATEGY 1: Use cached embedded data (extracted during SVG load)
+                if (this.embeddedHollowSquareData) {
+                    data = this.embeddedHollowSquareData;
+                    console.log(`[hollowsquare] ✓ Using cached embedded SVG data: ${data.hollowSquareLayouts.length} layouts`);
+                }
+
+                // STRATEGY 2: Check for embedded data in the parsed SVG DOM (fallback)
+                if (!data && this.svg && this.svg.node) {
+                    const scriptElement = this.svg.node.querySelector('script[id="precomputed-hollowsquare"]');
+                    if (scriptElement) {
+                        try {
+                            let jsonText = scriptElement.textContent || scriptElement.innerHTML;
+                            jsonText = jsonText.replace(/<!\[CDATA\[|\]\]>/g, '').trim();
+                            data = JSON.parse(jsonText);
+                            console.log(`[hollowsquare] ✓ Loaded from embedded SVG DOM: ${data.hollowSquareLayouts.length} layouts`);
+                        } catch (parseError) {
+                            console.warn('[hollowsquare] Failed to parse embedded data:', parseError.message);
+                        }
+                    }
+                }
+
+                // STRATEGY 3: Fallback to external JSON file
+                if (!data) {
+                    let precomputedUrl = 'precomputed-hollowsquare.json';
+                    if (this.svgUrl) {
+                        const lastSlashIndex = this.svgUrl.lastIndexOf('/');
+                        if (lastSlashIndex >= 0) {
+                            precomputedUrl = this.svgUrl.substring(0, lastSlashIndex + 1) + 'precomputed-hollowsquare.json';
+                        }
+                    }
+                    console.log(`[hollowsquare] Loading from external JSON: ${precomputedUrl}`);
+                    const response = await fetch(precomputedUrl);
+                    if (!response.ok) {
+                        throw new Error(`Failed to load: ${response.status}`);
+                    }
+                    data = await response.json();
+                    console.log(`[hollowsquare] ✓ Loaded from external JSON: ${data.hollowSquareLayouts.length} layouts`);
+                }
+
+                // Create lookup map by section key
+                const lookup = new Map();
+                for (const hollowSquare of data.hollowSquareLayouts) {
+                    lookup.set(hollowSquare.key, hollowSquare);
+                }
+
+                this.precomputedHollowSquares = {
+                    hollowSquareLayouts: data.hollowSquareLayouts,
+                    lookup: lookup,
+                    metadata: {
+                        generatedAt: data.generatedAt,
+                        totalCombinations: data.totalCombinations,
+                        successfulComputations: data.successfulComputations
+                    }
+                };
+
+                return this.precomputedHollowSquares;
+            } catch (error) {
+                console.warn('[hollowsquare] Failed to load precomputed hollow squares:', error.message);
+                this.precomputedHollowSquares = { hollowSquareLayouts: [], lookup: new Map(), metadata: {} };
+                return this.precomputedHollowSquares;
+            }
+        })();
+
+        return this.precomputedHollowSquaresPromise;
     }
 
     // Lookup precomputed rectangle for a set of path IDs
@@ -507,6 +603,34 @@ class SvgViewerInstance {
         return null;
     }
 
+    // Lookup precomputed hollow square layout for a set of path IDs
+    async lookupPrecomputedHollowSquare(pathIds) {
+        if (!pathIds || pathIds.length === 0) {
+            console.log('[hollowsquare] lookupPrecomputedHollowSquare: No pathIds provided');
+            return null;
+        }
+
+        // Ensure data is loaded
+        await this.loadPrecomputedHollowSquares();
+
+        console.log('[hollowsquare] Hollow squares loaded:', this.precomputedHollowSquares);
+        console.log('[hollowsquare] Lookup map size:', this.precomputedHollowSquares.lookup.size);
+        console.log('[hollowsquare] First 5 keys in map:', Array.from(this.precomputedHollowSquares.lookup.keys()).slice(0, 5));
+
+        // Create sorted key to match precomputed format
+        const sortedKey = pathIds.slice().sort().join('_');
+        console.log('[hollowsquare] Looking up key:', sortedKey);
+
+        const hollowSquareData = this.precomputedHollowSquares.lookup.get(sortedKey);
+        if (hollowSquareData) {
+            console.log(`[hollowsquare] ✓ Found precomputed hollow square for ${pathIds.length} sections`);
+            return hollowSquareData.hollowSquareLayout;  // Return just the hollow square layout for drawing
+        }
+
+        console.debug(`[hollowsquare] ✗ No precomputed data for: ${sortedKey}`);
+        return null;
+    }
+
     // Toggle methods for showing/hiding layouts
     setShowRectangle(show) {
         this.showRectangle = show;
@@ -522,6 +646,14 @@ class SvgViewerInstance {
             this.boardroomGroup.attr({ display: show ? 'block' : 'none' });
         }
         console.log(`[display] Boardroom layout ${show ? 'shown' : 'hidden'}`);
+    }
+
+    setShowHollowSquare(show) {
+        this.showHollowSquare = show;
+        if (this.hollowSquareGroup) {
+            this.hollowSquareGroup.attr({ display: show ? 'block' : 'none' });
+        }
+        console.log(`[display] Hollow square layout ${show ? 'shown' : 'hidden'}`);
     }
 
     // Active scope = current layer group (or inner <svg>/paper if none detected)
@@ -2324,7 +2456,7 @@ class SvgViewerInstance {
             const unifiedPath = scope.path(pathData);
 
             if (debugVisible) {
-                // Clean up previous rectangle and boardroom visualizations
+                // Clean up previous rectangle, boardroom, and hollow square visualizations
                 if (this.rectangleGroup) {
                     this.rectangleGroup.remove();
                     this.rectangleGroup = null;
@@ -2332,6 +2464,10 @@ class SvgViewerInstance {
                 if (this.boardroomGroup) {
                     this.boardroomGroup.remove();
                     this.boardroomGroup = null;
+                }
+                if (this.hollowSquareGroup) {
+                    this.hollowSquareGroup.remove();
+                    this.hollowSquareGroup = null;
                 }
 
                 // Debug mode: Make it visible with distinctive styling
@@ -2454,6 +2590,61 @@ class SvgViewerInstance {
 
                         // Set initial display state based on current showBoardroom flag
                         boardroomPath.attr({ display: this.showBoardroom ? 'block' : 'none' });
+                    }
+                }
+
+                // Try to lookup precomputed hollow square layout
+                let hollowSquareLayout = await this.lookupPrecomputedHollowSquare(pathIds);
+                console.log(`[hollowsquare] Lookup result:`, hollowSquareLayout);
+                console.log(`[hollowsquare] showHollowSquare flag:`, this.showHollowSquare);
+
+                // Visualize the hollow square layout if found (always create it, display state set later)
+                if (hollowSquareLayout) {
+                    console.log(`[hollowsquare] Rendering hollow square layout...`);
+                    let hollowSquarePath;
+
+                    if (hollowSquareLayout.corners) {
+                        // Create a polygon from corners
+                        const corners = hollowSquareLayout.corners;
+                        const pathData = `M ${corners[0].x} ${corners[0].y} ` +
+                                       `L ${corners[1].x} ${corners[1].y} ` +
+                                       `L ${corners[2].x} ${corners[2].y} ` +
+                                       `L ${corners[3].x} ${corners[3].y} Z`;
+                        hollowSquarePath = scope.path(pathData);
+                        console.debug(`[hollowsquare] Debug mode: Visualized hollow square layout (${hollowSquareLayout.width.toFixed(1)}x${hollowSquareLayout.height.toFixed(1)})`);
+                        console.debug(`[hollowsquare] Hollow square path data:`, pathData);
+                    }
+
+                    if (hollowSquarePath) {
+                        hollowSquarePath.attr({
+                            fill: 'rgba(153, 51, 255, 0.15)',   // Semi-transparent purple fill
+                            stroke: '#9933FF',                   // Purple border
+                            strokeWidth: 3,
+                            'fill-opacity': 0.15,
+                            'stroke-opacity': 1.0,
+                            'pointer-events': 'none',
+                            'stroke-dasharray': '8,8'            // Different dash pattern to distinguish from others
+                        });
+
+                        // Set style attribute directly to ensure it's not overridden
+                        hollowSquarePath.node.setAttribute('style',
+                            'stroke: #9933FF !important; ' +
+                            'stroke-width: 3px !important; ' +
+                            'stroke-dasharray: 8,8 !important; ' +
+                            'fill: rgba(153, 51, 255, 0.15) !important; ' +
+                            'pointer-events: none !important; ' +
+                            'z-index: 10000 !important;'
+                        );
+
+                        hollowSquarePath.addClass("debug-hollowsquare-layout");
+
+                        // Append to parent scope and bring to front (after boardroom)
+                        parentScope.appendChild(hollowSquarePath.node);
+                        hollowSquarePath.node.parentNode.appendChild(hollowSquarePath.node); // Move to end (on top)
+                        this.hollowSquareGroup = hollowSquarePath;  // Store reference
+
+                        // Set initial display state based on current showHollowSquare flag
+                        hollowSquarePath.attr({ display: this.showHollowSquare ? 'block' : 'none' });
                     }
                 }
             } else {
@@ -3060,17 +3251,20 @@ export function setRectangleType(containerId, rectangleType) {
     const instance = instances.get(containerId);
     if (!instance) return false;
 
-    // Hide both rectangle types first
+    // Hide all rectangle types first
     instance.setShowRectangle(false);
     instance.setShowBoardroom(false);
+    instance.setShowHollowSquare(false);
 
     // Show the selected type
     if (rectangleType === 'maxinscribed') {
         instance.setShowRectangle(true);
     } else if (rectangleType === 'boardroom') {
         instance.setShowBoardroom(true);
+    } else if (rectangleType === 'hollowsquare') {
+        instance.setShowHollowSquare(true);
     }
-    // If 'none', both remain hidden
+    // If 'none', all remain hidden
 
     console.log(`[display] Rectangle type set to: ${rectangleType}`);
     return true;
@@ -3095,6 +3289,7 @@ export async function getAreaData(containerId) {
     // Ensure precomputed data is loaded
     await instance.loadPrecomputedRectangles();
     await instance.loadPrecomputedBoardrooms();
+    await instance.loadPrecomputedHollowSquares();
 
     // Create sorted key to match precomputed format
     const sortedKey = selectedPaths.slice().sort().join('_');
@@ -3105,6 +3300,9 @@ export async function getAreaData(containerId) {
 
     // Get boardroom data
     const boardroomData = instance.precomputedBoardrooms.lookup.get(sortedKey);
+
+    // Get hollow square data
+    const hollowSquareData = instance.precomputedHollowSquares.lookup.get(sortedKey);
 
     // Build result object
     const result = {};
@@ -3124,6 +3322,15 @@ export async function getAreaData(containerId) {
         // Use polygon area from boardroom if rect data not available
         if (!result.polygonArea) {
             result.polygonArea = boardroomData.polygonArea;
+        }
+    }
+
+    if (hollowSquareData) {
+        console.log('[getAreaData] Found hollowSquareData:', hollowSquareData);
+        result.hollowSquareArea = hollowSquareData.hollowSquareLayout.area;
+        // Use polygon area from hollow square if rect/boardroom data not available
+        if (!result.polygonArea) {
+            result.polygonArea = hollowSquareData.polygonArea;
         }
     }
 
