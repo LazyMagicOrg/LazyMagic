@@ -179,7 +179,7 @@ if (improvementPercent >= 5%) {
 
 ### 2. Test Runner (`test-runner.js`)
 
-**Location:** `LazyMagic.BlazorSvg/test-harness/test-runner.js`
+**Location:** `LazyMagic.BlazorSvg/FloorMat/test-runner.js`
 
 **Purpose:** Generate max-inscribed rectangles for all 251 valid combinations.
 
@@ -230,7 +230,7 @@ Running 251 tests...
 
 ### 3. Data Extraction (`extract-precomputed-rectangles.js`)
 
-**Location:** `LazyMagic.BlazorSvg/test-harness/extract-precomputed-rectangles.js`
+**Location:** `LazyMagic.BlazorSvg/FloorMat/extract-precomputed-rectangles.js`
 
 **Purpose:** Parse generated SVG files and extract rectangle data into JSON.
 
@@ -302,7 +302,7 @@ node extract-precomputed-rectangles.js
 
 ### 4. SVG Embedding (`embed-rectangles-in-svg.js`)
 
-**Location:** `LazyMagic.BlazorSvg/test-harness/embed-rectangles-in-svg.js`
+**Location:** `LazyMagic.BlazorSvg/FloorMat/embed-rectangles-in-svg.js`
 
 **Purpose:** Embed max-inscribed data directly into Level1.svg.
 
@@ -1009,11 +1009,11 @@ node embed-rectangles-in-svg.js
   - `wwwroot/SvgViewerBoundaryBased.js`
   - `wwwroot/SvgViewerOptimized.js`
   - `wwwroot/SvgViewerAlgorithms.js` (utilities)
-- Test Runner: `test-harness/test-runner.js`
-- Extractor: `test-harness/extract-precomputed-rectangles.js`
-- Embedder: `test-harness/embed-rectangles-in-svg.js`
+- Test Runner: `FloorMat/test-runner.js`
+- Extractor: `FloorMat/extract-precomputed-rectangles.js`
+- Embedder: `FloorMat/embed-rectangles-in-svg.js`
 - Output: `TestResults/MaxInscribedResults/*.svg`
-- JSON: `test-harness/precomputed-rectangles.json`
+- JSON: `FloorMat/precomputed-rectangles.json`
 - Embedded: `BlazorTest.WASM/wwwroot/Level1.svg`
 
 ### Algorithm Types

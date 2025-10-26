@@ -173,7 +173,7 @@ Precomputed rectangle data is now embedded directly in SVG files, eliminating th
 
 1. **Generate Full Test Results** (when ready to deploy all 251 combos)
    ```bash
-   cd test-harness
+   cd FloorMat
    node test-runner-normal.js  # Generate all 251 SVGs in TestResultsNormal/
    ```
 
@@ -183,7 +183,7 @@ Precomputed rectangle data is now embedded directly in SVG files, eliminating th
    ```
    - **Fixed bug:** Now extracts the WINNING algorithm (BB or Optimized), not just BB
    - Reads from: `TestResultsNormal/Combo_XXXX.svg` files
-   - Generates: `test-harness/precomputed-rectangles.json`
+   - Generates: `FloorMat/precomputed-rectangles.json`
    - Output: 251 rectangles with corners, centroids, areas, angles, types
 
 3. **Embed Data in Production SVG Files**
@@ -220,12 +220,12 @@ The embedding has been tested with the current 23-combo rotation sensitivity tes
 - External: `[precomputed] ✓ Loaded from external JSON: 251 rectangles`
 
 ### Key Files Modified
-- **`test-harness/extract-precomputed-rectangles.js`**
+- **`FloorMat/extract-precomputed-rectangles.js`**
   - Fixed: Now extracts best algorithm (not just BB)
   - Fixed: Path updated to TestResultsNormal
   - New logic: Compares BB vs Opt areas, selects winner
 
-- **`test-harness/embed-rectangles-in-svg.js`** (NEW)
+- **`FloorMat/embed-rectangles-in-svg.js`** (NEW)
   - Embeds JSON in SVG `<defs>` section
   - Handles multiple SVG files
   - Removes existing embedded data before re-embedding
@@ -254,13 +254,13 @@ The embedding has been tested with the current 23-combo rotation sensitivity tes
 ## Files Requiring Updates
 
 ### Analysis Tools
-1. **`test-harness/analyze-breaches.js`** - Path needs updating
+1. **`FloorMat/analyze-breaches.js`** - Path needs updating
    - Current: Expects `../TestResults/Combos.txt`
    - Should be: `../TestResultsNormal/Combos.txt` or `../TestResultsRotated/Combos.txt`
    - Also needs: Test runner to generate `Combos.txt` file with breached combination numbers
    - Status: Dormant tool, could be useful if breach analysis becomes relevant
 
-2. **`test-harness/analyze-goals.js`** - Test naming and structure mismatch
+2. **`FloorMat/analyze-goals.js`** - Test naming and structure mismatch
    - Current: Expects `Test02`, `Test06`, `Test08`, etc. with goal rectangles in SVG
    - Should use: `Combo_0001`, `Combo_0002`, etc. (current naming convention)
    - Issue: All test-config.js entries have `goalRectangle: null` - no goals defined
@@ -268,14 +268,14 @@ The embedding has been tested with the current 23-combo rotation sensitivity tes
    - Status: Outdated, from previous testing methodology with manually-defined goal rectangles
 
 ### Test Runners
-3. **`test-harness/browser-test-runner.js` + `test-page.html`** - Needs updating to current test format
+3. **`FloorMat/browser-test-runner.js` + `test-page.html`** - Needs updating to current test format
    - Current: Uses old ballroom test cases and `SvgViewer.js`
    - Should use: Current Combo_XXXX format and test `SvgViewerOptimized.js`
    - Status: Functional browser-based test harness with Puppeteer, but not aligned with current rotation sensitivity testing
    - Value: Useful for browser-based debugging and screenshot capture
 
 ### Data Extraction Tools
-4. **`test-harness/extract-precomputed-rectangles.js`** - ✅ FIXED (2025-10-16)
+4. **`FloorMat/extract-precomputed-rectangles.js`** - ✅ FIXED (2025-10-16)
    - ✅ Updated: Now reads from `../TestResultsNormal` (current structure)
    - ✅ Fixed: Extracts BEST algorithm (BB or Optimized), not just BB
    - Purpose: Extracts rectangle data from SVG test results to generate `precomputed-rectangles.json`
@@ -283,7 +283,7 @@ The embedding has been tested with the current 23-combo rotation sensitivity tes
    - New companion: `embed-rectangles-in-svg.js` embeds the JSON directly in SVG files
 
 ### Documentation
-5. **`test-harness/testharness.md`** - Outdated testing methodology documentation
+5. **`FloorMat/testharness.md`** - Outdated testing methodology documentation
    - Current: Documents Test01/Test02/Test03 with coverage percentage methodology
    - Current: References `TestResults/` directory and deleted analysis scripts
    - Should use: Combo_XXXX naming, TestResultsNormal/TestResultsRotated structure, rotation sensitivity focus

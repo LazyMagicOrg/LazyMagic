@@ -1600,12 +1600,12 @@ Use prefixes (`[precomputed]`, `[outline]`, `[winding]`) to filter logs.
 - `wwwroot/SvgViewerOptimized.js`: Optimized algorithm (800+ lines)
 
 **Test Harness:**
-- `test-harness/compute-all-combinations.js`: Validation + combination generator
-- `test-harness/test-runner.js`: Node.js test runner
-- `test-harness/run-tests.ps1`: PowerShell test runner (Playwright)
-- `test-harness/inscribed-rectangle.spec.js`: Playwright test specs
-- `test-harness/extract-precomputed-rectangles.js`: SVG parser + JSON generator
-- `test-harness/embed-rectangles-in-svg.js`: SVG embedding script
+- `FloorMat/compute-all-combinations.js`: Validation + combination generator
+- `FloorMat/test-runner.js`: Node.js test runner
+- `FloorMat/run-tests.ps1`: PowerShell test runner (Playwright)
+- `FloorMat/inscribed-rectangle.spec.js`: Playwright test specs
+- `FloorMat/extract-precomputed-rectangles.js`: SVG parser + JSON generator
+- `FloorMat/embed-rectangles-in-svg.js`: SVG embedding script
 
 **Production:**
 - `BCProjects/SetsApp/SetsCmp/SetsCmp.csproj`: References LazyMagic.BlazorSvg
@@ -1635,7 +1635,7 @@ Use prefixes (`[precomputed]`, `[outline]`, `[winding]`) to filter logs.
 
 - **BoardroomLayoutPipeline.md**: Parallel boardroom layout system
 - **EmbedData.md**: Quick reference for embedding workflow
-- **test-harness/testharness.md**: Complete test harness documentation
+- **FloorMat/testharness.md**: Complete test harness documentation
 
 ---
 

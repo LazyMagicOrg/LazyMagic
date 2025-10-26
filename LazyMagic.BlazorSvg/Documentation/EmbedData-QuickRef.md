@@ -1,53 +1,45 @@
-# Embedding Precomputed Rectangle Data in SVG Files
+# FloorMat - Embedding Precomputed Layout Data in SVG Files
 
-This document describes the process for generating, extracting, and embedding precomputed inscribed rectangle data into SVG floor plan files for the LazyMagic.BlazorSvg project.
+This document describes the process for generating, extracting, and embedding precomputed layout data into SVG floor plan files using the FloorMat unified pipeline.
 
 ## Quick Start - Commands
 
-Run these commands in order to regenerate and embed the precomputed rectangle data:
+Navigate to the FloorMat directory:
 
 ```bash
-cd "C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic\LazyMagic.BlazorSvg\test-harness"
+cd "C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic\LazyMagic.BlazorSvg\FloorMat"
 ```
 
+### Full Pipeline (All 251 Combinations)
+
+Run the entire pipeline for all three layout systems:
+
 ```bash
-node test-runner.js
+npm run pipeline
 ```
 
+Or run individually:
+
 ```bash
-node extract-precomputed-rectangles.js
+npm run test:all      # Generate all test results
+npm run extract       # Extract precomputed data
+npm run embed         # Embed data into SVG
 ```
 
+### Quick Pipeline (16 Sample Combinations)
+
+For faster testing/validation:
+
 ```bash
-node embed-rectangles-in-svg.js
+npm run pipeline:quick
 ```
 
-### Boardroom Layouts (Optional)
+Or run individually:
 
 ```bash
-node test-runner-boardroom.js
-```
-
-```bash
-node extract-precomputed-boardroom.js
-```
-
-```bash
-node embed-boardroom-in-svg.js
-```
-
-### Hollow Square Layouts (Optional)
-
-```bash
-node test-runner-hollowsquare.js
-```
-
-```bash
-node extract-precomputed-hollowsquare.js
-```
-
-```bash
-node embed-hollowsquare-in-svg.js
+npm run test:samples  # Generate sample test results
+npm run extract       # Extract precomputed data
+npm run embed         # Embed data into SVG
 ```
 
 ### Run Application
@@ -140,10 +132,10 @@ The shoelace formula is used to calculate polygon areas from vertices.
 
 Ensure you have Node.js installed and the following files are present:
 
-- `LazyMagic.BlazorSvg/test-harness/test-runner.js` - Main test harness
-- `LazyMagic.BlazorSvg/test-harness/extract-precomputed-rectangles.js` - Data extraction script
-- `LazyMagic.BlazorSvg/test-harness/embed-rectangles-in-svg.js` - Data embedding script
-- `LazyMagic.BlazorSvg/test-harness/valid-combinations.json` - Valid path combinations
+- `LazyMagic.BlazorSvg/FloorMat/run-tests.js` - Unified test runner
+- `LazyMagic.BlazorSvg/FloorMat/extract-all-precomputed.js` - Data extraction script
+- `LazyMagic.BlazorSvg/FloorMat/embed-all-in-svg.js` - Data embedding script
+- `LazyMagic.BlazorSvg/FloorMat/valid-combinations.json` - Valid path combinations
 - `BlazorTest.WASM/wwwroot/Level1.svg` - Target SVG file
 
 ### Step 1: Run Test Harness
@@ -189,7 +181,7 @@ node extract-precomputed-rectangles.js
 **Duration:** ~30 seconds
 
 **Output:**
-- `LazyMagic.BlazorSvg/test-harness/precomputed-rectangles.json`
+- `LazyMagic.BlazorSvg/FloorMat/precomputed-rectangles.json`
 - File size: ~148 KB (269 KB on disk)
 
 **What It Does:**
@@ -290,30 +282,30 @@ The application should:
 ### Source Files
 
 **Max-Inscribed Rectangles:**
-- Test Runner: `test-harness/test-runner.js`
-- Extractor: `test-harness/extract-precomputed-rectangles.js`
-- Embedder: `test-harness/embed-rectangles-in-svg.js`
+- Test Runner: `FloorMat/test-runner.js`
+- Extractor: `FloorMat/extract-precomputed-rectangles.js`
+- Embedder: `FloorMat/embed-rectangles-in-svg.js`
 
 **Boardroom Layouts:**
-- Test Runner: `test-harness/test-runner-boardroom.js`
-- Extractor: `test-harness/extract-precomputed-boardroom.js`
-- Embedder: `test-harness/embed-boardroom-in-svg.js`
+- Test Runner: `FloorMat/test-runner-boardroom.js`
+- Extractor: `FloorMat/extract-precomputed-boardroom.js`
+- Embedder: `FloorMat/embed-boardroom-in-svg.js`
 
 **Hollow Square Layouts:**
-- Test Runner: `test-harness/test-runner-hollowsquare.js`
-- Extractor: `test-harness/extract-precomputed-hollowsquare.js`
-- Embedder: `test-harness/embed-hollowsquare-in-svg.js`
+- Test Runner: `FloorMat/test-runner-hollowsquare.js`
+- Extractor: `FloorMat/extract-precomputed-hollowsquare.js`
+- Embedder: `FloorMat/embed-hollowsquare-in-svg.js`
 
 **Common:**
-- Valid Combinations: `test-harness/valid-combinations.json`
+- Valid Combinations: `FloorMat/valid-combinations.json`
 
 ### Generated Files
 - **Max-Inscribed Test Results**: `TestResults/MaxInscribedResults/Combo_XXXX.svg` (251 files)
 - **Boardroom Test Results**: `TestResults/BoardroomResults/Combo_XXXX.svg` (251 files)
 - **Hollow Square Test Results**: `TestResults/HollowSquareResults/Combo_XXXX.svg` (251 files)
-- **Precomputed Rectangles JSON**: `test-harness/precomputed-rectangles.json`
-- **Precomputed Boardroom JSON**: `test-harness/precomputed-boardroom.json`
-- **Precomputed Hollow Square JSON**: `test-harness/precomputed-hollowsquare.json`
+- **Precomputed Rectangles JSON**: `FloorMat/precomputed-rectangles.json`
+- **Precomputed Boardroom JSON**: `FloorMat/precomputed-boardroom.json`
+- **Precomputed Hollow Square JSON**: `FloorMat/precomputed-hollowsquare.json`
 - **Target SVG**: `BlazorTest.WASM/wwwroot/Level1.svg`
 
 ## Troubleshooting

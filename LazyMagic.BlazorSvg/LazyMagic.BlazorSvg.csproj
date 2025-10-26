@@ -11,7 +11,7 @@
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 	</PropertyGroup>
 	<ItemGroup>
-	  <None Remove="test-harness\nul" />
+	  <None Remove="FloorMat\nul" />
 	</ItemGroup>
 
 

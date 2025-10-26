@@ -124,7 +124,7 @@ dotnet run --project MudBlazorTest.WASM/MudBlazorTest.WASM.csproj
    - Embedded data stored in SVG metadata
    - Runtime lookup for instant access
 4. **Geometric Primitives**: Point-in-polygon, line intersection, bounding boxes, convex hull
-5. **Test Harness**: Playwright-based visual testing framework
+5. **FloorMat**: Build-time pipeline for generating precomputed layout data
 
 ### Source Generators
 1. **LazyMagic.LzItemViewModelGenerator**: Generates ViewModel boilerplate code
@@ -136,7 +136,7 @@ dotnet run --project MudBlazorTest.WASM/MudBlazorTest.WASM.csproj
   - **BlazoriseTest.WASM**: Blazorise framework integration (includes Camera component demo)
   - **MudBlazorTest.WASM**: MudBlazor framework integration
 - All test apps share common ViewModels from BlazorTest.ViewModels project
-- Playwright test infrastructure in LazyMagic.BlazorSvg/test-harness/
+- FloorMat pipeline for layout data generation in LazyMagic.BlazorSvg/FloorMat/
 
 ### JavaScript Interop Patterns
 - **Base class**: LzBaseJSModule for all JS module wrappers

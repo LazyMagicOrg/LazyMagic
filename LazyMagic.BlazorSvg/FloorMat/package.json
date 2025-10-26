@@ -1,0 +1,32 @@
+{
+  "name": "floormat",
+  "version": "1.0.0",
+  "description": "FloorMat - SVG floor plan layout generation tool (MaxInscribed, Boardroom, Hollow Square)",
+  "type": "module",
+  "main": "run-tests.js",
+  "scripts": {
+    "test:maxinscribed": "node run-tests.js test-configs/maxinscribed-full.json",
+    "test:boardroom": "node run-tests.js test-configs/boardroom-full.json",
+    "test:hollowsquare": "node run-tests.js test-configs/hollowsquare-full.json",
+    "test:samples": "node run-tests.js test-configs/maxinscribed-sample.json && node run-tests.js test-configs/boardroom-sample.json && node run-tests.js test-configs/hollowsquare-sample.json",
+    "test:all": "npm run test:maxinscribed && npm run test:boardroom && npm run test:hollowsquare",
+    "extract": "node extract-all-precomputed.js",
+    "embed": "node embed-all-in-svg.js",
+    "pipeline": "npm run test:all && npm run extract && npm run embed",
+    "pipeline:quick": "npm run test:samples && npm run extract && npm run embed"
+  },
+  "keywords": [
+    "svg",
+    "geometry",
+    "testing",
+    "inscribed-rectangle",
+    "boardroom-layout",
+    "hollow-square"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "jsdom": "^27.0.0",
+    "xmldom": "^0.6.0"
+  }
+}

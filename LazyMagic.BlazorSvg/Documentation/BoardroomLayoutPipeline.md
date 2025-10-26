@@ -153,7 +153,7 @@ calculateRectangleCorners(centroid, width, height, angleDegrees)
 
 ### 2. Test Runner (`test-runner-boardroom.js`)
 
-**Location:** `LazyMagic.BlazorSvg/test-harness/test-runner-boardroom.js`
+**Location:** `LazyMagic.BlazorSvg/FloorMat/test-runner-boardroom.js`
 
 **Purpose:** Generate boardroom layouts for all 251 valid combinations.
 
@@ -194,7 +194,7 @@ node test-runner-boardroom.js
 
 ### 3. Data Extraction (`extract-precomputed-boardroom.js`)
 
-**Location:** `LazyMagic.BlazorSvg/test-harness/extract-precomputed-boardroom.js`
+**Location:** `LazyMagic.BlazorSvg/FloorMat/extract-precomputed-boardroom.js`
 
 **Purpose:** Parse generated SVG files and extract boardroom data into JSON.
 
@@ -258,7 +258,7 @@ node extract-precomputed-boardroom.js
 
 ### 4. SVG Embedding (`embed-boardroom-in-svg.js`)
 
-**Location:** `LazyMagic.BlazorSvg/test-harness/embed-boardroom-in-svg.js`
+**Location:** `LazyMagic.BlazorSvg/FloorMat/embed-boardroom-in-svg.js`
 
 **Purpose:** Embed boardroom data directly into Level1.svg.
 
@@ -717,16 +717,16 @@ Add to `.gitignore`:
 
 ```
 LazyMagic.BlazorSvg/TestResults/BoardroomResults/
-LazyMagic.BlazorSvg/test-harness/precomputed-boardroom.json
+LazyMagic.BlazorSvg/FloorMat/precomputed-boardroom.json
 ```
 
 Commit to repository:
 
 ```
 LazyMagic.BlazorSvg/wwwroot/SvgViewerBoardroom.js
-LazyMagic.BlazorSvg/test-harness/test-runner-boardroom.js
-LazyMagic.BlazorSvg/test-harness/extract-precomputed-boardroom.js
-LazyMagic.BlazorSvg/test-harness/embed-boardroom-in-svg.js
+LazyMagic.BlazorSvg/FloorMat/test-runner-boardroom.js
+LazyMagic.BlazorSvg/FloorMat/extract-precomputed-boardroom.js
+LazyMagic.BlazorSvg/FloorMat/embed-boardroom-in-svg.js
 BlazorTest.WASM/wwwroot/Level1.svg  (with embedded data)
 ```
 
@@ -875,11 +875,11 @@ node embed-boardroom-in-svg.js
 ### File Locations
 
 - Algorithm: `wwwroot/SvgViewerBoardroom.js`
-- Test Runner: `test-harness/test-runner-boardroom.js`
-- Extractor: `test-harness/extract-precomputed-boardroom.js`
-- Embedder: `test-harness/embed-boardroom-in-svg.js`
+- Test Runner: `FloorMat/test-runner-boardroom.js`
+- Extractor: `FloorMat/extract-precomputed-boardroom.js`
+- Embedder: `FloorMat/embed-boardroom-in-svg.js`
 - Output: `TestResults/BoardroomResults/*.svg`
-- JSON: `test-harness/precomputed-boardroom.json`
+- JSON: `FloorMat/precomputed-boardroom.json`
 - Embedded: `BlazorTest.WASM/wwwroot/Level1.svg`
 
 ### Key Parameters

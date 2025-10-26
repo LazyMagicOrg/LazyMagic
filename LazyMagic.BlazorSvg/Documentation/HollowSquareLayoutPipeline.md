@@ -163,7 +163,7 @@ calculateRectangleCorners(centroid, width, height, angleDegrees)
 
 ### 2. Test Runner (`test-runner-hollowsquare.js`)
 
-**Location:** `LazyMagic.BlazorSvg/test-harness/test-runner-hollowsquare.js`
+**Location:** `LazyMagic.BlazorSvg/FloorMat/test-runner-hollowsquare.js`
 
 **Purpose:** Generate hollow square layouts for all 251 valid combinations.
 
@@ -206,7 +206,7 @@ node test-runner-hollowsquare.js
 
 ### 3. Data Extraction (`extract-precomputed-hollowsquare.js`)
 
-**Location:** `LazyMagic.BlazorSvg/test-harness/extract-precomputed-hollowsquare.js`
+**Location:** `LazyMagic.BlazorSvg/FloorMat/extract-precomputed-hollowsquare.js`
 
 **Purpose:** Parse generated SVG files and extract hollow square data into JSON.
 
@@ -271,7 +271,7 @@ node extract-precomputed-hollowsquare.js
 
 ### 4. SVG Embedding (`embed-hollowsquare-in-svg.js`)
 
-**Location:** `LazyMagic.BlazorSvg/test-harness/embed-hollowsquare-in-svg.js`
+**Location:** `LazyMagic.BlazorSvg/FloorMat/embed-hollowsquare-in-svg.js`
 
 **Purpose:** Embed hollow square data directly into Level1.svg.
 
@@ -766,16 +766,16 @@ Add to `.gitignore`:
 
 ```
 LazyMagic.BlazorSvg/TestResults/HollowSquareResults/
-LazyMagic.BlazorSvg/test-harness/precomputed-hollowsquare.json
+LazyMagic.BlazorSvg/FloorMat/precomputed-hollowsquare.json
 ```
 
 Commit to repository:
 
 ```
 LazyMagic.BlazorSvg/wwwroot/SvgViewerHollowSquare.js
-LazyMagic.BlazorSvg/test-harness/test-runner-hollowsquare.js
-LazyMagic.BlazorSvg/test-harness/extract-precomputed-hollowsquare.js
-LazyMagic.BlazorSvg/test-harness/embed-hollowsquare-in-svg.js
+LazyMagic.BlazorSvg/FloorMat/test-runner-hollowsquare.js
+LazyMagic.BlazorSvg/FloorMat/extract-precomputed-hollowsquare.js
+LazyMagic.BlazorSvg/FloorMat/embed-hollowsquare-in-svg.js
 BlazorTest.WASM/wwwroot/Level1.svg  (with embedded data)
 ```
 
@@ -914,11 +914,11 @@ node embed-hollowsquare-in-svg.js
 ### File Locations
 
 - Algorithm: `wwwroot/SvgViewerHollowSquare.js`
-- Test Runner: `test-harness/test-runner-hollowsquare.js`
-- Extractor: `test-harness/extract-precomputed-hollowsquare.js`
-- Embedder: `test-harness/embed-hollowsquare-in-svg.js`
+- Test Runner: `FloorMat/test-runner-hollowsquare.js`
+- Extractor: `FloorMat/extract-precomputed-hollowsquare.js`
+- Embedder: `FloorMat/embed-hollowsquare-in-svg.js`
 - Output: `TestResults/HollowSquareResults/*.svg`
-- JSON: `test-harness/precomputed-hollowsquare.json`
+- JSON: `FloorMat/precomputed-hollowsquare.json`
 - Embedded: `BlazorTest.WASM/wwwroot/Level1.svg`
 
 ### Key Parameters
