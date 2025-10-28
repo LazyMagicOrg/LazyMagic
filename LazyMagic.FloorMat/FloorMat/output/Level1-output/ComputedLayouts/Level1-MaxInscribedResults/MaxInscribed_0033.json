@@ -1,0 +1,49 @@
+{
+  "testId": "MaxInscribed_0033",
+  "sections": [
+    "Ballroom_Aisle_35",
+    "Ballroom_Room_3",
+    "Ballroom_Room_5"
+  ],
+  "layout": {
+    "corners": [
+      {
+        "x": 350.97,
+        "y": 32.26
+      },
+      {
+        "x": 680.5962300000002,
+        "y": 32.255595
+      },
+      {
+        "x": 680.5975132338735,
+        "y": 128.28000905392565
+      },
+      {
+        "x": 350.97128323387346,
+        "y": 128.28441405392567
+      }
+    ],
+    "width": 329.62623002943343,
+    "height": 96.0244140625,
+    "area": 31652.165598207186,
+    "angle": 90.00076567908063,
+    "centroid": {
+      "x": 515.7837566169369,
+      "y": 80.27000452696282
+    },
+    "aspectRatio": 3.432733573514831,
+    "type": "boundary-based",
+    "computeTime": 0.9983000000065658,
+    "centroidStrategy": "uniform",
+    "hybridTotalTime": 11.419200000003912,
+    "usedBoundaryBased": true,
+    "usedOptimized": true,
+    "selectedAlgorithm": "boundary-based",
+    "boundaryTime": 1.0209999999933643,
+    "optimizedTime": 10.38969999999972
+  },
+  "polygonArea": 31585.016492893374,
+  "fillRatio": 100.21259797451403,
+  "runtimeMs": 14
+}

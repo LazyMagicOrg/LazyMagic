@@ -1,0 +1,29 @@
+{
+  "timeout": 3600000,
+  "outputOptions": {
+    "generateSVG": true,
+    "generateJSON": true,
+    "generateSummary": true,
+    "deleteExistingResults": true
+  },
+  "testName": "Level1 - Boardroom Layout",
+  "algorithm": "boardroom",
+  "svgPath": "C:\\Users\\noaht\\source\\repos\\_Dev\\LazyMagic\\LazyMagic\\LazyMagic.FloorMat\\FloorMat\\input\\Level1.svg",
+  "outputDir": "C:\\Users\\noaht\\source\\repos\\_Dev\\LazyMagic\\LazyMagic\\LazyMagic.FloorMat\\FloorMat\\output\\Level1-output\\ComputedLayouts\\Level1-BoardroomResults",
+  "algorithmOptions": {
+    "width": {
+      "mode": "fixed",
+      "value": 13
+    },
+    "height": {
+      "mode": "continuous",
+      "min": 6,
+      "max": 1000,
+      "samples": 25
+    },
+    "angleSamples": 25,
+    "centroidSamples": 25,
+    "debugMode": false
+  },
+  "combinationsFile": "C:\\Users\\noaht\\source\\repos\\_Dev\\LazyMagic\\LazyMagic\\LazyMagic.FloorMat\\FloorMat\\output\\Level1-output\\Level1-valid-combinations.json"
+}

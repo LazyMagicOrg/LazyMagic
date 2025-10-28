@@ -90,7 +90,7 @@ dotnet run --project MudBlazorTest.WASM/MudBlazorTest.WASM.csproj
 - **Build-Time Precomputation**: Node.js-based pipeline for SVG polygon analysis
 - **Embedded Data Pattern**: Precomputed geometric data embedded directly in SVG files
 - **Test Infrastructure**: Playwright-based automated testing for visual verification
-- **Documentation**: Comprehensive algorithm documentation in LazyMagic.BlazorSvg/Documentation/
+- **Documentation**: Comprehensive algorithm documentation in LazyMagic.FloorMat/Documentation/
 
 ## Important Conventions
 
@@ -136,7 +136,7 @@ dotnet run --project MudBlazorTest.WASM/MudBlazorTest.WASM.csproj
   - **BlazoriseTest.WASM**: Blazorise framework integration (includes Camera component demo)
   - **MudBlazorTest.WASM**: MudBlazor framework integration
 - All test apps share common ViewModels from BlazorTest.ViewModels project
-- FloorMat pipeline for layout data generation in LazyMagic.BlazorSvg/FloorMat/
+- FloorMat pipeline for layout data generation in LazyMagic.FloorMat/FloorMat/
 
 ### JavaScript Interop Patterns
 - **Base class**: LzBaseJSModule for all JS module wrappers
@@ -148,7 +148,7 @@ dotnet run --project MudBlazorTest.WASM/MudBlazorTest.WASM.csproj
 ## Key Documentation Locations
 
 ### LazyMagic.BlazorSvg Documentation
-Located in `LazyMagic.BlazorSvg/Documentation/`:
+Located in `LazyMagic.FloorMat/Documentation/`:
 - **InscribedRectangle-Guide.md**: Complete system architecture and usage guide
 - **Algorithms-Implementation.md**: Low-level algorithm implementations with mathematical foundations
 - **BoardroomLayoutPipeline.md**: Boardroom layout system documentation

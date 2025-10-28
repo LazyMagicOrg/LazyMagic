@@ -10,9 +10,6 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 	</PropertyGroup>
-	<ItemGroup>
-	  <None Remove="FloorMat\nul" />
-	</ItemGroup>
 
 
 	<ItemGroup>
@@ -21,10 +18,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Components.Web" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="Documentation\" />
 	</ItemGroup>
 
 </Project>

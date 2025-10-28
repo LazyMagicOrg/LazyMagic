@@ -1,0 +1,24 @@
+{
+  "name": "floormat",
+  "version": "1.0.0",
+  "description": "FloorMat - SVG floor plan layout generation tool (MaxInscribed, Boardroom, Hollow Square)",
+  "type": "module",
+  "main": "process-all.js",
+  "scripts": {
+    "process": "node process-all.js"
+  },
+  "keywords": [
+    "svg",
+    "geometry",
+    "testing",
+    "inscribed-rectangle",
+    "boardroom-layout",
+    "hollow-square"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "jsdom": "^27.0.0",
+    "xmldom": "^0.6.0"
+  }
+}

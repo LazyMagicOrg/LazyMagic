@@ -1,0 +1,391 @@
+﻿[
+  {
+    "Id": "Level1",
+    "Name": "Level 1",
+    "Diagram": {
+      "Image": "subtenancy/base/SetsCmp/data/Level1.svg",
+      "MeasureUnits": "Imperial",
+      "Unit": "ft"
+    },
+    "Rooms": [
+      {
+        "Id": "Ballroom",
+        "RoomSections": [
+          {
+            "Id": "Ballroom_Room_1",
+            "Name": "Ballroom 1",
+            "Description": "Ballroom 1",
+            "Area": 2668,
+            "Width": 58.0,
+            "Depth": 46.0
+          },
+          {
+            "Id": "Ballroom_Room_2",
+            "Name": "Ballroom 2",
+            "Description": "Ballroom 2",
+            "Area": 2436,
+            "Width": 58.0,
+            "Depth": 42.0
+          },
+          {
+            "Id": "Ballroom_Room_3",
+            "Name": "Ballroom 3",
+            "Description": "Ballroom 3",
+            "Area": 2392,
+            "Width": 52.0,
+            "Depth": 46.0
+          },
+          {
+            "Id": "Ballroom_Room_4",
+            "Name": "Ballroom 4",
+            "Description": "Ballroom 4",
+            "Area": 2626,
+            "Width": 52.0,
+            "Depth": 50.5
+          },
+          {
+            "Id": "Ballroom_Room_5",
+            "Name": "Ballroom 5",
+            "Description": "Ballroom 5",
+            "Area": 4646,
+            "Width": 101.0,
+            "Depth": 46.0
+          },
+          {
+            "Id": "Ballroom_Room_Grand",
+            "Name": "Grand Ballroom",
+            "Description": "Grand Ballroom",
+            "Area": 6013.25,
+            "Width": 89.75,
+            "Depth": 67.0
+          },
+          {
+            "Id": "Ballroom_Aisle_12",
+            "SectionType": "Aisle",
+            "Name": "Aisle 12",
+            "Description": "Connects Ballroom 1 and Ballroom 2",
+            "Area": 580,
+            "Width": 58.0,
+            "Depth": 10.0
+          },
+          {
+            "Id": "Ballroom_Aisle_34",
+            "SectionType": "Aisle",
+            "Name": "Aisle 34",
+            "Description": "Connects Ballroom 3 and Ballroom 4",
+            "Area": 520,
+            "Width": 52.0,
+            "Depth": 10.0
+          },
+          {
+            "Id": "Ballroom_Aisle_35",
+            "SectionType": "Aisle",
+            "Name": "Aisle 35",
+            "Description": "Connects Ballroom 3 and Ballroom 5",
+            "Area": 460,
+            "Width": 10.0,
+            "Depth": 46.0
+          },
+          {
+            "Id": "Ballroom_Aisle_46",
+            "SectionType": "Aisle",
+            "Name": "Aisle 46",
+            "Description": "Connects Ballroom 4 and Grand Ballroom",
+            "Area": 567.5,
+            "Width": 10.0,
+            "Depth": 56.75
+          },
+          {
+            "Id": "Ballroom_Aisle_56",
+            "SectionType": "Aisle",
+            "Name": "Aisle 56",
+            "Description": "Connects Ballroom 5 and Grand Ballroom",
+            "Area": 997.5,
+            "Width": 99.75,
+            "Depth": 10.0
+          },
+          {
+            "Id": "Ballroom_Crossing_3456",
+            "SectionType": "Crossing",
+            "Name": "Aisle 3456",
+            "Description": "Connects Ballrooms 3, 4, 5, and Grand Ballroom",
+            "Area": 100,
+            "Width": 10.0,
+            "Depth": 10.0
+          }
+        ],
+        "Joins": [
+          {
+            "Orientation": "Vertical",
+            "Section1Id": "Ballroom_Room_1",
+            "Section2Id": "Ballroom_Room_3"
+          },
+          {
+            "Orientation": "Horizontal",
+            "Section1Id": "Ballroom_Aisle_12",
+            "Section2Id": "Ballroom_Room_1"
+          },
+          {
+            "Orientation": "Horizontal",
+            "Section1Id": "Ballroom_Aisle_12",
+            "Section2Id": "Ballroom_Room_2"
+          },
+          {
+            "Orientation": "Vertical",
+            "Section1Id": "Ballroom_Room_2",
+            "Section2Id": "Ballroom_Room_4"
+          },
+          {
+            "Orientation": "Horizontal",
+            "Section1Id": "Ballroom_Aisle_34",
+            "Section2Id": "Ballroom_Room_3"
+          },
+          {
+            "Orientation": "Horizontal",
+            "Section1Id": "Ballroom_Aisle_34",
+            "Section2Id": "Ballroom_Room_4"
+          },
+          {
+            "Orientation": "Vertical",
+            "Section1Id": "Ballroom_Aisle_35",
+            "Section2Id": "Ballroom_Room_3"
+          },
+          {
+            "Orientation": "Vertical",
+            "Section1Id": "Ballroom_Aisle_35",
+            "Section2Id": "Ballroom_Room_5"
+          },
+          {
+            "Orientation": "Vertical",
+            "Section1Id": "Ballroom_Aisle_46",
+            "Section2Id": "Ballroom_Room_4"
+          },
+          {
+            "Orientation": "Vertical",
+            "Section1Id": "Ballroom_Aisle_46",
+            "Section2Id": "Ballroom_Room_Grand"
+          },
+          {
+            "Orientation": "Horizontal",
+            "Section1Id": "Ballroom_Aisle_56",
+            "Section2Id": "Ballroom_Room_5"
+          },
+          {
+            "Orientation": "Horizontal",
+            "Section1Id": "Ballroom_Aisle_56",
+            "Section2Id": "Ballroom_Room_Grand"
+          },
+          {
+            "Orientation": "Intersection",
+            "Section1Id": "Ballroom_Crossing_3456",
+            "Section2Id": "Ballroom_Aisle_34"
+          },
+          {
+            "Orientation": "Intersection",
+            "Section1Id": "Ballroom_Crossing_3456",
+            "Section2Id": "Ballroom_Aisle_35"
+          },
+          {
+            "Orientation": "Intersection",
+            "Section1Id": "Ballroom_Crossing_3456",
+            "Section2Id": "Ballroom_Aisle_46"
+          },
+          {
+            "Orientation": "Intersection",
+            "Section1Id": "Ballroom_Crossing_3456",
+            "Section2Id": "Ballroom_Aisle_56"
+          }
+        ]
+      },
+      {
+        "Id": "Foyer",
+        "RoomSections": [
+          {
+            "Id": "Foyer_Room_Foyer",
+            "Name": "Foyer",
+            "Description": "Cerulean Foyer",
+            "Area": 5472,
+            "Width": 57.0,
+            "Depth": 96.0
+          }
+        ]
+      },
+      {
+        "Id": "BeachDeck",
+        "RoomSections": [
+          {
+            "Id": "BeachDeck_Room_BeachDeck",
+            "Name": "Beach Deck",
+            "Description": "Beach Deck",
+            "Area": 3141.5,
+            "Width": 61,
+            "Depth": 51.5
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "Id": "Level2",
+    "Name": "Level 2",
+    "Diagram": {
+      "Image": "subtenancy/base/SetsCmp/data/Level2.svg",
+      "MeasureUnits": "Imperial",
+      "Unit": "ft"
+    },
+    "Rooms": [
+      {
+        "Id": "Capri",
+        "RoomSections": [
+          {
+            "Id": "Capri_Room_A",
+            "Name": "Capri A",
+            "Description": "Capri A",
+            "Area": 1395,
+            "Width": 45.0,
+            "Depth": 31.0
+          },
+          {
+            "Id": "Capri_Room_B",
+            "Name": "Capri B",
+            "Description": "Capri B",
+            "Area": 1518,
+            "Width": 46.0,
+            "Depth": 33.0
+          }
+        ],
+        "Joins": [
+          {
+            "Orientation": "Vertical",
+            "Section1Id": "Capri_Room_A",
+            "Section2Id": "Capri_Room_B"
+          }
+        ]
+      },
+      {
+        "Id": "Coral",
+        "RoomSections": [
+          {
+            "Id": "Coral_Room_A",
+            "Name": "Coral A",
+            "Description": "Coral A",
+            "Area": 1870,
+            "Width": 55.0,
+            "Depth": 34.0
+          },
+          {
+            "Id": "Coral_Room_B",
+            "Name": "Coral B",
+            "Description": "Coral B",
+            "Area": 2146,
+            "Width": 58.0,
+            "Depth": 37.0
+          }
+        ],
+        "Joins": [
+          {
+            "Orientation": "Vertical",
+            "Section1Id": "Coral_Room_A",
+            "Section2Id": "Coral_Room_B"
+          }
+        ]
+      },
+      {
+        "Id": "Oceana",
+        "RoomSections": [
+          {
+            "Id": "Oceana_Room_A",
+            "Name": "Oceana A",
+            "Description": "Oceana A",
+            "Area": 2940,
+            "Width": 60.0,
+            "Depth": 49.0
+          },
+          {
+            "Id": "Oceana_Room_B",
+            "Name": "Oceana B",
+            "Description": "Oceana B",
+            "Area": 3380,
+            "Width": 65.0,
+            "Depth": 52.0
+          }
+        ],
+        "Joins": [
+          {
+            "Orientation": "Vertical",
+            "Section1Id": "Oceana_Room_A",
+            "Section2Id": "Oceana_Room_B"
+          }
+        ]
+      },
+      {
+        "Id": "IslaTerrace",
+        "RoomSections": [
+          {
+            "Id": "IslaTerrace_Room_Terrace",
+            "Name": "",
+            "Description": "",
+            "Area": 3074,
+            "Width": 58.0,
+            "Depth": 53.0
+          }
+        ]
+      },
+      {
+        "Id": "PreFunction",
+        "RoomSections": [
+          {
+            "Id": "PreFunction_Room_Capri",
+            "Name": "Capri PreFunction",
+            "Description": "Capri PreFunction",
+            "Area": 2015,
+            "Width": 65.0,
+            "Depth": 31.0
+          },
+          {
+            "Id": "PreFunction_Room_IslaTerrace",
+            "Name": "Isla Terrace PreFunction",
+            "Description": "Isla Terrace PreFunction",
+            "Area": 1825,
+            "Width": 73.0,
+            "Depth": 25.0
+          },
+          {
+            "Id": "PreFunction_Room_Coral",
+            "Name": "Coral PreFunction",
+            "Description": "Coral PreFunction",
+            "Area": 1800,
+            "Width": 75.0,
+            "Depth": 24.0
+          },
+          {
+            "Id": "PreFunction_Room_Oceana",
+            "Name": "Oceana PreFunction",
+            "Description": "Oceana PreFunction",
+            "Area": 2600,
+            "Width": 100.0,
+            "Depth": 26.0
+          }
+        ],
+        "Joins": [
+          {
+            "Orientation": "Vertical",
+            "Section1Id": "PreFunction_Room_Capri",
+            "Section2Id": "PreFunction_Room_IslaTerrace"
+          },
+          {
+            "Orientation": "Vertical",
+            "Section1Id": "PreFunction_Room_Coral",
+            "Section2Id": "PreFunction_Room_IslaTerrace"
+          },
+          {
+            "Orientation": "Vertical",
+            "Section1Id": "PreFunction_Room_Coral",
+            "Section2Id": "PreFunction_Room_Oceana"
+          }
+        ]
+      }
+
+    ]
+  }
+]
