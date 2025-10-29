@@ -75,23 +75,22 @@ function loadRoomsData() {
     }
     const data = JSON.parse(fileContent);
 
-    // Find the Level1 ballroom data
-    const level1 = data.find(level => level.Id === 'Level1');
-    if (!level1) {
-        console.error('❌ ERROR: Could not find Level1 in Rooms.json');
+    // Find the level by prefix
+    const level = data.find(lvl => lvl.Id === prefix);
+    if (!level) {
+        console.error(`❌ ERROR: Could not find ${prefix} in Rooms.json`);
         process.exit(1);
     }
 
-    const ballroom = level1.Rooms.find(room => room.Id === 'Ballroom');
-    if (!ballroom) {
-        console.error('❌ ERROR: Could not find Ballroom in Level1');
-        process.exit(1);
-    }
+    console.log(`  ✓ Found level: ${level.Name || prefix}`);
+    console.log(`  ✓ Found ${level.Rooms.length} room(s)\n`);
 
-    console.log(`  ✓ Found ${ballroom.RoomSections.length} sections`);
-    console.log(`  ✓ Found ${ballroom.Joins.length} joins\n`);
-
-    return { sections: ballroom.RoomSections, joins: ballroom.Joins };
+    // Return all rooms in the level
+    return level.Rooms.map(room => ({
+        roomId: room.Id,
+        sections: room.RoomSections,
+        joins: room.Joins || [] // Joins may not exist for single-section rooms
+    }));
 }
 
 // =============================================================================
@@ -352,13 +351,13 @@ function generateAllCombinations(graph) {
 // SAVE OUTPUT
 // =============================================================================
 
-function saveOutput(combinations, graph) {
-    console.log('Step 5: Saving results...');
+function saveOutputMultiRoom(combinations, roomSummary) {
+    console.log('\nSaving results...');
 
     const output = {
         generatedAt: new Date().toISOString(),
         totalCombinations: combinations.length,
-        sectionIds: graph.sectionList,
+        roomSummary: roomSummary,
         combinations: combinations
     };
 
@@ -372,7 +371,7 @@ function saveOutput(combinations, graph) {
     fs.writeFileSync(OUTPUT_PATH, JSON.stringify(output, null, 2), 'utf8');
 
     console.log(`  ✓ Saved to: ${OUTPUT_PATH}`);
-    console.log(`  ✓ File size: ${(fs.statSync(OUTPUT_PATH).size / 1024).toFixed(1)} KB\n`);
+    console.log(`  ✓ File size: ${(fs.statSync(OUTPUT_PATH).size / 1024).toFixed(1)} KB`);
 }
 
 // =============================================================================
@@ -425,11 +424,55 @@ function printStatistics(combinations, graph) {
 
 function main() {
     try {
-        const roomsData = loadRoomsData();
-        const graph = buildGraph(roomsData.sections, roomsData.joins);
-        const validCombinations = generateAllCombinations(graph);
-        saveOutput(validCombinations, graph);
-        printStatistics(validCombinations, graph);
+        const allRoomsData = loadRoomsData(); // Returns array of {roomId, sections, joins}
+
+        let allCombinations = [];
+        const roomSummary = {};
+        let globalCounter = 1;
+
+        // Process each room independently
+        allRoomsData.forEach(roomData => {
+            console.log(`\nProcessing room: ${roomData.roomId}`);
+            console.log('─'.repeat(80));
+
+            const graph = buildGraph(roomData.sections, roomData.joins);
+            const combinations = generateAllCombinations(graph);
+
+            // Add room metadata and global sequential IDs
+            combinations.forEach(combo => {
+                const id = `${roomData.roomId}_${String(globalCounter).padStart(4, '0')}`;
+                allCombinations.push({
+                    id: id,
+                    roomId: roomData.roomId,
+                    key: combo.key,
+                    sections: combo.sections,
+                    size: combo.size
+                });
+                globalCounter++;
+            });
+
+            roomSummary[roomData.roomId] = combinations.length;
+            console.log(`  ✓ ${combinations.length} valid combinations for ${roomData.roomId}`);
+        });
+
+        console.log('\n' + '='.repeat(80));
+        console.log('SUMMARY');
+        console.log('='.repeat(80));
+        console.log('Combinations by room:');
+        Object.entries(roomSummary).forEach(([roomId, count]) => {
+            console.log(`  ${roomId}: ${count}`);
+        });
+        console.log(`\nTotal: ${allCombinations.length} combinations across ${allRoomsData.length} room(s)`);
+
+        // Create a combined graph for statistics (optional - use first room's graph structure)
+        const firstGraph = buildGraph(allRoomsData[0].sections, allRoomsData[0].joins);
+
+        saveOutputMultiRoom(allCombinations, roomSummary);
+
+        console.log('\n' + '='.repeat(80));
+        console.log('COMPLETE!');
+        console.log(`Successfully generated ${allCombinations.length} valid combinations`);
+        console.log('='.repeat(80) + '\n');
     } catch (error) {
         console.error('\n❌ ERROR:', error.message);
         console.error(error.stack);

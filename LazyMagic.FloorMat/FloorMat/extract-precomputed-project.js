@@ -43,7 +43,7 @@ function extractLayoutsFromDir(dirPath, filePrefix, combinations) {
 
     for (let i = 0; i < combinations.length; i++) {
         const combo = combinations[i];
-        const testName = `${filePrefix}_${String(i + 1).padStart(4, '0')}`;
+        const testName = `${filePrefix}_${combo.id}`;
         const jsonPath = path.join(dirPath, `${testName}.json`);
 
         if (!fs.existsSync(jsonPath)) {

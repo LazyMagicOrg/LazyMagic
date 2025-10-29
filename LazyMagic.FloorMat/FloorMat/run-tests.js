@@ -745,15 +745,16 @@ function main() {
         const combinationsData = JSON.parse(fs.readFileSync(combinationsPath, 'utf8'));
 
         // Convert combinations to testCombinations format
-        // Use comboNumbers if provided, otherwise sequential numbering
+        // Use combo.id from file (includes room prefix), or comboNumbers if provided
         if (testConfig.comboNumbers && testConfig.comboNumbers.length === combinationsData.combinations.length) {
             testConfig.testCombinations = combinationsData.combinations.map((combo, index) => ({
                 id: String(testConfig.comboNumbers[index]).padStart(4, '0'),
                 sections: combo.sections
             }));
         } else {
-            testConfig.testCombinations = combinationsData.combinations.map((combo, index) => ({
-                id: String(index + 1).padStart(4, '0'),
+            // Use the id from the combinations file (e.g., "Ballroom_0001")
+            testConfig.testCombinations = combinationsData.combinations.map(combo => ({
+                id: combo.id,
                 sections: combo.sections
             }));
         }
