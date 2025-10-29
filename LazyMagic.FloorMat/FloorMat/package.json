@@ -5,7 +5,8 @@
   "type": "module",
   "main": "process-all.js",
   "scripts": {
-    "process": "node process-all.js"
+    "process": "node process-all.js",
+    "process-external": "node process-external.js"
   },
   "keywords": [
     "svg",
