@@ -13,6 +13,11 @@
 	<ItemGroup>
 	  <None Remove="FloorMat\nul" />
 	</ItemGroup>
+	<ItemGroup>
+	  <Content Include="FloorMat\output\Level1-output\.temp-configs\boardroom.json" />
+	  <Content Include="FloorMat\output\Level1-output\.temp-configs\hollowsquare.json" />
+	  <Content Include="FloorMat\output\Level1-output\.temp-configs\maxinscribed.json" />
+	</ItemGroup>
 
 
 	<ItemGroup>
@@ -25,7 +30,6 @@
 
 	<ItemGroup>
 	  <Folder Include="Documentation\" />
-	  <Folder Include="FloorMat\output\" />
 	</ItemGroup>
 
 </Project>

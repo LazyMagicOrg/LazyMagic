@@ -1,0 +1,51 @@
+{
+  "testId": "Boardroom_Ballroom_0232",
+  "sections": [
+    "Ballroom_Aisle_34",
+    "Ballroom_Aisle_35",
+    "Ballroom_Aisle_46",
+    "Ballroom_Aisle_56",
+    "Ballroom_Crossing_3456",
+    "Ballroom_Room_3",
+    "Ballroom_Room_5",
+    "Ballroom_Room_Grand"
+  ],
+  "layout": {
+    "corners": [
+      {
+        "x": 360.1284455734982,
+        "y": 37.6892112804467
+      },
+      {
+        "x": 624.0150887000492,
+        "y": 285.495263626632
+      },
+      {
+        "x": 615.1159763229763,
+        "y": 294.9718557831103
+      },
+      {
+        "x": 351.2293331964253,
+        "y": 47.165803436925046
+      }
+    ],
+    "width": 362,
+    "height": 13,
+    "area": 4706,
+    "angle": 43.2,
+    "centroid": {
+      "x": 487.62221094823724,
+      "y": 166.3305335317785
+    },
+    "sets": 59,
+    "tables": 118,
+    "orientation": "length×width",
+    "type": "boardroom",
+    "algorithm": "Dedicated",
+    "computationTime": 289.38619999999355,
+    "winningAlgorithm": "Dedicated"
+  },
+  "polygonArea": 64463.52293879576,
+  "fillRatio": 7.30025258543202,
+  "runtimeMs": 403
+}

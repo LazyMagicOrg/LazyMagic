@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="330.97 127.93 487.22862999999995 180"
+     width="487.22862999999995" height="180"
+     style="background: white;">
+
+  <!-- Title -->
+  <text x="350.97" y="167.93" font-size="16" font-weight="bold" fill="#000">
+    Boardroom_Ballroom_0005
+  </text>
+
+  <!-- Original test paths (gray, semi-transparent) -->
+  <g opacity="0.3">
+    <path id="Ballroom_Room_4" d="m 458.19863,147.93412 v 111.1988 c -39.14199,-8.77234 -69.83329,-15.49794 -107.22741,-19.85693 v -91.34187 z" fill="none" stroke="#808080" stroke-width="1"/>
+  </g>
+
+  <!-- Boundary polygon (blue, dashed) -->
+  <polygon points="350.97,147.93 458.19863,147.93412 458.19863,259.13292 350.97121999999996,239.27599" fill="none" stroke="#4080ff" stroke-width="2" stroke-dasharray="5,5"/>
+
+  <!-- Layout rectangle (colored fill, solid border) -->
+  <polygon points="359.8828928633298,150.18951647133997 457.56468893779896,241.91882866578425 448.66557656072604,251.39542082226257 350.9837804862569,159.6661086278183" fill="rgba(5, 150, 105, 0.15)" stroke="#059669" stroke-width="3"/>
+
+  <!-- Centroid marker -->
+  <circle cx="404.2742347120279" cy="200.79246864680127" r="4" fill="#059669"/>
+  <text x="412.2742347120279" y="205.79246864680127" font-size="10" fill="#059669">boardroom</text>
+
+  <!-- Corner markers -->
+
+  <circle cx="359.8828928633298" cy="150.18951647133997" r="3" fill="#059669"/>
+  <text x="365.8828928633298" y="154.18951647133997" font-size="8" fill="#059669">c0</text>
+  <circle cx="457.56468893779896" cy="241.91882866578425" r="3" fill="#059669"/>
+  <text x="463.56468893779896" y="245.91882866578425" font-size="8" fill="#059669">c1</text>
+  <circle cx="448.66557656072604" cy="251.39542082226257" r="3" fill="#059669"/>
+  <text x="454.66557656072604" y="255.39542082226257" font-size="8" fill="#059669">c2</text>
+  <circle cx="350.9837804862569" cy="159.6661086278183" r="3" fill="#059669"/>
+  <text x="356.9837804862569" y="163.6661086278183" font-size="8" fill="#059669">c3</text>
+
+  <!-- Vertex markers -->
+
+  <circle cx="350.97" cy="147.93" r="2" fill="#4080ff"/>
+  <text x="342.97" y="141.93" font-size="8" fill="#4080ff">p0</text>
+  <circle cx="458.19863" cy="147.93412" r="2" fill="#4080ff"/>
+  <text x="450.19863" y="141.93412" font-size="8" fill="#4080ff">p1</text>
+  <circle cx="458.19863" cy="259.13292" r="2" fill="#4080ff"/>
+  <text x="450.19863" y="253.13292" font-size="8" fill="#4080ff">p2</text>
+  <circle cx="350.97121999999996" cy="239.27599" r="2" fill="#4080ff"/>
+  <text x="342.97121999999996" y="233.27599" font-size="8" fill="#4080ff">p3</text>
+
+  <!-- Data Table (positioned to the right) -->
+  <g transform="translate(478.19863, 147.93)">
+    <rect x="0" y="0" width="320" height="160" fill="white" stroke="#ccc" stroke-width="1"/>
+    <rect x="0" y="0" width="320" height="30" fill="#f0f0f0"/>
+    <text x="160" y="20" font-size="14" font-weight="bold" text-anchor="middle">Boardroom Layout</text>
+
+    <text x="10" y="50" font-size="11" font-weight="bold">Tables:</text>
+    <text x="310" y="50" font-size="11" text-anchor="end">42 (21 sets)</text>
+
+    <text x="10" y="70" font-size="11" font-weight="bold">Dimensions:</text>
+    <text x="310" y="70" font-size="11" text-anchor="end">134.0 × 13.0 ft</text>
+
+    <text x="10" y="90" font-size="11" font-weight="bold">Area:</text>
+    <text x="310" y="90" font-size="11" text-anchor="end">1742.00 sq ft</text>
+
+    <text x="10" y="110" font-size="11" font-weight="bold">Fill Ratio:</text>
+    <text x="310" y="110" font-size="11" text-anchor="end">16.0%</text>
+
+    <text x="10" y="130" font-size="11" font-weight="bold">Angle:</text>
+    <text x="310" y="130" font-size="11" text-anchor="end">43.2°</text>
+
+    <text x="10" y="150" font-size="11" font-weight="bold">Runtime:</text>
+    <text x="310" y="150" font-size="11" text-anchor="end">60ms</text>
+  </g>
+
+  <!-- Area Data (embedded as XML comments for extraction) -->
+  <!-- polygonArea: 10859.2323 -->
+  <!-- layoutArea: 1742.00 -->
+  <!-- fillRatio: 16.0 -->
+
+</svg>
