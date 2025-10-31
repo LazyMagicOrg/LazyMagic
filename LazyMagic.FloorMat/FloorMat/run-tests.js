@@ -50,22 +50,49 @@ global.fastInscribedRectangle = optimized.fastInscribedRectangle;
 function extractPathData(svgContent, pathIds) {
     const paths = [];
     for (const pathId of pathIds) {
-        // Try to find <path> element with 'd' attribute
-        let regex = new RegExp(`<path[^>]*id="${pathId}"[^>]*d="([^"]*)"`, 'i');
-        let match = svgContent.match(regex);
+        // Escape pathId for use in regex (in case it contains special chars)
+        const escapedId = pathId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
-        if (match) {
-            paths.push({ id: pathId, d: match[1] });
+        // Find the <path> element opening tag
+        const pathRegex = new RegExp(`<path[^>]*\\bid="${escapedId}"[^>]*\\/>|<path[^>]*\\bid="${escapedId}"[^>]*>`, 'i');
+        const pathMatch = svgContent.match(pathRegex);
+
+        if (pathMatch) {
+            const element = pathMatch[0];
+
+            // Extract 'd' attribute
+            const dMatch = element.match(/\bd="([^"]*)"/i);
+            if (!dMatch) continue;
+
+            let pathD = dMatch[1];
+
+            // Extract transform attribute if present
+            const transformMatch = element.match(/\btransform="([^"]*)"/i);
+            if (transformMatch) {
+                const transform = transformMatch[1];
+
+                // Parse translate(x, y) transform
+                const translateMatch = transform.match(/translate\(([^,]+),\s*([^)]+)\)/i);
+                if (translateMatch) {
+                    const tx = parseFloat(translateMatch[1]);
+                    const ty = parseFloat(translateMatch[2]);
+
+                    // Apply transform to path by parsing and translating coordinates
+                    pathD = applyTranslateToPath(pathD, tx, ty);
+                }
+            }
+
+            paths.push({ id: pathId, d: pathD });
             continue;
         }
 
         // Try to find <polygon> element with 'points' attribute
-        regex = new RegExp(`<polygon[^>]*id="${pathId}"[^>]*points="([^"]*)"`, 'i');
-        match = svgContent.match(regex);
+        const polygonRegex = new RegExp(`<polygon[^>]*\\bid="${escapedId}"[^>]*points="([^"]*)"`, 'i');
+        const polygonMatch = svgContent.match(polygonRegex);
 
-        if (match) {
+        if (polygonMatch) {
             // Convert polygon points to path 'd' format
-            const points = match[1].trim().split(/\s+/);
+            const points = polygonMatch[1].trim().split(/\s+/);
             const pathCommands = points.map((point, index) => {
                 const [x, y] = point.split(',');
                 return index === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
@@ -76,6 +103,73 @@ function extractPathData(svgContent, pathIds) {
     }
 
     return paths;
+}
+
+/**
+ * Apply translate transform to SVG path data
+ */
+function applyTranslateToPath(pathD, tx, ty) {
+    // Parse path commands and apply translation to all coordinates
+    const commands = pathD.match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/gi) || [];
+    let currentX = 0, currentY = 0;
+    let startX = 0, startY = 0;
+
+    const translatedCommands = [];
+
+    for (const cmd of commands) {
+        const type = cmd[0].toUpperCase();
+        const isRelative = cmd[0] === cmd[0].toLowerCase() && type !== 'Z';
+        const params = cmd.slice(1).trim().split(/[\s,]+/).map(Number).filter(n => !isNaN(n));
+
+        if (type === 'M') {
+            // M can have multiple pairs of coordinates (implicit L commands)
+            for (let i = 0; i < params.length; i += 2) {
+                currentX = isRelative ? currentX + params[i] : params[i];
+                currentY = isRelative ? currentY + params[i + 1] : params[i + 1];
+
+                if (i === 0) {
+                    startX = currentX;
+                    startY = currentY;
+                    translatedCommands.push(`M ${currentX + tx} ${currentY + ty}`);
+                } else {
+                    // Subsequent coordinate pairs are treated as L commands
+                    translatedCommands.push(`L ${currentX + tx} ${currentY + ty}`);
+                }
+            }
+        } else if (type === 'L') {
+            // L can also have multiple pairs of coordinates
+            for (let i = 0; i < params.length; i += 2) {
+                currentX = isRelative ? currentX + params[i] : params[i];
+                currentY = isRelative ? currentY + params[i + 1] : params[i + 1];
+                translatedCommands.push(`L ${currentX + tx} ${currentY + ty}`);
+            }
+        } else if (type === 'H') {
+            currentX = isRelative ? currentX + params[0] : params[0];
+            translatedCommands.push(`L ${currentX + tx} ${currentY + ty}`);
+        } else if (type === 'V') {
+            currentY = isRelative ? currentY + params[0] : params[0];
+            translatedCommands.push(`L ${currentX + tx} ${currentY + ty}`);
+        } else if (type === 'C') {
+            for (let i = 0; i < params.length; i += 6) {
+                const x1 = isRelative ? currentX + params[i] : params[i];
+                const y1 = isRelative ? currentY + params[i + 1] : params[i + 1];
+                const x2 = isRelative ? currentX + params[i + 2] : params[i + 2];
+                const y2 = isRelative ? currentY + params[i + 3] : params[i + 3];
+                currentX = isRelative ? currentX + params[i + 4] : params[i + 4];
+                currentY = isRelative ? currentY + params[i + 5] : params[i + 5];
+                translatedCommands.push(`C ${x1 + tx} ${y1 + ty} ${x2 + tx} ${y2 + ty} ${currentX + tx} ${currentY + ty}`);
+            }
+        } else if (type === 'Z') {
+            currentX = startX;
+            currentY = startY;
+            translatedCommands.push('Z');
+        } else {
+            // For other commands, just return as-is (simplified for now)
+            translatedCommands.push(cmd);
+        }
+    }
+
+    return translatedCommands.join(' ');
 }
 
 /**
@@ -206,7 +300,7 @@ function calculateLayoutData(layout, algorithmType) {
 /**
  * Generate SVG output file matching the original aesthetic style
  */
-function generateSvgOutput(polygon, layout, outputPath, testId, sectionIds, svgPath, algorithmType, polygonArea, runtimeMs) {
+function generateSvgOutput(polygon, layout, outputPath, testId, sectionIds, svgPath, algorithmType, polygonArea, runtimeMs, layoutRestriction = 'allowed') {
     // Calculate bounds for viewBox
     const bounds = unifiedAlgo.getPolygonBounds(polygon);
     const padding = 20;
@@ -257,6 +351,26 @@ function generateSvgOutput(polygon, layout, outputPath, testId, sectionIds, svgP
   <circle cx="${point.x}" cy="${point.y}" r="2" fill="#4080ff"/>
   <text x="${point.x - 8}" y="${point.y - 6}" font-size="8" fill="#4080ff">p${i}</text>`).join('');
 
+    // Warning/Restriction banner (if applicable)
+    let restrictionBanner = '';
+    if (layoutRestriction === 'warning') {
+        restrictionBanner = `
+  <!-- Layout Warning Banner -->
+  <rect x="${bounds.minX}" y="${bounds.minY + 30}" width="${totalWidth - tableWidth - padding}" height="30" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2" rx="4"/>
+  <text x="${bounds.minX + 10}" y="${bounds.minY + 50}" font-size="12" font-weight="bold" fill="#92400E">
+    ⚠ Layout Warning: This area may have obstacles or constraints that affect table placement
+  </text>
+`;
+    } else if (layoutRestriction === 'restricted') {
+        restrictionBanner = `
+  <!-- Layout Restriction Banner -->
+  <rect x="${bounds.minX}" y="${bounds.minY + 30}" width="${totalWidth - tableWidth - padding}" height="30" fill="#FEE2E2" stroke="#DC2626" stroke-width="2" rx="4"/>
+  <text x="${bounds.minX + 10}" y="${bounds.minY + 50}" font-size="12" font-weight="bold" fill="#991B1B">
+    🚫 Restricted Area: This layout is for reference only - not recommended for table placement
+  </text>
+`;
+    }
+
     const svgContent = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
      viewBox="${viewBox}"
@@ -267,7 +381,7 @@ function generateSvgOutput(polygon, layout, outputPath, testId, sectionIds, svgP
   <text x="${bounds.minX}" y="${bounds.minY + 20}" font-size="16" font-weight="bold" fill="#000">
     ${testId}
   </text>
-
+${restrictionBanner}
   <!-- Original test paths (gray, semi-transparent) -->
   <g opacity="0.3">
 ${originalPaths.map(p => `    <path id="${p.id}" d="${p.d}" fill="none" stroke="#808080" stroke-width="1"/>`).join('\n')}
@@ -663,7 +777,8 @@ function runTest(testConfig, combination, testIndex, totalTests) {
                 testConfig.svgPath,
                 testConfig.algorithm,
                 polygonArea,
-                runtime
+                runtime,
+                combination.layoutRestriction || 'allowed'
             );
         }
 
@@ -687,6 +802,7 @@ function runTest(testConfig, combination, testIndex, totalTests) {
         return {
             id: combination.id,
             sections: combination.sections,
+            layoutRestriction: combination.layoutRestriction || 'allowed',
             passed: true,
             layout: {
                 width: layout.width,
@@ -704,6 +820,7 @@ function runTest(testConfig, combination, testIndex, totalTests) {
         return {
             id: combination.id,
             sections: combination.sections,
+            layoutRestriction: combination.layoutRestriction || 'allowed',
             passed: false,
             error: error.message,
             runtimeMs: Date.now() - startTime

@@ -102,12 +102,15 @@ function buildGraph(sections, joins) {
 
     // Map section IDs to their types
     const sectionTypes = new Map();
+    const sectionRestrictions = new Map(); // Track layout restrictions
     const sectionList = [];
 
     sections.forEach(section => {
         const id = section.Id;
         const type = section.SectionType || 'Room'; // Default to Room if not specified
+        const restriction = section.LayoutRestriction || 'allowed'; // Default to allowed
         sectionTypes.set(id, type);
+        sectionRestrictions.set(id, restriction);
         sectionList.push(id);
     });
 
@@ -151,6 +154,7 @@ function buildGraph(sections, joins) {
 
     return {
         sectionTypes,
+        sectionRestrictions,
         sectionList,
         adjacency,
         rooms,
@@ -159,6 +163,35 @@ function buildGraph(sections, joins) {
         aisleConnections,
         crossingConnections
     };
+}
+
+// =============================================================================
+// LAYOUT RESTRICTION CHECK
+// =============================================================================
+
+/**
+ * Check if a combination should be excluded based on LayoutRestriction
+ * Returns: { allowed: boolean, hasWarning: boolean, restrictedSections: string[] }
+ */
+function checkLayoutRestrictions(combination, graph) {
+    const { sectionRestrictions } = graph;
+    const restrictedSections = [];
+    let hasWarning = false;
+
+    for (const sectionId of combination) {
+        const restriction = sectionRestrictions.get(sectionId) || 'allowed';
+
+        if (restriction === 'restricted') {
+            restrictedSections.push(sectionId);
+        } else if (restriction === 'warning') {
+            hasWarning = true;
+        }
+    }
+
+    // If ANY section is restricted, the entire combination is excluded
+    const allowed = restrictedSections.length === 0;
+
+    return { allowed, hasWarning, restrictedSections };
 }
 
 // =============================================================================
@@ -322,15 +355,36 @@ function generateAllCombinations(graph) {
         if (isValidCombination(combination, graph)) {
             validCount++;
 
+            // Check layout restrictions
+            const restrictionCheck = checkLayoutRestrictions(combination, graph);
+
             // Sort sections alphabetically for consistent keys
             const sorted = combination.slice().sort();
             const key = sorted.join('_');
 
-            validCombinations.push({
+            const combinationData = {
                 key,
                 sections: sorted,
                 size: sorted.length
-            });
+            };
+
+            // Determine the most restrictive level for this combination
+            let layoutRestriction = 'allowed';
+            if (!restrictionCheck.allowed) {
+                layoutRestriction = 'restricted';
+            } else if (restrictionCheck.hasWarning) {
+                layoutRestriction = 'warning';
+            }
+
+            // Add restriction metadata
+            combinationData.layoutRestriction = layoutRestriction;
+
+            // Keep backward compatibility flag
+            if (restrictionCheck.hasWarning) {
+                combinationData.layoutWarning = true;
+            }
+
+            validCombinations.push(combinationData);
         }
 
         // Progress indicator
