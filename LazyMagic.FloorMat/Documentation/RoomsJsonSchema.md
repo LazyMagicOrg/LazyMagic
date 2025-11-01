@@ -63,12 +63,49 @@ Sections are the individual areas that can be combined for layout generation.
 | `Id` | string | Yes | - | Unique identifier matching SVG path ID |
 | `Name` | string | Yes | - | Display name for the section |
 | `Description` | string | No | - | Description of the section |
-| `Area` | number | Yes | - | Area in square units |
-| `Width` | number | Yes | - | Width in units |
-| `Depth` | number | Yes | - | Depth/height in units |
+| **`Area`** | number | No | calculated | **OPTIONAL OVERRIDE:** Area in square units. If specified, overrides calculated polygon area |
+| **`Width`** | number | No | calculated | **OPTIONAL OVERRIDE:** Width in units. If specified, overrides calculated dimension |
+| **`Depth`** | number | No | calculated | **OPTIONAL OVERRIDE:** Depth/height in units. If specified, overrides calculated dimension |
 | `SectionType` | string | No | "Room" | Type: "Room", "Aisle", or "Crossing" |
 | **`LayoutRestriction`** | string | No | "allowed" | **Layout generation restriction** |
 | `LayoutRestrictionReason` | string | No | - | Explanation for the restriction |
+
+### Measurement Overrides (Area, Width, Depth)
+
+By default, the FloorMat pipeline **calculates measurements directly from SVG geometry**. However, you can optionally specify `Area`, `Width`, and `Depth` properties to **override the calculated values**.
+
+**When to use overrides:**
+- **Client specifications:** Client measures the room differently than the CAD dimensions
+- **Marketing requirements:** Round numbers preferred for marketing materials (e.g., 1400 sq ft instead of 1395.7)
+- **Insurance/compliance:** Official measurements differ from architectural drawings
+- **Usable space adjustments:** Account for permanent fixtures not reflected in SVG outline
+
+**How it works:**
+1. If `Area`/`Width`/`Depth` are **omitted**: Pipeline uses values calculated from SVG polygon geometry
+2. If `Area`/`Width`/`Depth` are **specified**: Pipeline uses your provided values instead
+
+**Example without overrides (most common):**
+```json
+{
+  "Id": "Ballroom_Room_1",
+  "Name": "Ballroom 1",
+  "LayoutRestriction": "allowed"
+}
+```
+_Area, width, and depth calculated automatically from SVG_
+
+**Example with overrides (special cases):**
+```json
+{
+  "Id": "Ballroom_Room_1",
+  "Name": "Ballroom 1",
+  "Area": 2700,
+  "Width": 60.0,
+  "Depth": 45.0,
+  "LayoutRestriction": "allowed"
+}
+```
+_Override values will be used instead of calculated measurements_
 
 ### LayoutRestriction Values
 

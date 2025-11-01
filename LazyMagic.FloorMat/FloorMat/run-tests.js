@@ -694,20 +694,32 @@ function runTest(testConfig, combination, testIndex, totalTests) {
 
     console.log(`\n[${testIndex + 1}/${totalTests}] Testing combination: ${combination.id}`);
     console.log(`  Sections: ${combination.sections.join(', ')}`);
+    if (combination.overrides) {
+        console.log(`  Overrides: ${JSON.stringify(combination.overrides)}`);
+    }
 
     try {
         // Parse SVG and extract polygon
         const polygon = parseSvgCombination(testConfig.svgPath, combination.sections);
         console.log(`  Polygon vertices: ${polygon.length}`);
 
-        // Calculate polygon area for comparison
-        let polygonArea = 0;
+        // Calculate polygon area from geometry
+        let calculatedArea = 0;
         for (let i = 0; i < polygon.length; i++) {
             const p1 = polygon[i];
             const p2 = polygon[(i + 1) % polygon.length];
-            polygonArea += p1.x * p2.y - p2.x * p1.y;
+            calculatedArea += p1.x * p2.y - p2.x * p1.y;
         }
-        polygonArea = Math.abs(polygonArea / 2);
+        calculatedArea = Math.abs(calculatedArea / 2);
+
+        // Check for override value from Rooms.json
+        const polygonArea = combination.overrides?.area !== undefined
+            ? combination.overrides.area
+            : calculatedArea;
+
+        if (combination.overrides?.area !== undefined) {
+            console.log(`  Area override: Using ${polygonArea} sq ft (calculated: ${calculatedArea.toFixed(2)} sq ft)`);
+        }
 
         // Run the algorithm based on type
         console.log(`  Running algorithm...`);

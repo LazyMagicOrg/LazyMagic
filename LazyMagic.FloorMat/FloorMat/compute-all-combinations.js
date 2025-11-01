@@ -103,6 +103,7 @@ function buildGraph(sections, joins) {
     // Map section IDs to their types
     const sectionTypes = new Map();
     const sectionRestrictions = new Map(); // Track layout restrictions
+    const sectionMetadata = new Map(); // Track optional override values (Area, Width, Depth)
     const sectionList = [];
 
     sections.forEach(section => {
@@ -111,6 +112,16 @@ function buildGraph(sections, joins) {
         const restriction = section.LayoutRestriction || 'allowed'; // Default to allowed
         sectionTypes.set(id, type);
         sectionRestrictions.set(id, restriction);
+
+        // Store optional override metadata
+        const metadata = {};
+        if (section.Area !== undefined) metadata.area = section.Area;
+        if (section.Width !== undefined) metadata.width = section.Width;
+        if (section.Depth !== undefined) metadata.depth = section.Depth;
+        if (Object.keys(metadata).length > 0) {
+            sectionMetadata.set(id, metadata);
+        }
+
         sectionList.push(id);
     });
 
@@ -155,6 +166,7 @@ function buildGraph(sections, joins) {
     return {
         sectionTypes,
         sectionRestrictions,
+        sectionMetadata,
         sectionList,
         adjacency,
         rooms,
@@ -384,6 +396,27 @@ function generateAllCombinations(graph) {
                 combinationData.layoutWarning = true;
             }
 
+            // Add measurement override metadata (Area, Width, Depth) if any sections have them
+            const { sectionMetadata } = graph;
+            const overrides = {};
+            for (const sectionId of sorted) {
+                const metadata = sectionMetadata.get(sectionId);
+                if (metadata) {
+                    // For combinations with multiple sections, we only store overrides if ALL sections have them
+                    // For single section, just use that section's override
+                    if (sorted.length === 1) {
+                        overrides.area = metadata.area;
+                        overrides.width = metadata.width;
+                        overrides.depth = metadata.depth;
+                    }
+                    // For multi-section combinations, we don't apply individual section overrides
+                    // (the combined polygon needs to be calculated from SVG)
+                }
+            }
+            if (Object.keys(overrides).length > 0) {
+                combinationData.overrides = overrides;
+            }
+
             validCombinations.push(combinationData);
         }
 
@@ -495,13 +528,26 @@ function main() {
             // Add room metadata and global sequential IDs
             combinations.forEach(combo => {
                 const id = `${roomData.roomId}_${String(globalCounter).padStart(4, '0')}`;
-                allCombinations.push({
+                const combinationOutput = {
                     id: id,
                     roomId: roomData.roomId,
                     key: combo.key,
                     sections: combo.sections,
                     size: combo.size
-                });
+                };
+
+                // Include optional metadata
+                if (combo.layoutRestriction) {
+                    combinationOutput.layoutRestriction = combo.layoutRestriction;
+                }
+                if (combo.layoutWarning) {
+                    combinationOutput.layoutWarning = combo.layoutWarning;
+                }
+                if (combo.overrides) {
+                    combinationOutput.overrides = combo.overrides;
+                }
+
+                allCombinations.push(combinationOutput);
                 globalCounter++;
             });
 
