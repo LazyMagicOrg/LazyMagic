@@ -18,9 +18,13 @@ public interface ILzHost
     // Cognito configuration
     string? AuthConfigName { get; set; }
 
+    // Subtenant configuration
+    string? SubTenant { get; set; }
+    List<string>? SubTenants { get; set; }
+
     string GetApiUrl(string path);
-    string GetAssetsUrl(string path);    
-    
+    string GetAssetsUrl(string path);
+
 }
 
 public class LzHost : ILzHost
@@ -99,6 +103,10 @@ public class LzHost : ILzHost
     public string? CognitoRegion { get; set; }
     public string? CognitoUserPoolId { get; set; }
     public string? AuthConfigName { get; set; }
+
+    // Subtenant configuration
+    public string? SubTenant { get; set; }
+    public List<string>? SubTenants { get; set; }
 
     public string GetApiUrl(string path) => UseLocalhostApi ? LocalApiUrl + path : RemoteApiUrl + path;
     public string GetAssetsUrl(string path) => AssetsUrl + path;

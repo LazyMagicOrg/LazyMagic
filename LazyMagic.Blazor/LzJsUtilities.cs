@@ -149,6 +149,10 @@ public class LzJsUtilities : LzBaseJSModule, ILzJsUtilities
     public virtual async ValueTask<string> GetStoredTokensAsync()
         => await InvokeSafeAsync<string>("getStoredTokens");
 
+    // Hostname Methods
+    public virtual async ValueTask<string> GetHostnameAsync()
+        => await InvokeSafeAsync<string>("getHostname");
+
     // Callbacks. ie. [JSInvokable]
     [JSInvokable]
     public void AssetDataCheckStarted()

@@ -560,3 +560,8 @@ async function getFastAuthStateInternal() {
 
 // Usage in another module:
 // import { setCookie, getCookie, deleteCookie } from './cookieStorage.js';
+
+// Get the current hostname from the browser
+export function getHostname() {
+    return window.location.hostname;
+}

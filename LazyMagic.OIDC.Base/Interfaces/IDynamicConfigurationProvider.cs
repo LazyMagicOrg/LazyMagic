@@ -37,4 +37,9 @@ public interface IDynamicConfigurationProvider
     /// Gets the provider type (e.g., "cognito", "auth0", "okta", "azuread")
     /// </summary>
     string? GetProviderType();
+
+    /// <summary>
+    /// Gets the selected auth configuration object
+    /// </summary>
+    JObject? GetAuthConfig();
 }

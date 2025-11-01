@@ -19,6 +19,10 @@ public interface ILzHost
     string? CognitoRegion { get; set; }
     string? CognitoUserPoolId { get; set; }
 
+    // Subtenant configuration
+    string? SubTenant { get; set; }
+    List<string>? SubTenants { get; set; }
+
     string GetApiUrl(string path);
     string GetAssetsUrl(string path);
 
@@ -50,6 +54,8 @@ public class LzHost : ILzHost
     /// <param name="useLocalhostApi">use localhost service API. Set by Program.cs or MauiProgram.cs</param>
     /// <param name="cognitoRegion">AWS Cognito region for authentication</param>
     /// <param name="cognitoUserPoolId">AWS Cognito User Pool ID for authentication</param>
+    /// <param name="subTenant">Current subtenant for multi-tenant apps. Set from localStorage.</param>
+    /// <param name="subTenants">List of accessible subtenants for the current user. Set after authentication.</param>
     public LzHost(
         string? appPath = null,
         string? appUrl = null,
@@ -63,7 +69,9 @@ public class LzHost : ILzHost
         bool isLocal = false,
         bool useLocalhostApi = false,
         string? cognitoRegion = null,
-        string? cognitoUserPoolId = null
+        string? cognitoUserPoolId = null,
+        string? subTenant = null,
+        List<string>? subTenants = null
         )
     {
         AppPath = appPath ?? "";
@@ -79,6 +87,8 @@ public class LzHost : ILzHost
         UseLocalhostApi = useLocalhostApi;
         CognitoRegion = cognitoRegion;
         CognitoUserPoolId = cognitoUserPoolId;
+        SubTenant = subTenant;
+        SubTenants = subTenants;
     }
 
     public string AppPath { get; set; } = string.Empty;
@@ -97,6 +107,10 @@ public class LzHost : ILzHost
     // Cognito configuration
     public string? CognitoRegion { get; set; }
     public string? CognitoUserPoolId { get; set; }
+
+    // Subtenant configuration
+    public string? SubTenant { get; set; }
+    public List<string>? SubTenants { get; set; }
 
     public string GetApiUrl(string path) => UseLocalhostApi ? LocalApiUrl + path : RemoteApiUrl + path;
     public string GetAssetsUrl(string path) => AssetsUrl + path;

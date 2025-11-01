@@ -118,6 +118,22 @@ public abstract class LzAuthorization : ILzAuthorization
         var authname = request.Headers["lz-authname"].FirstOrDefault(); // Get first value to avoid comma-separated duplicates
         var tenancyConfig = new TenancyConfig(configJson!, tenantId!);
 
+        // AUTH GEN2: Read subtenant from lz-subtenant header (added by CloudFront or HttpClient handler)
+        // This overrides the subtenant from tenancyConfig if present
+        var subtenantFromHeader = request.Headers["lz-subtenant"].FirstOrDefault();
+        if (!string.IsNullOrEmpty(subtenantFromHeader))
+        {
+            tenancyConfig.SubtenantKey = subtenantFromHeader;
+            tenancyConfig.SetCalculatedFields(); // Recalculate computed properties
+        }
+        // Fallback: Check cookie if header not present (for direct API calls from browser)
+        else if (request.Cookies.TryGetValue("lz-subtenant", out var subtenantFromCookie) && !string.IsNullOrEmpty(subtenantFromCookie))
+        {
+            tenancyConfig.SubtenantKey = subtenantFromCookie;
+            tenancyConfig.SetCalculatedFields(); // Recalculate computed properties
+        }
+        // END AUTH GEN2
+
         // CallerInfo contains tenancy information potentially useful to the repository layer. For instance,
         // the DefaultDB is the DynamoDB table name for the default tenant.
         callerInfo.TenantId = tenancyConfig.Id;

@@ -11,5 +11,5 @@ public interface ILzClientConfig : IOidcConfig
     string Type { get; set; }
     string Region { get; set; }
 
-    Task InitializeAsync(string hostUrl);
+    Task InitializeAsync(string hostUrl, string? subtenant = null);
 }

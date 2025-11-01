@@ -10,7 +10,16 @@
       "Bash(grep:*)",
       "Bash(done)",
       "Read(//mnt/c/Users/TimothyMay/OneDrive - Insight Sciences Corporation/Pictures/Screenshots/**)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Read(//mnt/c/Users/TimothyMay/repos/_Dev/MagicPets/Service/AWSTemplates/Templates/**)",
+      "Read(//mnt/c/Users/TimothyMay/repos/_Dev/MagicPets/Service/**)",
+      "Read(//mnt/c/Users/TimothyMay/repos/_Dev/MagicPets/StoreApp/ViewModels/Config/**)",
+      "Bash(mkdir:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet clean:*)",
+      "Bash(/dev/null)",
+      "Bash(dotnet restore:*)",
+      "Bash(pwsh -Command:*)"
     ],
     "deny": []
   }

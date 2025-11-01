@@ -99,6 +99,14 @@ public class Program
             return;
         }
 
+        // Get subtenant from localStorage and set it in LzHost
+        var subtenant = await GetSubtenantAsync(jsRuntime);
+        if (!string.IsNullOrEmpty(subtenant) && LzHost != null)
+        {
+            LzHost.SubTenant = subtenant;
+            LogMessage("Main", $"Subtenant set to: {subtenant}");
+        }
+
         await ConfigureLazyMagicOIDCWASM.LoadConfiguration(host);
 
         await host.RunAsync();
@@ -126,6 +134,25 @@ public class Program
         catch (Exception ex)
         {
             LogMessage("GetAppConfigAsync", $"Error fetching app config: {ex.Message}");
+            return null;
+        }
+    }
+
+    private static async Task<string?> GetSubtenantAsync(IJSRuntime jsRuntime)
+    {
+        try
+        {
+            // Get subtenant from localStorage
+            string? subtenant = await jsRuntime.InvokeAsync<string?>(
+                "eval",
+                "localStorage.getItem('subtenant')"
+            );
+
+            return subtenant;
+        }
+        catch (Exception ex)
+        {
+            LogMessage("GetSubtenantAsync", $"Error fetching subtenant: {ex.Message}");
             return null;
         }
     }

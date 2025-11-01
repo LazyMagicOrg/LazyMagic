@@ -1,5 +1,6 @@
 using LazyMagic.OIDC.Base.Services;
 using LazyMagic.OIDC.WASM.Services;
+using Microsoft.AspNetCore.Components.WebAssembly.Authentication;
 
 namespace LazyMagic.OIDC.WASM;
 
@@ -296,17 +297,75 @@ public class BlazorOIDCService : IOIDCService, IDisposable
         try
         {
             _logger.LogInformation("Initiating Blazor WebAssembly login");
-            
+
             // Log the current base URI and where we're redirecting to
             _logger.LogInformation("Base URI: {BaseUri}", _navigation.BaseUri);
-            _logger.LogInformation("Navigating to login endpoint: authentication/login");
-            
-            // Navigate to the authentication/login endpoint
-            _navigation.NavigateToLogin("authentication/login");
-            
+
+            // Check if callback proxy is enabled
+            var config = _configProvider.GetAuthConfig();
+            var useCallbackProxy = config?["useCallbackProxy"]?.ToObject<bool>() ?? false;
+
+            if (useCallbackProxy)
+            {
+                // Encode target domain and path for proxy redirect
+                // Pass it as a query parameter in the redirect_uri itself
+                var uri = new Uri(_navigation.Uri);
+                var targetDomain = uri.Authority; // Includes port (e.g., "localhost:7218" or "uptown.lazymagicdev.click")
+                var targetPath = uri.PathAndQuery;
+
+                // Create state data for CloudFront to decode
+                // Include authConfigName for multi-auth support
+                var stateData = new
+                {
+                    authConfigName = _oidcConfig.SelectedAuthConfig,
+                    targetDomain = targetDomain,
+                    targetPath = targetPath,
+                    timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
+                };
+
+                var stateJson = System.Text.Json.JsonSerializer.Serialize(stateData);
+                var stateEncoded = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(stateJson));
+
+                _logger.LogInformation("State parameter includes authConfigName: {AuthConfigName}", _oidcConfig.SelectedAuthConfig);
+
+                // Get the callback proxy domain and build redirect_uri with target parameter
+                var callbackProxyDomain = config?["callbackProxyDomain"]?.ToString();
+                if (!string.IsNullOrEmpty(callbackProxyDomain))
+                {
+                    if (!callbackProxyDomain.StartsWith("https://"))
+                        callbackProxyDomain = "https://" + callbackProxyDomain;
+
+                    // Include target as query parameter in redirect_uri
+                    // Cognito should preserve this when redirecting back
+                    var customRedirectUri = $"{callbackProxyDomain.TrimEnd('/')}/callback?target={Uri.EscapeDataString(stateEncoded)}";
+
+                    // Use InteractiveRequestOptions to override the redirect_uri
+                    var requestOptions = new InteractiveRequestOptions
+                    {
+                        Interaction = InteractionType.SignIn,
+                        ReturnUrl = _navigation.Uri
+                    };
+                    requestOptions.TryAddAdditionalParameter("redirect_uri", customRedirectUri);
+
+                    _logger.LogInformation("Using callback proxy - custom redirect_uri: {RedirectUri}", customRedirectUri);
+                    _navigation.NavigateToLogin("authentication/login", requestOptions);
+                }
+                else
+                {
+                    _logger.LogWarning("Callback proxy enabled but callbackProxyDomain is not configured");
+                    _navigation.NavigateToLogin("authentication/login");
+                }
+            }
+            else
+            {
+                // Normal mode - no proxy
+                _logger.LogInformation("Navigating to login endpoint: authentication/login");
+                _navigation.NavigateToLogin("authentication/login");
+            }
+
             // Trigger the event in case any subscribers need it
             OnAuthenticationRequested?.Invoke("login");
-            
+
             return Task.FromResult(true);
         }
         catch (Exception ex)
@@ -334,9 +393,42 @@ public class BlazorOIDCService : IOIDCService, IDisposable
             _logger.LogInformation("[LogoutAsync][{Timestamp}] Tokens cleared from storage", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
             
             // Build logout URL to clear Cognito session
-            var postLogoutRedirectUri = _navigation.BaseUri;
-            _logger.LogInformation("[LogoutAsync][{Timestamp}] PostLogoutRedirectUri: {PostLogoutRedirectUri}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), postLogoutRedirectUri);
-            
+            var config = _configProvider.GetAuthConfig();
+            var useCallbackProxy = config?["useCallbackProxy"]?.ToObject<bool>() ?? false;
+            var callbackProxyDomain = config?["callbackProxyDomain"]?.ToString();
+
+            string postLogoutRedirectUri;
+
+            if (useCallbackProxy && !string.IsNullOrEmpty(callbackProxyDomain))
+            {
+                // Encode target domain for proxy redirect
+                var uri = new Uri(_navigation.Uri);
+                var targetDomain = uri.Authority; // Includes port (e.g., "localhost:7218")
+                var targetPath = "/"; // After logout, always return to root
+
+                // Create state data for CloudFront to decode
+                var stateData = new
+                {
+                    targetDomain = targetDomain,
+                    targetPath = targetPath
+                };
+
+                var stateJson = System.Text.Json.JsonSerializer.Serialize(stateData);
+                var stateEncoded = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes(stateJson));
+
+                // Build logout URL through proxy with state parameter
+                if (!callbackProxyDomain.StartsWith("https://"))
+                    callbackProxyDomain = "https://" + callbackProxyDomain;
+                postLogoutRedirectUri = $"{callbackProxyDomain.TrimEnd('/')}/logout?state={stateEncoded}";
+                _logger.LogInformation("[LogoutAsync][{Timestamp}] Using callback proxy - PostLogoutRedirectUri: {PostLogoutRedirectUri}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), postLogoutRedirectUri);
+            }
+            else
+            {
+                // Normal mode - no proxy
+                postLogoutRedirectUri = _navigation.BaseUri;
+                _logger.LogInformation("[LogoutAsync][{Timestamp}] PostLogoutRedirectUri: {PostLogoutRedirectUri}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), postLogoutRedirectUri);
+            }
+
             var logoutUrl = _configProvider.BuildLogoutUrl(postLogoutRedirectUri);
             
             if (!string.IsNullOrEmpty(logoutUrl))

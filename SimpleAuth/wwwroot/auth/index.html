@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <base href="/auth/">
+    <title>Authentication</title>
+    <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h1>Authentication Selection</h1>
+            </div>
+            <div class="card-body">
+                <!-- Loading State -->
+                <div id="loading" class="state-container">
+                    <div class="spinner"></div>
+                    <p>Loading authentication options...</p>
+                </div>
+
+                <!-- Error State -->
+                <div id="error" class="state-container" style="display: none;">
+                    <div class="alert alert-error">
+                        <strong>Error:</strong> <span id="error-message"></span>
+                    </div>
+                    <button id="retry-button" class="btn btn-primary">Retry</button>
+                </div>
+
+                <!-- Already Authenticated State -->
+                <div id="already-authenticated" class="state-container" style="display: none;">
+                    <div class="alert alert-success">
+                        <h3>Already Authenticated</h3>
+                        <p>You are already authenticated with: <strong id="current-auth-name"></strong></p>
+                        <p id="redirect-message" style="display: none;">Redirecting...</p>
+                    </div>
+                    <button id="continue-button" class="btn btn-primary">Continue to Application</button>
+                    <button id="switch-auth-button" class="btn btn-secondary">Sign in with Different Account</button>
+                </div>
+
+                <!-- Subtenant Selection State -->
+                <div id="subtenant-selection" class="state-container" style="display: none;">
+                    <h3>Select Your Location:</h3>
+                    <div id="subtenant-buttons" class="selection-buttons">
+                        <!-- Subtenant buttons will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Auth Selection State -->
+                <div id="auth-selection" class="state-container" style="display: none;">
+                    <div id="subtenant-info" class="alert alert-info" style="display: none;">
+                        <strong>Location:</strong> <span id="subtenant-name"></span>
+                    </div>
+                    <h3>Select Authentication Method:</h3>
+                    <div id="auth-buttons" class="auth-buttons">
+                        <!-- Auth buttons will be inserted here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import * as auth from './auth.js';
+
+        let authConfigs = {};
+        let subtenant = null;
+        let authname = null;
+        let returnUrl = null;
+        let app = null;
+
+        async function initialize() {
+            try {
+                // Get query parameters
+                const params = auth.getQueryParams();
+                returnUrl = params.returnUrl;
+                subtenant = params.subtenant;
+                authname = params.authname;
+                app = params.app;
+
+                console.log('SimpleAuth initialized', { returnUrl, subtenant, authname, app });
+
+                auth.hideElement('error');
+                auth.showElement('loading');
+
+                // Step 1: Handle subtenant selection/validation
+                if (!subtenant) {
+                    // No subtenant provided - fetch list and show selection UI
+                    await showSubtenantSelection();
+                } else {
+                    // Subtenant provided - store in cookie
+                    auth.setCookie('lz-subtenant', subtenant);
+                    auth.setText('subtenant-name', subtenant);
+                    auth.showElement('subtenant-info');
+
+                    // Step 2: Handle authname selection/validation
+                    await handleAuthSelection();
+                }
+            } catch (error) {
+                console.error('Initialization error:', error);
+                showError(error.message);
+            }
+        }
+
+        async function showSubtenantSelection() {
+            try {
+                // Fetch list of subtenants from API
+                const subtenants = await auth.fetchSubtenants();
+                console.log('Loaded subtenants:', subtenants);
+
+                if (!subtenants || subtenants.length === 0) {
+                    throw new Error('No subtenants available');
+                }
+
+                // Display subtenant selection buttons
+                const container = document.getElementById('subtenant-buttons');
+                container.innerHTML = '';
+
+                for (const st of subtenants) {
+                    const button = document.createElement('button');
+                    button.className = 'btn btn-auth';
+                    button.textContent = st.name || st.subTenantKey || st;
+                    button.onclick = () => selectSubtenant(st.subTenantKey || st);
+                    container.appendChild(button);
+                }
+
+                auth.hideElement('loading');
+                auth.showElement('subtenant-selection');
+            } catch (error) {
+                console.error('Error loading subtenants:', error);
+                showError(error.message);
+            }
+        }
+
+        async function selectSubtenant(selectedSubtenant) {
+            subtenant = selectedSubtenant;
+            auth.setCookie('lz-subtenant', subtenant);
+            auth.setText('subtenant-name', subtenant);
+            auth.showElement('subtenant-info');
+
+            console.log('Subtenant selected:', subtenant);
+
+            auth.hideElement('subtenant-selection');
+            auth.showElement('loading');
+
+            // Move to authname selection
+            await handleAuthSelection();
+        }
+
+        async function handleAuthSelection() {
+            try {
+                // Load auth configs
+                authConfigs = await auth.fetchAuthConfigs();
+                console.log('Loaded auth configs:', Object.keys(authConfigs));
+
+                // If authname provided, use it directly
+                if (authname) {
+                    auth.setCookie('lz-authname', authname);
+                    await checkTokensAndProceed(authname);
+                    return;
+                }
+
+                // Check for existing valid tokens for ANY authname
+                const { valid, authConfigName } = auth.checkForValidTokens(authConfigs);
+
+                if (valid) {
+                    // Already authenticated
+                    auth.setCookie('lz-authname', authConfigName);
+                    auth.setText('current-auth-name', authConfigName);
+                    auth.hideElement('loading');
+                    auth.showElement('already-authenticated');
+
+                    // Auto-redirect if returnUrl provided
+                    if (returnUrl) {
+                        auth.showElement('redirect-message');
+                        setTimeout(() => redirectToTarget(), 2000);
+                    }
+                } else {
+                    // Show auth selection
+                    displayAuthButtons();
+                    auth.hideElement('loading');
+                    auth.showElement('auth-selection');
+                }
+            } catch (error) {
+                console.error('Error handling auth selection:', error);
+                showError(error.message);
+            }
+        }
+
+        async function checkTokensAndProceed(selectedAuthname) {
+            const { valid } = auth.checkForValidTokens({ [selectedAuthname]: authConfigs[selectedAuthname] });
+
+            if (valid) {
+                // Already have valid tokens for this authname
+                redirectToTarget();
+            } else {
+                // Need to authenticate
+                await selectAuth(selectedAuthname);
+            }
+        }
+
+        function displayAuthButtons() {
+            const container = document.getElementById('auth-buttons');
+            container.innerHTML = '';
+
+            for (const [name, config] of Object.entries(authConfigs)) {
+                const button = document.createElement('button');
+                button.className = 'btn btn-auth';
+                button.textContent = auth.formatAuthConfigName(name);
+                button.onclick = () => selectAuth(name);
+                container.appendChild(button);
+            }
+        }
+
+        function selectAuth(authConfigName) {
+            try {
+                console.log('User selected:', authConfigName);
+
+                const authConfig = authConfigs[authConfigName];
+                if (!authConfig) {
+                    throw new Error(`Auth config not found: ${authConfigName}`);
+                }
+
+                // Store authname in cookie
+                auth.setCookie('lz-authname', authConfigName);
+
+                // Build state parameter
+                const stateData = {
+                    authConfigName: authConfigName,
+                    subtenant: subtenant,
+                    returnUrl: returnUrl || '/',
+                    targetDomain: auth.getRootDomain(),
+                    app: app,
+                    timestamp: Math.floor(Date.now() / 1000)
+                };
+
+                // Build authorize URL and redirect
+                const authorizeUrl = auth.buildAuthorizeUrl(authConfig, stateData);
+                console.log('Redirecting to:', authorizeUrl);
+                window.location.href = authorizeUrl;
+            } catch (error) {
+                console.error('Error selecting auth:', error);
+                showError(error.message);
+            }
+        }
+
+        function redirectToTarget() {
+            const targetUrl = auth.buildRedirectUrl(subtenant, returnUrl, auth.getRootDomain());
+            console.log('Redirecting to:', targetUrl);
+            window.location.href = targetUrl;
+        }
+
+        function showError(message) {
+            auth.hideElement('loading');
+            auth.hideElement('auth-selection');
+            auth.hideElement('already-authenticated');
+            auth.setText('error-message', message);
+            auth.showElement('error');
+        }
+
+        // Event listeners
+        document.getElementById('retry-button').onclick = loadAuthConfigs;
+        document.getElementById('continue-button').onclick = redirectToTarget;
+        document.getElementById('switch-auth-button').onclick = () => {
+            auth.hideElement('already-authenticated');
+            displayAuthButtons();
+            auth.showElement('auth-selection');
+        };
+
+        // Start the app
+        initialize();
+    </script>
+</body>
+</html>

@@ -269,4 +269,24 @@ public class DynamicConfigurationProvider : IDynamicConfigurationProvider
             _ => null
         };
     }
+
+    /// <summary>
+    /// Gets the selected auth configuration object
+    /// </summary>
+    public JObject? GetAuthConfig()
+    {
+        try
+        {
+            if (_oidcConfig.AuthConfigs.TryGetValue(_oidcConfig.SelectedAuthConfig, out var authConfig))
+            {
+                return authConfig;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting auth config");
+        }
+
+        return null;
+    }
 }

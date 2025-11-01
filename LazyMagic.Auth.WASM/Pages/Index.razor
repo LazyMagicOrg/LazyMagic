@@ -1,0 +1,226 @@
+@page "/"
+@using LazyMagic.Auth.WASM.Services
+@using LazyMagic.Client.Base
+@using LazyMagic.Client.Base.Services
+@inject AuthOrchestrator AuthOrchestrator
+@inject ISubtenantService SubtenantService
+@inject NavigationManager Navigation
+@inject ILogger<Index> Logger
+
+<PageTitle>Select Authentication</PageTitle>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Authentication Selection</h3>
+                </div>
+                <div class="card-body">
+                    @if (isLoading)
+                    {
+                        <div class="text-center">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">Loading authentication options...</p>
+                        </div>
+                    }
+                    else if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            @errorMessage
+                        </div>
+                        <button class="btn btn-primary" @onclick="LoadAuthConfigs">Retry</button>
+                    }
+                    else if (hasValidTokens)
+                    {
+                        <div class="alert alert-success" role="alert">
+                            <h5>Already Authenticated</h5>
+                            <p>You are already authenticated with: <strong>@validAuthConfigName</strong></p>
+                            @if (!string.IsNullOrEmpty(returnUrl))
+                            {
+                                <p>Redirecting to: @returnUrl</p>
+                            }
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" @onclick="RedirectToReturnUrl">
+                                Continue to Application
+                            </button>
+                            <button class="btn btn-secondary" @onclick="ShowAuthSelection">
+                                Sign in with Different Account
+                            </button>
+                        </div>
+                    }
+                    else
+                    {
+                        @if (!string.IsNullOrEmpty(subtenantFromQuery))
+                        {
+                            <div class="alert alert-info" role="alert">
+                                <strong>Subtenant:</strong> @subtenantFromQuery
+                            </div>
+                        }
+
+                        <h5 class="mb-3">Select Authentication Method:</h5>
+
+                        @if (authConfigs != null && authConfigs.Any())
+                        {
+                            <div class="d-grid gap-2">
+                                @foreach (var config in authConfigs)
+                                {
+                                    <button class="btn btn-outline-primary btn-lg"
+                                            @onclick="() => SelectAuth(config.Key)">
+                                        <i class="bi bi-shield-check me-2"></i>
+                                        @GetAuthConfigDisplayName(config.Key)
+                                    </button>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning" role="alert">
+                                No authentication configurations available.
+                            </div>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool isLoading = true;
+    private bool hasValidTokens = false;
+    private string? validAuthConfigName = null;
+    private string? errorMessage = null;
+    private string? returnUrl = null;
+    private string? subtenantFromQuery = null;
+    private Dictionary<string, JObject>? authConfigs = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Get query parameters
+            var uri = new Uri(Navigation.Uri);
+            var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+            returnUrl = query["returnUrl"];
+            subtenantFromQuery = query["subtenant"];
+
+            Logger.LogInformation("Auth app initialized. ReturnUrl: {ReturnUrl}, Subtenant: {Subtenant}",
+                returnUrl, subtenantFromQuery);
+
+            // Store subtenant if provided
+            if (!string.IsNullOrEmpty(subtenantFromQuery))
+            {
+                await SubtenantService.SetSubtenantAsync(subtenantFromQuery);
+                Logger.LogInformation("Subtenant set: {Subtenant}", subtenantFromQuery);
+            }
+
+            await LoadAuthConfigs();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error initializing auth app");
+            errorMessage = $"Initialization error: {ex.Message}";
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadAuthConfigs()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+            StateHasChanged();
+
+            // Load authentication configurations
+            await AuthOrchestrator.LoadAuthConfigsAsync();
+            authConfigs = AuthOrchestrator.GetAvailableAuthConfigs();
+
+            Logger.LogInformation("Loaded {Count} auth configurations", authConfigs?.Count ?? 0);
+
+            // Check for existing valid tokens
+            var (hasTokens, authConfigName) = await AuthOrchestrator.HasAnyValidTokensAsync();
+            hasValidTokens = hasTokens;
+            validAuthConfigName = authConfigName;
+
+            if (hasValidTokens)
+            {
+                Logger.LogInformation("Found valid tokens for: {AuthConfigName}", validAuthConfigName);
+
+                // Auto-redirect if we have a return URL
+                if (!string.IsNullOrEmpty(returnUrl))
+                {
+                    await Task.Delay(2000); // Show message for 2 seconds
+                    RedirectToReturnUrl();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading auth configs");
+            errorMessage = $"Failed to load authentication options: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SelectAuth(string authConfigName)
+    {
+        try
+        {
+            Logger.LogInformation("User selected auth config: {AuthConfigName}", authConfigName);
+
+            await AuthOrchestrator.InitiateLoginAsync(
+                authConfigName,
+                subtenantFromQuery,
+                returnUrl
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error initiating login");
+            errorMessage = $"Login error: {ex.Message}";
+            StateHasChanged();
+        }
+    }
+
+    private void RedirectToReturnUrl()
+    {
+        var targetUrl = !string.IsNullOrEmpty(returnUrl) ? returnUrl : "/";
+
+        // If we have a subtenant, redirect to the subtenant subdomain
+        if (!string.IsNullOrEmpty(subtenantFromQuery))
+        {
+            var rootDomain = SubtenantService.GetRootDomainAsync().Result;
+            var protocol = Navigation.BaseUri.StartsWith("https") ? "https" : "http";
+            var subtenantUrl = $"{protocol}://{subtenantFromQuery}.{rootDomain}{targetUrl}";
+            Logger.LogInformation("Redirecting to subtenant URL: {Url}", subtenantUrl);
+            Navigation.NavigateTo(subtenantUrl, forceLoad: true);
+        }
+        else
+        {
+            Logger.LogInformation("Redirecting to: {Url}", targetUrl);
+            Navigation.NavigateTo(targetUrl, forceLoad: true);
+        }
+    }
+
+    private void ShowAuthSelection()
+    {
+        hasValidTokens = false;
+        validAuthConfigName = null;
+        StateHasChanged();
+    }
+
+    private string GetAuthConfigDisplayName(string configName)
+    {
+        // Convert "ConsumerAuth" to "Consumer Auth", etc.
+        return System.Text.RegularExpressions.Regex.Replace(configName, "(\\B[A-Z])", " $1");
+    }
+}

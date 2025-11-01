@@ -124,6 +124,70 @@ export async function getCacheName(url) {
 }
 
 /**
+ * Copy subtenant-specific assets from storage path to active path.
+ * Used when switching between subtenants.
+ * @param {string} fromSubtenant - Source subtenant (e.g., "uptown")
+ * @param {string} toActivePath - Target active path (e.g., "/subtenancy/")
+ * @returns {Promise<number>} Number of assets copied
+ */
+export async function copySubtenantCache(fromSubtenant, toActivePath) {
+    try {
+        console.log(`copySubtenantCache: Copying from subtenant '${fromSubtenant}' to active path '${toActivePath}'`);
+
+        const intilized = await initializeModule();
+        if (!intilized) {
+            console.error('copySubtenantCache: Module not initialized');
+            return 0;
+        }
+
+        const cacheStorage = await caches.open('asset-cache');
+        let copiedCount = 0;
+
+        // Find all storage paths for this subtenant
+        for (const [key, cacheEntry] of Object.entries(assetCaches)) {
+            // Check if this is a storage entry for the target subtenant
+            if (!cacheEntry.shared && cacheEntry.activePath && key.startsWith(`/${fromSubtenant}`)) {
+                const activePath = cacheEntry.activePath;
+
+                // Check if this matches our target active path
+                if (activePath.startsWith(toActivePath)) {
+                    try {
+                        // Construct full URLs
+                        const storageUrl = `${assetsUrl}${key}`;
+                        const activeUrl = `${assetsUrl}${activePath}`;
+
+                        console.debug(`copySubtenantCache: Copying ${storageUrl} → ${activeUrl}`);
+
+                        // Get from storage cache
+                        const storageRequest = new Request(storageUrl);
+                        const response = await cacheStorage.match(storageRequest, cacheOptions);
+
+                        if (response) {
+                            // Clone and store at active path
+                            const activeRequest = new Request(activeUrl);
+                            await cacheStorage.put(activeRequest, response.clone());
+                            copiedCount++;
+                            console.debug(`copySubtenantCache: ✓ Copied ${activePath}`);
+                        } else {
+                            console.warn(`copySubtenantCache: Storage cache miss for ${storageUrl}`);
+                        }
+                    } catch (error) {
+                        console.error(`copySubtenantCache: Error copying ${key}:`, error);
+                    }
+                }
+            }
+        }
+
+        console.log(`copySubtenantCache: Completed. Copied ${copiedCount} assets.`);
+        return copiedCount;
+
+    } catch (error) {
+        console.error('copySubtenantCache: Fatal error:', error);
+        return 0;
+    }
+}
+
+/**
  * Check the cache for the specified request and return the response if found.
  * @param {any} cacheName
  * @param {any} requeststat
@@ -399,18 +463,65 @@ export async function lazyLoadAssetCache(cacheName) {
  */
 function makeAssetCaches() {
     try {
-        console.debug("makeAssetCaches(), Creating AssetCaches dictionary");
+        console.debug("makeAssetCaches(), Creating AssetCaches dictionary (Hybrid Shared/Specific mode)");
         if (Object.keys(assetCaches).length > 0) return;
-        //const _appPrefix = appPrefix.endsWith('/') ? appPrefix.slice(0,-1) : appPrefix;
-        if (settings.staticAssets)
-            for (const cacheName of settings.staticAssets) {
-                const [key, value] = Object.entries(cacheName)[0];
-                assetCaches[key] = {
-                    cacheType: value,
-                    version: ""
-                };
+
+        // Get current subtenant from localStorage or service worker
+        const subtenant = isRunningInServiceWorker
+            ? (self.subtenantId || 'default')
+            : (typeof localStorage !== 'undefined' ? (localStorage.getItem('subtenant') || 'default') : 'default');
+
+        console.debug(`makeAssetCaches(), Current subtenant: ${subtenant}`);
+
+        if (settings.staticAssets) {
+            for (const assetConfig of settings.staticAssets) {
+                // Support both old format {"/path/": "Type"} and new format {path, cacheType, shared}
+                let path, cacheType, shared;
+
+                if (assetConfig.path && assetConfig.cacheType) {
+                    // New format
+                    path = assetConfig.path;
+                    cacheType = assetConfig.cacheType;
+                    shared = assetConfig.shared !== undefined ? assetConfig.shared : true; // Default to shared for backward compatibility
+                } else {
+                    // Old format - convert on the fly
+                    const [key, value] = Object.entries(assetConfig)[0];
+                    path = key;
+                    cacheType = value;
+                    shared = true; // Old format assets are shared by default
+                }
+
+                if (shared) {
+                    // Shared asset: Single cache entry at original path
+                    assetCaches[path] = {
+                        cacheType: cacheType,
+                        version: "",
+                        shared: true
+                    };
+                } else {
+                    // Subtenant-specific asset: Create both storage and active entries
+
+                    // Storage entry: /{subtenant}{path}
+                    const storagePath = `/${subtenant}${path.startsWith('/') ? path : '/' + path}`;
+                    assetCaches[storagePath] = {
+                        cacheType: cacheType,
+                        version: "",
+                        shared: false,
+                        activePath: path // Pointer to active path
+                    };
+
+                    // Active entry: {path}
+                    assetCaches[path] = {
+                        cacheType: cacheType,
+                        version: "",
+                        shared: false,
+                        storagePath: storagePath // Pointer to storage path
+                    };
+                }
             }
-        console.log("AssetCaches dictionary created: ", JSON.stringify(assetCaches));
+        }
+
+        console.log("AssetCaches dictionary created (Hybrid mode): ", JSON.stringify(assetCaches, null, 2));
     } catch (error) {
         console.error(`Error creating AssetCaches dictionary `, error);
     }
@@ -433,4 +544,11 @@ async function sendMessage(action, info) {
         }
     }
 }
+
+// Expose copySubtenantCache to window object for use by SubtenantService.js
+if (!isRunningInServiceWorker && typeof window !== 'undefined') {
+    window.copySubtenantCache = copySubtenantCache;
+    console.log("staticContentModule: copySubtenantCache exposed to window object");
+}
+
 console.log("Finished initializing staticContentModule");

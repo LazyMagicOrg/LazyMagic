@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta http-equiv="Cache-Control" content="no-cache">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <base href="{{BASE_HREF}}" />
+    <title>Authentication</title>
+    <link href="LazyMagic.Auth.WASM.styles.css" rel="stylesheet" />
+    <link href="_content/LazyMagic.Blazor/css/app.css" rel="stylesheet" />
+    <link href="_content/LazyMagic.Blazor/bootstrap/bootstrap.min.css" rel="stylesheet" />
+    <link href="manifest.json" rel="manifest" />
+
+    <!-- Load addLink(), addScript() functions -->
+    <script src="_content/LazyMagic.Blazor/indexconfig.js"></script>
+    <script src="indexhead.js"></script>
+</head>
+
+<body>
+    <div class="status-bar-safe-area"></div>
+    <div id="main">
+        <div class="loading-progress" style="width: 9rem; height: 9rem; margin-left: 1rem; margin-top: 1rem;">
+            <svg viewBox="0 0 100 100">
+                <circle r="40" cx="50" cy="50" />
+                <circle r="40" cx="50" cy="50" />
+            </svg>
+            <div class="loading-progress-text"></div>
+            <div class="loading-message-text">Loading Auth</div>
+        </div>
+    </div>
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="" class="reload">Reload</a>
+        <a class="dismiss">🗙</a>
+    </div>
+
+    <script src="indexbody.js"></script>
+    <script src="_framework/blazor.webassembly.js"></script>
+    <script src="_content/Microsoft.AspNetCore.Components.WebAssembly.Authentication/AuthenticationService.js"></script>
+    <script type="module" src="indexinit.js"></script>
+</body>
+
+</html>

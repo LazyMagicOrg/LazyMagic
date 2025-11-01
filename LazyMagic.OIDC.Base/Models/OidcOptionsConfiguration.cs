@@ -90,11 +90,35 @@ public class OidcOptionsConfiguration
                 options.MetadataUrl = authConfig["metadataUrl"]?.ToString() ?? authConfig["MetadataUrl"]?.ToString();
             }
         }
-        if(!baseAddress.EndsWith('/'))
-            baseAddress = baseAddress + '/';    
-        options.RedirectUri = $"{baseAddress}authentication/login-callback";
-        options.PostLogoutRedirectUri = baseAddress;
-        
+
+        // Check for callback proxy settings
+        var useCallbackProxy = authConfig["useCallbackProxy"]?.ToObject<bool>() ?? false;
+        var callbackProxyDomain = authConfig["callbackProxyDomain"]?.ToString();
+
+        if (useCallbackProxy && !string.IsNullOrEmpty(callbackProxyDomain))
+        {
+            // Use proxy domain for redirect URIs
+            // Note: We encode the target domain in url_state parameter at login time
+            // The redirect_uri itself is just the proxy endpoint
+            if (!callbackProxyDomain.StartsWith("https://"))
+                callbackProxyDomain = "https://" + callbackProxyDomain;
+            if (!callbackProxyDomain.EndsWith('/'))
+                callbackProxyDomain = callbackProxyDomain + '/';
+
+            options.RedirectUri = $"{callbackProxyDomain}callback";
+            options.PostLogoutRedirectUri = $"{callbackProxyDomain}logout";
+
+            Console.WriteLine($"[OidcOptionsConfiguration] Using callback proxy - RedirectUri: {options.RedirectUri}");
+        }
+        else
+        {
+            // Use base address for redirect URIs (normal mode)
+            if (!baseAddress.EndsWith('/'))
+                baseAddress = baseAddress + '/';
+            options.RedirectUri = $"{baseAddress}authentication/login-callback";
+            options.PostLogoutRedirectUri = baseAddress;
+        }
+
         options.DefaultScopes.Clear();
         options.DefaultScopes.Add("openid");
         options.DefaultScopes.Add("profile");

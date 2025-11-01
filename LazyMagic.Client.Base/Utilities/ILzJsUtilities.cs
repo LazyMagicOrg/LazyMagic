@@ -173,6 +173,9 @@ public interface ILzJsUtilities : INotifyPropertyChanged
     ValueTask<bool> IsAuthCacheValidAsync();
     ValueTask<string> GetStoredTokensAsync();
 
+    // Hostname Methods
+    ValueTask<string> GetHostnameAsync();
+
     // Callbacks. ie. [JSInvokable]
     void AssetDataCheckStarted();
 	void AssetDataCheckComplete();

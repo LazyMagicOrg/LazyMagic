@@ -24,16 +24,39 @@ public class LzClientConfig : OidcConfig, ILzClientConfig
     public string ConfigError { get; set; } = "";
 
 
-    public virtual async Task InitializeAsync(string hostUrl)
+    /// <summary>
+    /// Initializes the client configuration by reading auth and tenancy config files.
+    /// </summary>
+    /// <param name="hostUrl">The base URL for the host</param>
+    /// <param name="subtenant">Optional subtenant identifier. If provided, subtenancy config will be loaded. If null, will be detected from hostUrl subdomain.</param>
+    /// <returns></returns>
+    public virtual async Task InitializeAsync(string hostUrl, string? subtenant = null)
     {
         var host = (new Uri(hostUrl)).Host;
         var hostParts = host.Split('.');
 
+        // Determine if we should load subtenancy config
+        bool hasSubtenant = false;
+        if (!string.IsNullOrEmpty(subtenant))
+        {
+            // Subtenant explicitly provided (e.g., from localStorage)
+            hasSubtenant = true;
+            _host.SubTenant = subtenant;
+        }
+        else if (hostParts.Length > 2)
+        {
+            // Subtenant detected from subdomain (e.g., uptown.lazymagicdev.click)
+            hasSubtenant = true;
+            _host.SubTenant = hostParts[0];
+        }
+
         await ReadAuthConfigAsync(hostUrl + "config");
         await ReadTenancyConfigAsync(hostUrl + "system/base/AdminApp/config.json");
         await ReadTenancyConfigAsync(hostUrl + "tenancy/base/System/config.json");
-        if(hostParts.Length > 2)
+
+        if(hasSubtenant)
             await ReadTenancyConfigAsync(hostUrl + "subtenancy/base/System/config.json");
+
         await FinalizeTenancyConfigAsync();
     }
 

@@ -56,6 +56,52 @@ self.addEventListener('message', async event => {
                 console.log('Available caches:', cacheNames);
             });
             break;
+        case 'subtenantChanged':
+            // Update the current subtenant ID in service worker
+            if (event.data.subtenant) {
+                self.subtenantId = event.data.subtenant;
+                console.log(`service worker: Subtenant changed to '${self.subtenantId}'`);
+
+                // Reinitialize asset caches with new subtenant
+                if (self.staticContentModule && self.staticContentModule.assetCaches) {
+                    self.staticContentModule.assetCaches = {};
+                    console.log('service worker: Asset caches cleared for re-initialization');
+                }
+            }
+            break;
+        case 'preloadSubtenant':
+            // Pre-load assets for multiple subtenants in the background
+            if (event.data.subtenants && Array.isArray(event.data.subtenants)) {
+                console.log(`service worker: Pre-loading ${event.data.subtenants.length} subtenant(s): ${event.data.subtenants.join(', ')}`);
+
+                for (const subtenant of event.data.subtenants) {
+                    try {
+                        // Temporarily set subtenant ID
+                        const previousSubtenant = self.subtenantId;
+                        self.subtenantId = subtenant;
+
+                        // Clear and reinitialize asset caches for this subtenant
+                        if (self.staticContentModule) {
+                            self.staticContentModule.assetCaches = {};
+
+                            // Load PreCache assets for this subtenant
+                            console.log(`service worker: Loading PreCache assets for subtenant '${subtenant}'`);
+                            await self.staticContentModule.readAssetCachesByType("PreCache", subtenant);
+
+                            console.log(`service worker: ✓ Pre-loaded subtenant '${subtenant}'`);
+                        }
+
+                        // Restore previous subtenant
+                        self.subtenantId = previousSubtenant;
+
+                    } catch (error) {
+                        console.error(`service worker: Error pre-loading subtenant '${subtenant}':`, error);
+                    }
+                }
+
+                console.log('service worker: Pre-loading completed for all subtenants');
+            }
+            break;
         default:
             break;
     }

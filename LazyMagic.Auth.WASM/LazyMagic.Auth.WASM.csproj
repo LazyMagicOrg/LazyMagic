@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+	<PropertyGroup>
+		<!-- Auth app always runs at /auth path -->
+		<AppPath>/auth/</AppPath>
+		<StaticWebAssetBasePath>$(AppPath)</StaticWebAssetBasePath>
+		<TargetFramework>net9.0</TargetFramework>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+		<PublishTrimmed>true</PublishTrimmed>
+		<TrimmerLog>trimmer.log</TrimmerLog>
+		<RootNamespace>LazyMagic.Auth.WASM</RootNamespace>
+		<AssemblyName>LazyMagic.Auth.WASM</AssemblyName>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" PrivateAssets="all" />
+		<ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+		<PackageReference Include="Microsoft.Extensions.Logging" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Configuration" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\LazyMagic.Blazor\LazyMagic.Blazor.csproj" />
+		<ProjectReference Include="..\LazyMagic.OIDC.WASM\LazyMagic.OIDC.WASM.csproj" />
+		<ProjectReference Include="..\LazyMagic.Client.Base\LazyMagic.Client.Base.csproj" />
+	</ItemGroup>
+
+	<Target Name="ProcessIndexTemplate" BeforeTargets="Build">
+		<WriteLinesToFile File="wwwroot/index.html"
+						  Lines="$([System.IO.File]::ReadAllText('wwwroot/index.template.html').Replace('{{BASE_HREF}}', '$(AppPath)'))"
+						  Overwrite="true" />
+	</Target>
+
+	<Target Name="FixCssPathsAfterPublish" AfterTargets="Publish" Condition="'$(AppPath)' != ''">
+		<PropertyGroup>
+			<PublishedCssPath>$(PublishDir)wwwroot$(AppPath)LazyMagic.Auth.WASM.styles.css</PublishedCssPath>
+		</PropertyGroup>
+
+		<Message Text="Fixing CSS import paths in $(PublishedCssPath)" Importance="high" />
+
+		<WriteLinesToFile
+			File="$(PublishedCssPath)"
+			Lines="$([System.IO.File]::ReadAllText('$(PublishedCssPath)').Replace('../_content/', '$(AppPath)_content/'))"
+			Overwrite="true"
+			Condition="Exists('$(PublishedCssPath)')" />
+
+		<Message Text="CSS import paths have been fixed for /$(AppPath)/ base path" Importance="high" Condition="Exists('$(PublishedCssPath)')" />
+		<Warning Text="LazyMagic.Auth.WASM.styles.css not found at $(PublishedCssPath)" Condition="!Exists('$(PublishedCssPath)')" />
+	</Target>
+
+</Project>

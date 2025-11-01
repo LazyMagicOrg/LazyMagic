@@ -10,6 +10,16 @@ window.checkIfLoaded = function () {
 };
 
 
+// Get subtenant from localStorage or query parameter
+const urlParams = new URLSearchParams(window.location.search);
+const subtenantFromUrl = urlParams.get('subtenant');
+if (subtenantFromUrl) {
+    localStorage.setItem('subtenant', subtenantFromUrl);
+    console.log(`Subtenant set from URL parameter: '${subtenantFromUrl}'`);
+}
+const subtenant = localStorage.getItem('subtenant') || 'default';
+console.log(`Current subtenant: '${subtenant}'`);
+
 if (window.location.origin.includes("localhost")) {
     /*
     * For localhost development, the app code is served by the localhost server. However, 
@@ -27,7 +37,7 @@ if (window.location.origin.includes("localhost")) {
             androidAppUrl: "",
             remoteApiUrl: appConfig.remoteApiUrl,
             localApiUrl: appConfig.localApiUrl,
-            assetsUrl: appConfig.assetsUrl,
+            assetsUrl: appConfig.assetsUrl, // localhost uses configured assetsUrl, not subtenant subdomain
             authConfigName: appConfig.authConfigName,
         };
 
@@ -44,13 +54,27 @@ if (window.location.origin.includes("localhost")) {
     // Open the appConfig.js file to get subset of configuration values.
     const { appConfig } = await import('./appConfig.js');
 
+    // Construct assetsUrl based on subtenant
+    let assetsUrl;
+    if (subtenant && subtenant !== 'default') {
+        // Use subtenant subdomain for assets
+        const domain = window.location.hostname.split('.').slice(-2).join('.'); // e.g., "lazymagicdev.click"
+        const protocol = window.location.protocol; // "http:" or "https:"
+        assetsUrl = `${protocol}//${subtenant}.${domain}/`;
+        console.log(`Using subtenant-specific assetsUrl: ${assetsUrl}`);
+    } else {
+        // Use origin for default subtenant
+        assetsUrl = window.location.origin + "/";
+        console.log(`Using origin for assetsUrl: ${assetsUrl}`);
+    }
+
     window.appConfig = {
         appPath: appPath,
         appUrl: window.location.origin + "/",
         androidAppUrl: "",
         remoteApiUrl: window.location.origin + "/",
         localhostApiUrl: "", // We do not set localApiUrl because the app has no access to localhost.
-        assetsUrl: window.location.origin + "/",
+        assetsUrl: assetsUrl,
         wsUrl: window.location.origin.replace(/^http/, 'ws') + "/",
         authConfigName: appConfig.authConfigName,
     };

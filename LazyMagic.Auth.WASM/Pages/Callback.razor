@@ -1,0 +1,229 @@
+@page "/callback"
+@using LazyMagic.Auth.WASM.Services
+@using LazyMagic.Client.Base
+@using LazyMagic.Client.Base.Services
+@using LazyMagic.OIDC.Base
+@inject AuthOrchestrator AuthOrchestrator
+@inject TokenExchangeService TokenExchangeService
+@inject ISubtenantService SubtenantService
+@inject IOidcConfig OidcConfig
+@inject ILzJsUtilities JsUtilities
+@inject NavigationManager Navigation
+@inject ILogger<Callback> Logger
+
+<PageTitle>Processing Authentication...</PageTitle>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Authentication Callback</h3>
+                </div>
+                <div class="card-body text-center">
+                    @if (isProcessing)
+                    {
+                        <div class="spinner-border text-primary mb-3" role="status">
+                            <span class="visually-hidden">Processing...</span>
+                        </div>
+                        <h5>@statusMessage</h5>
+                        <p class="text-muted">Please wait...</p>
+                    }
+                    else if (hasError)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <h5 class="alert-heading">Authentication Error</h5>
+                            <p>@errorMessage</p>
+                        </div>
+                        <button class="btn btn-primary" @onclick="ReturnToAuthPage">
+                            Try Again
+                        </button>
+                    }
+                    else if (isSuccess)
+                    {
+                        <div class="alert alert-success" role="alert">
+                            <h5 class="alert-heading">Success!</h5>
+                            <p>Authentication completed. Redirecting...</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private bool isProcessing = true;
+    private bool hasError = false;
+    private bool isSuccess = false;
+    private string statusMessage = "Processing authentication...";
+    private string? errorMessage = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Logger.LogInformation("Callback page initialized");
+
+            // Parse callback URL parameters
+            var uri = new Uri(Navigation.Uri);
+            var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+
+            var code = query["code"];
+            var stateParam = query["state"];
+            var error = query["error"];
+            var errorDescription = query["error_description"];
+
+            // Handle OAuth error response
+            if (!string.IsNullOrEmpty(error))
+            {
+                Logger.LogError("OAuth error: {Error} - {Description}", error, errorDescription);
+                ShowError($"Authentication failed: {error}. {errorDescription}");
+                return;
+            }
+
+            // Validate required parameters
+            if (string.IsNullOrEmpty(code))
+            {
+                Logger.LogError("No authorization code in callback");
+                ShowError("No authorization code received from authentication provider.");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(stateParam))
+            {
+                Logger.LogError("No state parameter in callback");
+                ShowError("Missing state parameter - possible security issue.");
+                return;
+            }
+
+            // Decode and parse state
+            CallbackState? state = null;
+            try
+            {
+                var stateJson = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(stateParam));
+                state = JsonSerializer.Deserialize<CallbackState>(stateJson);
+                Logger.LogInformation("Decoded state: AuthConfig={AuthConfig}, Subtenant={Subtenant}, ReturnUrl={ReturnUrl}",
+                    state?.authConfigName, state?.subtenant, state?.returnUrl);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, "Failed to decode state parameter");
+                ShowError("Invalid state parameter - unable to complete authentication.");
+                return;
+            }
+
+            if (state == null || string.IsNullOrEmpty(state.authConfigName))
+            {
+                ShowError("Invalid state data - missing authentication configuration.");
+                return;
+            }
+
+            // Get the auth config
+            await AuthOrchestrator.LoadAuthConfigsAsync();
+            var authConfigs = AuthOrchestrator.GetAvailableAuthConfigs();
+
+            if (!authConfigs.TryGetValue(state.authConfigName, out var authConfig))
+            {
+                Logger.LogError("Auth config not found: {AuthConfigName}", state.authConfigName);
+                ShowError($"Authentication configuration '{state.authConfigName}' not found.");
+                return;
+            }
+
+            // Exchange authorization code for tokens
+            statusMessage = "Exchanging authorization code for tokens...";
+            StateHasChanged();
+
+            var tokens = await TokenExchangeService.ExchangeCodeAsync(code, authConfig);
+
+            if (tokens == null || string.IsNullOrEmpty(tokens.AccessToken))
+            {
+                Logger.LogError("Token exchange failed - no access token received");
+                ShowError("Failed to obtain access token from authentication provider.");
+                return;
+            }
+
+            Logger.LogInformation("Successfully obtained tokens");
+
+            // Store tokens in localStorage (Microsoft OIDC format)
+            statusMessage = "Storing authentication tokens...";
+            StateHasChanged();
+
+            await TokenExchangeService.StoreTokensAsync(tokens, authConfig, JsUtilities);
+
+            // Set subtenant cookie if provided
+            if (!string.IsNullOrEmpty(state.subtenant))
+            {
+                await SubtenantService.SetSubtenantAsync(state.subtenant);
+                Logger.LogInformation("Subtenant cookie set: {Subtenant}", state.subtenant);
+            }
+
+            // Success!
+            isSuccess = true;
+            isProcessing = false;
+            statusMessage = "Authentication successful!";
+            StateHasChanged();
+
+            Logger.LogInformation("Authentication flow completed successfully");
+
+            // Redirect to return URL or subtenant subdomain
+            await Task.Delay(1000); // Brief delay to show success message
+            RedirectToTarget(state.subtenant, state.returnUrl ?? "/", state.targetDomain);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error processing authentication callback");
+            ShowError($"Unexpected error: {ex.Message}");
+        }
+    }
+
+    private void ShowError(string message)
+    {
+        hasError = true;
+        isProcessing = false;
+        errorMessage = message;
+        StateHasChanged();
+    }
+
+    private void ReturnToAuthPage()
+    {
+        Navigation.NavigateTo("/auth", forceLoad: true);
+    }
+
+    private void RedirectToTarget(string? subtenant, string returnUrl, string? targetDomain)
+    {
+        try
+        {
+            // If we have a subtenant, redirect to the subtenant subdomain
+            if (!string.IsNullOrEmpty(subtenant) && !string.IsNullOrEmpty(targetDomain))
+            {
+                var protocol = Navigation.BaseUri.StartsWith("https") ? "https" : "http";
+                var targetUrl = $"{protocol}://{subtenant}.{targetDomain}{returnUrl}";
+                Logger.LogInformation("Redirecting to subtenant URL: {Url}", targetUrl);
+                Navigation.NavigateTo(targetUrl, forceLoad: true);
+            }
+            else
+            {
+                // Redirect to return URL on current domain
+                var targetUrl = !string.IsNullOrEmpty(returnUrl) ? returnUrl : "/";
+                Logger.LogInformation("Redirecting to: {Url}", targetUrl);
+                Navigation.NavigateTo(targetUrl, forceLoad: true);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error redirecting after authentication");
+            ShowError($"Authentication succeeded but redirect failed: {ex.Message}");
+        }
+    }
+
+    // Model for deserializing state parameter
+    private class CallbackState
+    {
+        public string authConfigName { get; set; } = "";
+        public string? subtenant { get; set; }
+        public string? returnUrl { get; set; }
+        public string? targetDomain { get; set; }
+        public long timestamp { get; set; }
+    }
+}
