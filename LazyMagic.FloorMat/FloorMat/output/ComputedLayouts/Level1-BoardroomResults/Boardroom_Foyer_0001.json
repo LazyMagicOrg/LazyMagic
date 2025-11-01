@@ -1,0 +1,44 @@
+{
+  "testId": "Boardroom_Foyer_0001",
+  "sections": [
+    "Foyer_Room_Foyer"
+  ],
+  "layout": {
+    "corners": [
+      {
+        "x": 232.01135348562838,
+        "y": 216.45377886965719
+      },
+      {
+        "x": 220.61936664505816,
+        "y": 222.71657663297952
+      },
+      {
+        "x": 119.45109508369796,
+        "y": 38.69217382376816
+      },
+      {
+        "x": 130.84308192426818,
+        "y": 32.42937606044585
+      }
+    ],
+    "width": 13,
+    "height": 210,
+    "area": 2730,
+    "angle": 151.20000000000002,
+    "centroid": {
+      "x": 175.73122428466317,
+      "y": 127.57297634671268
+    },
+    "sets": 35,
+    "tables": 70,
+    "orientation": "width×length",
+    "type": "boardroom",
+    "algorithm": "Dedicated",
+    "computationTime": 134.4065,
+    "winningAlgorithm": "Dedicated"
+  },
+  "polygonArea": 21575.99944373247,
+  "fillRatio": 12.652948045903974,
+  "runtimeMs": 204
+}

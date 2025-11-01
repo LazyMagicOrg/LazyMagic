@@ -55,14 +55,19 @@ function extractLayoutsFromDir(dirPath, filePrefix, combinations) {
             const data = JSON.parse(fs.readFileSync(jsonPath, 'utf8'));
             const key = combo.sections.slice().sort().join('_');
 
-            layouts.push({
+            const layoutEntry = {
                 key,
                 sections: combo.sections,
                 layout: data.layout,
-                polygonArea: data.polygonArea,
+                polygonArea: data.polygonArea, // Always the calculated value from SVG geometry
                 fillRatio: data.fillRatio,
                 runtimeMs: data.runtimeMs
-            });
+            };
+
+            // Note: Overrides are not included here - they are metadata only for UI
+            // and are embedded as floormat:* attributes in the SVG path elements
+
+            layouts.push(layoutEntry);
 
             successCount++;
         } catch (error) {

@@ -875,6 +875,7 @@ function main() {
 
         // Convert combinations to testCombinations format
         // Use combo.id from file (includes room prefix), or comboNumbers if provided
+        // Note: We do NOT pass overrides to the algorithms - they are metadata only for the UI
         if (testConfig.comboNumbers && testConfig.comboNumbers.length === combinationsData.combinations.length) {
             testConfig.testCombinations = combinationsData.combinations.map((combo, index) => ({
                 id: String(testConfig.comboNumbers[index]).padStart(4, '0'),

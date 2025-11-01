@@ -5,8 +5,11 @@
   "type": "module",
   "main": "process-all.js",
   "scripts": {
+    "preprocess": "node check-dependencies.js",
     "process": "node process-all.js",
-    "process-external": "node process-external.js"
+    "preprocess-external": "node check-dependencies.js",
+    "process-external": "node process-external.js",
+    "check-deps": "node check-dependencies.js"
   },
   "keywords": [
     "svg",
@@ -20,6 +23,7 @@
   "license": "MIT",
   "dependencies": {
     "jsdom": "^27.0.0",
+    "xml-beautify": "^1.2.3",
     "xmldom": "^0.6.0"
   }
 }

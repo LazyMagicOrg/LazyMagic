@@ -1,0 +1,36 @@
+﻿  {
+    "Id": "Level1",
+    "Name": "Level 1",
+    "Diagram": {
+      "Image": "subtenancy/base/SetsCmp/data/Level1.svg",
+      "MeasureUnits": "Imperial",
+      "Unit": "ft"
+    },
+    "Rooms": [
+      {
+        "Id": "Foyer",
+        "RoomSections": [
+          {
+            "Id": "Foyer_Room_Foyer",
+            "Name": "Foyer",
+            "Description": "Cerulean Foyer",
+            "Area": 3000
+          }
+        ]
+      },
+      {
+        "Id": "BeachDeck",
+        "RoomSections": [
+          {
+            "Id": "BeachDeck_Room_BeachDeck",
+            "Name": "Beach Deck",
+            "Description": "Beach Deck",
+            "Area": 3141.5,
+            "Width": 61,
+            "Depth": 51.5,
+            "LayoutRestriction": "allowed"
+          }
+        ]
+      }
+    ]
+  }

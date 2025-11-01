@@ -1,0 +1,47 @@
+{
+  "testId": "MaxInscribed_Foyer_0001",
+  "sections": [
+    "Foyer_Room_Foyer"
+  ],
+  "layout": {
+    "corners": [
+      {
+        "x": 118.943003,
+        "y": 220.896422
+      },
+      {
+        "x": 118.94,
+        "y": 32.26
+      },
+      {
+        "x": 232.50738279810923,
+        "y": 32.25819206255649
+      },
+      {
+        "x": 232.51038579810927,
+        "y": 220.89461406255649
+      }
+    ],
+    "width": 188.63642202390318,
+    "height": 113.5673828125,
+    "area": 21422.94475236892,
+    "angle": 0,
+    "centroid": {
+      "x": 175.72519289905463,
+      "y": 126.57730703127825
+    },
+    "aspectRatio": 1.6610087980572936,
+    "type": "boundary-based",
+    "computeTime": 7.4788,
+    "centroidStrategy": "uniform",
+    "hybridTotalTime": 57.3083,
+    "usedBoundaryBased": true,
+    "usedOptimized": true,
+    "selectedAlgorithm": "boundary-based",
+    "boundaryTime": 8.384600000000006,
+    "optimizedTime": 48.8131
+  },
+  "polygonArea": 21575.99944373247,
+  "fillRatio": 99.29062525347805,
+  "runtimeMs": 67
+}

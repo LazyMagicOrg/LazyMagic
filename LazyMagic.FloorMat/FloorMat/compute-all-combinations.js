@@ -6,8 +6,8 @@
  * Generates all valid room section combinations based on connectivity rules.
  * This is the first step in the FloorMat pipeline before running layout tests.
  *
- * Input:  input/Rooms.json (graph connectivity)
- * Output: valid-combinations.json (all valid combinations)
+ * Input:  input/{prefix}-data.json (level data with graph connectivity)
+ * Output: {prefix}-valid-combinations.json (all valid combinations)
  *
  * Validation Rules:
  * - Rule 1: If two or more rooms share an aisle, the aisle MUST be selected
@@ -39,16 +39,16 @@ const args = process.argv.slice(2);
 if (args.length < 1) {
     console.error('Usage: node compute-all-combinations.js <prefix> [inputDir] [outputDir]');
     console.error('Example: node compute-all-combinations.js Level1');
-    console.error('Example: node compute-all-combinations.js Level1 ./input ./output/Level1-output');
+    console.error('Example: node compute-all-combinations.js Level1 ./input ./output');
     process.exit(1);
 }
 
 const prefix = args[0];
 const inputDir = args[1] || path.resolve(__dirname, 'input');
-const outputDir = args[2] || path.resolve(__dirname, 'output', `${prefix}-output`);
+const outputDir = args[2] || path.resolve(__dirname, 'output');
 
 // Paths based on prefix
-const ROOMS_JSON_PATH = path.resolve(inputDir, `${prefix}-Rooms.json`);
+const DATA_JSON_PATH = path.resolve(inputDir, `${prefix}-data.json`);
 const OUTPUT_PATH = path.resolve(outputDir, `${prefix}-valid-combinations.json`);
 
 // =============================================================================
@@ -60,29 +60,28 @@ function loadRoomsData() {
     console.log('COMPUTE ALL VALID COMBINATIONS');
     console.log('================================================================================\n');
 
-    console.log(`Step 1: Loading Rooms.json from: ${ROOMS_JSON_PATH}`);
+    console.log(`Step 1: Loading level data from: ${DATA_JSON_PATH}`);
 
-    if (!fs.existsSync(ROOMS_JSON_PATH)) {
-        console.error(`\n❌ ERROR: Rooms.json not found at: ${ROOMS_JSON_PATH}`);
-        console.error('\nPlease ensure Rooms.json is in the input/ directory or update ROOMS_JSON_PATH in this script.\n');
+    if (!fs.existsSync(DATA_JSON_PATH)) {
+        console.error(`\n❌ ERROR: Data file not found at: ${DATA_JSON_PATH}`);
+        console.error(`\nPlease ensure ${prefix}-data.json is in the input/ directory.\n`);
         process.exit(1);
     }
 
     // Read file and remove BOM if present
-    let fileContent = fs.readFileSync(ROOMS_JSON_PATH, 'utf8');
+    let fileContent = fs.readFileSync(DATA_JSON_PATH, 'utf8');
     if (fileContent.charCodeAt(0) === 0xFEFF) {
         fileContent = fileContent.slice(1);
     }
-    const data = JSON.parse(fileContent);
+    const level = JSON.parse(fileContent);
 
-    // Find the level by prefix
-    const level = data.find(lvl => lvl.Id === prefix);
-    if (!level) {
-        console.error(`❌ ERROR: Could not find ${prefix} in Rooms.json`);
+    // Validate level data structure
+    if (!level.Rooms) {
+        console.error(`❌ ERROR: Invalid data structure - missing "Rooms" array in ${prefix}-data.json`);
         process.exit(1);
     }
 
-    console.log(`  ✓ Found level: ${level.Name || prefix}`);
+    console.log(`  ✓ Loaded level: ${level.Name || prefix}`);
     console.log(`  ✓ Found ${level.Rooms.length} room(s)\n`);
 
     // Return all rooms in the level

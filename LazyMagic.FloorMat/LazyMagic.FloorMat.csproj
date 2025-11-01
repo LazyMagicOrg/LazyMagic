@@ -11,12 +11,13 @@
 		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 	</PropertyGroup>
 	<ItemGroup>
-	  <None Remove="FloorMat\nul" />
+	  <Compile Remove="FloorMat\output\Level1-output\**" />
+	  <Content Remove="FloorMat\output\Level1-output\**" />
+	  <EmbeddedResource Remove="FloorMat\output\Level1-output\**" />
+	  <None Remove="FloorMat\output\Level1-output\**" />
 	</ItemGroup>
 	<ItemGroup>
-	  <Content Include="FloorMat\output\Level1-output\.temp-configs\boardroom.json" />
-	  <Content Include="FloorMat\output\Level1-output\.temp-configs\hollowsquare.json" />
-	  <Content Include="FloorMat\output\Level1-output\.temp-configs\maxinscribed.json" />
+	  <None Remove="FloorMat\nul" />
 	</ItemGroup>
 
 

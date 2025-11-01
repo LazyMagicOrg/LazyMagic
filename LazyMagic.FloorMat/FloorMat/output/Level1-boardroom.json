@@ -1,0 +1,104 @@
+{
+  "generatedAt": "2025-11-01T21:51:51.213Z",
+  "project": "Level1",
+  "totalCombinations": 2,
+  "successfulComputations": 2,
+  "failedComputations": 0,
+  "statistics": {
+    "totalLayouts": 2,
+    "totalComputationTimeMs": 294,
+    "averageComputationTimeMs": 147,
+    "totalComputationTimeSec": "0.3",
+    "averageComputationTimeSec": "0.147"
+  },
+  "boardroomLayouts": [
+    {
+      "key": "Foyer_Room_Foyer",
+      "sections": [
+        "Foyer_Room_Foyer"
+      ],
+      "boardroomLayout": {
+        "corners": [
+          {
+            "x": 232.01135348562838,
+            "y": 216.45377886965719
+          },
+          {
+            "x": 220.61936664505816,
+            "y": 222.71657663297952
+          },
+          {
+            "x": 119.45109508369796,
+            "y": 38.69217382376816
+          },
+          {
+            "x": 130.84308192426818,
+            "y": 32.42937606044585
+          }
+        ],
+        "width": 13,
+        "height": 210,
+        "area": 2730,
+        "angle": 151.20000000000002,
+        "centroid": {
+          "x": 175.73122428466317,
+          "y": 127.57297634671268
+        },
+        "sets": 35,
+        "tables": 70,
+        "orientation": "width×length",
+        "type": "boardroom",
+        "algorithm": "Dedicated",
+        "computationTime": 134.4065,
+        "winningAlgorithm": "Dedicated"
+      },
+      "polygonArea": 21575.99944373247,
+      "boardroomArea": 2730,
+      "computationTimeMs": 204
+    },
+    {
+      "key": "BeachDeck_Room_BeachDeck",
+      "sections": [
+        "BeachDeck_Room_BeachDeck"
+      ],
+      "boardroomLayout": {
+        "corners": [
+          {
+            "x": 224.73542815738807,
+            "y": 255.3944155927685
+          },
+          {
+            "x": 325.33309874154287,
+            "y": 349.8619162109275
+          },
+          {
+            "x": 316.43398636446994,
+            "y": 359.3385083674059
+          },
+          {
+            "x": 215.83631578031515,
+            "y": 264.87100774924687
+          }
+        ],
+        "width": 138,
+        "height": 13,
+        "area": 1794,
+        "angle": 43.2,
+        "centroid": {
+          "x": 270.584707260929,
+          "y": 307.3664619800872
+        },
+        "sets": 23,
+        "tables": 46,
+        "orientation": "length×width",
+        "type": "boardroom",
+        "algorithm": "Dedicated",
+        "computationTime": 73.54600000000002,
+        "winningAlgorithm": "Dedicated"
+      },
+      "polygonArea": 12387.362433485148,
+      "boardroomArea": 1794,
+      "computationTimeMs": 90
+    }
+  ]
+}

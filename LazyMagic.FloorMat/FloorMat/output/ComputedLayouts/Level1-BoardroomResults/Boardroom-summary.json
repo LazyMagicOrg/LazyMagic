@@ -1,0 +1,61 @@
+{
+  "timestamp": "2025-11-01T21:51:47.950Z",
+  "testName": "Level1 - Boardroom Layout",
+  "algorithm": "boardroom",
+  "totalTests": 2,
+  "passed": 2,
+  "failed": 0,
+  "totalRuntimeMs": 299,
+  "totalRuntimeSec": 0.3,
+  "configuration": {
+    "width": {
+      "mode": "fixed",
+      "value": 13
+    },
+    "height": {
+      "mode": "continuous",
+      "min": 6,
+      "max": 1000,
+      "samples": 25
+    },
+    "angleSamples": 25,
+    "centroidSamples": 25,
+    "debugMode": false
+  },
+  "results": [
+    {
+      "id": "Foyer_0001",
+      "sections": [
+        "Foyer_Room_Foyer"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 13,
+        "height": 210,
+        "area": 2730,
+        "angle": 151.20000000000002
+      },
+      "polygonArea": 21575.99944373247,
+      "fillRatio": 12.652948045903974,
+      "runtimeMs": 204
+    },
+    {
+      "id": "BeachDeck_0002",
+      "sections": [
+        "BeachDeck_Room_BeachDeck"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 138,
+        "height": 13,
+        "area": 1794,
+        "angle": 43.2
+      },
+      "polygonArea": 12387.362433485148,
+      "fillRatio": 14.48250190170034,
+      "runtimeMs": 90
+    }
+  ]
+}

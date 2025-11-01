@@ -1,0 +1,110 @@
+{
+  "generatedAt": "2025-11-01T21:51:51.212Z",
+  "project": "Level1",
+  "totalCombinations": 2,
+  "successfulComputations": 2,
+  "failedComputations": 0,
+  "statistics": {
+    "totalLayouts": 2,
+    "totalComputationTimeMs": 87,
+    "averageComputationTimeMs": 43.5,
+    "totalComputationTimeSec": "0.1",
+    "averageComputationTimeSec": "0.043"
+  },
+  "rectangles": [
+    {
+      "key": "Foyer_Room_Foyer",
+      "sections": [
+        "Foyer_Room_Foyer"
+      ],
+      "rectangle": {
+        "corners": [
+          {
+            "x": 118.943003,
+            "y": 220.896422
+          },
+          {
+            "x": 118.94,
+            "y": 32.26
+          },
+          {
+            "x": 232.50738279810923,
+            "y": 32.25819206255649
+          },
+          {
+            "x": 232.51038579810927,
+            "y": 220.89461406255649
+          }
+        ],
+        "width": 188.63642202390318,
+        "height": 113.5673828125,
+        "area": 21422.94475236892,
+        "angle": 0,
+        "centroid": {
+          "x": 175.72519289905463,
+          "y": 126.57730703127825
+        },
+        "aspectRatio": 1.6610087980572936,
+        "type": "boundary-based",
+        "computeTime": 8.049399999999999,
+        "centroidStrategy": "uniform",
+        "hybridTotalTime": 56.4722,
+        "usedBoundaryBased": true,
+        "usedOptimized": true,
+        "selectedAlgorithm": "boundary-based",
+        "boundaryTime": 8.954500000000003,
+        "optimizedTime": 47.402800000000006
+      },
+      "polygonArea": 21575.99944373247,
+      "rectangleArea": 21422.94475236892,
+      "computationTimeMs": 68
+    },
+    {
+      "key": "BeachDeck_Room_BeachDeck",
+      "sections": [
+        "BeachDeck_Room_BeachDeck"
+      ],
+      "rectangle": {
+        "corners": [
+          {
+            "x": 334.19211,
+            "y": 263.30288
+          },
+          {
+            "x": 334.19211,
+            "y": 360.60183
+          },
+          {
+            "x": 212.8278521875,
+            "y": 360.60183
+          },
+          {
+            "x": 212.8278521875,
+            "y": 263.30288
+          }
+        ],
+        "width": 97.29894999999999,
+        "height": 121.3642578125,
+        "area": 11808.614852685545,
+        "angle": 0,
+        "centroid": {
+          "x": 273.50998109375,
+          "y": 311.952355
+        },
+        "aspectRatio": 0.8017100895580034,
+        "type": "boundary-based",
+        "computeTime": 2.71929999999999,
+        "centroidStrategy": "uniform",
+        "hybridTotalTime": 16.0706,
+        "usedBoundaryBased": true,
+        "usedOptimized": true,
+        "selectedAlgorithm": "boundary-based",
+        "boundaryTime": 2.761499999999998,
+        "optimizedTime": 13.300600000000003
+      },
+      "polygonArea": 12387.362433485148,
+      "rectangleArea": 11808.614852685545,
+      "computationTimeMs": 19
+    }
+  ]
+}

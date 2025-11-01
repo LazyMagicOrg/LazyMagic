@@ -1,0 +1,90 @@
+{
+  "generatedAt": "2025-11-01T21:51:51.214Z",
+  "project": "Level1",
+  "totalCombinations": 2,
+  "successfulComputations": 2,
+  "failedComputations": 0,
+  "statistics": {
+    "totalLayouts": 2,
+    "totalComputationTimeMs": 3122,
+    "averageComputationTimeMs": 1561,
+    "totalComputationTimeSec": "3.1",
+    "averageComputationTimeSec": "1.561"
+  },
+  "hollowSquareLayouts": [
+    {
+      "key": "Foyer_Room_Foyer",
+      "sections": [
+        "Foyer_Room_Foyer"
+      ],
+      "hollowSquareLayout": {
+        "corners": [
+          {
+            "x": 121.0337475,
+            "y": 37.561698500000006
+          },
+          {
+            "x": 230.0337475,
+            "y": 37.561698500000006
+          },
+          {
+            "x": 230.0337475,
+            "y": 219.5616985
+          },
+          {
+            "x": 121.0337475,
+            "y": 219.5616985
+          }
+        ],
+        "width": 109,
+        "height": 182,
+        "area": 19838,
+        "angle": 0,
+        "centroid": {
+          "x": 175.5337475,
+          "y": 128.5616985
+        }
+      },
+      "polygonArea": 21575.99944373247,
+      "hollowSquareArea": 19838,
+      "computationTimeMs": 2171
+    },
+    {
+      "key": "BeachDeck_Room_BeachDeck",
+      "sections": [
+        "BeachDeck_Room_BeachDeck"
+      ],
+      "hollowSquareLayout": {
+        "corners": [
+          {
+            "x": 213.126055,
+            "y": 265.45390791666665
+          },
+          {
+            "x": 334.126055,
+            "y": 265.45390791666665
+          },
+          {
+            "x": 334.126055,
+            "y": 357.45390791666665
+          },
+          {
+            "x": 213.126055,
+            "y": 357.45390791666665
+          }
+        ],
+        "width": 121,
+        "height": 92,
+        "area": 11132,
+        "angle": 0,
+        "centroid": {
+          "x": 273.626055,
+          "y": 311.45390791666665
+        }
+      },
+      "polygonArea": 12387.362433485148,
+      "hollowSquareArea": 11132,
+      "computationTimeMs": 951
+    }
+  ]
+}

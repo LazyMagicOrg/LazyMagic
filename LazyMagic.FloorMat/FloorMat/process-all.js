@@ -33,8 +33,8 @@ function findSvgFiles() {
             filename,
             prefix,
             svgPath: path.join(inputDir, filename),
-            roomsPath: path.join(inputDir, `${prefix}-Rooms.json`),
-            combinationsPath: path.join(outputDir, `${prefix}-output`, `${prefix}-valid-combinations.json`)
+            dataPath: path.join(inputDir, `${prefix}-data.json`),
+            combinationsPath: path.join(outputDir, `${prefix}-valid-combinations.json`)
         };
     });
 }
@@ -43,7 +43,7 @@ function findSvgFiles() {
  * Generate temporary config files for a project
  */
 function generateConfigFiles(project) {
-    const projectOutputDir = path.join(outputDir, `${project.prefix}-output`);
+    const projectOutputDir = outputDir;
     const computedLayoutsDir = path.join(projectOutputDir, 'ComputedLayouts');
 
     // Create output directories
@@ -149,22 +149,22 @@ async function processProject(project) {
     console.log('='.repeat(80));
     console.log();
 
-    // Check if Rooms.json file exists
-    if (!fs.existsSync(project.roomsPath)) {
-        console.error(`✗ Error: Rooms file not found: ${project.prefix}-Rooms.json`);
-        console.error(`  Expected at: ${project.roomsPath}`);
+    // Check if data.json file exists
+    if (!fs.existsSync(project.dataPath)) {
+        console.error(`✗ Error: Data file not found: ${project.prefix}-data.json`);
+        console.error(`  Expected at: ${project.dataPath}`);
         console.error(`  Skipping project ${project.prefix}`);
         return false;
     }
 
-    const projectOutputDir = path.join(outputDir, `${project.prefix}-output`);
+    const projectOutputDir = outputDir;
 
-    console.log(`✓ Output directory: ${project.prefix}-output/`);
+    console.log(`✓ Output directory: output/`);
     console.log();
 
     try {
-        // Step 0: Generate valid combinations from Rooms.json
-        console.log('Step 0/4: Generating valid combinations...');
+        // Step 0: Generate valid combinations from level data
+        console.log('Step 0/5: Generating valid combinations...');
 
         const generateCombosCmd = `node compute-all-combinations.js "${project.prefix}" "${inputDir}" "${projectOutputDir}"`;
         await execAsync(generateCombosCmd, { cwd: __dirname });
@@ -180,7 +180,7 @@ async function processProject(project) {
         const configs = generateConfigFiles(project);
 
         // Step 1: Run tests for all three algorithms
-        console.log('Step 1/4: Running tests (MaxInscribed, Boardroom, Hollow Square)...');
+        console.log('Step 1/5: Running tests (MaxInscribed, Boardroom, Hollow Square)...');
         console.log();
 
         console.log('  Running MaxInscribed tests...');
@@ -204,7 +204,7 @@ async function processProject(project) {
         console.log('  ✓ All tests complete\\n');
 
         // Step 2: Extract precomputed data
-        console.log('Step 2/4: Extracting precomputed data...');
+        console.log('Step 2/5: Extracting precomputed data...');
 
         const computedLayoutsDir = path.join(projectOutputDir, 'ComputedLayouts');
         const extractCmd = `node extract-precomputed-project.js "${project.prefix}" "${computedLayoutsDir}" "${project.combinationsPath}" "${projectOutputDir}"`;
@@ -212,13 +212,42 @@ async function processProject(project) {
 
         console.log('  ✓ Data extraction complete\\n');
 
-        // Step 3: Embed data in SVG
-        console.log('Step 3/4: Embedding data in SVG...');
+        // Step 3: Embed path metadata from level data
+        console.log('Step 3/5: Embedding path metadata...');
 
-        const embedCmd = `node embed-project.js "${project.prefix}" "${project.svgPath}" "${projectOutputDir}"`;
+        const metadataSvgPath = path.join(projectOutputDir, `${project.prefix}-with-metadata.svg`);
+        const embedMetadataCmd = `node embed-path-metadata.js "${project.prefix}" "${project.svgPath}" "${project.dataPath}" "${metadataSvgPath}"`;
+
+        const embedMetadataResult = await execAsync(embedMetadataCmd, { cwd: __dirname });
+
+        // Show output from embed-path-metadata script
+        if (embedMetadataResult.stdout) {
+            console.log(embedMetadataResult.stdout);
+        }
+        if (embedMetadataResult.stderr) {
+            console.error('  ⚠ stderr:', embedMetadataResult.stderr);
+        }
+
+        // Verify the output file was created
+        if (!fs.existsSync(metadataSvgPath)) {
+            throw new Error(`Metadata embedding failed: output file not created at ${metadataSvgPath}`);
+        }
+
+        console.log('  ✓ Path metadata embedded\\n');
+
+        // Step 4: Embed layout data in SVG
+        console.log('Step 4/5: Embedding layout data in SVG...');
+
+        const embedCmd = `node embed-project.js "${project.prefix}" "${metadataSvgPath}" "${projectOutputDir}"`;
         await execAsync(embedCmd, { cwd: __dirname });
 
         console.log('  ✓ SVG embedding complete\\n');
+
+        // Clean up intermediate metadata SVG file
+        if (fs.existsSync(metadataSvgPath)) {
+            fs.unlinkSync(metadataSvgPath);
+            console.log('  ✓ Cleaned up intermediate file\\n');
+        }
 
         console.log('='.repeat(80));
         console.log(`✓ PROJECT ${project.prefix} COMPLETE!`);

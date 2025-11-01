@@ -1,0 +1,70 @@
+{
+  "timestamp": "2025-11-01T21:55:36.355Z",
+  "testName": "Level1 - Max Inscribed (Hybrid Algorithm)",
+  "algorithm": "maxinscribed",
+  "totalTests": 2,
+  "passed": 2,
+  "failed": 0,
+  "totalRuntimeMs": 91,
+  "totalRuntimeSec": 0.1,
+  "configuration": {
+    "coverageThreshold": 0,
+    "maxTime": 5000,
+    "gridStep": 8,
+    "polylabelPrecision": 0.5,
+    "aspectRatios": [
+      0.5,
+      0.6,
+      0.7,
+      0.85,
+      1,
+      1.2,
+      1.4,
+      1.7,
+      2,
+      2.3,
+      2.5,
+      2.8,
+      3
+    ],
+    "binarySearchPrecision": 0.0001,
+    "binarySearchMaxIterations": 20,
+    "debugMode": false
+  },
+  "results": [
+    {
+      "id": "Foyer_0001",
+      "sections": [
+        "Foyer_Room_Foyer"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 188.63642202390318,
+        "height": 113.5673828125,
+        "area": 21422.94475236892,
+        "angle": 0
+      },
+      "polygonArea": 21575.99944373247,
+      "fillRatio": 99.29062525347805,
+      "runtimeMs": 67
+    },
+    {
+      "id": "BeachDeck_0002",
+      "sections": [
+        "BeachDeck_Room_BeachDeck"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 97.29894999999999,
+        "height": 121.3642578125,
+        "area": 11808.614852685545,
+        "angle": 0
+      },
+      "polygonArea": 12387.362433485148,
+      "fillRatio": 95.32791920873204,
+      "runtimeMs": 18
+    }
+  ]
+}

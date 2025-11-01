@@ -4,6 +4,8 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import XmlBeautify from 'xml-beautify';
+import { DOMParser } from 'xmldom';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -126,6 +128,33 @@ for (const dataFile of loadedData) {
 // Embed all precomputed data files
 for (const dataFile of loadedData) {
     svgContent = embedDataInSvg(svgContent, dataFile.data, dataFile.id);
+}
+
+// Format the SVG for readability
+console.log('Formatting SVG...');
+try {
+    const beautifier = new XmlBeautify({ parser: DOMParser });
+    svgContent = beautifier.beautify(svgContent, {
+        indent: '  ',  // 2 spaces
+        useSelfClosingElement: true
+    });
+
+    // Post-process: put namespace-prefixed attributes (*:attr) on separate lines
+    // Find the base indentation of each element and add 4 spaces for attributes
+    svgContent = svgContent.replace(/^(\s*)(<\w+(?::\w+)?)\s+(.+?)([/>])$/gm, (match, indent, tag, attrs, close) => {
+        // Only process if there are namespace-prefixed attributes
+        if (!attrs.includes(':')) {
+            return match;
+        }
+
+        // Split attributes and format namespace-prefixed ones on new lines
+        const attrIndent = indent + '    ';  // base indent + 4 spaces
+        const formattedAttrs = attrs.replace(/\s+(\w+:\S+="[^"]*")/g, `\n${attrIndent}$1`);
+
+        return `${indent}${tag} ${formattedAttrs.trimStart()}${close}`;
+    });
+} catch (err) {
+    console.warn('  Warning: XML formatting encountered an issue:', err.message);
 }
 
 // Write modified SVG to output directory

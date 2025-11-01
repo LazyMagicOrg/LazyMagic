@@ -1,0 +1,64 @@
+{
+  "timestamp": "2025-11-01T21:51:51.144Z",
+  "testName": "Level1 - Hollow Square Layout",
+  "algorithm": "hollowsquare",
+  "totalTests": 2,
+  "passed": 2,
+  "failed": 0,
+  "totalRuntimeMs": 3128,
+  "totalRuntimeSec": 3.1,
+  "configuration": {
+    "width": {
+      "mode": "discrete",
+      "base": 19,
+      "increment": 6,
+      "minIncrements": 0
+    },
+    "height": {
+      "mode": "discrete",
+      "base": 14,
+      "increment": 6,
+      "minIncrements": 0
+    },
+    "maxTime": 5000,
+    "angleSamples": 25,
+    "centroidSamples": 25,
+    "debugMode": false
+  },
+  "results": [
+    {
+      "id": "Foyer_0001",
+      "sections": [
+        "Foyer_Room_Foyer"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 109,
+        "height": 182,
+        "area": 19838,
+        "angle": 0
+      },
+      "polygonArea": 21575.99944373247,
+      "fillRatio": 91.94475580023554,
+      "runtimeMs": 2171
+    },
+    {
+      "id": "BeachDeck_0002",
+      "sections": [
+        "BeachDeck_Room_BeachDeck"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 121,
+        "height": 92,
+        "area": 11132,
+        "angle": 0
+      },
+      "polygonArea": 12387.362433485148,
+      "fillRatio": 89.86578103106365,
+      "runtimeMs": 951
+    }
+  ]
+}

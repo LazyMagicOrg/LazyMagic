@@ -1,0 +1,38 @@
+{
+  "generatedAt": "2025-11-01T21:55:36.189Z",
+  "totalCombinations": 2,
+  "roomSummary": {
+    "Foyer": 1,
+    "BeachDeck": 1
+  },
+  "combinations": [
+    {
+      "id": "Foyer_0001",
+      "roomId": "Foyer",
+      "key": "Foyer_Room_Foyer",
+      "sections": [
+        "Foyer_Room_Foyer"
+      ],
+      "size": 1,
+      "layoutRestriction": "allowed",
+      "overrides": {
+        "area": 3000
+      }
+    },
+    {
+      "id": "BeachDeck_0002",
+      "roomId": "BeachDeck",
+      "key": "BeachDeck_Room_BeachDeck",
+      "sections": [
+        "BeachDeck_Room_BeachDeck"
+      ],
+      "size": 1,
+      "layoutRestriction": "allowed",
+      "overrides": {
+        "area": 3141.5,
+        "width": 61,
+        "depth": 51.5
+      }
+    }
+  ]
+}
