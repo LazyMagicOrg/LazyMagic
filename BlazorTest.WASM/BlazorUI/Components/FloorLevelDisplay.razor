@@ -1,0 +1,85 @@
+@namespace BlazorUI.Components
+@using LazyMagic.BlazorSvg.Models
+
+@if (FloorLevel != null)
+{
+    <div class="container-fluid mt-4">
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">Floor Level: @FloorLevel.Name</h4>
+            </div>
+            <div class="card-body">
+                <p><strong>ID:</strong> @FloorLevel.Id</p>
+                @if (FloorLevel.Diagram != null)
+                {
+                    <div class="mt-2">
+                        <h6>Diagram Information</h6>
+                        <p><strong>Image:</strong> @FloorLevel.Diagram.Image</p>
+                        <p><strong>Units:</strong> @FloorLevel.Diagram.MeasureUnits (@FloorLevel.Diagram.Unit)</p>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="rooms-tab" data-bs-toggle="tab" data-bs-target="#rooms" type="button" role="tab">
+                    Rooms (@FloorLevel.Rooms.Count)
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="maxinscribed-tab" data-bs-toggle="tab" data-bs-target="#maxinscribed" type="button" role="tab">
+                    Max-Inscribed Data
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="boardroom-tab" data-bs-toggle="tab" data-bs-target="#boardroom" type="button" role="tab">
+                    Boardroom Data
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="hollowsquare-tab" data-bs-toggle="tab" data-bs-target="#hollowsquare" type="button" role="tab">
+                    Hollow Square Data
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="rooms" role="tabpanel">
+                <div class="mt-3">
+                    @foreach (var room in FloorLevel.Rooms)
+                    {
+                        <RoomDisplay Room="@room" />
+                    }
+                </div>
+            </div>
+            <div class="tab-pane fade" id="maxinscribed" role="tabpanel">
+                <div class="mt-3">
+                    <MaxInscribedDataDisplay Data="@FloorLevel.MaxInscribedData" />
+                </div>
+            </div>
+            <div class="tab-pane fade" id="boardroom" role="tabpanel">
+                <div class="mt-3">
+                    <BoardroomDataDisplay Data="@FloorLevel.BoardroomData" />
+                </div>
+            </div>
+            <div class="tab-pane fade" id="hollowsquare" role="tabpanel">
+                <div class="mt-3">
+                    <HollowSquareDataDisplay Data="@FloorLevel.HollowSquareData" />
+                </div>
+            </div>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        <p>No floor level metadata available.</p>
+        <p>Click the "Load Metadata" button to extract floor plan data from the SVG.</p>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public FloorLevel? FloorLevel { get; set; }
+}

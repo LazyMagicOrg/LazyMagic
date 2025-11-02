@@ -1,0 +1,79 @@
+@namespace BlazorUI.Components
+@using LazyMagic.BlazorSvg.Models
+
+@if (Data != null)
+{
+    <div class="card mb-3">
+        <div class="card-header bg-warning text-dark">
+            <h5 class="mb-0">Max-Inscribed Rectangle Data</h5>
+        </div>
+        <div class="card-body">
+            <p><strong>Project:</strong> @Data.Project</p>
+            <p><strong>Generated:</strong> @Data.GeneratedAt</p>
+            <p><strong>Total Combinations:</strong> @Data.TotalCombinations</p>
+            <p><strong>Successful:</strong> @Data.SuccessfulComputations</p>
+            <p><strong>Failed:</strong> @Data.FailedComputations</p>
+
+            @if (Data.Statistics != null)
+            {
+                <div class="mt-2">
+                    <h6>Statistics</h6>
+                    <p><strong>Total Layouts:</strong> @Data.Statistics.TotalLayouts</p>
+                    <p><strong>Total Time:</strong> @Data.Statistics.TotalComputationTimeSec seconds</p>
+                    <p><strong>Average Time:</strong> @Data.Statistics.AverageComputationTimeSec seconds</p>
+                </div>
+            }
+
+            <div class="mt-3">
+                <h6>Rectangles (@Data.Rectangles.Count)</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped">
+                        <thead>
+                            <tr>
+                                <th>Key</th>
+                                <th>Sections</th>
+                                <th>Polygon Area</th>
+                                <th>Rectangle Area</th>
+                                <th>Coverage %</th>
+                                <th>Time (ms)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var rect in Data.Rectangles.Take(ShowAll ? Data.Rectangles.Count : 10))
+                            {
+                                var coverage = rect.PolygonArea > 0 ? (rect.RectangleArea / rect.PolygonArea * 100) : 0;
+                                <tr>
+                                    <td><small>@rect.Key</small></td>
+                                    <td><small>@rect.Sections.Count</small></td>
+                                    <td>@($"{rect.PolygonArea:F2}")</td>
+                                    <td>@($"{rect.RectangleArea:F2}")</td>
+                                    <td>@($"{coverage:F1}")%</td>
+                                    <td>@rect.ComputationTimeMs</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                @if (Data.Rectangles.Count > 10 && !ShowAll)
+                {
+                    <button class="btn btn-sm btn-outline-primary" @onclick="() => ShowAll = true">
+                        Show All (@Data.Rectangles.Count rectangles)
+                    </button>
+                }
+                else if (ShowAll)
+                {
+                    <button class="btn btn-sm btn-outline-secondary" @onclick="() => ShowAll = false">
+                        Show Less
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public MaxInscribedData? Data { get; set; }
+
+    private bool ShowAll { get; set; } = false;
+}

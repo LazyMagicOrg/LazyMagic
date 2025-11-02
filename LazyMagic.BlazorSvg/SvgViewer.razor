@@ -1,5 +1,6 @@
 ﻿@inject IJSRuntime JSRuntime
 @using LazyMagic.BlazorSvg
+@using LazyMagic.BlazorSvg.Models
 
 <div id="@containerId" class="svgviewer" style="@Style"></div>
 @implements IAsyncDisposable
@@ -127,6 +128,18 @@
             await svgViewerJS.SetRectangleTypeAsync(rectangleType);
             lastRectangleType = rectangleType;
         }
+    }
+
+    /// <summary>
+    /// Extracts floor metadata from the loaded SVG including rooms, sections, and precomputed layout data
+    /// </summary>
+    /// <returns>FloorLevel object containing all metadata, or null if extraction fails</returns>
+    public async Task<FloorLevel?> GetFloorMetadataAsync()
+    {
+        if (svgViewerJS == null)
+            throw new InvalidOperationException("SvgViewer not initialized");
+
+        return await svgViewerJS.GetFloorMetadataAsync();
     }
 
     public async ValueTask DisposeAsync()

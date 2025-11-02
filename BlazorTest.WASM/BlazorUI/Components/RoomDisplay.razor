@@ -1,0 +1,57 @@
+@namespace BlazorUI.Components
+@using LazyMagic.BlazorSvg.Models
+
+<div class="card mb-3">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Room: @Room.Id</h5>
+    </div>
+    <div class="card-body">
+        <h6>Sections (@Room.RoomSections.Count)</h6>
+        <div class="accordion" id="accordion-@Room.Id">
+            @foreach (var item in Room.RoomSections)
+            {
+                var sectionId = $"section-{item.Id}";
+                var collapseId = $"collapse-{item.Id}";
+
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="@sectionId">
+                        <button class="accordion-button collapsed" type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#@collapseId"
+                                aria-expanded="false"
+                                aria-controls="@collapseId">
+                            @item.Id @(!string.IsNullOrEmpty(item.Name) ? $" - {item.Name}" : "")
+                        </button>
+                    </h2>
+                    <div id="@collapseId" class="accordion-collapse collapse"
+                         aria-labelledby="@sectionId"
+                         data-bs-parent="#accordion-@Room.Id">
+                        <div class="accordion-body">
+                            <RoomSectionDisplay Section="@item" />
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (Room.Joins.Any())
+        {
+            <div class="mt-3">
+                <h6>Joins (@Room.Joins.Count)</h6>
+                <ul class="list-group">
+                    @foreach (var join in Room.Joins)
+                    {
+                        <li class="list-group-item">
+                            <strong>@join.Orientation:</strong> @join.Section1Id ↔ @join.Section2Id
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public Room Room { get; set; } = null!;
+}

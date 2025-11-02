@@ -1,5 +1,6 @@
 ﻿using Microsoft.JSInterop;
 using System.IO;
+using LazyMagic.BlazorSvg.Models;
 
 namespace LazyMagic.BlazorSvg
 {
@@ -107,6 +108,18 @@ namespace LazyMagic.BlazorSvg
             if (containerId == null) throw new InvalidOperationException("InitAsync must be called first");
             var module = await moduleTask.Value;
             await module.InvokeVoidAsync("setRectangleType", containerId, rectangleType);
+        }
+
+        /// <summary>
+        /// Extracts embedded metadata from the SVG including precomputed layout data
+        /// </summary>
+        /// <returns>FloorLevel object containing all metadata, or null if extraction fails</returns>
+        public async ValueTask<FloorLevel?> GetFloorMetadataAsync()
+        {
+            if (containerId == null) throw new InvalidOperationException("InitAsync must be called first");
+            var module = await moduleTask.Value;
+            var result = await module.InvokeAsync<FloorLevel?>("getFloorMetadata", containerId);
+            return result;
         }
     }
 

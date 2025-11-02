@@ -3343,6 +3343,182 @@ export async function getAreaData(containerId) {
     return null;
 }
 
+/**
+ * Extract floor metadata from the loaded SVG
+ * Returns a FloorLevel object containing rooms, sections, and precomputed layout data
+ */
+export async function getFloorMetadata(containerId) {
+    const instance = instances.get(containerId);
+    if (!instance) {
+        console.error('[getFloorMetadata] No instance found for container:', containerId);
+        return null;
+    }
+
+    console.log('[getFloorMetadata] Instance found:', instance);
+    console.log('[getFloorMetadata] SVG object:', instance.s);
+    console.log('[getFloorMetadata] SVG node:', instance.s?.node);
+
+    if (!instance.s || !instance.s.node) {
+        console.error('[getFloorMetadata] SVG not loaded. SVG:', instance.s, 'Node:', instance.s?.node);
+        return null;
+    }
+
+    console.log('[getFloorMetadata] Extracting floor metadata...');
+
+    try {
+        // Ensure all precomputed data is loaded
+        await instance.loadPrecomputedRectangles();
+        await instance.loadPrecomputedBoardrooms();
+        await instance.loadPrecomputedHollowSquares();
+
+        const floorLevel = {
+            id: null,
+            name: null,
+            diagram: null,
+            rooms: [],
+            maxInscribedData: null,
+            boardroomData: null,
+            hollowSquareData: null
+        };
+
+        // Extract precomputed max-inscribed data
+        if (instance.precomputedRectangles && instance.precomputedRectangles.rectangles) {
+            const meta = instance.precomputedRectangles.metadata || {};
+            floorLevel.maxInscribedData = {
+                generatedAt: meta.generatedAt || null,
+                project: meta.project || null,
+                totalCombinations: meta.totalCombinations || 0,
+                successfulComputations: meta.successfulComputations || 0,
+                failedComputations: meta.failedComputations || 0,
+                statistics: meta.statistics || null,
+                rectangles: instance.precomputedRectangles.rectangles.map(rect => ({
+                    key: rect.key,
+                    sections: rect.sections,
+                    maxRectangle: rect.rectangle ? {
+                        corners: rect.rectangle.corners,
+                        width: rect.rectangle.width,
+                        height: rect.rectangle.height,
+                        area: rect.rectangle.area,
+                        angle: rect.rectangle.angle,
+                        centroid: rect.rectangle.centroid
+                    } : null,
+                    polygonArea: rect.polygonArea,
+                    rectangleArea: rect.rectangleArea,
+                    computationTimeMs: rect.computationTimeMs
+                }))
+            };
+        }
+
+        // Extract precomputed boardroom data
+        if (instance.precomputedBoardrooms && instance.precomputedBoardrooms.boardroomLayouts) {
+            const meta = instance.precomputedBoardrooms.metadata || {};
+            floorLevel.boardroomData = {
+                generatedAt: meta.generatedAt || null,
+                project: meta.project || null,
+                totalCombinations: meta.totalCombinations || 0,
+                successfulComputations: meta.successfulComputations || 0,
+                failedComputations: meta.failedComputations || 0,
+                statistics: meta.statistics || null,
+                boardroomLayouts: instance.precomputedBoardrooms.boardroomLayouts.map(layout => ({
+                    key: layout.key,
+                    sections: layout.sections,
+                    config: layout.config || null,
+                    elements: layout.elements || [],
+                    polygonArea: layout.polygonArea,
+                    computationTimeMs: layout.computationTimeMs
+                }))
+            };
+        }
+
+        // Extract precomputed hollow square data
+        if (instance.precomputedHollowSquares && instance.precomputedHollowSquares.hollowSquareLayouts) {
+            const meta = instance.precomputedHollowSquares.metadata || {};
+            floorLevel.hollowSquareData = {
+                generatedAt: meta.generatedAt || null,
+                project: meta.project || null,
+                totalCombinations: meta.totalCombinations || 0,
+                successfulComputations: meta.successfulComputations || 0,
+                failedComputations: meta.failedComputations || 0,
+                statistics: meta.statistics || null,
+                hollowSquareLayouts: instance.precomputedHollowSquares.hollowSquareLayouts.map(layout => ({
+                    key: layout.key,
+                    sections: layout.sections,
+                    hollowSquareRectangle: layout.hollowSquareLayout ? {
+                        corners: layout.hollowSquareLayout.corners,
+                        width: layout.hollowSquareLayout.width,
+                        height: layout.hollowSquareLayout.height,
+                        area: layout.hollowSquareLayout.area,
+                        angle: layout.hollowSquareLayout.angle,
+                        centroid: layout.hollowSquareLayout.centroid
+                    } : null,
+                    polygonArea: layout.polygonArea,
+                    hollowSquareArea: layout.hollowSquareArea,
+                    computationTimeMs: layout.computationTimeMs
+                }))
+            };
+        }
+
+        // Extract path elements and build room sections
+        const pathElements = instance.s.node.querySelectorAll('path[id]');
+        const sectionMap = new Map(); // Map to store sections by ID
+
+        pathElements.forEach(pathElement => {
+            const id = pathElement.getAttribute('id');
+            if (!id) return;
+
+            const section = {
+                id: id,
+                name: pathElement.querySelector('title')?.textContent || '',
+                description: '',
+                sectionType: null,
+                layoutRestriction: 'allowed',
+                pathData: pathElement.getAttribute('d'),
+                style: pathElement.getAttribute('style'),
+                inkscapeLabel: pathElement.getAttributeNS('http://www.inkscape.org/namespaces/inkscape', 'label'),
+                polygonCoordinates: null,
+                polygonArea: null
+            };
+
+            sectionMap.set(id, section);
+        });
+
+        // Group sections by room (extract room prefix from section ID)
+        const roomMap = new Map();
+
+        sectionMap.forEach((section, sectionId) => {
+            // Extract room ID from section ID (e.g., "Ballroom_Room_1" -> "Ballroom")
+            const roomMatch = sectionId.match(/^([^_]+)_/);
+            const roomId = roomMatch ? roomMatch[1] : 'Unknown';
+
+            if (!roomMap.has(roomId)) {
+                roomMap.set(roomId, {
+                    id: roomId,
+                    roomSections: [],
+                    joins: []
+                });
+            }
+
+            roomMap.get(roomId).roomSections.push(section);
+        });
+
+        // Convert room map to array
+        floorLevel.rooms = Array.from(roomMap.values());
+
+        // Set floor level ID and name from project if available
+        if (instance.precomputedRectangles && instance.precomputedRectangles.project) {
+            floorLevel.id = instance.precomputedRectangles.project;
+            floorLevel.name = instance.precomputedRectangles.project;
+        }
+
+        console.log('[getFloorMetadata] Successfully extracted floor metadata:', floorLevel);
+        return floorLevel;
+
+    } catch (error) {
+        console.error('[getFloorMetadata] Error extracting metadata:', error);
+        return null;
+    }
+}
+
 export function disposeInstance(containerId) {
     instances.delete(containerId);
 }
