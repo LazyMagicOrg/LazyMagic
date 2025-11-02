@@ -1,9 +1,9 @@
 namespace LazyMagic.BlazorSvg.Models;
 
 /// <summary>
-/// Precomputed boardroom layout data (embedded in SVG defs section)
+/// Container for all precomputed inscribed rectangle layouts
 /// </summary>
-public class BoardroomLayoutData
+public class InscribedRectangleData
 {
     /// <summary>
     /// Timestamp when this data was generated
@@ -36,7 +36,7 @@ public class BoardroomLayoutData
     public ComputationStatistics? Statistics { get; set; }
 
     /// <summary>
-    /// List of all computed boardroom layouts
+    /// All inscribed rectangle layouts (all types combined)
     /// </summary>
-    public List<BoardroomLayout> BoardroomLayouts { get; set; } = new();
+    public List<InscribedRectangleLayout> Layouts { get; set; } = new();
 }

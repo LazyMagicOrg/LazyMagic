@@ -23,6 +23,67 @@
     @bind-AllInsideSelected="@allInsideSelected"
     RectangleType="@rectangleType"/>
 
+@if (selectedSections.Any())
+{
+    <div class="mt-3 card">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Selected Sections Details</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm table-striped">
+                    <thead>
+                        <tr>
+                            <th>Section Name</th>
+                            <th>FloorMat Area</th>
+                            <th>Polygon Area</th>
+                            <th>Width × Depth</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var roomSection in selectedSections)
+                        {
+                            <tr>
+                                <td><strong>@roomSection.Name</strong></td>
+                                <td>
+                                    @if (roomSection.FloormatArea.HasValue)
+                                    {
+                                        <text>@roomSection.FloormatArea.Value.ToString("F2") sq ft</text>
+                                    }
+                                    else
+                                    {
+                                        <em class="text-muted">Not specified</em>
+                                    }
+                                </td>
+                                <td>
+                                    @if (roomSection.PolygonArea.HasValue)
+                                    {
+                                        <text>@roomSection.PolygonArea.Value.ToString("F2")</text>
+                                    }
+                                    else
+                                    {
+                                        <em class="text-muted">Not computed</em>
+                                    }
+                                </td>
+                                <td>
+                                    @if (roomSection.Width.HasValue && roomSection.Depth.HasValue)
+                                    {
+                                        <text>@roomSection.Width.Value.ToString("F1") × @roomSection.Depth.Value.ToString("F1") ft</text>
+                                    }
+                                    else
+                                    {
+                                        <em class="text-muted">N/A</em>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
 <div class="mt-3">
     <div>Initial Paths: <code>@(string.Join(", ", initialPaths))</code></div>
     <div>Currently Selected: <code>@(string.Join(", ", currentPaths.Any() ? currentPaths : initialPaths))</code></div>
@@ -147,6 +208,7 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
     private FloorLevel? floorMetadata = null;
     private bool isLoadingMetadata = false;
     private string? metadataError = null;
+    private List<RoomSection> selectedSections = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -162,6 +224,7 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
            // Give the SVG time to initialize
            await Task.Delay(500);
            await UpdateAreaData();
+           UpdateSelectedSections();
        }
     }
 
@@ -169,6 +232,7 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
     {
         currentPaths = paths;
         await UpdateAreaData();
+        UpdateSelectedSections();
         StateHasChanged();
     }
 
@@ -223,6 +287,10 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
             {
                 metadataError = "Failed to extract metadata from SVG. Make sure the SVG is fully loaded.";
             }
+            else
+            {
+                UpdateSelectedSections();
+            }
         }
         catch (Exception ex)
         {
@@ -232,6 +300,19 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
         {
             isLoadingMetadata = false;
             StateHasChanged();
+        }
+    }
+
+    private void UpdateSelectedSections()
+    {
+        selectedSections.Clear();
+        if (floorMetadata?.Rooms == null) return;
+
+        var pathIds = currentPaths.Any() ? currentPaths : initialPaths;
+        foreach (var room in floorMetadata.Rooms)
+        {
+            var matchingSections = room.RoomSections.Where(s => pathIds.Contains(s.Id));
+            selectedSections.AddRange(matchingSections);
         }
     }
 

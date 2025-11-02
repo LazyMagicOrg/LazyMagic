@@ -51,7 +51,22 @@ public class RoomSection
     public List<Point>? PolygonCoordinates { get; set; }
 
     /// <summary>
-    /// Computed polygon area
+    /// Computed polygon area (calculated from path coordinates)
     /// </summary>
     public double? PolygonArea { get; set; }
+
+    /// <summary>
+    /// FloorMat embedded area (from floormat:area attribute, may differ from PolygonArea)
+    /// </summary>
+    public double? FloormatArea { get; set; }
+
+    /// <summary>
+    /// Width dimension from floormat:width (optional)
+    /// </summary>
+    public double? Width { get; set; }
+
+    /// <summary>
+    /// Depth dimension from floormat:depth (optional)
+    /// </summary>
+    public double? Depth { get; set; }
 }

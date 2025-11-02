@@ -26,17 +26,8 @@ public class FloorLevel
     public List<Room> Rooms { get; set; } = new();
 
     /// <summary>
-    /// Precomputed max-inscribed rectangle data embedded in SVG
+    /// All precomputed inscribed rectangle layouts embedded in SVG
+    /// (includes max-inscribed, boardroom, and hollow square types)
     /// </summary>
-    public MaxInscribedData? MaxInscribedData { get; set; }
-
-    /// <summary>
-    /// Precomputed boardroom layout data embedded in SVG
-    /// </summary>
-    public BoardroomLayoutData? BoardroomData { get; set; }
-
-    /// <summary>
-    /// Precomputed hollow square layout data embedded in SVG
-    /// </summary>
-    public HollowSquareLayoutData? HollowSquareData { get; set; }
+    public InscribedRectangleData? InscribedRectangles { get; set; }
 }

@@ -3376,25 +3376,22 @@ export async function getFloorMetadata(containerId) {
             name: null,
             diagram: null,
             rooms: [],
-            maxInscribedData: null,
-            boardroomData: null,
-            hollowSquareData: null
+            inscribedRectangles: null
         };
 
-        // Extract precomputed max-inscribed data
+        // Combine all three layout types into a unified data structure
+        const allLayouts = [];
+        let metadata = {};
+
+        // Extract precomputed max-inscribed rectangles
         if (instance.precomputedRectangles && instance.precomputedRectangles.rectangles) {
-            const meta = instance.precomputedRectangles.metadata || {};
-            floorLevel.maxInscribedData = {
-                generatedAt: meta.generatedAt || null,
-                project: meta.project || null,
-                totalCombinations: meta.totalCombinations || 0,
-                successfulComputations: meta.successfulComputations || 0,
-                failedComputations: meta.failedComputations || 0,
-                statistics: meta.statistics || null,
-                rectangles: instance.precomputedRectangles.rectangles.map(rect => ({
+            metadata = instance.precomputedRectangles.metadata || {};
+            instance.precomputedRectangles.rectangles.forEach(rect => {
+                allLayouts.push({
+                    layoutType: 0, // MaxInscribed enum value
                     key: rect.key,
                     sections: rect.sections,
-                    maxRectangle: rect.rectangle ? {
+                    rectangle: rect.rectangle ? {
                         corners: rect.rectangle.corners,
                         width: rect.rectangle.width,
                         height: rect.rectangle.height,
@@ -3403,47 +3400,62 @@ export async function getFloorMetadata(containerId) {
                         centroid: rect.rectangle.centroid
                     } : null,
                     polygonArea: rect.polygonArea,
-                    rectangleArea: rect.rectangleArea,
-                    computationTimeMs: rect.computationTimeMs
-                }))
-            };
+                    inscribedArea: rect.rectangleArea,
+                    computationTimeMs: rect.computationTimeMs,
+                    algorithm: rect.rectangle?.type || null,
+                    boardroomConfig: null,
+                    furnitureElements: null,
+                    sets: null,
+                    tables: null,
+                    orientation: null,
+                    metadata: null
+                });
+            });
         }
 
-        // Extract precomputed boardroom data
+        // Extract precomputed boardroom layouts
         if (instance.precomputedBoardrooms && instance.precomputedBoardrooms.boardroomLayouts) {
-            const meta = instance.precomputedBoardrooms.metadata || {};
-            floorLevel.boardroomData = {
-                generatedAt: meta.generatedAt || null,
-                project: meta.project || null,
-                totalCombinations: meta.totalCombinations || 0,
-                successfulComputations: meta.successfulComputations || 0,
-                failedComputations: meta.failedComputations || 0,
-                statistics: meta.statistics || null,
-                boardroomLayouts: instance.precomputedBoardrooms.boardroomLayouts.map(layout => ({
+            if (!metadata.generatedAt) {
+                metadata = instance.precomputedBoardrooms.metadata || {};
+            }
+            instance.precomputedBoardrooms.boardroomLayouts.forEach(layout => {
+                allLayouts.push({
+                    layoutType: 1, // Boardroom enum value
                     key: layout.key,
                     sections: layout.sections,
-                    config: layout.config || null,
-                    elements: layout.elements || [],
+                    rectangle: layout.boardroomLayout ? {
+                        corners: layout.boardroomLayout.corners,
+                        width: layout.boardroomLayout.width,
+                        height: layout.boardroomLayout.height,
+                        area: layout.boardroomLayout.area,
+                        angle: layout.boardroomLayout.angle,
+                        centroid: layout.boardroomLayout.centroid
+                    } : null,
                     polygonArea: layout.polygonArea,
-                    computationTimeMs: layout.computationTimeMs
-                }))
-            };
+                    inscribedArea: layout.boardroomArea,
+                    computationTimeMs: layout.computationTimeMs,
+                    algorithm: layout.boardroomLayout?.algorithm || null,
+                    boardroomConfig: layout.config || null,
+                    furnitureElements: layout.elements || null,
+                    sets: layout.boardroomLayout?.sets || null,
+                    tables: layout.boardroomLayout?.tables || null,
+                    orientation: layout.boardroomLayout?.orientation || null,
+                    metadata: null
+                });
+            });
         }
 
-        // Extract precomputed hollow square data
+        // Extract precomputed hollow square layouts
         if (instance.precomputedHollowSquares && instance.precomputedHollowSquares.hollowSquareLayouts) {
-            const meta = instance.precomputedHollowSquares.metadata || {};
-            floorLevel.hollowSquareData = {
-                generatedAt: meta.generatedAt || null,
-                project: meta.project || null,
-                totalCombinations: meta.totalCombinations || 0,
-                successfulComputations: meta.successfulComputations || 0,
-                failedComputations: meta.failedComputations || 0,
-                statistics: meta.statistics || null,
-                hollowSquareLayouts: instance.precomputedHollowSquares.hollowSquareLayouts.map(layout => ({
+            if (!metadata.generatedAt) {
+                metadata = instance.precomputedHollowSquares.metadata || {};
+            }
+            instance.precomputedHollowSquares.hollowSquareLayouts.forEach(layout => {
+                allLayouts.push({
+                    layoutType: 2, // HollowSquare enum value
                     key: layout.key,
                     sections: layout.sections,
-                    hollowSquareRectangle: layout.hollowSquareLayout ? {
+                    rectangle: layout.hollowSquareLayout ? {
                         corners: layout.hollowSquareLayout.corners,
                         width: layout.hollowSquareLayout.width,
                         height: layout.hollowSquareLayout.height,
@@ -3452,9 +3464,29 @@ export async function getFloorMetadata(containerId) {
                         centroid: layout.hollowSquareLayout.centroid
                     } : null,
                     polygonArea: layout.polygonArea,
-                    hollowSquareArea: layout.hollowSquareArea,
-                    computationTimeMs: layout.computationTimeMs
-                }))
+                    inscribedArea: layout.hollowSquareArea,
+                    computationTimeMs: layout.computationTimeMs,
+                    algorithm: null,
+                    boardroomConfig: null,
+                    furnitureElements: null,
+                    sets: null,
+                    tables: null,
+                    orientation: null,
+                    metadata: null
+                });
+            });
+        }
+
+        // Create unified inscribed rectangles data container
+        if (allLayouts.length > 0) {
+            floorLevel.inscribedRectangles = {
+                generatedAt: metadata.generatedAt || null,
+                project: metadata.project || null,
+                totalCombinations: metadata.totalCombinations || 0,
+                successfulComputations: metadata.successfulComputations || 0,
+                failedComputations: metadata.failedComputations || 0,
+                statistics: metadata.statistics || null,
+                layouts: allLayouts
             };
         }
 
@@ -3466,17 +3498,37 @@ export async function getFloorMetadata(containerId) {
             const id = pathElement.getAttribute('id');
             if (!id) return;
 
+            // Extract floormat:* custom attributes
+            const floormatNS = 'http://lazymagic.com/floormat';
+            const floormatName = pathElement.getAttributeNS(floormatNS, 'name');
+            const floormatDescription = pathElement.getAttributeNS(floormatNS, 'description');
+            const floormatSectionType = pathElement.getAttributeNS(floormatNS, 'section-type');
+            const floormatLayoutRestriction = pathElement.getAttributeNS(floormatNS, 'layout-restriction');
+            const floormatArea = pathElement.getAttributeNS(floormatNS, 'area');
+            const floormatWidth = pathElement.getAttributeNS(floormatNS, 'width');
+            const floormatDepth = pathElement.getAttributeNS(floormatNS, 'depth');
+
             const section = {
                 id: id,
-                name: pathElement.querySelector('title')?.textContent || '',
-                description: '',
-                sectionType: null,
-                layoutRestriction: 'allowed',
+                // Use floormat:name if available, fallback to <title> element
+                name: floormatName || pathElement.querySelector('title')?.textContent || '',
+                // Use floormat:description if available
+                description: floormatDescription || '',
+                // Use floormat:section-type if available
+                sectionType: floormatSectionType || null,
+                // Use floormat:layout-restriction if available, default to 'allowed'
+                layoutRestriction: floormatLayoutRestriction || 'allowed',
+                // Standard SVG attributes
                 pathData: pathElement.getAttribute('d'),
                 style: pathElement.getAttribute('style'),
                 inkscapeLabel: pathElement.getAttributeNS('http://www.inkscape.org/namespaces/inkscape', 'label'),
+                // Computed properties (not yet implemented)
                 polygonCoordinates: null,
-                polygonArea: null
+                polygonArea: null,
+                // FloorMat custom attributes
+                floormatArea: floormatArea ? parseFloat(floormatArea) : null,
+                width: floormatWidth ? parseFloat(floormatWidth) : null,
+                depth: floormatDepth ? parseFloat(floormatDepth) : null
             };
 
             sectionMap.set(id, section);

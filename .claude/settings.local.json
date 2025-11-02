@@ -10,7 +10,8 @@
       "Bash(grep:*)",
       "Bash(done)",
       "Read(//mnt/c/Users/TimothyMay/OneDrive - Insight Sciences Corporation/Pictures/Screenshots/**)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(cat:*)"
     ],
     "deny": []
   }
