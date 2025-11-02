@@ -1,9 +1,10 @@
 {
-  "generatedAt": "2025-11-01T21:55:36.189Z",
-  "totalCombinations": 2,
+  "generatedAt": "2025-11-02T21:00:04.811Z",
+  "totalCombinations": 23,
   "roomSummary": {
     "Foyer": 1,
-    "BeachDeck": 1
+    "BeachDeck": 1,
+    "Ballroom": 21
   },
   "combinations": [
     {
@@ -33,6 +34,251 @@
         "width": 61,
         "depth": 51.5
       }
+    },
+    {
+      "id": "Ballroom_0003",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Room_1",
+      "sections": [
+        "Ballroom_Room_1"
+      ],
+      "size": 1,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0004",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Room_2",
+      "sections": [
+        "Ballroom_Room_2"
+      ],
+      "size": 1,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0005",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Room_3"
+      ],
+      "size": 1,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0006",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Room_1_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "size": 2,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0007",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Room_4"
+      ],
+      "size": 1,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0008",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Room_2_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "size": 2,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0009",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Room_5"
+      ],
+      "size": 1,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0010",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Room_Grand"
+      ],
+      "size": 1,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0011",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Room_1",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_1"
+      ],
+      "size": 2,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0012",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Room_2",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_2"
+      ],
+      "size": 2,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0013",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Room_1_Ballroom_Room_2",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2"
+      ],
+      "size": 3,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0014",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Room_1_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "size": 3,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0015",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0016",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Room_2_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "size": 3,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0017",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0018",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0019",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_3"
+      ],
+      "size": 2,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0020",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "size": 3,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0021",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0022",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0023",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
     }
   ]
 }

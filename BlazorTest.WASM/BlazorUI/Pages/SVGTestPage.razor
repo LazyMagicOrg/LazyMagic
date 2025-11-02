@@ -18,7 +18,7 @@
 
 <SvgViewer @ref="@svgViewer"
     InitialPaths="@initialPaths"
-    SvgUrl="Level1.svg"
+    SvgUrl="Level1.svg?v=12"
     PathsChanged="OnPathsChanged"
     @bind-AllInsideSelected="@allInsideSelected"
     RectangleType="@rectangleType"/>
@@ -224,7 +224,9 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
            // Give the SVG time to initialize
            await Task.Delay(500);
            await UpdateAreaData();
-           UpdateSelectedSections();
+
+           // Automatically load metadata on page load
+           await LoadMetadata();
        }
     }
 

@@ -1,15 +1,15 @@
 {
-  "generatedAt": "2025-11-01T21:51:51.213Z",
+  "generatedAt": "2025-11-02T21:01:26.551Z",
   "project": "Level1",
-  "totalCombinations": 2,
-  "successfulComputations": 2,
+  "totalCombinations": 23,
+  "successfulComputations": 23,
   "failedComputations": 0,
   "statistics": {
-    "totalLayouts": 2,
-    "totalComputationTimeMs": 294,
-    "averageComputationTimeMs": 147,
-    "totalComputationTimeSec": "0.3",
-    "averageComputationTimeSec": "0.147"
+    "totalLayouts": 23,
+    "totalComputationTimeMs": 3242,
+    "averageComputationTimeMs": 140.95652173913044,
+    "totalComputationTimeSec": "3.2",
+    "averageComputationTimeSec": "0.141"
   },
   "boardroomLayouts": [
     {
@@ -20,20 +20,20 @@
       "boardroomLayout": {
         "corners": [
           {
-            "x": 232.01135348562838,
-            "y": 216.45377886965719
+            "x": 212.55743169087404,
+            "y": 195.37732386095217
           },
           {
-            "x": 220.61936664505816,
-            "y": 222.71657663297952
+            "x": 201.16544485030383,
+            "y": 201.64012162427446
           },
           {
-            "x": 119.45109508369796,
-            "y": 38.69217382376816
+            "x": 99.99717328894363,
+            "y": 17.61571881506312
           },
           {
-            "x": 130.84308192426818,
-            "y": 32.42937606044585
+            "x": 111.38916012951384,
+            "y": 11.352921051740807
           }
         ],
         "width": 13,
@@ -41,20 +41,20 @@
         "area": 2730,
         "angle": 151.20000000000002,
         "centroid": {
-          "x": 175.73122428466317,
-          "y": 127.57297634671268
+          "x": 156.27730248990883,
+          "y": 106.49652133800764
         },
         "sets": 35,
         "tables": 70,
         "orientation": "width×length",
         "type": "boardroom",
         "algorithm": "Dedicated",
-        "computationTime": 134.4065,
+        "computationTime": 96.654483,
         "winningAlgorithm": "Dedicated"
       },
-      "polygonArea": 21575.99944373247,
+      "polygonArea": 21575.74551430729,
       "boardroomArea": 2730,
-      "computationTimeMs": 204
+      "computationTimeMs": 159
     },
     {
       "key": "BeachDeck_Room_BeachDeck",
@@ -93,12 +93,971 @@
         "orientation": "length×width",
         "type": "boardroom",
         "algorithm": "Dedicated",
-        "computationTime": 73.54600000000002,
+        "computationTime": 53.37398099999996,
         "winningAlgorithm": "Dedicated"
       },
       "polygonArea": 12387.362433485148,
       "boardroomArea": 1794,
-      "computationTimeMs": 90
+      "computationTimeMs": 69
+    },
+    {
+      "key": "Ballroom_Room_1",
+      "sections": [
+        "Ballroom_Room_1"
+      ],
+      "boardroomLayout": {
+        "corners": [
+          {
+            "x": 243.31608252965208,
+            "y": 36.1151817359422
+          },
+          {
+            "x": 350.1063257871451,
+            "y": 113.70283503854866
+          },
+          {
+            "x": 342.465117507343,
+            "y": 124.22005596542297
+          },
+          {
+            "x": 235.67487424984992,
+            "y": 46.63240266281652
+          }
+        ],
+        "width": 132,
+        "height": 13,
+        "area": 1716,
+        "angle": 36,
+        "centroid": {
+          "x": 292.89060001849754,
+          "y": 80.16761885068259
+        },
+        "sets": 22,
+        "tables": 44,
+        "orientation": "length×width",
+        "type": "boardroom",
+        "algorithm": "Dedicated",
+        "computationTime": 51.14161300000001,
+        "winningAlgorithm": "Dedicated"
+      },
+      "polygonArea": 11130.584726101752,
+      "boardroomArea": 1716,
+      "computationTimeMs": 66
+    },
+    {
+      "key": "Ballroom_Room_2",
+      "sections": [
+        "Ballroom_Room_2"
+      ],
+      "boardroomLayout": {
+        "corners": [
+          {
+            "x": 243.0916385232759,
+            "y": 148.04547163378112
+          },
+          {
+            "x": 349.88188178076894,
+            "y": 225.6331249363876
+          },
+          {
+            "x": 342.2406735009668,
+            "y": 236.15034586326192
+          },
+          {
+            "x": 235.45043024347373,
+            "y": 158.56269256065545
+          }
+        ],
+        "width": 132,
+        "height": 13,
+        "area": 1716,
+        "angle": 36,
+        "centroid": {
+          "x": 292.66615601212135,
+          "y": 192.09790874852152
+        },
+        "sets": 22,
+        "tables": 44,
+        "orientation": "length×width",
+        "type": "boardroom",
+        "algorithm": "Dedicated",
+        "computationTime": 45.691732,
+        "winningAlgorithm": "Dedicated"
+      },
+      "polygonArea": 9832.111083145399,
+      "boardroomArea": 1716,
+      "computationTimeMs": 61
+    },
+    {
+      "key": "Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Room_3"
+      ],
+      "boardroomLayout": {
+        "corners": [
+          {
+            "x": 363.1095634477672,
+            "y": 32.30263913798283
+          },
+          {
+            "x": 454.959610502865,
+            "y": 118.5555744849976
+          },
+          {
+            "x": 446.06049812579204,
+            "y": 128.03216664147595
+          },
+          {
+            "x": 354.2104510706942,
+            "y": 41.77923129446118
+          }
+        ],
+        "width": 126,
+        "height": 13,
+        "area": 1638,
+        "angle": 43.2,
+        "centroid": {
+          "x": 404.5850307867796,
+          "y": 80.16740288972939
+        },
+        "sets": 21,
+        "tables": 42,
+        "orientation": "length×width",
+        "type": "boardroom",
+        "algorithm": "Dedicated",
+        "computationTime": 47.85693500000008,
+        "winningAlgorithm": "Dedicated"
+      },
+      "polygonArea": 10274.52373672137,
+      "boardroomArea": 1638,
+      "computationTimeMs": 62
+    },
+    {
+      "key": "Ballroom_Room_1_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "boardroomLayout": {
+        "corners": [
+          {
+            "x": 452.9165646242694,
+            "y": 38.757225478291566
+          },
+          {
+            "x": 456.9337855511437,
+            "y": 51.120960190128564
+          },
+          {
+            "x": 240.09289983584873,
+            "y": 121.57683490761659
+          },
+          {
+            "x": 236.0756789089744,
+            "y": 109.21310019577959
+          }
+        ],
+        "width": 13,
+        "height": 228,
+        "area": 2964,
+        "angle": 72,
+        "centroid": {
+          "x": 346.50473223005906,
+          "y": 80.16703019295407
+        },
+        "sets": 38,
+        "tables": 76,
+        "orientation": "width×length",
+        "type": "boardroom",
+        "algorithm": "Dedicated",
+        "computationTime": 108.71626400000002,
+        "winningAlgorithm": "Dedicated"
+      },
+      "polygonArea": 21405.2861800207,
+      "boardroomArea": 2964,
+      "computationTimeMs": 123
+    },
+    {
+      "key": "Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Room_4"
+      ],
+      "boardroomLayout": {
+        "corners": [
+          {
+            "x": 360.6118614907512,
+            "y": 150.87406357726866
+          },
+          {
+            "x": 456.83572031037755,
+            "y": 241.23428155985556
+          },
+          {
+            "x": 447.93660793330463,
+            "y": 250.71087371633388
+          },
+          {
+            "x": 351.7127491136783,
+            "y": 160.35065573374698
+          }
+        ],
+        "width": 132,
+        "height": 13,
+        "area": 1716,
+        "angle": 43.2,
+        "centroid": {
+          "x": 404.2742347120279,
+          "y": 200.79246864680127
+        },
+        "sets": 22,
+        "tables": 44,
+        "orientation": "length×width",
+        "type": "boardroom",
+        "algorithm": "Dedicated",
+        "computationTime": 39.130017000000066,
+        "winningAlgorithm": "Dedicated"
+      },
+      "polygonArea": 10859.232338887654,
+      "boardroomArea": 1716,
+      "computationTimeMs": 52
+    },
+    {
+      "key": "Ballroom_Room_2_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "boardroomLayout": {
+        "corners": [
+          {
+            "x": 240.35032348070135,
+            "y": 152.04601308061876
+          },
+          {
+            "x": 457.9180211785522,
+            "y": 238.1871584088334
+          },
+          {
+            "x": 453.13240199365134,
+            "y": 250.27425272538068
+          },
+          {
+            "x": 235.56470429580054,
+            "y": 164.13310739716604
+          }
+        ],
+        "width": 234,
+        "height": 13,
+        "area": 3042,
+        "angle": 21.6,
+        "centroid": {
+          "x": 346.74136273717636,
+          "y": 201.16013290299972
+        },
+        "sets": 39,
+        "tables": 78,
+        "orientation": "length×width",
+        "type": "boardroom",
+        "algorithm": "Dedicated",
+        "computationTime": 79.39211499999999,
+        "winningAlgorithm": "Dedicated"
+      },
+      "polygonArea": 20691.06681502775,
+      "boardroomArea": 3042,
+      "computationTimeMs": 188
+    },
+    {
+      "key": "Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Room_5"
+      ],
+      "boardroomLayout": {
+        "corners": [
+          {
+            "x": 484.09405950183015,
+            "y": 35.47104359959264
+          },
+          {
+            "x": 679.3471215383629,
+            "y": 112.777199663375
+          },
+          {
+            "x": 674.5615023534622,
+            "y": 124.86429397992228
+          },
+          {
+            "x": 479.3084403169293,
+            "y": 47.558137916139906
+          }
+        ],
+        "width": 210,
+        "height": 13,
+        "area": 2730,
+        "angle": 21.6,
+        "centroid": {
+          "x": 579.3277809276461,
+          "y": 80.16766878975746
+        },
+        "sets": 35,
+        "tables": 70,
+        "orientation": "length×width",
+        "type": "boardroom",
+        "algorithm": "Dedicated",
+        "computationTime": 71.46788700000002,
+        "winningAlgorithm": "Dedicated"
+      },
+      "polygonArea": 19407.111232002077,
+      "boardroomArea": 2730,
+      "computationTimeMs": 85
+    },
+    {
+      "key": "Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Room_Grand"
+      ],
+      "boardroomLayout": {
+        "corners": [
+          {
+            "x": 665.0079521254033,
+            "y": 161.8835574992364
+          },
+          {
+            "x": 486.24138939645513,
+            "y": 260.1613070159863
+          },
+          {
+            "x": 479.9785916331328,
+            "y": 248.76932017541608
+          },
+          {
+            "x": 658.7451543620809,
+            "y": 150.49157065866618
+          }
+        ],
+        "width": 204,
+        "height": 13,
+        "area": 2652,
+        "angle": 151.20000000000002,
+        "centroid": {
+          "x": 572.493271879268,
+          "y": 205.32643883732624
+        },
+        "sets": 34,
+        "tables": 68,
+        "orientation": "length×width",
+        "type": "boardroom",
+        "algorithm": "Dedicated",
+        "computationTime": 73.1516630000001,
+        "winningAlgorithm": "Dedicated"
+      },
+      "polygonArea": 24140.033255790855,
+      "boardroomArea": 2652,
+      "computationTimeMs": 86
+    },
+    {
+      "key": "Ballroom_Aisle_12_Ballroom_Room_1",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_1"
+      ],
+      "boardroomLayout": {
+        "corners": [
+          {
+            "x": 337.4395410694713,
+            "y": 33.160829441344085
+          },
+          {
+            "x": 346.9161332259497,
+            "y": 42.05994181841704
+          },
+          {
+            "x": 248.34134997221852,
+            "y": 147.0314241671003
+          },
+          {
+            "x": 238.86475781574018,
+            "y": 138.13231179002736
+          }
+        ],
+        "width": 13,
+        "height": 144,
+        "area": 1872,
+        "angle": 43.2,
+        "centroid": {
+          "x": 292.89044552084493,
+          "y": 90.0961268042222
+        },
+        "sets": 24,
+        "tables": 48,
+        "orientation": "width×length",
+        "type": "boardroom",
+        "algorithm": "Dedicated",
+        "computationTime": 56.11761300000012,
+        "winningAlgorithm": "Dedicated"
+      },
+      "polygonArea": 13437.226079968957,
+      "boardroomArea": 1872,
+      "computationTimeMs": 70
+    },
+    {
+      "key": "Ballroom_Aisle_12_Ballroom_Room_2",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_2"
+      ],
+      "boardroomLayout": {
+        "corners": [
+          {
+            "x": 243.9572850661982,
+            "y": 128.51041514453442
+          },
+          {
+            "x": 348.92876741488146,
+            "y": 227.0851983982656
+          },
+          {
+            "x": 340.02965503780854,
+            "y": 236.56179055474394
+          },
+          {
+            "x": 235.05817268912526,
+            "y": 137.98700730101277
+          }
+        ],
+        "width": 144,
+        "height": 13,
+        "area": 1872,
+        "angle": 43.2,
+        "centroid": {
+          "x": 291.9934700520034,
+          "y": 182.53610284963918
+        },
+        "sets": 24,
+        "tables": 48,
+        "orientation": "length×width",
+        "type": "boardroom",
+        "algorithm": "Dedicated",
+        "computationTime": 55.00636200000008,
+        "winningAlgorithm": "Dedicated"
+      },
+      "polygonArea": 12138.402784451306,
+      "boardroomArea": 1872,
+      "computationTimeMs": 69
+    },
+    {
+      "key": "Ballroom_Aisle_12_Ballroom_Room_1_Ballroom_Room_2",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2"
+      ],
+      "boardroomLayout": {
+        "corners": [
+          {
+            "x": 246.73344838215974,
+            "y": 34.1981941575514
+          },
+          {
+            "x": 338.7017753602155,
+            "y": 229.6408374902116
+          },
+          {
+            "x": 326.93902367815724,
+            "y": 235.17596828055756
+          },
+          {
+            "x": 234.97069670010148,
+            "y": 39.73332494789736
+          }
+        ],
+        "width": 216,
+        "height": 13,
+        "area": 2808,
+        "angle": 64.8,
+        "centroid": {
+          "x": 286.8362360301585,
+          "y": 134.68708121905448
+        },
+        "sets": 36,
+        "tables": 72,
+        "orientation": "length×width",
+        "type": "boardroom",
+        "algorithm": "Dedicated",
+        "computationTime": 110.63414899999998,
+        "winningAlgorithm": "Dedicated"
+      },
+      "polygonArea": 23269.16878943056,
+      "boardroomArea": 2808,
+      "computationTimeMs": 127
+    },
+    {
+      "key": "Ballroom_Aisle_12_Ballroom_Room_1_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "boardroomLayout": {
+        "corners": [
+          {
+            "x": 446.6109729197192,
+            "y": 32.32047162792278
+          },
+          {
+            "x": 452.1461037100652,
+            "y": 44.08322330998103
+          },
+          {
+            "x": 240.41657343301662,
+            "y": 143.71557753620806
+          },
+          {
+            "x": 234.88144264267066,
+            "y": 131.9528258541498
+          }
+        ],
+        "width": 13,
+        "height": 234,
+        "area": 3042,
+        "angle": 64.8,
+        "centroid": {
+          "x": 343.5137731763679,
+          "y": 88.01802458206542
+        },
+        "sets": 39,
+        "tables": 78,
+        "orientation": "width×length",
+        "type": "boardroom",
+        "algorithm": "Dedicated",
+        "computationTime": 103.31696799999986,
+        "winningAlgorithm": "Dedicated"
+      },
+      "polygonArea": 23711.927533887905,
+      "boardroomArea": 3042,
+      "computationTimeMs": 212
+    },
+    {
+      "key": "Ballroom_Aisle_12_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3"
+      ],
+      "boardroomLayout": {
+        "corners": [
+          {
+            "x": 440.1692461333773,
+            "y": 42.758963483551696
+          },
+          {
+            "x": 247.72152849412464,
+            "y": 223.47939944872547
+          },
+          {
+            "x": 238.82241611705172,
+            "y": 214.00280729224713
+          },
+          {
+            "x": 431.2701337563044,
+            "y": 33.28237132707335
+          }
+        ],
+        "width": 264,
+        "height": 13,
+        "area": 3432,
+        "angle": 136.8,
+        "centroid": {
+          "x": 339.4958311252145,
+          "y": 128.3808853878994
+        },
+        "sets": 44,
+        "tables": 88,
+        "orientation": "length×width",
+        "type": "boardroom",
+        "algorithm": "Dedicated",
+        "computationTime": 91.69893000000002,
+        "winningAlgorithm": "Dedicated"
+      },
+      "polygonArea": 33543.870243349505,
+      "boardroomArea": 3432,
+      "computationTimeMs": 203
+    },
+    {
+      "key": "Ballroom_Aisle_12_Ballroom_Room_2_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "boardroomLayout": {
+        "corners": [
+          {
+            "x": 245.19643405334796,
+            "y": 129.51372249620294
+          },
+          {
+            "x": 450.252197183612,
+            "y": 242.24408223600432
+          },
+          {
+            "x": 443.9893994202897,
+            "y": 253.63606907657453
+          },
+          {
+            "x": 238.93363629002565,
+            "y": 140.90570933677316
+          }
+        ],
+        "width": 234,
+        "height": 13,
+        "area": 3042,
+        "angle": 28.8,
+        "centroid": {
+          "x": 344.59291673681884,
+          "y": 191.57489578638874
+        },
+        "sets": 39,
+        "tables": 78,
+        "orientation": "length×width",
+        "type": "boardroom",
+        "algorithm": "Dedicated",
+        "computationTime": 84.4835509999998,
+        "winningAlgorithm": "Dedicated"
+      },
+      "polygonArea": 22997.358516333654,
+      "boardroomArea": 3042,
+      "computationTimeMs": 196
+    },
+    {
+      "key": "Ballroom_Aisle_12_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "boardroomLayout": {
+        "corners": [
+          {
+            "x": 243.9814724646185,
+            "y": 47.98634499076681
+          },
+          {
+            "x": 449.55062539745654,
+            "y": 241.028628862657
+          },
+          {
+            "x": 440.6515130203836,
+            "y": 250.50522101913535
+          },
+          {
+            "x": 235.08236008754557,
+            "y": 57.46293714724516
+          }
+        ],
+        "width": 282,
+        "height": 13,
+        "area": 3666,
+        "angle": 43.2,
+        "centroid": {
+          "x": 342.31649274250105,
+          "y": 149.24578300495108
+        },
+        "sets": 47,
+        "tables": 94,
+        "orientation": "length×width",
+        "type": "boardroom",
+        "algorithm": "Dedicated",
+        "computationTime": 79.98509400000012,
+        "winningAlgorithm": "Dedicated"
+      },
+      "polygonArea": 34128.124521312915,
+      "boardroomArea": 3666,
+      "computationTimeMs": 192
+    },
+    {
+      "key": "Ballroom_Aisle_12_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "boardroomLayout": {
+        "corners": [
+          {
+            "x": 244.1885790488236,
+            "y": 48.19135316169749
+          },
+          {
+            "x": 449.75773198166166,
+            "y": 241.23363703358768
+          },
+          {
+            "x": 440.85861960458874,
+            "y": 250.71022919006603
+          },
+          {
+            "x": 235.2894666717507,
+            "y": 57.66794531817584
+          }
+        ],
+        "width": 282,
+        "height": 13,
+        "area": 3666,
+        "angle": 43.2,
+        "centroid": {
+          "x": 342.5235993267062,
+          "y": 149.45079117588176
+        },
+        "sets": 47,
+        "tables": 94,
+        "orientation": "length×width",
+        "type": "boardroom",
+        "algorithm": "Dedicated",
+        "computationTime": 132.30481299999974,
+        "winningAlgorithm": "Dedicated"
+      },
+      "polygonArea": 44402.825975231855,
+      "boardroomArea": 3666,
+      "computationTimeMs": 248
+    },
+    {
+      "key": "Ballroom_Aisle_34_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_3"
+      ],
+      "boardroomLayout": {
+        "corners": [
+          {
+            "x": 447.0804668584087,
+            "y": 35.34744521929949
+          },
+          {
+            "x": 456.5570590148871,
+            "y": 44.24655759637244
+          },
+          {
+            "x": 362.0895583967281,
+            "y": 144.84422818052724
+          },
+          {
+            "x": 352.6129662402497,
+            "y": 135.94511580345429
+          }
+        ],
+        "width": 13,
+        "height": 138,
+        "area": 1794,
+        "angle": 43.2,
+        "centroid": {
+          "x": 404.5850126275684,
+          "y": 90.09583669991336
+        },
+        "sets": 23,
+        "tables": 46,
+        "orientation": "width×length",
+        "type": "boardroom",
+        "algorithm": "Dedicated",
+        "computationTime": 57.02538600000025,
+        "winningAlgorithm": "Dedicated"
+      },
+      "polygonArea": 12403.730911172664,
+      "boardroomArea": 1794,
+      "computationTimeMs": 165
+    },
+    {
+      "key": "Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "boardroomLayout": {
+        "corners": [
+          {
+            "x": 453.7179193125133,
+            "y": 136.00835504898066
+          },
+          {
+            "x": 448.18278852216736,
+            "y": 147.7711067310389
+          },
+          {
+            "x": 236.45325824511877,
+            "y": 48.138752504811904
+          },
+          {
+            "x": 241.98838903546473,
+            "y": 36.37600082275365
+          }
+        ],
+        "width": 13,
+        "height": 234,
+        "area": 3042,
+        "angle": 115.2,
+        "centroid": {
+          "x": 345.08558877881603,
+          "y": 92.07355377689629
+        },
+        "sets": 39,
+        "tables": 78,
+        "orientation": "width×length",
+        "type": "boardroom",
+        "algorithm": "Dedicated",
+        "computationTime": 99.05826899999965,
+        "winningAlgorithm": "Dedicated"
+      },
+      "polygonArea": 23534.493354471993,
+      "boardroomArea": 3042,
+      "computationTimeMs": 207
+    },
+    {
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "boardroomLayout": {
+        "corners": [
+          {
+            "x": 452.3161853005846,
+            "y": 33.12062670130364
+          },
+          {
+            "x": 457.85131609093054,
+            "y": 44.883378383361894
+          },
+          {
+            "x": 240.69282349908588,
+            "y": 147.07040835897936
+          },
+          {
+            "x": 235.15769270873994,
+            "y": 135.3076566769211
+          }
+        ],
+        "width": 13,
+        "height": 240,
+        "area": 3120,
+        "angle": 64.8,
+        "centroid": {
+          "x": 346.50450439983524,
+          "y": 90.0955175301415
+        },
+        "sets": 40,
+        "tables": 80,
+        "orientation": "width×length",
+        "type": "boardroom",
+        "algorithm": "Dedicated",
+        "computationTime": 116.90094899999986,
+        "winningAlgorithm": "Dedicated"
+      },
+      "polygonArea": 25841.1347083392,
+      "boardroomArea": 3120,
+      "computationTimeMs": 131
+    },
+    {
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3"
+      ],
+      "boardroomLayout": {
+        "corners": [
+          {
+            "x": 443.96968098638723,
+            "y": 38.60764793384027
+          },
+          {
+            "x": 452.25619285312024,
+            "y": 48.62432008992553
+          },
+          {
+            "x": 244.21761730365716,
+            "y": 220.72879732207178
+          },
+          {
+            "x": 235.93110543692416,
+            "y": 210.71212516598652
+          }
+        ],
+        "width": 13,
+        "height": 270,
+        "area": 3510,
+        "angle": 50.4,
+        "centroid": {
+          "x": 344.0936491450222,
+          "y": 129.66822262795603
+        },
+        "sets": 45,
+        "tables": 90,
+        "orientation": "width×length",
+        "type": "boardroom",
+        "algorithm": "Dedicated",
+        "computationTime": 103.73338599999988,
+        "winningAlgorithm": "Dedicated"
+      },
+      "polygonArea": 35673.0774178008,
+      "boardroomArea": 3510,
+      "computationTimeMs": 213
+    },
+    {
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "boardroomLayout": {
+        "corners": [
+          {
+            "x": 244.64489335273095,
+            "y": 37.61178975675429
+          },
+          {
+            "x": 454.58785805009745,
+            "y": 234.7613562642166
+          },
+          {
+            "x": 445.6887456730245,
+            "y": 244.23794842069495
+          },
+          {
+            "x": 235.745780975658,
+            "y": 47.08838191323264
+          }
+        ],
+        "width": 288,
+        "height": 13,
+        "area": 3744,
+        "angle": 43.2,
+        "centroid": {
+          "x": 345.16681951287774,
+          "y": 140.92486908872462
+        },
+        "sets": 48,
+        "tables": 96,
+        "orientation": "length×width",
+        "type": "boardroom",
+        "algorithm": "Dedicated",
+        "computationTime": 147.60026900000003,
+        "winningAlgorithm": "Dedicated"
+      },
+      "polygonArea": 46532.03314968315,
+      "boardroomArea": 3744,
+      "computationTimeMs": 258
     }
   ]
 }

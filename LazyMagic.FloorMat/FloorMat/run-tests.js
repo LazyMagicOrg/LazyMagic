@@ -44,7 +44,157 @@ global.boundaryBasedInscribedRectangle = boundaryBased.boundaryBasedInscribedRec
 global.fastInscribedRectangle = optimized.fastInscribedRectangle;
 
 /**
- * Extract path data from SVG content
+ * Parse SVG transform string into a transformation matrix
+ * Returns a 2D transformation matrix [a, b, c, d, e, f] representing:
+ * | a c e |   (e, f = translation)
+ * | b d f |   (a, d = scale)
+ * | 0 0 1 |   (b, c = rotation/skew)
+ */
+function parseTransformMatrix(transformString) {
+    // Identity matrix
+    let matrix = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
+
+    if (!transformString) return matrix;
+
+    // Parse translate(x, y) or translate(x)
+    const translateMatch = transformString.match(/translate\(\s*([^,\s)]+)(?:[\s,]+([^)]+))?\s*\)/i);
+    if (translateMatch) {
+        matrix.e += parseFloat(translateMatch[1]);
+        matrix.f += parseFloat(translateMatch[2] || 0);
+    }
+
+    // Parse scale(x, y) or scale(x)
+    const scaleMatch = transformString.match(/scale\(\s*([^,\s)]+)(?:[\s,]+([^)]+))?\s*\)/i);
+    if (scaleMatch) {
+        const sx = parseFloat(scaleMatch[1]);
+        const sy = parseFloat(scaleMatch[2] || scaleMatch[1]); // If sy not specified, use sx
+        matrix.a *= sx;
+        matrix.d *= sy;
+        // Scale also affects translation
+        matrix.e *= sx;
+        matrix.f *= sy;
+    }
+
+    // Parse rotate(angle, cx, cy) or rotate(angle)
+    const rotateMatch = transformString.match(/rotate\(\s*([^,\s)]+)(?:[\s,]+([^,\s)]+)[\s,]+([^)]+))?\s*\)/i);
+    if (rotateMatch) {
+        const angle = parseFloat(rotateMatch[1]) * Math.PI / 180; // Convert to radians
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+
+        if (rotateMatch[2] && rotateMatch[3]) {
+            // Rotate around point (cx, cy)
+            const cx = parseFloat(rotateMatch[2]);
+            const cy = parseFloat(rotateMatch[3]);
+            // translate(-cx, -cy) * rotate * translate(cx, cy)
+            const newA = matrix.a * cos - matrix.b * sin;
+            const newB = matrix.a * sin + matrix.b * cos;
+            const newC = matrix.c * cos - matrix.d * sin;
+            const newD = matrix.c * sin + matrix.d * cos;
+            matrix.e += cx - (cx * cos - cy * sin);
+            matrix.f += cy - (cx * sin + cy * cos);
+            matrix.a = newA;
+            matrix.b = newB;
+            matrix.c = newC;
+            matrix.d = newD;
+        } else {
+            // Rotate around origin
+            const newA = matrix.a * cos - matrix.b * sin;
+            const newB = matrix.a * sin + matrix.b * cos;
+            const newC = matrix.c * cos - matrix.d * sin;
+            const newD = matrix.c * sin + matrix.d * cos;
+            matrix.a = newA;
+            matrix.b = newB;
+            matrix.c = newC;
+            matrix.d = newD;
+        }
+    }
+
+    // Parse matrix(a, b, c, d, e, f)
+    const matrixMatch = transformString.match(/matrix\(\s*([^,\s)]+)[\s,]+([^,\s)]+)[\s,]+([^,\s)]+)[\s,]+([^,\s)]+)[\s,]+([^,\s)]+)[\s,]+([^)]+)\s*\)/i);
+    if (matrixMatch) {
+        matrix = {
+            a: parseFloat(matrixMatch[1]),
+            b: parseFloat(matrixMatch[2]),
+            c: parseFloat(matrixMatch[3]),
+            d: parseFloat(matrixMatch[4]),
+            e: parseFloat(matrixMatch[5]),
+            f: parseFloat(matrixMatch[6])
+        };
+    }
+
+    return matrix;
+}
+
+/**
+ * Multiply two transformation matrices
+ */
+function multiplyMatrices(m1, m2) {
+    return {
+        a: m1.a * m2.a + m1.c * m2.b,
+        b: m1.b * m2.a + m1.d * m2.b,
+        c: m1.a * m2.c + m1.c * m2.d,
+        d: m1.b * m2.c + m1.d * m2.d,
+        e: m1.a * m2.e + m1.c * m2.f + m1.e,
+        f: m1.b * m2.e + m1.d * m2.f + m1.f
+    };
+}
+
+/**
+ * Extract parent group transforms by finding the path and traversing up the DOM
+ */
+function extractParentTransforms(svgContent, pathId) {
+    const escapedId = pathId.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+    // Find the path element position in the content
+    const pathRegex = new RegExp(`<path[^>]*\\bid="${escapedId}"[^>]*`, 'i');
+    const pathMatch = pathRegex.exec(svgContent);
+
+    if (!pathMatch) return { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }; // Identity matrix
+
+    const pathPosition = pathMatch.index;
+
+    // Find all <g> tags before the path
+    const beforePath = svgContent.substring(0, pathPosition);
+    const groupMatches = [...beforePath.matchAll(/<g[^>]*>/gi)];
+
+    // Build a stack of open groups (accounting for closing tags)
+    let openGroups = [];
+    let position = 0;
+
+    for (const match of groupMatches) {
+        const groupTag = match[0];
+        const groupPosition = match.index;
+
+        // Check for closing tags between last position and this group
+        const between = svgContent.substring(position, groupPosition);
+        const closingTags = (between.match(/<\/g>/gi) || []).length;
+
+        // Remove closed groups from stack
+        openGroups = openGroups.slice(0, openGroups.length - closingTags);
+
+        // Add this group to stack
+        openGroups.push(groupTag);
+        position = groupPosition + groupTag.length;
+    }
+
+    // Combine all parent transforms (innermost to outermost order)
+    let combinedMatrix = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 }; // Identity
+
+    for (const groupTag of openGroups) {
+        const transformMatch = groupTag.match(/\btransform="([^"]*)"/i);
+        if (transformMatch) {
+            const groupMatrix = parseTransformMatrix(transformMatch[1]);
+            combinedMatrix = multiplyMatrices(combinedMatrix, groupMatrix);
+        }
+    }
+
+    return combinedMatrix;
+}
+
+/**
+ * Extract path data and transform information from SVG content
+ * Returns path data in original coordinate space plus transform info
  * Handles both <path> elements with 'd' attribute and <polygon> elements with 'points' attribute
  */
 function extractPathData(svgContent, pathIds) {
@@ -66,23 +216,23 @@ function extractPathData(svgContent, pathIds) {
 
             let pathD = dMatch[1];
 
-            // Extract transform attribute if present
+            // Get parent group transforms (but don't apply them yet)
+            let combinedMatrix = extractParentTransforms(svgContent, pathId);
+
+            // Extract path's own transform attribute if present
             const transformMatch = element.match(/\btransform="([^"]*)"/i);
             if (transformMatch) {
-                const transform = transformMatch[1];
-
-                // Parse translate(x, y) transform
-                const translateMatch = transform.match(/translate\(([^,]+),\s*([^)]+)\)/i);
-                if (translateMatch) {
-                    const tx = parseFloat(translateMatch[1]);
-                    const ty = parseFloat(translateMatch[2]);
-
-                    // Apply transform to path by parsing and translating coordinates
-                    pathD = applyTranslateToPath(pathD, tx, ty);
-                }
+                const pathMatrix = parseTransformMatrix(transformMatch[1]);
+                combinedMatrix = multiplyMatrices(combinedMatrix, pathMatrix);
             }
 
-            paths.push({ id: pathId, d: pathD });
+            // Store both the original path data and the transform matrix
+            // The path data stays in original coordinate space
+            paths.push({
+                id: pathId,
+                d: pathD,
+                transform: combinedMatrix
+            });
             continue;
         }
 
@@ -98,7 +248,14 @@ function extractPathData(svgContent, pathIds) {
                 return index === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
             }).join(' ') + ' Z';
 
-            paths.push({ id: pathId, d: pathCommands });
+            // Get transform for polygon too
+            let combinedMatrix = extractParentTransforms(svgContent, pathId);
+
+            paths.push({
+                id: pathId,
+                d: pathCommands,
+                transform: combinedMatrix
+            });
         }
     }
 
@@ -106,15 +263,27 @@ function extractPathData(svgContent, pathIds) {
 }
 
 /**
- * Apply translate transform to SVG path data
+ * Apply transformation matrix to a single point
  */
-function applyTranslateToPath(pathD, tx, ty) {
-    // Parse path commands and apply translation to all coordinates
+function transformPoint(x, y, matrix) {
+    return {
+        x: matrix.a * x + matrix.c * y + matrix.e,
+        y: matrix.b * x + matrix.d * y + matrix.f
+    };
+}
+
+/**
+ * Apply transformation matrix to SVG path data
+ * Handles M, L, H, V, C, S, Q, T, A, Z commands with both absolute and relative coordinates
+ */
+function applyMatrixToPath(pathD, matrix) {
+    // Parse path commands and apply matrix transformation to all coordinates
     const commands = pathD.match(/[MLHVCSQTAZ][^MLHVCSQTAZ]*/gi) || [];
     let currentX = 0, currentY = 0;
     let startX = 0, startY = 0;
+    let lastControlX = 0, lastControlY = 0; // For smooth curve commands
 
-    const translatedCommands = [];
+    const transformedCommands = [];
 
     for (const cmd of commands) {
         const type = cmd[0].toUpperCase();
@@ -127,29 +296,46 @@ function applyTranslateToPath(pathD, tx, ty) {
                 currentX = isRelative ? currentX + params[i] : params[i];
                 currentY = isRelative ? currentY + params[i + 1] : params[i + 1];
 
+                const transformed = transformPoint(currentX, currentY, matrix);
+
                 if (i === 0) {
-                    startX = currentX;
-                    startY = currentY;
-                    translatedCommands.push(`M ${currentX + tx} ${currentY + ty}`);
+                    startX = transformed.x;
+                    startY = transformed.y;
+                    transformedCommands.push(`M ${transformed.x} ${transformed.y}`);
                 } else {
                     // Subsequent coordinate pairs are treated as L commands
-                    translatedCommands.push(`L ${currentX + tx} ${currentY + ty}`);
+                    transformedCommands.push(`L ${transformed.x} ${transformed.y}`);
                 }
+
+                lastControlX = transformed.x;
+                lastControlY = transformed.y;
             }
         } else if (type === 'L') {
             // L can also have multiple pairs of coordinates
             for (let i = 0; i < params.length; i += 2) {
                 currentX = isRelative ? currentX + params[i] : params[i];
                 currentY = isRelative ? currentY + params[i + 1] : params[i + 1];
-                translatedCommands.push(`L ${currentX + tx} ${currentY + ty}`);
+
+                const transformed = transformPoint(currentX, currentY, matrix);
+                transformedCommands.push(`L ${transformed.x} ${transformed.y}`);
+
+                lastControlX = transformed.x;
+                lastControlY = transformed.y;
             }
         } else if (type === 'H') {
             currentX = isRelative ? currentX + params[0] : params[0];
-            translatedCommands.push(`L ${currentX + tx} ${currentY + ty}`);
+            const transformed = transformPoint(currentX, currentY, matrix);
+            transformedCommands.push(`L ${transformed.x} ${transformed.y}`);
+            lastControlX = transformed.x;
+            lastControlY = transformed.y;
         } else if (type === 'V') {
             currentY = isRelative ? currentY + params[0] : params[0];
-            translatedCommands.push(`L ${currentX + tx} ${currentY + ty}`);
+            const transformed = transformPoint(currentX, currentY, matrix);
+            transformedCommands.push(`L ${transformed.x} ${transformed.y}`);
+            lastControlX = transformed.x;
+            lastControlY = transformed.y;
         } else if (type === 'C') {
+            // Cubic Bezier curve
             for (let i = 0; i < params.length; i += 6) {
                 const x1 = isRelative ? currentX + params[i] : params[i];
                 const y1 = isRelative ? currentY + params[i + 1] : params[i + 1];
@@ -157,19 +343,83 @@ function applyTranslateToPath(pathD, tx, ty) {
                 const y2 = isRelative ? currentY + params[i + 3] : params[i + 3];
                 currentX = isRelative ? currentX + params[i + 4] : params[i + 4];
                 currentY = isRelative ? currentY + params[i + 5] : params[i + 5];
-                translatedCommands.push(`C ${x1 + tx} ${y1 + ty} ${x2 + tx} ${y2 + ty} ${currentX + tx} ${currentY + ty}`);
+
+                const t1 = transformPoint(x1, y1, matrix);
+                const t2 = transformPoint(x2, y2, matrix);
+                const t3 = transformPoint(currentX, currentY, matrix);
+
+                transformedCommands.push(`C ${t1.x} ${t1.y} ${t2.x} ${t2.y} ${t3.x} ${t3.y}`);
+
+                lastControlX = t2.x;
+                lastControlY = t2.y;
+            }
+        } else if (type === 'S') {
+            // Smooth cubic Bezier curve
+            for (let i = 0; i < params.length; i += 4) {
+                const x2 = isRelative ? currentX + params[i] : params[i];
+                const y2 = isRelative ? currentY + params[i + 1] : params[i + 1];
+                currentX = isRelative ? currentX + params[i + 2] : params[i + 2];
+                currentY = isRelative ? currentY + params[i + 3] : params[i + 3];
+
+                const t2 = transformPoint(x2, y2, matrix);
+                const t3 = transformPoint(currentX, currentY, matrix);
+
+                transformedCommands.push(`L ${t3.x} ${t3.y}`); // Approximate as line
+
+                lastControlX = t2.x;
+                lastControlY = t2.y;
+            }
+        } else if (type === 'Q') {
+            // Quadratic Bezier curve
+            for (let i = 0; i < params.length; i += 4) {
+                const x1 = isRelative ? currentX + params[i] : params[i];
+                const y1 = isRelative ? currentY + params[i + 1] : params[i + 1];
+                currentX = isRelative ? currentX + params[i + 2] : params[i + 2];
+                currentY = isRelative ? currentY + params[i + 3] : params[i + 3];
+
+                const t1 = transformPoint(x1, y1, matrix);
+                const t2 = transformPoint(currentX, currentY, matrix);
+
+                transformedCommands.push(`L ${t2.x} ${t2.y}`); // Approximate as line
+
+                lastControlX = t1.x;
+                lastControlY = t1.y;
+            }
+        } else if (type === 'T') {
+            // Smooth quadratic Bezier curve
+            for (let i = 0; i < params.length; i += 2) {
+                currentX = isRelative ? currentX + params[i] : params[i];
+                currentY = isRelative ? currentY + params[i + 1] : params[i + 1];
+
+                const transformed = transformPoint(currentX, currentY, matrix);
+                transformedCommands.push(`L ${transformed.x} ${transformed.y}`); // Approximate as line
+
+                lastControlX = transformed.x;
+                lastControlY = transformed.y;
+            }
+        } else if (type === 'A') {
+            // Arc - approximate as line to endpoint
+            for (let i = 0; i < params.length; i += 7) {
+                currentX = isRelative ? currentX + params[i + 5] : params[i + 5];
+                currentY = isRelative ? currentY + params[i + 6] : params[i + 6];
+
+                const transformed = transformPoint(currentX, currentY, matrix);
+                transformedCommands.push(`L ${transformed.x} ${transformed.y}`);
+
+                lastControlX = transformed.x;
+                lastControlY = transformed.y;
             }
         } else if (type === 'Z') {
             currentX = startX;
             currentY = startY;
-            translatedCommands.push('Z');
+            transformedCommands.push('Z');
         } else {
-            // For other commands, just return as-is (simplified for now)
-            translatedCommands.push(cmd);
+            // For other commands, just return as-is
+            transformedCommands.push(cmd);
         }
     }
 
-    return translatedCommands.join(' ');
+    return transformedCommands.join(' ');
 }
 
 /**

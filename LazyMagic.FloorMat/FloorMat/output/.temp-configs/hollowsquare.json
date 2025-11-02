@@ -8,8 +8,8 @@
   },
   "testName": "Level1 - Hollow Square Layout",
   "algorithm": "hollowsquare",
-  "svgPath": "C:\\Users\\noaht\\source\\repos\\_Dev\\LazyMagic\\LazyMagic\\LazyMagic.FloorMat\\FloorMat\\input\\Level1.svg",
-  "outputDir": "C:\\Users\\noaht\\source\\repos\\_Dev\\LazyMagic\\LazyMagic\\LazyMagic.FloorMat\\FloorMat\\output\\ComputedLayouts\\Level1-HollowSquareResults",
+  "svgPath": "/mnt/c/Users/TimothyMay/repos/_Dev/LazyMagic/LazyMagic/LazyMagic.FloorMat/FloorMat/input/Level1.svg",
+  "outputDir": "/mnt/c/Users/TimothyMay/repos/_Dev/LazyMagic/LazyMagic/LazyMagic.FloorMat/FloorMat/output/ComputedLayouts/Level1-HollowSquareResults",
   "algorithmOptions": {
     "width": {
       "mode": "discrete",
@@ -28,5 +28,5 @@
     "centroidSamples": 25,
     "debugMode": false
   },
-  "combinationsFile": "C:\\Users\\noaht\\source\\repos\\_Dev\\LazyMagic\\LazyMagic\\LazyMagic.FloorMat\\FloorMat\\output\\Level1-valid-combinations.json"
+  "combinationsFile": "/mnt/c/Users/TimothyMay/repos/_Dev/LazyMagic/LazyMagic/LazyMagic.FloorMat/FloorMat/output/Level1-valid-combinations.json"
 }

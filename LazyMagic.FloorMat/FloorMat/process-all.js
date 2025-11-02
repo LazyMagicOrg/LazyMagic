@@ -212,11 +212,34 @@ async function processProject(project) {
 
         console.log('  ✓ Data extraction complete\\n');
 
-        // Step 3: Embed path metadata from level data
-        console.log('Step 3/5: Embedding path metadata...');
+        // Step 3: Calculate polygon areas
+        console.log('Step 3/6: Calculating polygon areas...');
+
+        const dataWithAreasPath = path.join(projectOutputDir, `${project.prefix}-data-with-areas.json`);
+        const calculateAreasCmd = `node calculate-polygon-areas.js "${project.svgPath}" "${project.dataPath}" "${dataWithAreasPath}"`;
+
+        const calculateAreasResult = await execAsync(calculateAreasCmd, { cwd: __dirname });
+
+        // Show output from calculate-polygon-areas script
+        if (calculateAreasResult.stdout) {
+            console.log(calculateAreasResult.stdout);
+        }
+        if (calculateAreasResult.stderr) {
+            console.error('  ⚠ stderr:', calculateAreasResult.stderr);
+        }
+
+        // Verify the output file was created
+        if (!fs.existsSync(dataWithAreasPath)) {
+            throw new Error(`Polygon area calculation failed: output file not created at ${dataWithAreasPath}`);
+        }
+
+        console.log('  ✓ Polygon areas calculated\\n');
+
+        // Step 4: Embed path metadata from level data (with polygon areas)
+        console.log('Step 4/6: Embedding path metadata...');
 
         const metadataSvgPath = path.join(projectOutputDir, `${project.prefix}-with-metadata.svg`);
-        const embedMetadataCmd = `node embed-path-metadata.js "${project.prefix}" "${project.svgPath}" "${project.dataPath}" "${metadataSvgPath}"`;
+        const embedMetadataCmd = `node embed-path-metadata.js "${project.prefix}" "${project.svgPath}" "${dataWithAreasPath}" "${metadataSvgPath}"`;
 
         const embedMetadataResult = await execAsync(embedMetadataCmd, { cwd: __dirname });
 
@@ -235,19 +258,30 @@ async function processProject(project) {
 
         console.log('  ✓ Path metadata embedded\\n');
 
-        // Step 4: Embed layout data in SVG
-        console.log('Step 4/5: Embedding layout data in SVG...');
+        // Step 5: Embed layout data in SVG
+        console.log('Step 5/6: Embedding layout data in SVG...');
 
         const embedCmd = `node embed-project.js "${project.prefix}" "${metadataSvgPath}" "${projectOutputDir}"`;
         await execAsync(embedCmd, { cwd: __dirname });
 
         console.log('  ✓ SVG embedding complete\\n');
 
-        // Clean up intermediate metadata SVG file
+        // Step 6: Clean up intermediate files
+        console.log('Step 6/6: Cleaning up intermediate files...');
+
+        let cleanedCount = 0;
+
         if (fs.existsSync(metadataSvgPath)) {
             fs.unlinkSync(metadataSvgPath);
-            console.log('  ✓ Cleaned up intermediate file\\n');
+            cleanedCount++;
         }
+
+        if (fs.existsSync(dataWithAreasPath)) {
+            fs.unlinkSync(dataWithAreasPath);
+            cleanedCount++;
+        }
+
+        console.log(`  ✓ Cleaned up ${cleanedCount} intermediate file(s)\\n`);
 
         console.log('='.repeat(80));
         console.log(`✓ PROJECT ${project.prefix} COMPLETE!`);

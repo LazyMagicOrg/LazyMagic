@@ -1,36 +1,140 @@
-﻿  {
-    "Id": "Level1",
-    "Name": "Level 1",
-    "Diagram": {
-      "Image": "subtenancy/base/SetsCmp/data/Level1.svg",
-      "MeasureUnits": "Imperial",
-      "Unit": "ft"
+﻿{
+  "Id": "Level1",
+  "Name": "Level 1",
+  "Diagram": {
+    "Image": "subtenancy/base/SetsCmp/data/Level1.svg",
+    "MeasureUnits": "Imperial",
+    "Unit": "ft"
+  },
+  "Rooms": [
+    {
+      "Id": "Foyer",
+      "RoomSections": [
+        {
+          "Id": "Foyer_Room_Foyer",
+          "Name": "Foyer",
+          "Description": "Cerulean Foyer",
+          "Area": 3000
+        }
+      ]
     },
-    "Rooms": [
-      {
-        "Id": "Foyer",
-        "RoomSections": [
-          {
-            "Id": "Foyer_Room_Foyer",
-            "Name": "Foyer",
-            "Description": "Cerulean Foyer",
-            "Area": 3000
-          }
-        ]
-      },
-      {
-        "Id": "BeachDeck",
-        "RoomSections": [
-          {
-            "Id": "BeachDeck_Room_BeachDeck",
-            "Name": "Beach Deck",
-            "Description": "Beach Deck",
-            "Area": 3141.5,
-            "Width": 61,
-            "Depth": 51.5,
-            "LayoutRestriction": "allowed"
-          }
-        ]
-      }
-    ]
-  }
+    {
+      "Id": "BeachDeck",
+      "RoomSections": [
+        {
+          "Id": "BeachDeck_Room_BeachDeck",
+          "Name": "Beach Deck",
+          "Description": "Beach Deck",
+          "Area": 3141.5,
+          "Width": 61,
+          "Depth": 51.5,
+          "LayoutRestriction": "allowed"
+        }
+      ]
+    },
+    {
+      "Id": "Ballroom",
+      "RoomSections": [
+        {
+          "Id": "Ballroom_Room_1",
+          "Name": "Ballroom 1",
+          "Description": "Ballroom Section 1",
+          "LayoutRestriction": "allowed"
+        },
+        {
+          "Id": "Ballroom_Room_2",
+          "Name": "Ballroom 2",
+          "Description": "Ballroom Section 2",
+          "LayoutRestriction": "allowed"
+        },
+        {
+          "Id": "Ballroom_Room_3",
+          "Name": "Ballroom 3",
+          "Description": "Ballroom Section 3",
+          "LayoutRestriction": "allowed"
+        },
+        {
+          "Id": "Ballroom_Room_4",
+          "Name": "Ballroom 4",
+          "Description": "Ballroom Section 4",
+          "LayoutRestriction": "allowed"
+        },
+        {
+          "Id": "Ballroom_Room_5",
+          "Name": "Ballroom 5",
+          "Description": "Ballroom Section 5",
+          "LayoutRestriction": "allowed"
+        },
+        {
+          "Id": "Ballroom_Room_Grand",
+          "Name": "Grand Ballroom",
+          "Description": "Grand Ballroom",
+          "LayoutRestriction": "allowed"
+        },
+        {
+          "Id": "Ballroom_Aisle_12",
+          "Name": "Aisle 1-2",
+          "Description": "Aisle between Ballroom 1 and 2",
+          "SectionType": "Aisle"
+        },
+        {
+          "Id": "Ballroom_Aisle_34",
+          "Name": "Aisle 3-4",
+          "Description": "Aisle between Ballroom 3 and 4",
+          "SectionType": "Aisle"
+        },
+        {
+          "Id": "Ballroom_Aisle_35",
+          "Name": "Aisle 3-5",
+          "Description": "Aisle between Ballroom 3 and 5",
+          "SectionType": "Aisle"
+        },
+        {
+          "Id": "Ballroom_Aisle_46",
+          "Name": "Aisle 4-6",
+          "Description": "Aisle between Ballroom 4 and Grand Ballroom",
+          "SectionType": "Aisle"
+        },
+        {
+          "Id": "Ballroom_Aisle_56",
+          "Name": "Aisle 5-6",
+          "Description": "Aisle between Ballroom 5 and Grand Ballroom",
+          "SectionType": "Aisle"
+        },
+        {
+          "Id": "Ballroom_Crossing_3456",
+          "Name": "Crossing 3-4-5-6",
+          "Description": "Central crossing between Ballroom sections 3, 4, 5, and Grand",
+          "SectionType": "Crossing"
+        }
+      ],
+      "Joins": [
+        {
+          "Orientation": "Vertical",
+          "Section1Id": "Ballroom_Room_1",
+          "Section2Id": "Ballroom_Room_3"
+        },
+        {
+          "Orientation": "Horizontal",
+          "Section1Id": "Ballroom_Aisle_12",
+          "Section2Id": "Ballroom_Room_1"
+        },
+        {
+          "Orientation": "Horizontal",
+          "Section1Id": "Ballroom_Aisle_12",
+          "Section2Id": "Ballroom_Room_2"
+        },
+        {
+          "Orientation": "Vertical",
+          "Section1Id": "Ballroom_Room_2",
+          "Section2Id": "Ballroom_Room_4"
+        },
+        {
+          "Orientation": "Horizontal",
+          "Section1Id": "Ballroom_Aisle_34",
+          "Section2Id": "Ballroom_Room_3"
+        }
+      ]
+    }
+  ]
+}

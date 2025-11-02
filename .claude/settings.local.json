@@ -11,7 +11,11 @@
       "Bash(done)",
       "Read(//mnt/c/Users/TimothyMay/OneDrive - Insight Sciences Corporation/Pictures/Screenshots/**)",
       "Bash(sed:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(node process-all.js:*)",
+      "Bash(npm install)",
+      "Bash(dotnet clean:*)",
+      "Bash(dotnet build:*)"
     ],
     "deny": []
   }

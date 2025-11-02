@@ -2482,9 +2482,29 @@ class SvgViewerInstance {
                 });
                 // Add the class for cleanup
                 unifiedPath.addClass("debug-unified-path");
-                // Ensure it appears on top
-                const parentScope = unifiedPath.node.parentNode;
-                parentScope.appendChild(unifiedPath.node);
+
+                // Apply the same transform and parent group as the source paths
+                if (pathIds && pathIds.length > 0) {
+                    const firstPathId = pathIds[0];
+                    const pathElement = this.s.node.querySelector(`path[id="${firstPathId}"]`);
+                    if (pathElement) {
+                        // Get the path's own transform (if any) and apply it to unified path
+                        const pathTransform = pathElement.getAttribute('transform');
+                        if (pathTransform) {
+                            unifiedPath.node.setAttribute('transform', pathTransform);
+                            console.debug(`[outline] Applied path transform to unified path: ${pathTransform}`);
+                        }
+
+                        // Move unified path into the same parent group as the source path
+                        const parentGroup = pathElement.parentElement;
+                        if (parentGroup && parentGroup.tagName === 'g') {
+                            console.debug(`[outline] Moving unified path into parent group: ${parentGroup.getAttribute('id')}`);
+                            parentGroup.appendChild(unifiedPath.node);
+                            console.debug(`[outline] Unified path now inherits parent transforms from DOM hierarchy`);
+                        }
+                    }
+                }
+
                 console.debug('[outline] Debug mode: Merged SVG path made visible with magenta styling (non-interactive)');
 
                 // Visualize the largest inscribed rectangle if found (always create it, display state set later)
@@ -2505,6 +2525,37 @@ class SvgViewerInstance {
                         // Axis-aligned rectangle (fallback for old format)
                         rectPath = scope.rect(largestRect.x, largestRect.y, largestRect.width, largestRect.height);
                         console.debug(`[outline] Debug mode: Visualized AXIS-ALIGNED inscribed rectangle (${largestRect.width.toFixed(1)}x${largestRect.height.toFixed(1)})`);
+                    }
+
+                    // Insert rectangle as a sibling to the source path (in same parent group)
+                    // This ensures it inherits the same parent transforms naturally
+                    if (pathIds && pathIds.length > 0) {
+                        const firstPathId = pathIds[0];
+                        console.debug(`[outline] Looking up path element for parent group: ${firstPathId}`);
+                        const pathElement = this.s.node.querySelector(`path[id="${firstPathId}"]`);
+                        if (pathElement) {
+                            console.debug(`[outline] Found path element: ${firstPathId}`);
+
+                            // Get the path's own transform (if any) and apply it to rectangle
+                            const pathTransform = pathElement.getAttribute('transform');
+                            if (pathTransform) {
+                                rectPath.node.setAttribute('transform', pathTransform);
+                                console.debug(`[outline] Applied path transform to rectangle: ${pathTransform}`);
+                            }
+
+                            // Move rectangle into the same parent group as the path
+                            // This makes it inherit parent group transforms naturally
+                            const parentGroup = pathElement.parentElement;
+                            if (parentGroup && parentGroup.tagName === 'g') {
+                                console.debug(`[outline] Moving rectangle into parent group: ${parentGroup.getAttribute('id')}`);
+                                parentGroup.appendChild(rectPath.node);
+                                console.debug(`[outline] Rectangle now inherits parent transforms from DOM hierarchy`);
+                            } else {
+                                console.debug(`[outline] No parent group found, rectangle remains at root level`);
+                            }
+                        } else {
+                            console.warn(`[outline] Could not find path element: ${firstPathId}`);
+                        }
                     }
 
                     rectPath.attr({
@@ -2825,6 +2876,9 @@ class SvgViewerInstance {
 
         // Store resolved SVG URL for deriving precomputed rectangles path
         this.svgUrl = svgContent;
+
+        // Store raw SVG text for extracting namespace attributes that Snap.parse strips
+        this.rawSvgText = svgText;
 
         // Extract embedded precomputed rectangles from raw SVG text BEFORE parsing
         this.extractEmbeddedPrecomputedData(svgText);
@@ -3490,6 +3544,35 @@ export async function getFloorMetadata(containerId) {
             };
         }
 
+        // Extract floormat attributes from raw SVG text (Snap.parse strips namespace attributes)
+        const floormatAttributesMap = new Map();
+        if (instance.rawSvgText) {
+            const pathRegex = /<path[^>]*id="([^"]+)"[^>]*>/g;
+            let match;
+            while ((match = pathRegex.exec(instance.rawSvgText)) !== null) {
+                const id = match[1];
+                const pathTag = match[0];
+
+                // Extract floormat attributes from the path tag
+                const extractAttr = (attrName) => {
+                    const regex = new RegExp(`floormat:${attrName}="([^"]*)"`, 'i');
+                    const attrMatch = pathTag.match(regex);
+                    return attrMatch ? attrMatch[1] : null;
+                };
+
+                floormatAttributesMap.set(id, {
+                    name: extractAttr('name'),
+                    description: extractAttr('description'),
+                    sectionType: extractAttr('section-type'),
+                    layoutRestriction: extractAttr('layout-restriction'),
+                    area: extractAttr('area'),
+                    width: extractAttr('width'),
+                    depth: extractAttr('depth'),
+                    polygonArea: extractAttr('polygon-area')
+                });
+            }
+        }
+
         // Extract path elements and build room sections
         const pathElements = instance.s.node.querySelectorAll('path[id]');
         const sectionMap = new Map(); // Map to store sections by ID
@@ -3498,15 +3581,16 @@ export async function getFloorMetadata(containerId) {
             const id = pathElement.getAttribute('id');
             if (!id) return;
 
-            // Extract floormat:* custom attributes
-            const floormatNS = 'http://lazymagic.com/floormat';
-            const floormatName = pathElement.getAttributeNS(floormatNS, 'name');
-            const floormatDescription = pathElement.getAttributeNS(floormatNS, 'description');
-            const floormatSectionType = pathElement.getAttributeNS(floormatNS, 'section-type');
-            const floormatLayoutRestriction = pathElement.getAttributeNS(floormatNS, 'layout-restriction');
-            const floormatArea = pathElement.getAttributeNS(floormatNS, 'area');
-            const floormatWidth = pathElement.getAttributeNS(floormatNS, 'width');
-            const floormatDepth = pathElement.getAttributeNS(floormatNS, 'depth');
+            // Get floormat attributes from the map extracted from raw SVG
+            const floormatAttrs = floormatAttributesMap.get(id) || {};
+            const floormatName = floormatAttrs.name;
+            const floormatDescription = floormatAttrs.description;
+            const floormatSectionType = floormatAttrs.sectionType;
+            const floormatLayoutRestriction = floormatAttrs.layoutRestriction;
+            const floormatArea = floormatAttrs.area;
+            const floormatWidth = floormatAttrs.width;
+            const floormatDepth = floormatAttrs.depth;
+            const floormatPolygonArea = floormatAttrs.polygonArea;
 
             const section = {
                 id: id,
@@ -3522,14 +3606,24 @@ export async function getFloorMetadata(containerId) {
                 pathData: pathElement.getAttribute('d'),
                 style: pathElement.getAttribute('style'),
                 inkscapeLabel: pathElement.getAttributeNS('http://www.inkscape.org/namespaces/inkscape', 'label'),
-                // Computed properties (not yet implemented)
+                // Computed properties
                 polygonCoordinates: null,
-                polygonArea: null,
+                polygonArea: floormatPolygonArea ? parseFloat(floormatPolygonArea) : null,
                 // FloorMat custom attributes
                 floormatArea: floormatArea ? parseFloat(floormatArea) : null,
                 width: floormatWidth ? parseFloat(floormatWidth) : null,
                 depth: floormatDepth ? parseFloat(floormatDepth) : null
             };
+
+            // Debug logging for first few sections
+            if (sectionMap.size < 3) {
+                console.log('Extracting section', id, ':', {
+                    floormatPolygonArea,
+                    floormatArea,
+                    parsedPolygonArea: section.polygonArea,
+                    parsedFloormatArea: section.floormatArea
+                });
+            }
 
             sectionMap.set(id, section);
         });

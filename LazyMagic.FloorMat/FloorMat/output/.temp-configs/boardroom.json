@@ -8,8 +8,8 @@
   },
   "testName": "Level1 - Boardroom Layout",
   "algorithm": "boardroom",
-  "svgPath": "C:\\Users\\noaht\\source\\repos\\_Dev\\LazyMagic\\LazyMagic\\LazyMagic.FloorMat\\FloorMat\\input\\Level1.svg",
-  "outputDir": "C:\\Users\\noaht\\source\\repos\\_Dev\\LazyMagic\\LazyMagic\\LazyMagic.FloorMat\\FloorMat\\output\\ComputedLayouts\\Level1-BoardroomResults",
+  "svgPath": "/mnt/c/Users/TimothyMay/repos/_Dev/LazyMagic/LazyMagic/LazyMagic.FloorMat/FloorMat/input/Level1.svg",
+  "outputDir": "/mnt/c/Users/TimothyMay/repos/_Dev/LazyMagic/LazyMagic/LazyMagic.FloorMat/FloorMat/output/ComputedLayouts/Level1-BoardroomResults",
   "algorithmOptions": {
     "width": {
       "mode": "fixed",
@@ -25,5 +25,5 @@
     "centroidSamples": 25,
     "debugMode": false
   },
-  "combinationsFile": "C:\\Users\\noaht\\source\\repos\\_Dev\\LazyMagic\\LazyMagic\\LazyMagic.FloorMat\\FloorMat\\output\\Level1-valid-combinations.json"
+  "combinationsFile": "/mnt/c/Users/TimothyMay/repos/_Dev/LazyMagic/LazyMagic/LazyMagic.FloorMat/FloorMat/output/Level1-valid-combinations.json"
 }
