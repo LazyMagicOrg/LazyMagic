@@ -2580,9 +2580,10 @@ class SvgViewerInstance {
 
                     rectPath.addClass("debug-inscribed-rectangle");
 
-                    // Append to parent scope and bring to front
-                    parentScope.appendChild(rectPath.node);
-                    rectPath.node.parentNode.appendChild(rectPath.node); // Move to end (on top)
+                    // Bring to front if it has a parent
+                    if (rectPath.node.parentNode) {
+                        rectPath.node.parentNode.appendChild(rectPath.node); // Move to end (on top)
+                    }
                     this.rectangleGroup = rectPath;  // Store reference
 
                     // Set initial display state based on current showRectangle flag
@@ -2634,9 +2635,40 @@ class SvgViewerInstance {
 
                         boardroomPath.addClass("debug-boardroom-layout");
 
-                        // Append to parent scope and bring to front (after rectangle)
-                        parentScope.appendChild(boardroomPath.node);
-                        boardroomPath.node.parentNode.appendChild(boardroomPath.node); // Move to end (on top)
+                        // Apply the same transform and parent group as the source paths
+                        if (pathIds && pathIds.length > 0) {
+                            const firstPathId = pathIds[0];
+                            const pathElement = this.s.node.querySelector(`path[id="${firstPathId}"]`);
+                            if (pathElement) {
+                                // Get the path's own transform (if any) and apply it to boardroom layout
+                                const pathTransform = pathElement.getAttribute('transform');
+                                if (pathTransform) {
+                                    boardroomPath.node.setAttribute('transform', pathTransform);
+                                    console.debug(`[boardroom] Applied path transform: ${pathTransform}`);
+                                }
+
+                                // Move boardroom layout into the same parent group as the source path
+                                const parentGroup = pathElement.parentElement;
+                                if (parentGroup && parentGroup.tagName === 'g') {
+                                    console.debug(`[boardroom] Moving into parent group: ${parentGroup.getAttribute('id')}`);
+                                    parentGroup.appendChild(boardroomPath.node);
+                                    console.debug(`[boardroom] Now inherits parent transforms from DOM hierarchy`);
+                                } else {
+                                    // Fallback: append to root SVG
+                                    console.debug(`[boardroom] No parent group found, appending to root SVG`);
+                                    this.s.node.appendChild(boardroomPath.node);
+                                }
+                            } else {
+                                // Fallback: append to root SVG
+                                console.debug(`[boardroom] Path element not found, appending to root SVG`);
+                                this.s.node.appendChild(boardroomPath.node);
+                            }
+                        } else {
+                            // Fallback: append to root SVG
+                            console.debug(`[boardroom] No pathIds provided, appending to root SVG`);
+                            this.s.node.appendChild(boardroomPath.node);
+                        }
+
                         this.boardroomGroup = boardroomPath;  // Store reference
 
                         // Set initial display state based on current showBoardroom flag
@@ -2689,9 +2721,40 @@ class SvgViewerInstance {
 
                         hollowSquarePath.addClass("debug-hollowsquare-layout");
 
-                        // Append to parent scope and bring to front (after boardroom)
-                        parentScope.appendChild(hollowSquarePath.node);
-                        hollowSquarePath.node.parentNode.appendChild(hollowSquarePath.node); // Move to end (on top)
+                        // Apply the same transform and parent group as the source paths
+                        if (pathIds && pathIds.length > 0) {
+                            const firstPathId = pathIds[0];
+                            const pathElement = this.s.node.querySelector(`path[id="${firstPathId}"]`);
+                            if (pathElement) {
+                                // Get the path's own transform (if any) and apply it to hollow square layout
+                                const pathTransform = pathElement.getAttribute('transform');
+                                if (pathTransform) {
+                                    hollowSquarePath.node.setAttribute('transform', pathTransform);
+                                    console.debug(`[hollowsquare] Applied path transform: ${pathTransform}`);
+                                }
+
+                                // Move hollow square layout into the same parent group as the source path
+                                const parentGroup = pathElement.parentElement;
+                                if (parentGroup && parentGroup.tagName === 'g') {
+                                    console.debug(`[hollowsquare] Moving into parent group: ${parentGroup.getAttribute('id')}`);
+                                    parentGroup.appendChild(hollowSquarePath.node);
+                                    console.debug(`[hollowsquare] Now inherits parent transforms from DOM hierarchy`);
+                                } else {
+                                    // Fallback: append to root SVG
+                                    console.debug(`[hollowsquare] No parent group found, appending to root SVG`);
+                                    this.s.node.appendChild(hollowSquarePath.node);
+                                }
+                            } else {
+                                // Fallback: append to root SVG
+                                console.debug(`[hollowsquare] Path element not found, appending to root SVG`);
+                                this.s.node.appendChild(hollowSquarePath.node);
+                            }
+                        } else {
+                            // Fallback: append to root SVG
+                            console.debug(`[hollowsquare] No pathIds provided, appending to root SVG`);
+                            this.s.node.appendChild(hollowSquarePath.node);
+                        }
+
                         this.hollowSquareGroup = hollowSquarePath;  // Store reference
 
                         // Set initial display state based on current showHollowSquare flag
@@ -3302,23 +3365,35 @@ export function setShowBoardroom(containerId, show) {
 }
 
 export function setRectangleType(containerId, rectangleType) {
+    console.log(`[setRectangleType] Called with containerId: ${containerId}, rectangleType: ${rectangleType}`);
+
     const instance = instances.get(containerId);
-    if (!instance) return false;
+    if (!instance) {
+        console.error(`[setRectangleType] No instance found for containerId: ${containerId}`);
+        return false;
+    }
 
     // Hide all rectangle types first
+    console.log(`[setRectangleType] Hiding all rectangle types`);
     instance.setShowRectangle(false);
     instance.setShowBoardroom(false);
     instance.setShowHollowSquare(false);
 
     // Show the selected type
     if (rectangleType === 'maxinscribed') {
+        console.log(`[setRectangleType] Showing max inscribed rectangle`);
         instance.setShowRectangle(true);
     } else if (rectangleType === 'boardroom') {
+        console.log(`[setRectangleType] Showing boardroom layout`);
         instance.setShowBoardroom(true);
     } else if (rectangleType === 'hollowsquare') {
+        console.log(`[setRectangleType] Showing hollow square layout`);
         instance.setShowHollowSquare(true);
+    } else if (rectangleType === 'none') {
+        console.log(`[setRectangleType] All rectangles hidden (none selected)`);
+    } else {
+        console.warn(`[setRectangleType] Unknown rectangle type: ${rectangleType}`);
     }
-    // If 'none', all remain hidden
 
     console.log(`[display] Rectangle type set to: ${rectangleType}`);
     return true;

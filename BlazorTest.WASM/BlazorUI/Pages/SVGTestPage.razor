@@ -18,10 +18,92 @@
 
 <SvgViewer @ref="@svgViewer"
     InitialPaths="@initialPaths"
-    SvgUrl="Level1.svg?v=12"
+    SvgUrl="Level1.svg?v=16"
     PathsChanged="OnPathsChanged"
     @bind-AllInsideSelected="@allInsideSelected"
     RectangleType="@rectangleType"/>
+
+<div class="mt-3 card">
+    <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">Available Rectangle Layouts</h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover">
+                <thead>
+                    <tr>
+                        <th>Layout Type</th>
+                        <th>Description</th>
+                        <th>Area (sq in)</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="@(rectangleType == "none" ? "table-active" : "")" style="cursor: pointer;" @onclick='() => SelectRectangleType("none")'>
+                        <td><strong>None</strong></td>
+                        <td>No rectangle overlay</td>
+                        <td>
+                            @if (areaData?.PolygonArea != null)
+                            {
+                                <text>@areaData.PolygonArea.Value.ToString("F2")</text>
+                            }
+                            else
+                            {
+                                <em class="text-muted">N/A</em>
+                            }
+                        </td>
+                        <td>@(rectangleType == "none" ? "✓ Active" : "")</td>
+                    </tr>
+                    <tr class="@(rectangleType == "maxinscribed" ? "table-active" : "")" style="cursor: pointer;" @onclick='() => SelectRectangleType("maxinscribed")'>
+                        <td><strong style="color: #FF8800;">Max Inscribed</strong></td>
+                        <td>Largest rectangle that fits inside the polygon</td>
+                        <td>
+                            @if (areaData?.RectangleArea != null)
+                            {
+                                <text>@areaData.RectangleArea.Value.ToString("F2")</text>
+                            }
+                            else
+                            {
+                                <em class="text-muted">N/A</em>
+                            }
+                        </td>
+                        <td>@(rectangleType == "maxinscribed" ? "✓ Active" : "")</td>
+                    </tr>
+                    <tr class="@(rectangleType == "boardroom" ? "table-active" : "")" style="cursor: pointer;" @onclick='() => SelectRectangleType("boardroom")'>
+                        <td><strong style="color: #0000FF;">Boardroom</strong></td>
+                        <td>Boardroom seating layout</td>
+                        <td>
+                            @if (areaData?.BoardroomArea != null)
+                            {
+                                <text>@areaData.BoardroomArea.Value.ToString("F2")</text>
+                            }
+                            else
+                            {
+                                <em class="text-muted">N/A</em>
+                            }
+                        </td>
+                        <td>@(rectangleType == "boardroom" ? "✓ Active" : "")</td>
+                    </tr>
+                    <tr class="@(rectangleType == "hollowsquare" ? "table-active" : "")" style="cursor: pointer;" @onclick='() => SelectRectangleType("hollowsquare")'>
+                        <td><strong style="color: #800080;">Hollow Square</strong></td>
+                        <td>Hollow square seating layout</td>
+                        <td>
+                            @if (areaData?.HollowSquareArea != null)
+                            {
+                                <text>@areaData.HollowSquareArea.Value.ToString("F2")</text>
+                            }
+                            else
+                            {
+                                <em class="text-muted">N/A</em>
+                            }
+                        </td>
+                        <td>@(rectangleType == "hollowsquare" ? "✓ Active" : "")</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
 @if (selectedSections.Any())
 {
@@ -150,20 +232,6 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
             <button class="btn btn-info mb-2" @onclick="TestSelect">TestSelect (Add Ballroom_Room_2)</button>
         </div>
     </div>
-    <div class="row mt-2">
-        <div class="col-md-12">
-            <h6>Rectangle Display:</h6>
-            <div class="mb-2">
-                <label for="rectangleType" class="form-label">Select Rectangle Type:</label>
-                <select class="form-select" id="rectangleType" @bind="rectangleType" @bind:after="OnRectangleTypeChanged">
-                    <option value="none">None</option>
-                    <option value="maxinscribed">Max Inscribed Rectangle (Orange)</option>
-                    <option value="boardroom">Boardroom Layout (Blue)</option>
-                    <option value="hollowsquare">Hollow Square Layout (Purple)</option>
-                </select>
-            </div>
-        </div>
-    </div>
 </div>
 
 <div class="mt-4">
@@ -204,7 +272,7 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
     private List<string> initialPaths = new List<string> { "Ballroom_Room_1", "Ballroom_Room_3" };
     private bool allInsideSelected = false;
     private AreaData? areaData = null;
-    private string rectangleType = "none";
+    private string rectangleType = "maxinscribed";
     private FloorLevel? floorMetadata = null;
     private bool isLoadingMetadata = false;
     private string? metadataError = null;
@@ -252,11 +320,43 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
         await svgViewer!.SelectPaths(paths);
     }
 
+    private async Task SelectRectangleType(string type)
+    {
+        Console.WriteLine($"[SVGTestPage] SelectRectangleType called with: {type}");
+        rectangleType = type;
+
+        if (svgViewer != null)
+        {
+            Console.WriteLine($"[SVGTestPage] Calling SetRectangleTypeAsync with: {rectangleType}");
+
+            // Call the public method to update the rectangle type
+            await svgViewer.SetRectangleTypeAsync(rectangleType);
+
+            // Small delay to let the JS update complete
+            await Task.Delay(100);
+
+            // Refresh the area data display
+            await UpdateAreaData();
+
+            Console.WriteLine($"[SVGTestPage] Rectangle type update complete");
+        }
+        else
+        {
+            Console.WriteLine("[SVGTestPage] svgViewer is null, cannot update rectangle type");
+        }
+
+        // Update the UI
+        StateHasChanged();
+    }
+
     private async Task OnRectangleTypeChanged()
     {
+        Console.WriteLine($"[SVGTestPage] Rectangle type changed to: {rectangleType}");
+
         if (svgViewer != null)
         {
             // Directly update the rectangle type in the SvgViewer
+            Console.WriteLine($"[SVGTestPage] Calling SetRectangleTypeAsync with: {rectangleType}");
             await svgViewer.SetRectangleTypeAsync(rectangleType);
 
             // Refresh the area data display
@@ -264,6 +364,10 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
 
             // Update the UI
             StateHasChanged();
+        }
+        else
+        {
+            Console.WriteLine("[SVGTestPage] svgViewer is null, cannot update rectangle type");
         }
     }
 
