@@ -15,7 +15,10 @@
       "Bash(node process-all.js:*)",
       "Bash(npm install)",
       "Bash(dotnet clean:*)",
-      "Bash(dotnet build:*)"
+      "Bash(dotnet build:*)",
+      "Bash(node -c:*)",
+      "Bash(node -e:*)",
+      "Bash(node run-tests.js:*)"
     ],
     "deny": []
   }

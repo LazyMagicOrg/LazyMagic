@@ -27,14 +27,15 @@ console.log = function(...args) {
     // Otherwise, suppress all console.log output
 };
 
-// Load the algorithms (CommonJS modules) from LazyMagic.BlazorSvg
+// Load the algorithms (CommonJS modules) from local FloorMat directory
 // console.log is now suppressed, so algorithms won't flood output
 const require = createRequire(import.meta.url);
-const kdtree = require('../../LazyMagic.BlazorSvg/wwwroot/kdtree.js'); // Required by optimized algorithm
-const unifiedAlgo = require('../../LazyMagic.BlazorSvg/wwwroot/SvgViewerInscribedRect.js');
-const boundaryBased = require('../../LazyMagic.BlazorSvg/wwwroot/SvgViewerBoundaryBased.js');
-const optimized = require('../../LazyMagic.BlazorSvg/wwwroot/SvgViewerOptimized.js');
-const boardroom = require('../../LazyMagic.BlazorSvg/wwwroot/SvgViewerBoardroom.js');
+const kdtree = require('./kdtree.js'); // Required by optimized algorithm
+const unifiedAlgo = require('./SvgViewerInscribedRect.js');
+const boundaryBased = require('./SvgViewerBoundaryBased.js');
+const optimized = require('./SvgViewerOptimized.js');
+const boardroom = require('./SvgViewerBoardroom.js');
+const hollowsquare = require('./SvgViewerHollowSquare.js');
 
 // Make KDTree and SpatialGrid available globally for the algorithms
 global.KDTree = kdtree.KDTree;
@@ -439,8 +440,8 @@ function getCachedSvgContent(svgPath) {
 function parseSvgCombination(svgPath, sectionIds) {
     const svgContent = getCachedSvgContent(svgPath);
 
-    // Load SvgViewerAlgorithms to parse path data from LazyMagic.BlazorSvg
-    const SvgViewerAlgorithms = require('../../LazyMagic.BlazorSvg/wwwroot/SvgViewerAlgorithms.js');
+    // Load SvgViewerAlgorithms to parse path data from local FloorMat directory
+    const SvgViewerAlgorithms = require('./SvgViewerAlgorithms.cjs');
 
     // Extract path data
     const pathData = extractPathData(svgContent, sectionIds);
