@@ -1,51 +1,48 @@
 {
   "testId": "MaxInscribed_Ballroom_0018",
   "sections": [
-    "Ballroom_Aisle_12",
-    "Ballroom_Room_1",
-    "Ballroom_Room_2",
-    "Ballroom_Room_3",
-    "Ballroom_Room_4"
+    "Ballroom_Aisle_34",
+    "Ballroom_Room_3"
   ],
   "layout": {
     "corners": [
       {
-        "x": 240.3468318803102,
-        "y": 223.68405702490784
+        "x": 458.1986299999999,
+        "y": 32.25559499999999
       },
       {
-        "x": 447.6531681196898,
-        "y": 223.68405702490784
+        "x": 458.1986299999999,
+        "y": 147.93412
       },
       {
-        "x": 447.6531681196898,
-        "y": 32.315942975092156
+        "x": 350.47890343749987,
+        "y": 147.93412
       },
       {
-        "x": 240.3468318803102,
-        "y": 32.315942975092156
+        "x": 350.4789034374999,
+        "y": 32.255594999999985
       }
     ],
-    "area": 39671.82259670704,
-    "width": 207.30633623937962,
-    "height": 191.3681140498157,
-    "angle": 0,
-    "aspectRatio": 0.5,
-    "validScale": 0.928,
-    "elapsed": 4751.722365000001,
+    "width": 115.67852500000002,
+    "height": 107.7197265625,
+    "area": 12460.859082153323,
+    "angle": 89.99764626379529,
     "centroid": {
-      "x": 344,
-      "y": 128
+      "x": 404.33876671874987,
+      "y": 90.09485749999999
     },
-    "type": "optimized",
-    "hybridTotalTime": 4755.806370000002,
+    "aspectRatio": 1.0738843171207109,
+    "type": "boundary-based",
+    "computeTime": 0.7420180000008259,
+    "centroidStrategy": "uniform",
+    "hybridTotalTime": 1171.298202,
     "usedBoundaryBased": true,
     "usedOptimized": true,
-    "selectedAlgorithm": "optimized",
-    "boundaryTime": 4.053270000000339,
-    "optimizedTime": 4751.741861
+    "selectedAlgorithm": "boundary-based",
+    "boundaryTime": 0.7623419999999896,
+    "optimizedTime": 1170.525627000001
   },
-  "polygonArea": 44402.825975231855,
-  "fillRatio": 89.34526513883644,
-  "runtimeMs": 4764
+  "polygonArea": 12403.730911172664,
+  "fillRatio": 100.4605724792788,
+  "runtimeMs": 1177
 }

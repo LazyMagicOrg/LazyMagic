@@ -1,0 +1,55 @@
+{
+  "testId": "MaxInscribed_Ballroom_0226",
+  "sections": [
+    "Ballroom_Aisle_12",
+    "Ballroom_Aisle_35",
+    "Ballroom_Aisle_46",
+    "Ballroom_Aisle_56",
+    "Ballroom_Crossing_3456",
+    "Ballroom_Room_2",
+    "Ballroom_Room_4",
+    "Ballroom_Room_5",
+    "Ballroom_Room_Grand"
+  ],
+  "layout": {
+    "corners": [
+      {
+        "x": 458.19863,
+        "y": 32.25559499999999
+      },
+      {
+        "x": 458.19863,
+        "y": 259.13292
+      },
+      {
+        "x": 641.9378878124999,
+        "y": 259.13291999999996
+      },
+      {
+        "x": 641.9378878124999,
+        "y": 32.25559499999997
+      }
+    ],
+    "width": 226.87732499999998,
+    "height": 183.7392578125,
+    "area": 41686.27130998535,
+    "angle": 85.09418415300941,
+    "centroid": {
+      "x": 550.0682589062499,
+      "y": 145.69425749999996
+    },
+    "aspectRatio": 1.234778716868014,
+    "type": "boundary-based",
+    "computeTime": 3.7571849999949336,
+    "centroidStrategy": "hybrid",
+    "hybridTotalTime": 5003.934468999971,
+    "usedBoundaryBased": true,
+    "usedOptimized": true,
+    "selectedAlgorithm": "boundary-based",
+    "boundaryTime": 3.9086589999496937,
+    "optimizedTime": 5000.021760999924
+  },
+  "polygonArea": 75057.15054395676,
+  "fillRatio": 55.53937367442698,
+  "runtimeMs": 5015
+}

@@ -1,70 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg"
-     viewBox="214.80818 12.255595 603.39045 266.87732500000004"
-     width="603.39045" height="266.87732500000004"
+     viewBox="330.97 12.255595 487.22862999999995 180"
+     width="487.22862999999995" height="180"
      style="background: white;">
 
   <!-- Title -->
-  <text x="234.80818" y="52.255595" font-size="16" font-weight="bold" fill="#000">
+  <text x="350.97" y="52.255595" font-size="16" font-weight="bold" fill="#000">
     MaxInscribed_Ballroom_0018
   </text>
 
   <!-- Original test paths (gray, semi-transparent) -->
   <g opacity="0.3">
-    <path id="Ballroom_Aisle_12" d="m 350.97122,128.07719 v 19.85693 H 234.80818 v -19.85693 z" fill="none" stroke="#808080" stroke-width="1"/>
-    <path id="Ballroom_Room_1" d="M 350.97122,32.255595 V 128.07719 H 234.80818 V 32.255595 Z" fill="none" stroke="#808080" stroke-width="1"/>
-    <path id="Ballroom_Room_2" d="m 350.97122,147.93412 v 91.34187 c -40.53334,-7.65498 -76.62104,-11.70518 -116.16304,-13.40541 v -77.93646 z" fill="none" stroke="#808080" stroke-width="1"/>
+    <path id="Ballroom_Aisle_34" d="m 458.19863,128.07719 v 19.85693 l -107.22741,0 v -19.85693 z" fill="none" stroke="#808080" stroke-width="1"/>
     <path id="Ballroom_Room_3" d="m 458.19863,32.255595 0,95.821595 H 350.97122 V 32.255595 Z" fill="none" stroke="#808080" stroke-width="1"/>
-    <path id="Ballroom_Room_4" d="m 458.19863,147.93412 v 111.1988 c -39.14199,-8.77234 -69.83329,-15.49794 -107.22741,-19.85693 v -91.34187 z" fill="none" stroke="#808080" stroke-width="1"/>
   </g>
 
   <!-- Boundary polygon (blue, dashed) -->
-  <polygon points="234.81,32.26 350.97122,32.255595 458.19863,32.255595 458.19863,128.07719 350.97122,128.07719 350.97122,147.93412 458.19863,147.93412 458.19863,259.13292 350.97122,239.27599 234.80818000000002,225.87058000000002 234.80818,147.93412 234.80818,128.07719" fill="none" stroke="#4080ff" stroke-width="2" stroke-dasharray="5,5"/>
+  <polygon points="350.97,32.26 458.19863,32.255595 458.19863,128.07719 458.19863,147.93412 350.97121999999996,147.93412 350.97122,128.07719" fill="none" stroke="#4080ff" stroke-width="2" stroke-dasharray="5,5"/>
 
   <!-- Layout rectangle (colored fill, solid border) -->
-  <polygon points="240.3468318803102,223.68405702490784 447.6531681196898,223.68405702490784 447.6531681196898,32.315942975092156 240.3468318803102,32.315942975092156" fill="rgba(220, 38, 38, 0.15)" stroke="#dc2626" stroke-width="3"/>
+  <polygon points="458.1986299999999,32.25559499999999 458.1986299999999,147.93412 350.47890343749987,147.93412 350.4789034374999,32.255594999999985" fill="rgba(220, 38, 38, 0.15)" stroke="#dc2626" stroke-width="3"/>
 
   <!-- Centroid marker -->
-  <circle cx="344" cy="128" r="4" fill="#dc2626"/>
-  <text x="352" y="133" font-size="10" fill="#dc2626">maxinscribed</text>
+  <circle cx="404.33876671874987" cy="90.09485749999999" r="4" fill="#dc2626"/>
+  <text x="412.33876671874987" y="95.09485749999999" font-size="10" fill="#dc2626">maxinscribed</text>
 
   <!-- Corner markers -->
 
-  <circle cx="240.3468318803102" cy="223.68405702490784" r="3" fill="#dc2626"/>
-  <text x="246.3468318803102" y="227.68405702490784" font-size="8" fill="#dc2626">c0</text>
-  <circle cx="447.6531681196898" cy="223.68405702490784" r="3" fill="#dc2626"/>
-  <text x="453.6531681196898" y="227.68405702490784" font-size="8" fill="#dc2626">c1</text>
-  <circle cx="447.6531681196898" cy="32.315942975092156" r="3" fill="#dc2626"/>
-  <text x="453.6531681196898" y="36.315942975092156" font-size="8" fill="#dc2626">c2</text>
-  <circle cx="240.3468318803102" cy="32.315942975092156" r="3" fill="#dc2626"/>
-  <text x="246.3468318803102" y="36.315942975092156" font-size="8" fill="#dc2626">c3</text>
+  <circle cx="458.1986299999999" cy="32.25559499999999" r="3" fill="#dc2626"/>
+  <text x="464.1986299999999" y="36.25559499999999" font-size="8" fill="#dc2626">c0</text>
+  <circle cx="458.1986299999999" cy="147.93412" r="3" fill="#dc2626"/>
+  <text x="464.1986299999999" y="151.93412" font-size="8" fill="#dc2626">c1</text>
+  <circle cx="350.47890343749987" cy="147.93412" r="3" fill="#dc2626"/>
+  <text x="356.47890343749987" y="151.93412" font-size="8" fill="#dc2626">c2</text>
+  <circle cx="350.4789034374999" cy="32.255594999999985" r="3" fill="#dc2626"/>
+  <text x="356.4789034374999" y="36.255594999999985" font-size="8" fill="#dc2626">c3</text>
 
   <!-- Vertex markers -->
 
-  <circle cx="234.81" cy="32.26" r="2" fill="#4080ff"/>
-  <text x="226.81" y="26.259999999999998" font-size="8" fill="#4080ff">p0</text>
-  <circle cx="350.97122" cy="32.255595" r="2" fill="#4080ff"/>
-  <text x="342.97122" y="26.255595" font-size="8" fill="#4080ff">p1</text>
+  <circle cx="350.97" cy="32.26" r="2" fill="#4080ff"/>
+  <text x="342.97" y="26.259999999999998" font-size="8" fill="#4080ff">p0</text>
   <circle cx="458.19863" cy="32.255595" r="2" fill="#4080ff"/>
-  <text x="450.19863" y="26.255595" font-size="8" fill="#4080ff">p2</text>
+  <text x="450.19863" y="26.255595" font-size="8" fill="#4080ff">p1</text>
   <circle cx="458.19863" cy="128.07719" r="2" fill="#4080ff"/>
-  <text x="450.19863" y="122.07719" font-size="8" fill="#4080ff">p3</text>
-  <circle cx="350.97122" cy="128.07719" r="2" fill="#4080ff"/>
-  <text x="342.97122" y="122.07719" font-size="8" fill="#4080ff">p4</text>
-  <circle cx="350.97122" cy="147.93412" r="2" fill="#4080ff"/>
-  <text x="342.97122" y="141.93412" font-size="8" fill="#4080ff">p5</text>
+  <text x="450.19863" y="122.07719" font-size="8" fill="#4080ff">p2</text>
   <circle cx="458.19863" cy="147.93412" r="2" fill="#4080ff"/>
-  <text x="450.19863" y="141.93412" font-size="8" fill="#4080ff">p6</text>
-  <circle cx="458.19863" cy="259.13292" r="2" fill="#4080ff"/>
-  <text x="450.19863" y="253.13292" font-size="8" fill="#4080ff">p7</text>
-  <circle cx="350.97122" cy="239.27599" r="2" fill="#4080ff"/>
-  <text x="342.97122" y="233.27599" font-size="8" fill="#4080ff">p8</text>
-  <circle cx="234.80818000000002" cy="225.87058000000002" r="2" fill="#4080ff"/>
-  <text x="226.80818000000002" y="219.87058000000002" font-size="8" fill="#4080ff">p9</text>
-  <circle cx="234.80818" cy="147.93412" r="2" fill="#4080ff"/>
-  <text x="226.80818" y="141.93412" font-size="8" fill="#4080ff">p10</text>
-  <circle cx="234.80818" cy="128.07719" r="2" fill="#4080ff"/>
-  <text x="226.80818" y="122.07719" font-size="8" fill="#4080ff">p11</text>
+  <text x="450.19863" y="141.93412" font-size="8" fill="#4080ff">p3</text>
+  <circle cx="350.97121999999996" cy="147.93412" r="2" fill="#4080ff"/>
+  <text x="342.97121999999996" y="141.93412" font-size="8" fill="#4080ff">p4</text>
+  <circle cx="350.97122" cy="128.07719" r="2" fill="#4080ff"/>
+  <text x="342.97122" y="122.07719" font-size="8" fill="#4080ff">p5</text>
 
   <!-- Data Table (positioned to the right) -->
   <g transform="translate(478.19863, 32.255595)">
@@ -73,31 +58,31 @@
     <text x="160" y="20" font-size="14" font-weight="bold" text-anchor="middle">Max Inscribed Rectangle</text>
 
     <text x="10" y="50" font-size="11" font-weight="bold">Dimensions:</text>
-    <text x="310" y="50" font-size="11" text-anchor="end">207.3 × 191.4 ft</text>
+    <text x="310" y="50" font-size="11" text-anchor="end">115.7 × 107.7 ft</text>
 
     <text x="10" y="70" font-size="11" font-weight="bold">Area:</text>
-    <text x="310" y="70" font-size="11" text-anchor="end">39671.82 sq ft</text>
+    <text x="310" y="70" font-size="11" text-anchor="end">12460.86 sq ft</text>
 
     <text x="10" y="90" font-size="11" font-weight="bold">Fill Ratio:</text>
-    <text x="310" y="90" font-size="11" text-anchor="end">89.3%</text>
+    <text x="310" y="90" font-size="11" text-anchor="end">100.5%</text>
 
     <text x="10" y="110" font-size="11" font-weight="bold">Angle:</text>
-    <text x="310" y="110" font-size="11" text-anchor="end">0.0°</text>
+    <text x="310" y="110" font-size="11" text-anchor="end">90.0°</text>
 
     <text x="10" y="130" font-size="11" font-weight="bold">Runtime:</text>
-    <text x="310" y="130" font-size="11" text-anchor="end">4.76s</text>
+    <text x="310" y="130" font-size="11" text-anchor="end">1.18s</text>
 
     <!-- Hybrid Algorithm Info -->
     <line x1="10" x2="310" y1="145" y2="145" stroke="#ccc" stroke-width="1"/>
     <text x="10" y="160" font-size="11" font-weight="bold">Algorithm Used:</text>
-    <text x="310" y="160" font-size="11" text-anchor="end">optimized</text>
+    <text x="310" y="160" font-size="11" text-anchor="end">boundary-based</text>
 
     <text x="10" y="180" font-size="10" fill="#666">Boundary: ✓ | Optimized: ✓</text>
   </g>
 
   <!-- Area Data (embedded as XML comments for extraction) -->
-  <!-- polygonArea: 44402.8260 -->
-  <!-- layoutArea: 39671.82 -->
-  <!-- fillRatio: 89.3 -->
+  <!-- polygonArea: 12403.7309 -->
+  <!-- layoutArea: 12460.86 -->
+  <!-- fillRatio: 100.5 -->
 
 </svg>
