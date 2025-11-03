@@ -3,7 +3,7 @@ namespace LazyMagic.BlazorSvg.Models;
 /// <summary>
 /// Represents a room containing multiple sections
 /// </summary>
-public class Room
+public class SvgRoom
 {
     /// <summary>
     /// Unique identifier for the room
@@ -13,10 +13,10 @@ public class Room
     /// <summary>
     /// Sections within this room
     /// </summary>
-    public List<RoomSection> RoomSections { get; set; } = new();
+    public List<SvgRoomSection> RoomSections { get; set; } = new();
 
     /// <summary>
     /// Joins defining how sections connect
     /// </summary>
-    public List<SectionJoin> Joins { get; set; } = new();
+    public List<SvgSectionJoin> Joins { get; set; } = new();
 }

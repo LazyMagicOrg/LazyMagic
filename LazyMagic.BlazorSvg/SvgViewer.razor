@@ -133,8 +133,8 @@
     /// <summary>
     /// Extracts floor metadata from the loaded SVG including rooms, sections, and precomputed layout data
     /// </summary>
-    /// <returns>FloorLevel object containing all metadata, or null if extraction fails</returns>
-    public async Task<FloorLevel?> GetFloorMetadataAsync()
+    /// <returns>SvgFloorLevel object containing all metadata, or null if extraction fails</returns>
+    public async Task<SvgFloorLevel?> GetFloorMetadataAsync()
     {
         if (svgViewerJS == null)
             throw new InvalidOperationException("SvgViewer not initialized");

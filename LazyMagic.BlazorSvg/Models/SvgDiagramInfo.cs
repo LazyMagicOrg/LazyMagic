@@ -3,7 +3,7 @@ namespace LazyMagic.BlazorSvg.Models;
 /// <summary>
 /// Diagram metadata including measurement units
 /// </summary>
-public class DiagramInfo
+public class SvgDiagramInfo
 {
     /// <summary>
     /// Path to the SVG image

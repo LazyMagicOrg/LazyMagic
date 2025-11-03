@@ -29,14 +29,14 @@
                     <button type="button" class="btn @(SelectedType == null ? "btn-primary" : "btn-outline-primary")" @onclick="@(() => SelectedType = null)">
                         All (@Data.Layouts.Count)
                     </button>
-                    <button type="button" class="btn @(SelectedType == InscribedRectangleType.MaxInscribed ? "btn-warning" : "btn-outline-warning")" @onclick="@(() => SelectedType = InscribedRectangleType.MaxInscribed)">
-                        Max-Inscribed (@GetCount(InscribedRectangleType.MaxInscribed))
+                    <button type="button" class="btn @(SelectedType == SvgInscribedRectangleType.MaxInscribed ? "btn-warning" : "btn-outline-warning")" @onclick="@(() => SelectedType = SvgInscribedRectangleType.MaxInscribed)">
+                        Max-Inscribed (@GetCount(SvgInscribedRectangleType.MaxInscribed))
                     </button>
-                    <button type="button" class="btn @(SelectedType == InscribedRectangleType.Boardroom ? "btn-info" : "btn-outline-info")" @onclick="@(() => SelectedType = InscribedRectangleType.Boardroom)">
-                        Boardroom (@GetCount(InscribedRectangleType.Boardroom))
+                    <button type="button" class="btn @(SelectedType == SvgInscribedRectangleType.Boardroom ? "btn-info" : "btn-outline-info")" @onclick="@(() => SelectedType = SvgInscribedRectangleType.Boardroom)">
+                        Boardroom (@GetCount(SvgInscribedRectangleType.Boardroom))
                     </button>
-                    <button type="button" class="btn @(SelectedType == InscribedRectangleType.HollowSquare ? "btn-secondary" : "btn-outline-secondary")" @onclick="@(() => SelectedType = InscribedRectangleType.HollowSquare)">
-                        Hollow Square (@GetCount(InscribedRectangleType.HollowSquare))
+                    <button type="button" class="btn @(SelectedType == SvgInscribedRectangleType.HollowSquare ? "btn-secondary" : "btn-outline-secondary")" @onclick="@(() => SelectedType = SvgInscribedRectangleType.HollowSquare)">
+                        Hollow Square (@GetCount(SvgInscribedRectangleType.HollowSquare))
                     </button>
                 </div>
             </div>
@@ -53,7 +53,7 @@
                                 <th>Polygon Area</th>
                                 <th>Inscribed Area</th>
                                 <th>Coverage %</th>
-                                @if (SelectedType == InscribedRectangleType.Boardroom || SelectedType == null)
+                                @if (SelectedType == SvgInscribedRectangleType.Boardroom || SelectedType == null)
                                 {
                                     <th>Sets/Tables</th>
                                 }
@@ -72,7 +72,7 @@
                                     <td>@item.PolygonArea.ToString("F2")</td>
                                     <td>@item.InscribedArea.ToString("F2")</td>
                                     <td>@coverage.ToString("F1")%</td>
-                                    @if (SelectedType == InscribedRectangleType.Boardroom || SelectedType == null)
+                                    @if (SelectedType == SvgInscribedRectangleType.Boardroom || SelectedType == null)
                                     {
                                         <td>
                                             @if (item.Sets.HasValue && item.Tables.HasValue)
@@ -110,14 +110,14 @@
 
 @code {
     [Parameter]
-    public InscribedRectangleData? Data { get; set; }
+    public SvgInscribedRectangleData? Data { get; set; }
 
-    private InscribedRectangleType? SelectedType { get; set; } = null;
+    private SvgInscribedRectangleType? SelectedType { get; set; } = null;
     private bool ShowAll { get; set; } = false;
 
-    private IEnumerable<InscribedRectangleLayout> GetFilteredLayouts()
+    private IEnumerable<SvgInscribedRectangleLayout> GetFilteredLayouts()
     {
-        if (Data?.Layouts == null) return Enumerable.Empty<InscribedRectangleLayout>();
+        if (Data?.Layouts == null) return Enumerable.Empty<SvgInscribedRectangleLayout>();
 
         if (SelectedType.HasValue)
         {
@@ -127,7 +127,7 @@
         return Data.Layouts;
     }
 
-    private int GetCount(InscribedRectangleType type)
+    private int GetCount(SvgInscribedRectangleType type)
     {
         return Data?.Layouts?.Count(l => l.LayoutType == type) ?? 0;
     }
@@ -136,20 +136,20 @@
     {
         return SelectedType switch
         {
-            InscribedRectangleType.MaxInscribed => "Max-Inscribed Rectangles",
-            InscribedRectangleType.Boardroom => "Boardroom Layouts",
-            InscribedRectangleType.HollowSquare => "Hollow Square Layouts",
+            SvgInscribedRectangleType.MaxInscribed => "Max-Inscribed Rectangles",
+            SvgInscribedRectangleType.Boardroom => "Boardroom Layouts",
+            SvgInscribedRectangleType.HollowSquare => "Hollow Square Layouts",
             _ => "All Layouts"
         };
     }
 
-    private string GetTypeColor(InscribedRectangleType type)
+    private string GetTypeColor(SvgInscribedRectangleType type)
     {
         return type switch
         {
-            InscribedRectangleType.MaxInscribed => "warning",
-            InscribedRectangleType.Boardroom => "info",
-            InscribedRectangleType.HollowSquare => "secondary",
+            SvgInscribedRectangleType.MaxInscribed => "warning",
+            SvgInscribedRectangleType.Boardroom => "info",
+            SvgInscribedRectangleType.HollowSquare => "secondary",
             _ => "light"
         };
     }

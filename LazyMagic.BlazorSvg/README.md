@@ -167,7 +167,7 @@ Add the required script reference to your `index.html` or `_Host.cshtml`:
 }
 
 @code {
-    private FloorLevel? floorLevel;
+    private SvgFloorLevel? floorLevel;
 
     private async Task LoadFloorData()
     {
@@ -232,7 +232,7 @@ await svgViewer.SetRectangleTypeAsync("maxinscribed");
 AreaData? areaData = await svgViewer.GetAreaDataAsync();
 
 // Extract floor metadata from SVG
-FloorLevel? floorData = await svgViewer.GetFloorMetadataAsync();
+SvgFloorLevel? floorData = await svgViewer.GetFloorMetadataAsync();
 ```
 
 ## Data Models
@@ -254,27 +254,27 @@ public class AreaData
 }
 ```
 
-### FloorLevel
+### SvgFloorLevel
 
 Represents the complete floor metadata:
 
 ```csharp
-public class FloorLevel
+public class SvgFloorLevel
 {
     public string Id { get; set; }
     public string Name { get; set; }
-    public DiagramInfo? Diagram { get; set; }
-    public List<Room> Rooms { get; set; }
+    public SvgDiagramInfo? Diagram { get; set; }
+    public List<SvgRoom> Rooms { get; set; }
 }
 
-public class Room
+public class SvgRoom
 {
     public string Id { get; set; }
-    public List<RoomSection> RoomSections { get; set; }
-    public List<SectionJoin> Joins { get; set; }
+    public List<SvgRoomSection> RoomSections { get; set; }
+    public List<SvgSectionJoin> Joins { get; set; }
 }
 
-public class RoomSection
+public class SvgRoomSection
 {
     public string Id { get; set; }
     public string Name { get; set; }
@@ -300,14 +300,29 @@ The component correctly handles SVG transforms including:
 
 All layout visualizations (rectangles, boardroom, hollow square) automatically inherit and apply the correct transforms from their source paths.
 
-### Precomputed Layout Data
+### Precomputed Layout Data (Required)
 
-For optimal performance, layout data can be precomputed at build time and embedded in the SVG:
+**IMPORTANT**: This component requires precomputed layout data embedded in SVG files. It does NOT perform runtime computation of layouts.
 
-1. Use the FloorMat build pipeline to compute layouts
-2. Data is embedded in SVG as custom attributes
-3. Runtime lookup is instant (no computation required)
-4. Falls back to runtime computation if data not found
+**Workflow:**
+1. **Run FloorMat Pipeline**: Use the FloorMat build pipeline to compute all layouts at build time
+2. **Data Embedding**: Layout data is embedded in SVG as JSON in `<script type="application/json">` tags
+3. **Runtime Lookup**: Component performs instant lookup of precomputed data
+4. **No Fallback**: If precomputed data is missing, layouts will not be displayed (with error messages in console)
+
+**To generate precomputed data:**
+```bash
+cd LazyMagic.FloorMat/FloorMat
+node process-all.js
+```
+
+The pipeline computes:
+- Max inscribed rectangles for all room combinations
+- Boardroom layouts with furniture placement
+- Hollow square layouts with table configurations
+- Polygon areas and metadata
+
+**Architecture Note**: This component uses a precomputed-only architecture. All layout computation happens at build time via the FloorMat pipeline, which embeds results directly into SVG files. The browser component performs instant lookups of this precomputed data, ensuring consistent results and optimal performance. Geometric utility functions in the browser are used exclusively for interactive features like path selection, boundary visualization, and polygon merging.
 
 ### Layout Types Explained
 

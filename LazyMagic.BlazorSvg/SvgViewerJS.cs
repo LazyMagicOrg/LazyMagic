@@ -113,12 +113,12 @@ namespace LazyMagic.BlazorSvg
         /// <summary>
         /// Extracts embedded metadata from the SVG including precomputed layout data
         /// </summary>
-        /// <returns>FloorLevel object containing all metadata, or null if extraction fails</returns>
-        public async ValueTask<FloorLevel?> GetFloorMetadataAsync()
+        /// <returns>SvgFloorLevel object containing all metadata, or null if extraction fails</returns>
+        public async ValueTask<SvgFloorLevel?> GetFloorMetadataAsync()
         {
             if (containerId == null) throw new InvalidOperationException("InitAsync must be called first");
             var module = await moduleTask.Value;
-            var result = await module.InvokeAsync<FloorLevel?>("getFloorMetadata", containerId);
+            var result = await module.InvokeAsync<SvgFloorLevel?>("getFloorMetadata", containerId);
             return result;
         }
     }

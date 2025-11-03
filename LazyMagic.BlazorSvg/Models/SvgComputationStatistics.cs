@@ -3,7 +3,7 @@ namespace LazyMagic.BlazorSvg.Models;
 /// <summary>
 /// Statistical information about computation performance
 /// </summary>
-public class ComputationStatistics
+public class SvgComputationStatistics
 {
     /// <summary>
     /// Total number of layouts computed

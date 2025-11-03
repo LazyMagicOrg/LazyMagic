@@ -3,7 +3,7 @@ namespace LazyMagic.BlazorSvg.Models;
 /// <summary>
 /// Represents an individual section within a room (maps to SVG path element)
 /// </summary>
-public class RoomSection
+public class SvgRoomSection
 {
     /// <summary>
     /// Unique identifier for the section (matches SVG path id)
@@ -48,7 +48,7 @@ public class RoomSection
     /// <summary>
     /// Computed polygon coordinates
     /// </summary>
-    public List<Point>? PolygonCoordinates { get; set; }
+    public List<SvgPoint>? PolygonCoordinates { get; set; }
 
     /// <summary>
     /// Computed polygon area (calculated from path coordinates)

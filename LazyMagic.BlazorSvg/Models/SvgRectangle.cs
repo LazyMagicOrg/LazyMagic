@@ -3,12 +3,12 @@ namespace LazyMagic.BlazorSvg.Models;
 /// <summary>
 /// Represents a rectangle definition with corners, dimensions, and orientation
 /// </summary>
-public class Rectangle
+public class SvgRectangle
 {
     /// <summary>
     /// Four corner points of the rectangle
     /// </summary>
-    public List<Point> Corners { get; set; } = new();
+    public List<SvgPoint> Corners { get; set; } = new();
 
     /// <summary>
     /// Width of the rectangle
@@ -33,5 +33,5 @@ public class Rectangle
     /// <summary>
     /// Centroid (center point) of the rectangle
     /// </summary>
-    public Point Centroid { get; set; } = new();
+    public SvgPoint Centroid { get; set; } = new();
 }

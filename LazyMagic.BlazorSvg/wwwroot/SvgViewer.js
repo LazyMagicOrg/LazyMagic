@@ -1,161 +1,15 @@
-﻿// Load optimization libraries if available
-let KDTree, SpatialGrid;
-let SpatialHash, fastWindingAlgorithm, fastRectangleValidation, fastInscribedRectangle;
-
-// Function to dynamically load optimization libraries
-async function loadOptimizationLibraries() {
-    const loadPromises = [];
-
-    // Load SvgViewerAlgorithms library (required)
-    if (typeof window.SvgViewerAlgorithms === 'undefined') {
-        const algoScript = document.createElement('script');
-        algoScript.src = './_content/LazyMagic.BlazorSvg/SvgViewerAlgorithms.js';
-        const algoPromise = new Promise((resolve) => {
-            algoScript.onload = () => {
-                console.log('[algorithms] SvgViewerAlgorithms library loaded successfully');
-                resolve(true);
-            };
-            algoScript.onerror = () => {
-                console.error('[algorithms] Failed to load SvgViewerAlgorithms.js - inscribed rectangles will not work!');
-                resolve(false);
-            };
-        });
-        document.head.appendChild(algoScript);
-        loadPromises.push(algoPromise);
-    }
-
-    // Load KD-Tree library
-    if (typeof window.KDTree === 'undefined') {
-        const kdScript = document.createElement('script');
-        kdScript.src = './_content/LazyMagic.BlazorSvg/kdtree.js';
-        const kdPromise = new Promise((resolve) => {
-            kdScript.onload = () => {
-                KDTree = window.KDTree;
-                SpatialGrid = window.SpatialGrid;
-                console.log('[kdtree] Library loaded successfully');
-                resolve(true);
-            };
-            kdScript.onerror = () => {
-                console.warn('[kdtree] Failed to load library');
-                resolve(false);
-            };
-        });
-        document.head.appendChild(kdScript);
-        loadPromises.push(kdPromise);
-    } else {
-        KDTree = window.KDTree;
-        SpatialGrid = window.SpatialGrid;
-    }
-
-    // Load boundary-based algorithms (required for hybrid algorithm)
-    if (typeof window.hybridInscribedRectangle === 'undefined') {
-        console.warn('[LOADING-DEBUG] Attempting to load SvgViewerBoundaryBased.js...');
-        const boundaryScript = document.createElement('script');
-        boundaryScript.src = './_content/LazyMagic.BlazorSvg/SvgViewerBoundaryBased.js';
-        console.warn('[LOADING-DEBUG] Script src set to:', boundaryScript.src);
-        const boundaryPromise = new Promise((resolve) => {
-            boundaryScript.onload = () => {
-                console.log('[boundary-based] Hybrid inscribed rectangle algorithm loaded successfully');
-                resolve(true);
-            };
-            boundaryScript.onerror = (error) => {
-                console.warn('[LOADING-DEBUG] Failed to load SvgViewerBoundaryBased.js, error:', error);
-                console.warn('[boundary-based] Failed to load hybrid algorithm');
-                resolve(false);
-            };
-        });
-        document.head.appendChild(boundaryScript);
-        loadPromises.push(boundaryPromise);
-    }
-
-    // Load optimized algorithms
-    if (typeof window.SpatialHash === 'undefined') {
-        console.warn('[LOADING-DEBUG] Attempting to load SvgViewerOptimized.js...');
-        const optScript = document.createElement('script');
-        optScript.src = './_content/LazyMagic.BlazorSvg/SvgViewerOptimized.js';
-        console.warn('[LOADING-DEBUG] Script src set to:', optScript.src);
-        const optPromise = new Promise((resolve) => {
-            optScript.onload = () => {
-                SpatialHash = window.SpatialHash;
-                fastWindingAlgorithm = window.fastWindingAlgorithm;
-                fastRectangleValidation = window.fastRectangleValidation;
-                fastInscribedRectangle = window.fastInscribedRectangle;
-                console.log('[optimized] Fast algorithms with adaptive centroid loaded successfully');
-                resolve(true);
-            };
-            optScript.onerror = (error) => {
-                console.warn('[LOADING-DEBUG] Failed to load SvgViewerOptimized.js, error:', error);
-                console.warn('[optimized] Failed to load fast algorithms');
-                resolve(false);
-            };
-        });
-        document.head.appendChild(optScript);
-        loadPromises.push(optPromise);
-    } else {
-        SpatialHash = window.SpatialHash;
-        fastWindingAlgorithm = window.fastWindingAlgorithm;
-        fastRectangleValidation = window.fastRectangleValidation;
-        fastInscribedRectangle = window.fastInscribedRectangle;
-    }
-
-    // Load boardroom layout algorithms
-    if (typeof window.findBoardroomLayout === 'undefined') {
-        console.warn('[LOADING-DEBUG] Attempting to load SvgViewerBoardroom.js...');
-        const boardroomScript = document.createElement('script');
-        boardroomScript.src = './_content/LazyMagic.BlazorSvg/SvgViewerBoardroom.js';
-        console.warn('[LOADING-DEBUG] Script src set to:', boardroomScript.src);
-        const boardroomPromise = new Promise((resolve) => {
-            boardroomScript.onload = () => {
-                console.log('[boardroom] Boardroom layout algorithm loaded successfully');
-                resolve(true);
-            };
-            boardroomScript.onerror = (error) => {
-                console.warn('[LOADING-DEBUG] Failed to load SvgViewerBoardroom.js, error:', error);
-                console.warn('[boardroom] Failed to load boardroom algorithm');
-                resolve(false);
-            };
-        });
-        document.head.appendChild(boardroomScript);
-        loadPromises.push(boardroomPromise);
-    }
-
-    if (loadPromises.length > 0) {
-        await Promise.all(loadPromises);
-    }
-    return true;
+﻿// Load SvgViewerAlgorithms library if not already loaded (provides helper functions)
+if (typeof window.SvgViewerAlgorithms === 'undefined') {
+    const algoScript = document.createElement('script');
+    algoScript.src = './_content/LazyMagic.BlazorSvg/SvgViewerAlgorithms.js';
+    algoScript.onload = () => {
+        console.log('[algorithms] SvgViewerAlgorithms library loaded successfully');
+    };
+    algoScript.onerror = () => {
+        console.error('[algorithms] Failed to load SvgViewerAlgorithms.js - some helper functions may not work!');
+    };
+    document.head.appendChild(algoScript);
 }
-
-// Initialize optimization libraries
-loadOptimizationLibraries().then(() => {
-    console.log('[optimization] Library loading complete');
-    console.log('[optimization] hybridInscribedRectangle:', typeof window.hybridInscribedRectangle !== 'undefined' ? '✅ Available' : '❌ Not available');
-    console.log('[optimization] fastInscribedRectangle:', typeof window.fastInscribedRectangle !== 'undefined' ? '✅ Available' : '❌ Not available');
-});
-
-// Global debug function to check optimization status
-window.checkSvgOptimizationStatus = function() {
-    console.log('=== SVG Optimization Status ===');
-    console.log('SvgViewerAlgorithms:', typeof window.SvgViewerAlgorithms !== 'undefined' ? '✅ Loaded' : '❌ Not loaded');
-    console.log('hybridInscribedRectangle:', typeof window.hybridInscribedRectangle !== 'undefined' ? '✅ Loaded' : '❌ Not loaded');
-    console.log('fastWindingAlgorithm:', typeof window.fastWindingAlgorithm !== 'undefined' ? '✅ Loaded' : '❌ Not loaded');
-    console.log('fastInscribedRectangle:', typeof window.fastInscribedRectangle !== 'undefined' ? '✅ Loaded' : '❌ Not loaded');
-    console.log('SpatialHash:', typeof window.SpatialHash !== 'undefined' ? '✅ Loaded' : '❌ Not loaded');
-    console.log('KDTree:', typeof window.KDTree !== 'undefined' ? '✅ Loaded' : '❌ Not loaded');
-    console.log('SpatialGrid:', typeof window.SpatialGrid !== 'undefined' ? '✅ Loaded' : '❌ Not loaded');
-
-    // Check if SvgViewer instances exist
-    if (typeof window.svgViewerInstances !== 'undefined' && window.svgViewerInstances.size > 0) {
-        console.log('\nSvgViewer Instances:');
-        window.svgViewerInstances.forEach((instance, id) => {
-            console.log(`  Instance ${id}:`, {
-                useFastMode: instance.useFastMode,
-                verboseLogging: instance.verboseLogging,
-                useKDTree: instance.useKDTree
-            });
-        });
-    }
-    console.log('================================');
-};
 
 // SvgViewer class to handle multiple instances
 class SvgViewerInstance {
@@ -176,15 +30,7 @@ class SvgViewerInstance {
         // Visual configuration
         this.showOutlines = false;  // Toggle for orange selection outlines
         this.showBoundingBox = false;  // Toggle for blue bounding box
-
-        // Spatial acceleration structures
-        this.boundaryKDTree = null;  // KD-Tree for boundary points
-        this.spatialGrid = null;  // Spatial grid for point-in-polygon tests
-        this.useKDTree = typeof KDTree !== 'undefined';  // Enable if library is loaded
-
-        // Performance mode - use fast algorithms when available
-        this.useFastMode = true;  // Enable fast algorithms by default
-        this.verboseLogging = false;  // Reduce logging in fast mode
+        this.verboseLogging = false;  // Enable verbose logging for debugging
 
         // Precomputed rectangles cache
         this.precomputedRectangles = null;  // Will be loaded on first use
@@ -213,26 +59,6 @@ class SvgViewerInstance {
     // Return the inner <svg> if present, otherwise the paper itself
     rootSvg() {
         return this.s ? (this.s.select("svg") || this.s) : null;
-    }
-
-    // Check and load optimization libraries
-    async ensureOptimizationsLoaded() {
-        if (typeof window.fastWindingAlgorithm === 'undefined') {
-            console.log('[optimization] Loading optimization libraries...');
-            await loadOptimizationLibraries();
-
-            // Update local references
-            if (typeof window.fastWindingAlgorithm !== 'undefined') {
-                console.log('[optimization] Fast algorithms now available');
-                this.useFastMode = true;
-                return true;
-            } else {
-                console.warn('[optimization] Fast algorithms could not be loaded');
-                this.useFastMode = false;
-                return false;
-            }
-        }
-        return true;
     }
 
     // Extract embedded precomputed data from raw SVG text
@@ -275,7 +101,7 @@ class SvgViewerInstance {
         return false;
     }
 
-    // Load precomputed rectangles from embedded SVG data or external JSON file
+    // Load precomputed rectangles from embedded SVG data
     async loadPrecomputedRectangles() {
         // Return cached data if already loaded
         if (this.precomputedRectangles) {
@@ -311,35 +137,13 @@ class SvgViewerInstance {
                             console.log(`[precomputed] ✓ Loaded from embedded SVG DOM: ${data.rectangles.length} rectangles`);
                         } catch (parseError) {
                             console.warn('[precomputed] Failed to parse embedded data:', parseError.message);
-                            // Fall through to external JSON fetch
                         }
                     }
                 }
 
-                // STRATEGY 3: Fallback to external JSON file
+                // If no data found, SVG must be processed through FloorMat pipeline
                 if (!data) {
-                    // Derive precomputed rectangles URL from SVG URL
-                    let precomputedUrl = 'precomputed-rectangles.json';  // Default fallback
-
-                    if (this.svgUrl) {
-                        // Replace the SVG filename with precomputed-rectangles.json
-                        // Examples:
-                        //   "https://s3.../base/SetsCmp/data/Level1.svg" → "https://s3.../base/SetsCmp/data/precomputed-rectangles.json"
-                        //   "/data/Level1.svg" → "/data/precomputed-rectangles.json"
-                        //   "Level1.svg" → "precomputed-rectangles.json"
-                        const lastSlashIndex = this.svgUrl.lastIndexOf('/');
-                        if (lastSlashIndex >= 0) {
-                            precomputedUrl = this.svgUrl.substring(0, lastSlashIndex + 1) + 'precomputed-rectangles.json';
-                        }
-                    }
-
-                    console.log(`[precomputed] Loading from external JSON: ${precomputedUrl}`);
-                    const response = await fetch(precomputedUrl);
-                    if (!response.ok) {
-                        throw new Error(`Failed to load: ${response.status}`);
-                    }
-                    data = await response.json();
-                    console.log(`[precomputed] ✓ Loaded from external JSON: ${data.rectangles.length} rectangles`);
+                    throw new Error('No embedded precomputed data found. SVG must be processed through FloorMat pipeline to embed layout data.');
                 }
 
                 console.log('[precomputed] Data structure:', {
@@ -426,22 +230,9 @@ class SvgViewerInstance {
                     }
                 }
 
-                // STRATEGY 3: Fallback to external JSON file
+                // If no data found, SVG must be processed through FloorMat pipeline
                 if (!data) {
-                    let precomputedUrl = 'precomputed-boardroom.json';
-                    if (this.svgUrl) {
-                        const lastSlashIndex = this.svgUrl.lastIndexOf('/');
-                        if (lastSlashIndex >= 0) {
-                            precomputedUrl = this.svgUrl.substring(0, lastSlashIndex + 1) + 'precomputed-boardroom.json';
-                        }
-                    }
-                    console.log(`[boardroom] Loading from external JSON: ${precomputedUrl}`);
-                    const response = await fetch(precomputedUrl);
-                    if (!response.ok) {
-                        throw new Error(`Failed to load: ${response.status}`);
-                    }
-                    data = await response.json();
-                    console.log(`[boardroom] ✓ Loaded from external JSON: ${data.boardroomLayouts.length} layouts`);
+                    throw new Error('No embedded boardroom data found. SVG must be processed through FloorMat pipeline to embed layout data.');
                 }
 
                 // Create lookup map by section key
@@ -508,22 +299,9 @@ class SvgViewerInstance {
                     }
                 }
 
-                // STRATEGY 3: Fallback to external JSON file
+                // If no data found, SVG must be processed through FloorMat pipeline
                 if (!data) {
-                    let precomputedUrl = 'precomputed-hollowsquare.json';
-                    if (this.svgUrl) {
-                        const lastSlashIndex = this.svgUrl.lastIndexOf('/');
-                        if (lastSlashIndex >= 0) {
-                            precomputedUrl = this.svgUrl.substring(0, lastSlashIndex + 1) + 'precomputed-hollowsquare.json';
-                        }
-                    }
-                    console.log(`[hollowsquare] Loading from external JSON: ${precomputedUrl}`);
-                    const response = await fetch(precomputedUrl);
-                    if (!response.ok) {
-                        throw new Error(`Failed to load: ${response.status}`);
-                    }
-                    data = await response.json();
-                    console.log(`[hollowsquare] ✓ Loaded from external JSON: ${data.hollowSquareLayouts.length} layouts`);
+                    throw new Error('No embedded hollow square data found. SVG must be processed through FloorMat pipeline to embed layout data.');
                 }
 
                 // Create lookup map by section key
@@ -914,14 +692,9 @@ class SvgViewerInstance {
         return window.SvgViewerAlgorithms.doLinesIntersect(p1, p2, p3, p4);
     }
 
-    // Point-in-polygon test using ray casting algorithm with spatial grid acceleration
+    // Point-in-polygon test using ray casting algorithm
     isPointInPolygon(point, polygon, useGrid = true) {
-        // Use spatial grid if available and enabled
-        if (useGrid && this.spatialGrid && polygon === this.spatialGrid.polygon) {
-            return this.spatialGrid.containsPoint(point);
-        }
-
-        // Delegate to pure algorithm
+        // Delegate to pure algorithm from SvgViewerAlgorithms
         return window.SvgViewerAlgorithms.isPointInPolygon(point, polygon);
     }
 
@@ -984,156 +757,21 @@ class SvgViewerInstance {
         return window.SvgViewerAlgorithms.calculateDistance(p1, p2);
     }
 
-    // Initialize spatial acceleration structures for a polygon
-    initializeSpatialStructures(polygon) {
-        if (!this.useKDTree || !polygon || polygon.length < 3) {
-            return;
-        }
+    // Removed: initializeSpatialStructures - no longer needed as we use precomputed data only
 
-        console.time('[spatial] Structure initialization');
-
-        // Create KD-Tree for boundary points (for nearest neighbor queries)
-        if (typeof KDTree !== 'undefined') {
-            this.boundaryKDTree = new KDTree(polygon);
-            console.debug(`[spatial] KD-Tree created with ${polygon.length} boundary points`);
-        }
-
-        // Create spatial grid for point-in-polygon tests
-        if (typeof SpatialGrid !== 'undefined') {
-            // Calculate appropriate cell size based on polygon bounds
-            let minX = Infinity, maxX = -Infinity;
-            let minY = Infinity, maxY = -Infinity;
-            for (const p of polygon) {
-                minX = Math.min(minX, p.x);
-                maxX = Math.max(maxX, p.x);
-                minY = Math.min(minY, p.y);
-                maxY = Math.max(maxY, p.y);
-            }
-
-            // Use 50x50 grid approximately
-            const cellSize = Math.max((maxX - minX) / 50, (maxY - minY) / 50);
-            this.spatialGrid = new SpatialGrid(polygon, cellSize);
-            console.debug(`[spatial] Spatial grid created with cell size ${cellSize.toFixed(1)}`);
-        }
-
-        console.timeEnd('[spatial] Structure initialization');
-    }
-
-    // Find the largest inscribed rectangle that fits inside a polygon
-    // Tests multiple rotation angles to find optimal orientation
+    // Removed: findLargestInscribedRectangle - runtime computation is no longer supported
+    // This component now relies exclusively on precomputed data embedded in SVG files
+    // Use the FloorMat pipeline to generate precomputed layout data
     findLargestInscribedRectangle(polygon, options = {}) {
-        console.warn(`🔍 [FUNCTION-DEBUG] findLargestInscribedRectangle CALLED with ${polygon?.length || 0} vertices`);
-        const rectangleStartTime = performance.now();
-        const {
-            gridSize = 20,           // Number of grid divisions per axis (legacy, not used)
-            minArea = 100,           // Minimum rectangle area to consider (legacy, not used)
-            debugLog = false,        // Enable debug logging
-            hintAngle = undefined,   // Optional hint angle from polygon orientation
-            targetArea = null,       // Optional target area for coverage calculations
-            pathCount = undefined    // Number of original paths (for adaptive tuning)
-        } = options;
-
-        if (!polygon || polygon.length < 3) {
-            console.warn('[rectangle] Invalid polygon for rectangle fitting');
-            return null;
-        }
-
-        // Use hybrid algorithm (tries boundary-based first, falls back to optimized)
-        if (typeof window.hybridInscribedRectangle === 'undefined') {
-            console.error('❌ Hybrid inscribed rectangle algorithm not loaded');
-            return null;
-        }
-
-        const debugRect = debugLog;
-        if (debugRect) console.debug('[rectangle] Using hybrid inscribed rectangle algorithm (boundary-based + optimized fallback)');
-
-        // Don't use target-aware search in live version - we don't have ideal target bounds
-        // Only the test harness has access to the target path to extract proper bounds
-        let targetAreaWithBounds = targetArea;
-
-        // Build options for hybrid algorithm (match test harness exactly)
-        const algorithmOptions = {
-            debugMode: debugLog,
-            coverageThreshold: 0.95,  // Skip optimized if boundary-based achieves 95%+
-            targetArea: targetAreaWithBounds,  // Pass target with bounds for focused search
-            pathCount: pathCount,  // Pass path count for adaptive tuning
-            // Boundary-based options
-            maxAngles: 8,
-            angleTolerance: 5,
-            testPerpendicular: true,
-            // Optimized configuration (used if boundary-based insufficient)
-            maxTime: 1000,
-            gridStep: 8.0,
-            polylabelPrecision: 0.5,
-            aspectRatios: [0.5, 0.6, 0.7, 0.85, 1.0, 1.2, 1.4, 1.7, 2.0, 2.3, 2.5, 2.8, 3.0],
-            binarySearchPrecision: 0.0001,
-            binarySearchMaxIterations: 20
-        };
-
-        // If hint angle provided, use it to guide the boundary-based algorithm
-        if (hintAngle !== undefined) {
-            console.debug(`[rectangle] Using hint angle: ${hintAngle.toFixed(1)}°`);
-            algorithmOptions.hintAngle = hintAngle;
-        }
-
-        const result = window.hybridInscribedRectangle(polygon, algorithmOptions);
-
-        if (debugRect) console.debug(`[rectangle] Hybrid algorithm result:`, result);
-        if (result) {
-            if (debugRect) console.log(`[rectangle] Hybrid algorithm found ${result.width.toFixed(1)}x${result.height.toFixed(1)} rectangle at ${result.angle}° using ${result.type || 'unknown'} algorithm`);
-
-            // FINAL DEBUG: Show polygon characteristics after area calculation
-            const timeInfo = result.elapsed ? `${result.elapsed.toFixed(1)}ms` : 'N/A';
-            console.log(`🔍 [SHAPE-DEBUG] FINAL: ${polygon.length} vertices, AREA: ${result.area.toFixed(0)}, TIME: ${timeInfo}`);
-
-            return result;
-        }
-
-        console.error('❌ Hybrid algorithm returned null');
+        console.error('❌ [rectangle] Runtime rectangle computation is not supported.');
+        console.error('   This component only uses precomputed data from SVG files.');
+        console.error('   Run the FloorMat pipeline to generate precomputed layouts.');
         return null;
-    }
-
-    // Calculate distance from a point to a line segment
-    _distanceToLineSegment(point, segStart, segEnd) {
-        return window.SvgViewerAlgorithms.distanceToLineSegment(point, segStart, segEnd);
     }
 
     // Fast-ish nearest distance from a point to a set of points (linear scan is fine for our sizes)
     _minDistToSet(pt, set) {
         return window.SvgViewerAlgorithms.minDistToSet(pt, set);
-    }
-
-    // Ensure the edge stays close to actual geometry: sample the segment and require
-    // that *most* sample points lie within `maxAwayPx` of the boundary cloud.
-    _edgeHugsBoundary(a, b, boundaryCloud, maxAwayPx = 8, samples = 12, requireRatio = 0.75) {
-        if (!boundaryCloud || boundaryCloud.length === 0) return true; // nothing to judge against
-
-        let ok = 0;
-        let maxDist = 0;
-        let avgDist = 0;
-        const edgeDist = this.calculateDistance(a, b);
-
-        for (let i = 0; i <= samples; i++) {
-            const t = i / samples;
-            const x = a.x + (b.x - a.x) * t;
-            const y = a.y + (b.y - a.y) * t;
-            const d = this._minDistToSet({ x, y }, boundaryCloud);
-            avgDist += d;
-            maxDist = Math.max(maxDist, d);
-            if (d <= maxAwayPx) ok++;
-        }
-        avgDist /= (samples + 1);
-
-        const ratio = ok / (samples + 1);
-        const passes = ratio >= requireRatio;
-
-        // Enhanced debug logging for edge hugging failures
-        if (!passes && edgeDist > 20) { // Only debug longer edges
-            console.debug(`[edgeHug] REJECT edge (${a.x.toFixed(1)},${a.y.toFixed(1)}) → (${b.x.toFixed(1)},${b.y.toFixed(1)})`);
-            console.debug(`[edgeHug] Length: ${edgeDist.toFixed(1)}px, Ratio: ${ratio.toFixed(2)}/${requireRatio}, AvgDist: ${avgDist.toFixed(1)}px, MaxDist: ${maxDist.toFixed(1)}px`);
-            console.debug(`[edgeHug] ${ok}/${samples + 1} sample points within ${maxAwayPx}px of boundary`);
-        }
-        return passes;
     }
 
     // Downsample helper
@@ -1771,11 +1409,6 @@ class SvgViewerInstance {
         return window.SvgViewerAlgorithms.parsePathToLineSegments(pathData, pathIdx);
     }
 
-    // Extract actual points from SVG path data (preserves sharp corners)
-    _extractPathPoints(pathData) {
-        return window.SvgViewerAlgorithms.extractPathPoints(pathData);
-    }
-
     // Step 2: Join coincident points using tolerance
     _joinCoincidentPoints(lineSegmentPaths, tolerance) {
         console.debug(`[winding] Joining coincident points with ${tolerance}px tolerance`);
@@ -1793,15 +1426,7 @@ class SvgViewerInstance {
 
         console.debug(`[winding] Processing ${allSegments.length} total segments`);
 
-        // Use optimized spatial hash approach if available
-        if (typeof window.SpatialHash !== 'undefined' && this.useFastMode) {
-            // Optimized spatial hash algorithm in use
-            const mergedSegments = this._mergeCoincidentPointsOptimized(allSegments, tolerance);
-            // After optimized merging: ${mergedSegments.length} segments
-            return mergedSegments;
-        }
-
-        // Fall back to original algorithm
+        // Use standard algorithm from SvgViewerAlgorithms
         const mergedSegments = this._mergeCoincidentPoints(allSegments, tolerance);
         console.debug(`[winding] After coincident point merging: ${mergedSegments.length} segments`);
 
@@ -1812,99 +1437,9 @@ class SvgViewerInstance {
     _mergeCoincidentPoints(allSegments, tolerance) {
         return window.SvgViewerAlgorithms.mergeCoincidentPoints(allSegments, tolerance);
     }
-    _mergeCoincidentPointsOptimized(allSegments, tolerance) {
-        // Timing: Spatial hash merge
-        // Using optimized spatial hash merging
 
-        // Create spatial hash for fast point lookup
-        const spatialHash = new window.SpatialHash(tolerance * 2);
-        const pointIndex = new Map(); // Maps point key to point data
-
-        // Build spatial index of all segment endpoints
-        for (const segment of allSegments) {
-            const startKey = `${segment.pathIdx}_${segment.segmentIdx}_start`;
-            const endKey = `${segment.pathIdx}_${segment.segmentIdx}_end`;
-
-            const startData = {
-                point: segment.start,
-                segment,
-                end: 'start',
-                key: startKey
-            };
-
-            const endData = {
-                point: segment.end,
-                segment,
-                end: 'end',
-                key: endKey
-            };
-
-            pointIndex.set(startKey, startData);
-            pointIndex.set(endKey, endData);
-
-            spatialHash.add(segment.start, startData);
-            spatialHash.add(segment.end, endData);
-        }
-
-        // Built spatial index
-
-        // Find potential connections using spatial indexing
-        const potentialConnections = [];
-        const processedPairs = new Set();
-
-        for (const [pointKey, pointData] of pointIndex) {
-            const neighbors = spatialHash.findNear(pointData.point, tolerance);
-
-            for (const neighbor of neighbors) {
-                if (pointKey === neighbor.data.key) continue;
-
-                // Skip same path (Rule 5)
-                if (pointData.segment.pathIdx === neighbor.data.segment.pathIdx) {
-                    continue;
-                }
-
-                // Create consistent pair key to avoid duplicates
-                const pairKey = pointKey < neighbor.data.key ?
-                    `${pointKey}:${neighbor.data.key}` :
-                    `${neighbor.data.key}:${pointKey}`;
-
-                if (processedPairs.has(pairKey)) continue;
-                processedPairs.add(pairKey);
-
-                if (neighbor.distance <= tolerance) {
-                    potentialConnections.push({
-                        distance: neighbor.distance,
-                        seg1: pointData.segment,
-                        seg2: neighbor.data.segment,
-                        end1: pointData.end,
-                        end2: neighbor.data.end,
-                        point1: pointData.point,
-                        point2: neighbor.data.point,
-                        point1Key: pointKey,
-                        point2Key: neighbor.data.key
-                    });
-                }
-            }
-        }
-
-        // Found potential connections using spatial hash
-        // Spatial hash merge completed
-
-        // Use existing union-find clustering logic
-        return this._clusterAndMergePoints(allSegments, potentialConnections);
-    }
-
-    // Union-find clustering logic extracted for reuse
-    _clusterAndMergePoints(allSegments, potentialConnections) {
-        return window.SvgViewerAlgorithms.clusterAndMergePoints(allSegments, potentialConnections);
-    }
     _markSharedSegments(allSegments, tolerance = 0.01) {
         return window.SvgViewerAlgorithms.markSharedSegments(allSegments, tolerance);
-    }
-
-    // Helper: check if two points match within tolerance
-    _pointsMatch(p1, p2, tolerance) {
-        return window.SvgViewerAlgorithms.pointsMatch(p1, p2, tolerance);
     }
 
     // Step 3: Join paths into a single network
@@ -1915,34 +1450,6 @@ class SvgViewerInstance {
     // Step 4: Traverse outer edge using winding algorithm
     _traverseOuterEdge(pathNetwork) {
         return window.SvgViewerAlgorithms.traverseOuterEdge(pathNetwork);
-    }
-    _basicPolygonCleanup(points) {
-        return window.SvgViewerAlgorithms.basicPolygonCleanup(points);
-    }
-
-    // Calculate polygon area using shoelace formula
-    _calculatePolygonArea(points) {
-        return window.SvgViewerAlgorithms.calculatePolygonArea(points);
-    }
-
-    // Get polygon bounding box
-    _getPolygonBounds(points) {
-        return window.SvgViewerAlgorithms.getPolygonBounds(points);
-    }
-
-    // Calculate exact inscribed rectangle for a 4-vertex parallelogram
-    _calculateParallelogramRectangle(polygon, angle) {
-        return window.SvgViewerAlgorithms.calculateParallelogramRectangle(polygon, angle);
-    }
-
-    // Calculate exact inscribed rectangle for a 4-vertex trapezoid
-    _calculateTrapezoidRectangle(polygon, angle) {
-        return window.SvgViewerAlgorithms.calculateTrapezoidRectangle(polygon, angle);
-    }
-
-    // Detect the dominant orientation angle of a polygon (for rectangles/parallelograms)
-    _detectPolygonOrientation(polygon) {
-        return window.SvgViewerAlgorithms.detectPolygonOrientation(polygon);
     }
 
     // Smart rectangular boundary detection using actual boundary points
@@ -2227,10 +1734,6 @@ class SvgViewerInstance {
         return window.SvgViewerAlgorithms.areRectanglesAdjacent(pathCorners);
     }
 
-    _getBounds(corners) {
-        return window.SvgViewerAlgorithms.getBounds(corners);
-    }
-
     // Create the actual combined boundary for adjacent rectangles
     _createCombinedRectangularBoundary(pathCorners) {
         if (pathCorners.length === 2) {
@@ -2249,68 +1752,6 @@ class SvgViewerInstance {
         }
 
         return null;
-    }
-
-    // Check if two rectangles form a simple rectangular union
-    _rectanglesFormSimpleUnion(rect1, rect2) {
-        return window.SvgViewerAlgorithms.rectanglesFormSimpleUnion(rect1, rect2);
-    }
-
-    // Create boundary for complex rectangular arrangements (like L-shapes)
-    _createComplexRectangularBoundary(rect1, rect2) {
-        // This would create the actual traced boundary for L-shaped arrangements
-        // For now, fallback to simple union
-        const minX = Math.min(rect1.minX, rect2.minX);
-        const maxX = Math.max(rect1.maxX, rect2.maxX);
-        const minY = Math.min(rect1.minY, rect2.minY);
-        const maxY = Math.max(rect1.maxY, rect2.maxY);
-
-        return [
-            { x: minX, y: minY },
-            { x: maxX, y: minY },
-            { x: maxX, y: maxY },
-            { x: minX, y: maxY }
-        ];
-    }
-
-    // Combine original SVG path data from multiple paths
-    _combineOriginalPathData(groupPaths) {
-        try {
-            console.debug('[overlap] Combining original SVG path data from paths');
-
-            let combinedData = '';
-
-            for (let i = 0; i < groupPaths.length; i++) {
-                const path = groupPaths[i];
-                const pathData = path.attr('d');
-
-                if (!pathData) {
-                    console.warn(`[overlap] Path ${i} has no 'd' attribute`);
-                    continue;
-                }
-
-                console.debug(`[overlap] Path ${i} data: ${pathData.substring(0, 50)}...`);
-
-                // Add path data to combined string
-                if (combinedData.length > 0) {
-                    // Ensure proper spacing between path data
-                    combinedData += ' ';
-                }
-                combinedData += pathData;
-            }
-
-            if (combinedData.length === 0) {
-                console.warn('[overlap] No valid path data found');
-                return null;
-            }
-
-            console.debug(`[overlap] Combined path data length: ${combinedData.length} characters`);
-            return combinedData;
-
-        } catch (error) {
-            console.warn('[overlap] Error combining path data:', error);
-            return null;
-        }
     }
 
 
@@ -2781,62 +2222,6 @@ class SvgViewerInstance {
             // No fallback - return null to let the caller handle it
             return null;
         }
-    }
-
-    // Fallback method: Create unified path from convex hull of all path bounding boxes
-    _createFallbackUnifiedPath(groupPaths, scope, debugVisible = false) {
-        const allCorners = [];
-
-        // Collect all bounding box corners
-        for (const path of groupPaths) {
-            const bbox = path.getBBox();
-            allCorners.push(
-                { x: bbox.x, y: bbox.y },
-                { x: bbox.x + bbox.width, y: bbox.y },
-                { x: bbox.x + bbox.width, y: bbox.y + bbox.height },
-                { x: bbox.x, y: bbox.y + bbox.height }
-            );
-        }
-
-        // Create convex hull of all corners
-        const hull = this.simpleConvexHull(allCorners);
-        if (!hull || hull.length < 3) return null;
-
-        // Build path data from hull
-        let pathData = `M ${hull[0].x} ${hull[0].y}`;
-        for (let i = 1; i < hull.length; i++) {
-            pathData += ` L ${hull[i].x} ${hull[i].y}`;
-        }
-        pathData += ' Z';
-
-        const fallbackPath = scope.path(pathData);
-
-        if (debugVisible) {
-            // Debug mode: Make it visible with distinctive styling
-            fallbackPath.attr({
-                fill: 'rgba(255, 255, 0, 0.3)',     // Semi-transparent yellow fill (different from primary)
-                stroke: '#FFFF00',                   // Yellow border
-                strokeWidth: 2,
-                'stroke-dasharray': '10 5',          // Different dash pattern
-                'fill-opacity': 0.3,
-                'stroke-opacity': 0.8,
-                'pointer-events': 'none'             // Allow clicks to pass through
-            });
-            // Ensure it appears on top
-            const scope = fallbackPath.node.parentNode;
-            scope.appendChild(fallbackPath.node);
-            console.debug('[outline] Debug mode: Fallback unified path made visible with yellow styling (non-interactive)');
-        } else {
-            // Normal mode: Hidden
-            fallbackPath.attr({
-                fill: '#000000',
-                stroke: 'none',
-                visibility: 'hidden'
-            });
-        }
-
-        console.debug('[outline] Created fallback unified path from bounding box convex hull');
-        return fallbackPath;
     }
 
 

@@ -3,7 +3,7 @@ namespace LazyMagic.BlazorSvg.Models;
 /// <summary>
 /// Represents how two sections connect
 /// </summary>
-public class SectionJoin
+public class SvgSectionJoin
 {
     /// <summary>
     /// Orientation of the join (e.g., "Vertical", "Horizontal", "Intersection")

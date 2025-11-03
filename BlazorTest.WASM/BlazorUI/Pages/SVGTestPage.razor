@@ -273,10 +273,10 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
     private bool allInsideSelected = false;
     private AreaData? areaData = null;
     private string rectangleType = "maxinscribed";
-    private FloorLevel? floorMetadata = null;
+    private SvgFloorLevel? floorMetadata = null;
     private bool isLoadingMetadata = false;
     private string? metadataError = null;
-    private List<RoomSection> selectedSections = new();
+    private List<SvgRoomSection> selectedSections = new();
 
     protected override async Task OnInitializedAsync()
     {

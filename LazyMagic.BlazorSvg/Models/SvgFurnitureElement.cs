@@ -3,7 +3,7 @@ namespace LazyMagic.BlazorSvg.Models;
 /// <summary>
 /// Represents a furniture element in a boardroom layout
 /// </summary>
-public class FurnitureElement
+public class SvgFurnitureElement
 {
     /// <summary>
     /// Type of furniture (e.g., "table", "chair", "podium")
@@ -13,7 +13,7 @@ public class FurnitureElement
     /// <summary>
     /// Position of the furniture element
     /// </summary>
-    public Point Position { get; set; } = new();
+    public SvgPoint Position { get; set; } = new();
 
     /// <summary>
     /// Rotation angle in degrees

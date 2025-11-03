@@ -3,7 +3,7 @@ namespace LazyMagic.BlazorSvg.Models;
 /// <summary>
 /// Type of inscribed rectangle layout
 /// </summary>
-public enum InscribedRectangleType
+public enum SvgInscribedRectangleType
 {
     /// <summary>
     /// Maximum inscribed rectangle - largest rectangle fitting in polygon

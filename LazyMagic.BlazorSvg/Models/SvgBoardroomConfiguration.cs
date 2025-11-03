@@ -3,7 +3,7 @@ namespace LazyMagic.BlazorSvg.Models;
 /// <summary>
 /// Configuration settings for boardroom layout generation
 /// </summary>
-public class BoardroomConfiguration
+public class SvgBoardroomConfiguration
 {
     /// <summary>
     /// Width of the boardroom table

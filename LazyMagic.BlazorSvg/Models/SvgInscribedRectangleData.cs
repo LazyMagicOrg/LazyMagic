@@ -3,7 +3,7 @@ namespace LazyMagic.BlazorSvg.Models;
 /// <summary>
 /// Container for all precomputed inscribed rectangle layouts
 /// </summary>
-public class InscribedRectangleData
+public class SvgInscribedRectangleData
 {
     /// <summary>
     /// Timestamp when this data was generated
@@ -33,10 +33,10 @@ public class InscribedRectangleData
     /// <summary>
     /// Statistical information about computation performance
     /// </summary>
-    public ComputationStatistics? Statistics { get; set; }
+    public SvgComputationStatistics? Statistics { get; set; }
 
     /// <summary>
     /// All inscribed rectangle layouts (all types combined)
     /// </summary>
-    public List<InscribedRectangleLayout> Layouts { get; set; } = new();
+    public List<SvgInscribedRectangleLayout> Layouts { get; set; } = new();
 }

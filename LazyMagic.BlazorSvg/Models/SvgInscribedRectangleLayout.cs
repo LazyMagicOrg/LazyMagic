@@ -4,12 +4,12 @@ namespace LazyMagic.BlazorSvg.Models;
 /// Represents an inscribed rectangle layout for a specific section combination.
 /// Supports multiple layout types: max-inscribed, boardroom, and hollow square.
 /// </summary>
-public class InscribedRectangleLayout
+public class SvgInscribedRectangleLayout
 {
     /// <summary>
     /// Type of inscribed rectangle layout
     /// </summary>
-    public InscribedRectangleType LayoutType { get; set; }
+    public SvgInscribedRectangleType LayoutType { get; set; }
 
     /// <summary>
     /// Unique key identifying the section combination (e.g., "Ballroom_Room_1")
@@ -24,7 +24,7 @@ public class InscribedRectangleLayout
     /// <summary>
     /// The computed inscribed rectangle
     /// </summary>
-    public Rectangle? Rectangle { get; set; }
+    public SvgRectangle? Rectangle { get; set; }
 
     /// <summary>
     /// Area of the original polygon
@@ -51,12 +51,12 @@ public class InscribedRectangleLayout
     /// <summary>
     /// Boardroom-specific: Configuration used to generate this layout
     /// </summary>
-    public BoardroomConfiguration? BoardroomConfig { get; set; }
+    public SvgBoardroomConfiguration? BoardroomConfig { get; set; }
 
     /// <summary>
     /// Boardroom-specific: List of furniture elements in the layout
     /// </summary>
-    public List<FurnitureElement>? FurnitureElements { get; set; }
+    public List<SvgFurnitureElement>? FurnitureElements { get; set; }
 
     /// <summary>
     /// Boardroom-specific: Number of table sets
