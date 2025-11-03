@@ -54,6 +54,46 @@ class SvgViewerInstance {
         this.rectangleGroup = null;  // Group for max rectangle
         this.boardroomGroup = null;  // Group for boardroom layout
         this.hollowSquareGroup = null;  // Group for hollow square layout
+
+        // Rectangle type configuration map - centralizes all type-specific details
+        this.rectangleTypeConfig = {
+            'maxinscribed': {
+                scriptId: 'precomputed-rectangles',
+                cacheProp: 'precomputedRectangles',
+                cachePromiseProp: 'precomputedRectanglesPromise',
+                embeddedDataProp: 'embeddedPrecomputedData',
+                dataArrayKey: 'rectangles',
+                layoutKey: 'rectangle',
+                showProp: 'showRectangle',
+                groupProp: 'rectangleGroup',
+                logPrefix: 'precomputed',
+                displayName: 'Max inscribed rectangle'
+            },
+            'boardroom': {
+                scriptId: 'precomputed-boardroom',
+                cacheProp: 'precomputedBoardrooms',
+                cachePromiseProp: 'precomputedBoardroomsPromise',
+                embeddedDataProp: 'embeddedBoardroomData',
+                dataArrayKey: 'boardroomLayouts',
+                layoutKey: 'boardroomLayout',
+                showProp: 'showBoardroom',
+                groupProp: 'boardroomGroup',
+                logPrefix: 'boardroom',
+                displayName: 'Boardroom layout'
+            },
+            'hollowsquare': {
+                scriptId: 'precomputed-hollowsquare',
+                cacheProp: 'precomputedHollowSquares',
+                cachePromiseProp: 'precomputedHollowSquaresPromise',
+                embeddedDataProp: 'embeddedHollowSquareData',
+                dataArrayKey: 'hollowSquareLayouts',
+                layoutKey: 'hollowSquareLayout',
+                showProp: 'showHollowSquare',
+                groupProp: 'hollowSquareGroup',
+                logPrefix: 'hollowsquare',
+                displayName: 'Hollow square layout'
+            }
+        };
     }
 
     // Return the inner <svg> if present, otherwise the paper itself
@@ -101,148 +141,68 @@ class SvgViewerInstance {
         return false;
     }
 
-    // Load precomputed rectangles from embedded SVG data
-    async loadPrecomputedRectangles() {
+    // ===== GENERIC RECTANGLE TYPE METHODS =====
+    // These methods replace the type-specific methods (loadPrecomputedRectangles, loadPrecomputedBoardrooms, etc.)
+
+    // Generic method to load precomputed data for any rectangle type
+    async loadPrecomputedData(rectangleType) {
+        const config = this.rectangleTypeConfig[rectangleType];
+        if (!config) {
+            console.error(`[precomputed] Unknown rectangle type: ${rectangleType}`);
+            return { [config.dataArrayKey]: [], lookup: new Map(), metadata: {} };
+        }
+
         // Return cached data if already loaded
-        if (this.precomputedRectangles) {
-            return this.precomputedRectangles;
+        if (this[config.cacheProp]) {
+            return this[config.cacheProp];
         }
 
         // Return existing promise if currently loading
-        if (this.precomputedRectanglesPromise) {
-            return this.precomputedRectanglesPromise;
+        if (this[config.cachePromiseProp]) {
+            return this[config.cachePromiseProp];
         }
 
         // Start loading
-        this.precomputedRectanglesPromise = (async () => {
+        this[config.cachePromiseProp] = (async () => {
             try {
                 let data = null;
 
                 // STRATEGY 1: Use cached embedded data (extracted during SVG load)
-                if (this.embeddedPrecomputedData) {
-                    data = this.embeddedPrecomputedData;
-                    console.log(`[precomputed] ✓ Using cached embedded SVG data: ${data.rectangles.length} rectangles`);
+                if (this[config.embeddedDataProp]) {
+                    data = this[config.embeddedDataProp];
+                    const count = data[config.dataArrayKey]?.length || 0;
+                    console.log(`[${config.logPrefix}] ✓ Using cached embedded SVG data: ${count} items`);
                 }
 
                 // STRATEGY 2: Check for embedded data in the parsed SVG DOM (fallback)
                 if (!data && this.svg && this.svg.node) {
-                    const scriptElement = this.svg.node.querySelector('script[id="precomputed-rectangles"]');
+                    const scriptElement = this.svg.node.querySelector(`script[id="${config.scriptId}"]`);
                     if (scriptElement) {
                         try {
-                            // Extract JSON from CDATA or text content
                             let jsonText = scriptElement.textContent || scriptElement.innerHTML;
-                            // Remove CDATA wrappers if present
                             jsonText = jsonText.replace(/<!\[CDATA\[|\]\]>/g, '').trim();
                             data = JSON.parse(jsonText);
-                            console.log(`[precomputed] ✓ Loaded from embedded SVG DOM: ${data.rectangles.length} rectangles`);
+                            const count = data[config.dataArrayKey]?.length || 0;
+                            console.log(`[${config.logPrefix}] ✓ Loaded from embedded SVG DOM: ${count} items`);
                         } catch (parseError) {
-                            console.warn('[precomputed] Failed to parse embedded data:', parseError.message);
+                            console.warn(`[${config.logPrefix}] Failed to parse embedded data:`, parseError.message);
                         }
                     }
                 }
 
                 // If no data found, SVG must be processed through FloorMat pipeline
                 if (!data) {
-                    throw new Error('No embedded precomputed data found. SVG must be processed through FloorMat pipeline to embed layout data.');
-                }
-
-                console.log('[precomputed] Data structure:', {
-                    hasRectangles: !!data.rectangles,
-                    rectanglesLength: data.rectangles?.length,
-                    firstRectKeys: data.rectangles?.[0] ? Object.keys(data.rectangles[0]) : []
-                });
-
-                // Create lookup map by section key (store full rect data with areas)
-                const lookup = new Map();
-                for (const rect of data.rectangles) {
-                    if (lookup.size === 0) {
-                        // Log first one as sample
-                        console.log('[precomputed] Sample rect data:', rect.key, {
-                            polygonArea: rect.polygonArea,
-                            rectangleArea: rect.rectangleArea,
-                            computationTimeMs: rect.computationTimeMs
-                        });
-                    }
-                    lookup.set(rect.key, {
-                        rectangle: rect.rectangle,
-                        polygonArea: rect.polygonArea,
-                        rectangleArea: rect.rectangleArea,
-                        computationTimeMs: rect.computationTimeMs
-                    });
-                }
-
-                this.precomputedRectangles = {
-                    rectangles: data.rectangles,
-                    lookup: lookup,
-                    metadata: {
-                        generatedAt: data.generatedAt,
-                        totalCombinations: data.totalCombinations,
-                        successfulComputations: data.successfulComputations
-                    }
-                };
-
-                return this.precomputedRectangles;
-            } catch (error) {
-                console.warn('[precomputed] Failed to load precomputed rectangles:', error.message);
-                this.precomputedRectangles = { rectangles: [], lookup: new Map(), metadata: {} };
-                return this.precomputedRectangles;
-            }
-        })();
-
-        return this.precomputedRectanglesPromise;
-    }
-
-    // Load precomputed boardroom layouts (similar to rectangles)
-    async loadPrecomputedBoardrooms() {
-        // Return cached data if already loaded
-        if (this.precomputedBoardrooms) {
-            return this.precomputedBoardrooms;
-        }
-
-        // Return existing promise if currently loading
-        if (this.precomputedBoardroomsPromise) {
-            return this.precomputedBoardroomsPromise;
-        }
-
-        // Start loading
-        this.precomputedBoardroomsPromise = (async () => {
-            try {
-                let data = null;
-
-                // STRATEGY 1: Use cached embedded data (extracted during SVG load)
-                if (this.embeddedBoardroomData) {
-                    data = this.embeddedBoardroomData;
-                    console.log(`[boardroom] ✓ Using cached embedded SVG data: ${data.boardroomLayouts.length} layouts`);
-                }
-
-                // STRATEGY 2: Check for embedded data in the parsed SVG DOM (fallback)
-                if (!data && this.svg && this.svg.node) {
-                    const scriptElement = this.svg.node.querySelector('script[id="precomputed-boardroom"]');
-                    if (scriptElement) {
-                        try {
-                            let jsonText = scriptElement.textContent || scriptElement.innerHTML;
-                            jsonText = jsonText.replace(/<!\[CDATA\[|\]\]>/g, '').trim();
-                            data = JSON.parse(jsonText);
-                            console.log(`[boardroom] ✓ Loaded from embedded SVG DOM: ${data.boardroomLayouts.length} layouts`);
-                        } catch (parseError) {
-                            console.warn('[boardroom] Failed to parse embedded data:', parseError.message);
-                        }
-                    }
-                }
-
-                // If no data found, SVG must be processed through FloorMat pipeline
-                if (!data) {
-                    throw new Error('No embedded boardroom data found. SVG must be processed through FloorMat pipeline to embed layout data.');
+                    throw new Error(`No embedded ${rectangleType} data found. SVG must be processed through FloorMat pipeline to embed layout data.`);
                 }
 
                 // Create lookup map by section key
                 const lookup = new Map();
-                for (const boardroom of data.boardroomLayouts) {
-                    lookup.set(boardroom.key, boardroom);
+                for (const item of data[config.dataArrayKey]) {
+                    lookup.set(item.key, item);
                 }
 
-                this.precomputedBoardrooms = {
-                    boardroomLayouts: data.boardroomLayouts,
+                this[config.cacheProp] = {
+                    [config.dataArrayKey]: data[config.dataArrayKey],
                     lookup: lookup,
                     metadata: {
                         generatedAt: data.generatedAt,
@@ -251,188 +211,64 @@ class SvgViewerInstance {
                     }
                 };
 
-                return this.precomputedBoardrooms;
+                return this[config.cacheProp];
             } catch (error) {
-                console.warn('[boardroom] Failed to load precomputed boardrooms:', error.message);
-                this.precomputedBoardrooms = { boardroomLayouts: [], lookup: new Map(), metadata: {} };
-                return this.precomputedBoardrooms;
+                console.warn(`[${config.logPrefix}] Failed to load precomputed data:`, error.message);
+                this[config.cacheProp] = { [config.dataArrayKey]: [], lookup: new Map(), metadata: {} };
+                return this[config.cacheProp];
             }
         })();
 
-        return this.precomputedBoardroomsPromise;
+        return this[config.cachePromiseProp];
     }
 
-    async loadPrecomputedHollowSquares() {
-        // Return cached data if already loaded
-        if (this.precomputedHollowSquares) {
-            return this.precomputedHollowSquares;
+    // Generic method to lookup precomputed layout for any rectangle type
+    async lookupPrecomputedLayout(rectangleType, pathIds) {
+        const config = this.rectangleTypeConfig[rectangleType];
+        if (!config) {
+            console.error(`[precomputed] Unknown rectangle type: ${rectangleType}`);
+            return null;
         }
 
-        // Return existing promise if currently loading
-        if (this.precomputedHollowSquaresPromise) {
-            return this.precomputedHollowSquaresPromise;
-        }
-
-        // Start loading
-        this.precomputedHollowSquaresPromise = (async () => {
-            try {
-                let data = null;
-
-                // STRATEGY 1: Use cached embedded data (extracted during SVG load)
-                if (this.embeddedHollowSquareData) {
-                    data = this.embeddedHollowSquareData;
-                    console.log(`[hollowsquare] ✓ Using cached embedded SVG data: ${data.hollowSquareLayouts.length} layouts`);
-                }
-
-                // STRATEGY 2: Check for embedded data in the parsed SVG DOM (fallback)
-                if (!data && this.svg && this.svg.node) {
-                    const scriptElement = this.svg.node.querySelector('script[id="precomputed-hollowsquare"]');
-                    if (scriptElement) {
-                        try {
-                            let jsonText = scriptElement.textContent || scriptElement.innerHTML;
-                            jsonText = jsonText.replace(/<!\[CDATA\[|\]\]>/g, '').trim();
-                            data = JSON.parse(jsonText);
-                            console.log(`[hollowsquare] ✓ Loaded from embedded SVG DOM: ${data.hollowSquareLayouts.length} layouts`);
-                        } catch (parseError) {
-                            console.warn('[hollowsquare] Failed to parse embedded data:', parseError.message);
-                        }
-                    }
-                }
-
-                // If no data found, SVG must be processed through FloorMat pipeline
-                if (!data) {
-                    throw new Error('No embedded hollow square data found. SVG must be processed through FloorMat pipeline to embed layout data.');
-                }
-
-                // Create lookup map by section key
-                const lookup = new Map();
-                for (const hollowSquare of data.hollowSquareLayouts) {
-                    lookup.set(hollowSquare.key, hollowSquare);
-                }
-
-                this.precomputedHollowSquares = {
-                    hollowSquareLayouts: data.hollowSquareLayouts,
-                    lookup: lookup,
-                    metadata: {
-                        generatedAt: data.generatedAt,
-                        totalCombinations: data.totalCombinations,
-                        successfulComputations: data.successfulComputations
-                    }
-                };
-
-                return this.precomputedHollowSquares;
-            } catch (error) {
-                console.warn('[hollowsquare] Failed to load precomputed hollow squares:', error.message);
-                this.precomputedHollowSquares = { hollowSquareLayouts: [], lookup: new Map(), metadata: {} };
-                return this.precomputedHollowSquares;
-            }
-        })();
-
-        return this.precomputedHollowSquaresPromise;
-    }
-
-    // Lookup precomputed rectangle for a set of path IDs
-    async lookupPrecomputedRectangle(pathIds) {
         if (!pathIds || pathIds.length === 0) {
+            console.log(`[${config.logPrefix}] No pathIds provided`);
             return null;
         }
 
         // Ensure data is loaded
-        await this.loadPrecomputedRectangles();
+        await this.loadPrecomputedData(rectangleType);
 
         // Create sorted key to match precomputed format
         const sortedKey = pathIds.slice().sort().join('_');
+        console.log(`[${config.logPrefix}] Looking up key: ${sortedKey}`);
 
-        const rectData = this.precomputedRectangles.lookup.get(sortedKey);
-        if (rectData) {
-            console.log(`[precomputed] ✓ Found precomputed rectangle for ${pathIds.length} sections`);
-            return rectData.rectangle;  // Return just the rectangle shape for drawing
+        const layoutData = this[config.cacheProp].lookup.get(sortedKey);
+        if (layoutData) {
+            console.log(`[${config.logPrefix}] ✓ Found precomputed layout for ${pathIds.length} sections`);
+            // Return the layout data - for maxinscribed it's layoutData.rectangle, for others it's layoutData.layout
+            return layoutData[config.layoutKey] || layoutData;
         }
 
-        console.debug(`[precomputed] ✗ No precomputed data for: ${sortedKey}`);
+        console.debug(`[${config.logPrefix}] ✗ No precomputed data for: ${sortedKey}`);
         return null;
     }
 
-    // Lookup precomputed boardroom layout for a set of path IDs
-    async lookupPrecomputedBoardroom(pathIds) {
-        if (!pathIds || pathIds.length === 0) {
-            console.log('[boardroom] lookupPrecomputedBoardroom: No pathIds provided');
-            return null;
+    // Generic method to toggle display for any rectangle type
+    setShowLayout(rectangleType, show) {
+        const config = this.rectangleTypeConfig[rectangleType];
+        if (!config) {
+            console.error(`[display] Unknown rectangle type: ${rectangleType}`);
+            return;
         }
 
-        // Ensure data is loaded
-        await this.loadPrecomputedBoardrooms();
-
-        console.log('[boardroom] Boardrooms loaded:', this.precomputedBoardrooms);
-        console.log('[boardroom] Lookup map size:', this.precomputedBoardrooms.lookup.size);
-        console.log('[boardroom] First 5 keys in map:', Array.from(this.precomputedBoardrooms.lookup.keys()).slice(0, 5));
-
-        // Create sorted key to match precomputed format
-        const sortedKey = pathIds.slice().sort().join('_');
-        console.log('[boardroom] Looking up key:', sortedKey);
-
-        const boardroomData = this.precomputedBoardrooms.lookup.get(sortedKey);
-        if (boardroomData) {
-            console.log(`[boardroom] ✓ Found precomputed boardroom for ${pathIds.length} sections (${boardroomData.boardroomLayout.sets} sets, ${boardroomData.boardroomLayout.tables} tables)`);
-            return boardroomData.boardroomLayout;  // Return just the boardroom layout for drawing
+        this[config.showProp] = show;
+        if (this[config.groupProp]) {
+            this[config.groupProp].attr({ display: show ? 'block' : 'none' });
         }
-
-        console.debug(`[boardroom] ✗ No precomputed data for: ${sortedKey}`);
-        return null;
+        console.log(`[display] ${config.displayName} ${show ? 'shown' : 'hidden'}`);
     }
 
-    // Lookup precomputed hollow square layout for a set of path IDs
-    async lookupPrecomputedHollowSquare(pathIds) {
-        if (!pathIds || pathIds.length === 0) {
-            console.log('[hollowsquare] lookupPrecomputedHollowSquare: No pathIds provided');
-            return null;
-        }
-
-        // Ensure data is loaded
-        await this.loadPrecomputedHollowSquares();
-
-        console.log('[hollowsquare] Hollow squares loaded:', this.precomputedHollowSquares);
-        console.log('[hollowsquare] Lookup map size:', this.precomputedHollowSquares.lookup.size);
-        console.log('[hollowsquare] First 5 keys in map:', Array.from(this.precomputedHollowSquares.lookup.keys()).slice(0, 5));
-
-        // Create sorted key to match precomputed format
-        const sortedKey = pathIds.slice().sort().join('_');
-        console.log('[hollowsquare] Looking up key:', sortedKey);
-
-        const hollowSquareData = this.precomputedHollowSquares.lookup.get(sortedKey);
-        if (hollowSquareData) {
-            console.log(`[hollowsquare] ✓ Found precomputed hollow square for ${pathIds.length} sections`);
-            return hollowSquareData.hollowSquareLayout;  // Return just the hollow square layout for drawing
-        }
-
-        console.debug(`[hollowsquare] ✗ No precomputed data for: ${sortedKey}`);
-        return null;
-    }
-
-    // Toggle methods for showing/hiding layouts
-    setShowRectangle(show) {
-        this.showRectangle = show;
-        if (this.rectangleGroup) {
-            this.rectangleGroup.attr({ display: show ? 'block' : 'none' });
-        }
-        console.log(`[display] Max inscribed rectangle ${show ? 'shown' : 'hidden'}`);
-    }
-
-    setShowBoardroom(show) {
-        this.showBoardroom = show;
-        if (this.boardroomGroup) {
-            this.boardroomGroup.attr({ display: show ? 'block' : 'none' });
-        }
-        console.log(`[display] Boardroom layout ${show ? 'shown' : 'hidden'}`);
-    }
-
-    setShowHollowSquare(show) {
-        this.showHollowSquare = show;
-        if (this.hollowSquareGroup) {
-            this.hollowSquareGroup.attr({ display: show ? 'block' : 'none' });
-        }
-        console.log(`[display] Hollow square layout ${show ? 'shown' : 'hidden'}`);
-    }
+    // ===== END GENERIC METHODS =====
 
     // Active scope = current layer group (or inner <svg>/paper if none detected)
     scope() {
@@ -1885,7 +1721,7 @@ class SvgViewerInstance {
             }
 
             // Try to lookup precomputed rectangle first
-            let largestRect = await this.lookupPrecomputedRectangle(pathIds);
+            let largestRect = await this.lookupPrecomputedLayout('maxinscribed', pathIds);
 
             // Only draw rectangle if precomputed data exists (valid combination)
             // Invalid combinations (no precomputed data) will not show inscribed rectangle
@@ -2032,7 +1868,7 @@ class SvgViewerInstance {
                 }
 
                 // Try to lookup precomputed boardroom layout
-                let boardroomLayout = await this.lookupPrecomputedBoardroom(pathIds);
+                let boardroomLayout = await this.lookupPrecomputedLayout('boardroom', pathIds);
                 console.log(`[boardroom] Lookup result:`, boardroomLayout);
                 console.log(`[boardroom] showBoardroom flag:`, this.showBoardroom);
 
@@ -2118,7 +1954,7 @@ class SvgViewerInstance {
                 }
 
                 // Try to lookup precomputed hollow square layout
-                let hollowSquareLayout = await this.lookupPrecomputedHollowSquare(pathIds);
+                let hollowSquareLayout = await this.lookupPrecomputedLayout('hollowsquare', pathIds);
                 console.log(`[hollowsquare] Lookup result:`, hollowSquareLayout);
                 console.log(`[hollowsquare] showHollowSquare flag:`, this.showHollowSquare);
 
@@ -2735,20 +2571,6 @@ export function setShowBoundingBox(containerId, show) {
     return true;
 }
 
-export function setShowRectangle(containerId, show) {
-    const instance = instances.get(containerId);
-    if (!instance) return false;
-    instance.setShowRectangle(show);
-    return true;
-}
-
-export function setShowBoardroom(containerId, show) {
-    const instance = instances.get(containerId);
-    if (!instance) return false;
-    instance.setShowBoardroom(show);
-    return true;
-}
-
 export function setRectangleType(containerId, rectangleType) {
     console.log(`[setRectangleType] Called with containerId: ${containerId}, rectangleType: ${rectangleType}`);
 
@@ -2758,26 +2580,23 @@ export function setRectangleType(containerId, rectangleType) {
         return false;
     }
 
-    // Hide all rectangle types first
+    // Hide all rectangle types first using generic method
     console.log(`[setRectangleType] Hiding all rectangle types`);
-    instance.setShowRectangle(false);
-    instance.setShowBoardroom(false);
-    instance.setShowHollowSquare(false);
+    const allTypes = Object.keys(instance.rectangleTypeConfig);
+    for (const type of allTypes) {
+        instance.setShowLayout(type, false);
+    }
 
-    // Show the selected type
-    if (rectangleType === 'maxinscribed') {
-        console.log(`[setRectangleType] Showing max inscribed rectangle`);
-        instance.setShowRectangle(true);
-    } else if (rectangleType === 'boardroom') {
-        console.log(`[setRectangleType] Showing boardroom layout`);
-        instance.setShowBoardroom(true);
-    } else if (rectangleType === 'hollowsquare') {
-        console.log(`[setRectangleType] Showing hollow square layout`);
-        instance.setShowHollowSquare(true);
-    } else if (rectangleType === 'none') {
-        console.log(`[setRectangleType] All rectangles hidden (none selected)`);
+    // Show the selected type (if not 'none') using generic method
+    if (rectangleType !== 'none') {
+        if (instance.rectangleTypeConfig[rectangleType]) {
+            console.log(`[setRectangleType] Showing ${rectangleType} layout`);
+            instance.setShowLayout(rectangleType, true);
+        } else {
+            console.warn(`[setRectangleType] Unknown rectangle type: ${rectangleType}`);
+        }
     } else {
-        console.warn(`[setRectangleType] Unknown rectangle type: ${rectangleType}`);
+        console.log(`[setRectangleType] All rectangles hidden (none selected)`);
     }
 
     console.log(`[display] Rectangle type set to: ${rectangleType}`);
@@ -2801,9 +2620,9 @@ export async function getAreaData(containerId) {
     console.log('[getAreaData] Selected paths:', selectedPaths);
 
     // Ensure precomputed data is loaded
-    await instance.loadPrecomputedRectangles();
-    await instance.loadPrecomputedBoardrooms();
-    await instance.loadPrecomputedHollowSquares();
+    await instance.loadPrecomputedData('maxinscribed');
+    await instance.loadPrecomputedData('boardroom');
+    await instance.loadPrecomputedData('hollowsquare');
 
     // Create sorted key to match precomputed format
     const sortedKey = selectedPaths.slice().sort().join('_');
@@ -2881,9 +2700,9 @@ export async function getFloorMetadata(containerId) {
 
     try {
         // Ensure all precomputed data is loaded
-        await instance.loadPrecomputedRectangles();
-        await instance.loadPrecomputedBoardrooms();
-        await instance.loadPrecomputedHollowSquares();
+        await instance.loadPrecomputedData('maxinscribed');
+        await instance.loadPrecomputedData('boardroom');
+        await instance.loadPrecomputedData('hollowsquare');
 
         const floorLevel = {
             id: null,
