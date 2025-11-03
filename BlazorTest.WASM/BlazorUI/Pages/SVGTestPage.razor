@@ -11,9 +11,9 @@
 <div class="alert alert-info mb-3">
     <strong>Real-time Selection Test:</strong> This page demonstrates SVG real-time selection and bounding box functionality.
     <br />
-    <strong>Initial State:</strong> Starting with paths "Ballroom_Room_1" and "Ballroom_Room_3" selected.
+    <strong>Initial State:</strong> No sections selected. Click on SVG paths to select them.
     <br />
-    <strong>Features:</strong> Real-time grouping and bounding box visualization for selected paths.
+    <strong>Features:</strong> Auto-selection of overlapping sections (≥60% overlap), real-time grouping, and layout visualization (Max Inscribed, Boardroom, Hollow Square).
 </div>
 
 <SvgViewer @ref="@svgViewer"
@@ -266,13 +266,11 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
 @code {
     private List<string> currentPaths = new();
     private SvgViewer? svgViewer;
-    // Initialize with multiple paths that create a bounding box
-    // If there are other paths inside this bounding box that aren't selected,
-    // AllInsideSelected should be false initially
-    private List<string> initialPaths = new List<string> { "Ballroom_Room_1", "Ballroom_Room_3" };
+    // Start with no selected sections
+    private List<string> initialPaths = new List<string>();
     private bool allInsideSelected = false;
     private AreaData? areaData = null;
-    private string rectangleType = "maxinscribed";
+    private string rectangleType = "none";
     private SvgFloorLevel? floorMetadata = null;
     private bool isLoadingMetadata = false;
     private string? metadataError = null;

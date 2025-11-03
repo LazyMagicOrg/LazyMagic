@@ -1,7 +1,8 @@
-﻿// Load SvgViewerAlgorithms library if not already loaded (provides helper functions)
+﻿// Load SvgViewerAlgorithms library if not already loaded (as a regular script tag)
 if (typeof window.SvgViewerAlgorithms === 'undefined') {
     const algoScript = document.createElement('script');
     algoScript.src = './_content/LazyMagic.BlazorSvg/SvgViewerAlgorithms.js';
+    algoScript.async = false; // Load synchronously in order
     algoScript.onload = () => {
         console.log('[algorithms] SvgViewerAlgorithms library loaded successfully');
     };
@@ -94,6 +95,16 @@ class SvgViewerInstance {
                 displayName: 'Hollow square layout'
             }
         };
+
+        // Auto-select configuration
+        this.autoSelectEnabled = true;  // Enable/disable auto-select feature
+        this.overlapThreshold = 60;     // Percentage (0-100) of section overlap required
+        this.isDeselecting = false;     // Flag to pause auto-select during deselection
+
+        // Selection tracking - distinguish manual from auto selections
+        this.manuallySelected = new Set();  // User-selected sections only
+        this.autoSelected = new Set();      // Auto-selected sections only
+        // Note: this.selectedIds contains ALL selections (manual + auto)
     }
 
     // Return the inner <svg> if present, otherwise the paper itself
@@ -525,17 +536,29 @@ class SvgViewerInstance {
 
     // Check if two line segments intersect
     doLinesIntersect(p1, p2, p3, p4) {
+        if (!window.SvgViewerAlgorithms) {
+            console.error('[algorithms] SvgViewerAlgorithms not loaded yet!');
+            return false;
+        }
         return window.SvgViewerAlgorithms.doLinesIntersect(p1, p2, p3, p4);
     }
 
     // Point-in-polygon test using ray casting algorithm
     isPointInPolygon(point, polygon, useGrid = true) {
+        if (!window.SvgViewerAlgorithms) {
+            console.error('[algorithms] SvgViewerAlgorithms not loaded yet!');
+            return false;
+        }
         // Delegate to pure algorithm from SvgViewerAlgorithms
         return window.SvgViewerAlgorithms.isPointInPolygon(point, polygon);
     }
 
     // Check for self-intersection in hull
     hasSelfintersection(hull) {
+        if (!window.SvgViewerAlgorithms) {
+            console.error('[algorithms] SvgViewerAlgorithms not loaded yet!');
+            return false;
+        }
         return window.SvgViewerAlgorithms.hasSelfintersection(hull);
     }
 
@@ -575,21 +598,37 @@ class SvgViewerInstance {
 
     // Remove duplicate points
     removeDuplicates(points, tolerance) {
+        if (!window.SvgViewerAlgorithms) {
+            console.error('[algorithms] SvgViewerAlgorithms not loaded yet!');
+            return points;
+        }
         return window.SvgViewerAlgorithms.removeDuplicates(points, tolerance);
     }
 
     // Simple convex hull (gift wrapping)
     simpleConvexHull(points) {
+        if (!window.SvgViewerAlgorithms) {
+            console.error('[algorithms] SvgViewerAlgorithms not loaded yet!');
+            return points;
+        }
         return window.SvgViewerAlgorithms.simpleConvexHull(points);
     }
 
     // Orientation helper for convex hull (kept for callers)
     orientation(p, q, r) {
+        if (!window.SvgViewerAlgorithms) {
+            console.error('[algorithms] SvgViewerAlgorithms not loaded yet!');
+            return 0;
+        }
         return window.SvgViewerAlgorithms.orientation(p, q, r);
     }
 
     // Calculate distance between two points
     calculateDistance(p1, p2) {
+        if (!window.SvgViewerAlgorithms) {
+            console.error('[algorithms] SvgViewerAlgorithms not loaded yet!');
+            return 0;
+        }
         return window.SvgViewerAlgorithms.calculateDistance(p1, p2);
     }
 
@@ -607,11 +646,19 @@ class SvgViewerInstance {
 
     // Fast-ish nearest distance from a point to a set of points (linear scan is fine for our sizes)
     _minDistToSet(pt, set) {
+        if (!window.SvgViewerAlgorithms) {
+            console.error('[algorithms] SvgViewerAlgorithms not loaded yet!');
+            return Infinity;
+        }
         return window.SvgViewerAlgorithms.minDistToSet(pt, set);
     }
 
     // Downsample helper
     _downsamplePoints(points, everyN = 2) {
+        if (!window.SvgViewerAlgorithms) {
+            console.error('[algorithms] SvgViewerAlgorithms not loaded yet!');
+            return points;
+        }
         return window.SvgViewerAlgorithms.downsamplePoints(points, everyN);
     }
 
@@ -1242,6 +1289,10 @@ class SvgViewerInstance {
 
     // Convert path to simple polygon using boundary point extraction
     _parsePathToLineSegments(pathData, path, pathIdx) {
+        if (!window.SvgViewerAlgorithms) {
+            console.error('[winding] SvgViewerAlgorithms not loaded yet!');
+            return [];
+        }
         return window.SvgViewerAlgorithms.parsePathToLineSegments(pathData, pathIdx);
     }
 
@@ -1271,20 +1322,36 @@ class SvgViewerInstance {
 
     // Merge adjacent points between different paths only (Rules 5-9)
     _mergeCoincidentPoints(allSegments, tolerance) {
+        if (!window.SvgViewerAlgorithms) {
+            console.error('[winding] SvgViewerAlgorithms not loaded yet!');
+            return allSegments;
+        }
         return window.SvgViewerAlgorithms.mergeCoincidentPoints(allSegments, tolerance);
     }
 
     _markSharedSegments(allSegments, tolerance = 0.01) {
+        if (!window.SvgViewerAlgorithms) {
+            console.error('[winding] SvgViewerAlgorithms not loaded yet!');
+            return allSegments;
+        }
         return window.SvgViewerAlgorithms.markSharedSegments(allSegments, tolerance);
     }
 
     // Step 3: Join paths into a single network
     _joinPathsIntoNetwork(segments) {
+        if (!window.SvgViewerAlgorithms) {
+            console.error('[winding] SvgViewerAlgorithms not loaded yet!');
+            return { vertices: new Map(), edges: [] };
+        }
         return window.SvgViewerAlgorithms.joinPathsIntoNetwork(segments);
     }
 
     // Step 4: Traverse outer edge using winding algorithm
     _traverseOuterEdge(pathNetwork) {
+        if (!window.SvgViewerAlgorithms) {
+            console.error('[winding] SvgViewerAlgorithms not loaded yet!');
+            return [];
+        }
         return window.SvgViewerAlgorithms.traverseOuterEdge(pathNetwork);
     }
 
@@ -1393,6 +1460,10 @@ class SvgViewerInstance {
 
     // Find vertices that are shared between rectangles
     _findSharedVertices(pathBoundaryPoints) {
+        if (!window.SvgViewerAlgorithms) {
+            console.error('[smart-rect] SvgViewerAlgorithms not loaded yet!');
+            return [];
+        }
         return window.SvgViewerAlgorithms.findSharedVertices(pathBoundaryPoints);
     }
 
@@ -1557,16 +1628,28 @@ class SvgViewerInstance {
 
     // Check if corners represent an axis-aligned rectangle
     _isAxisAligned(corners) {
+        if (!window.SvgViewerAlgorithms) {
+            console.error('[smart-rect] SvgViewerAlgorithms not loaded yet!');
+            return false;
+        }
         return window.SvgViewerAlgorithms.isAxisAligned(corners);
     }
 
     // Get the rotation angle of a rectangle from its corners
     _getRectangleRotation(corners) {
+        if (!window.SvgViewerAlgorithms) {
+            console.error('[smart-rect] SvgViewerAlgorithms not loaded yet!');
+            return 0;
+        }
         return window.SvgViewerAlgorithms.getRectangleRotation(corners);
     }
 
     // Check if rectangles are adjacent (side-by-side or stacked)
     _areRectanglesAdjacent(pathCorners) {
+        if (!window.SvgViewerAlgorithms) {
+            console.error('[smart-rect] SvgViewerAlgorithms not loaded yet!');
+            return false;
+        }
         return window.SvgViewerAlgorithms.areRectanglesAdjacent(pathCorners);
     }
 
@@ -2191,6 +2274,7 @@ class SvgViewerInstance {
                 path.data("originalColor", path.attr("fill"));
                 path.data("originalStroke", path.attr("stroke"));
                 path.data("originalStrokeWidth", path.attr("stroke-width"));
+                path.data("originalOpacity", path.attr("opacity") || path.node.style.opacity || 1);
             });
 
             // Discover Inkscape layers
@@ -2260,6 +2344,8 @@ class SvgViewerInstance {
         const bbox = this.boundingBoxRect.getBBox();
         const allPaths = this.scope().selectAll("path");
 
+        console.log(`[computeIdsInsideBoundingBox] Bounding box: (${bbox.x.toFixed(1)}, ${bbox.y.toFixed(1)}) ${bbox.width.toFixed(1)}×${bbox.height.toFixed(1)}`);
+
         allPaths.forEach(p => {
             const b = p.getBBox();
 
@@ -2272,13 +2358,18 @@ class SvgViewerInstance {
             const ih = Math.max(0, iy2 - iy1);
             const inter = iw * ih;
             const area = b.width * b.height;
+            const overlapPct = area > 0 ? (inter / area) : 0;
 
-            if (area > 0 && inter / area >= overlapThreshold) {
+            if (area > 0 && overlapPct >= overlapThreshold) {
                 const id = p.attr("id");
-                if (id) inside.add(id);
+                if (id) {
+                    inside.add(id);
+                    console.log(`[computeIdsInsideBoundingBox]   ✓ ${id}: ${(overlapPct * 100).toFixed(1)}% overlap`);
+                }
             }
         });
 
+        console.log(`[computeIdsInsideBoundingBox] Found ${inside.size} paths inside bounding box`);
         return inside;
     }
 
@@ -2297,6 +2388,189 @@ class SvgViewerInstance {
         });
 
         this.isUpdating = previouslyUpdating;
+    }
+
+    /**
+     * Compute bounding box from specific path IDs (for auto-select feature)
+     * @param {Array<string>} pathIds - Array of path IDs to include in bounding box
+     * @returns {Object|null} Bounding box {x, y, width, height} or null if no valid paths
+     */
+    _computeBoundingBoxFromIds(pathIds) {
+        if (!pathIds || pathIds.length === 0) return null;
+
+        const layer = this.scope();
+        if (!layer) return null;
+
+        const paths = [];
+        for (const id of pathIds) {
+            const path = this.rootSvg().select("#" + id) || this.s.select("#" + id);
+            if (path && path.node) {
+                paths.push(path);
+            }
+        }
+
+        if (paths.length === 0) return null;
+
+        return this.unionTransformedBBoxes(paths);
+    }
+
+    /**
+     * Find sections that overlap with a bounding box by a given percentage
+     * @param {Object} bbox - Bounding box {x, y, width, height}
+     * @param {number} threshold - Overlap threshold as percentage (0-100)
+     * @returns {Set<string>} Set of path IDs that meet the overlap threshold
+     */
+    _findCandidateSections(bbox, threshold) {
+        console.log(`[selection] _findCandidateSections: bbox=(${bbox.x.toFixed(1)}, ${bbox.y.toFixed(1)}, ${bbox.width.toFixed(1)}×${bbox.height.toFixed(1)}), threshold=${threshold}%`);
+
+        const candidates = new Set();
+        if (!bbox || !this.s) return candidates;
+
+        const thresholdFraction = threshold / 100.0;
+        const allPaths = this.scope().selectAll("path");
+
+        console.log(`[selection] Checking ${allPaths.length} total paths...`);
+
+        let checked = 0, skippedAlreadySelected = 0, skippedNoId = 0, skippedNotInLayer = 0, failedThreshold = 0;
+
+        allPaths.forEach(p => {
+            const id = p.attr("id");
+            if (!id) {
+                skippedNoId++;
+                return;
+            }
+
+            // Skip if already selected
+            if (this.selectedIds.has(id)) {
+                skippedAlreadySelected++;
+                return;
+            }
+
+            // Skip if not in active layer
+            if (!this.isInActiveLayer(p.node)) {
+                skippedNotInLayer++;
+                return;
+            }
+
+            checked++;
+
+            const b = p.getBBox();
+
+            // Calculate intersection rectangle
+            const ix1 = Math.max(b.x, bbox.x);
+            const iy1 = Math.max(b.y, bbox.y);
+            const ix2 = Math.min(b.x + b.width, bbox.x + bbox.width);
+            const iy2 = Math.min(b.y + b.height, bbox.y + bbox.height);
+
+            const iw = Math.max(0, ix2 - ix1);
+            const ih = Math.max(0, iy2 - iy1);
+            const intersectionArea = iw * ih;
+            const pathArea = b.width * b.height;
+            const overlapPercent = pathArea > 0 ? (intersectionArea / pathArea * 100) : 0;
+
+            if (pathArea > 0 && intersectionArea / pathArea >= thresholdFraction) {
+                console.log(`[selection]   ✓ CANDIDATE: ${id} | overlap=${overlapPercent.toFixed(1)}% (${intersectionArea.toFixed(1)} / ${pathArea.toFixed(1)})`);
+                candidates.add(id);
+            } else if (overlapPercent > threshold * 0.5) {
+                // Log near-misses (sections with >50% of threshold)
+                console.log(`[selection]   ~ Near-miss: ${id} | overlap=${overlapPercent.toFixed(1)}% (needs ${threshold}%)`);
+                failedThreshold++;
+            } else {
+                failedThreshold++;
+            }
+        });
+
+        console.log(`[selection] Scan summary: ${checked} checked, ${candidates.size} qualified | Skipped: ${skippedAlreadySelected} selected, ${skippedNoId} no-id, ${skippedNotInLayer} not-in-layer, ${failedThreshold} below-threshold`);
+
+        return candidates;
+    }
+
+    /**
+     * Iterative auto-select based on all selected sections (manual + auto)
+     * Computes bounding box from ALL selections, expands until no new sections found
+     */
+    async _performSinglePassAutoSelect() {
+        console.log(`[selection] === _performSinglePassAutoSelect START ===`);
+        console.log(`[selection] autoSelectEnabled=${this.autoSelectEnabled}, manuallySelected.size=${this.manuallySelected.size}, threshold=${this.overlapThreshold}%`);
+
+        // Only run if enabled and we have at least 2 manually selected sections
+        if (!this.autoSelectEnabled) {
+            console.log(`[selection] Auto-select DISABLED - exiting`);
+            return;
+        }
+
+        if (this.manuallySelected.size < 2) {
+            console.log(`[selection] Need at least 2 manual selections (have ${this.manuallySelected.size}) - exiting`);
+            return;
+        }
+
+        console.log(`[selection] Starting iterative auto-select with ${this.manuallySelected.size} manual selections:`, Array.from(this.manuallySelected));
+
+        const previouslyUpdating = this.isUpdating;
+        this.isUpdating = true;
+
+        let iteration = 0;
+        let foundNewCandidates = true;
+
+        // Keep iterating until no new candidates are found
+        while (foundNewCandidates && iteration < 10) { // Safety limit of 10 iterations
+            iteration++;
+            console.log(`[selection] --- Iteration ${iteration} ---`);
+
+            // Compute bounding box from ALL currently selected sections (manual + auto)
+            const allSelectedIds = Array.from(this.selectedIds);
+            console.log(`[selection] Computing bbox from ${allSelectedIds.length} total selections:`, allSelectedIds);
+
+            const bbox = this._computeBoundingBoxFromIds(allSelectedIds);
+
+            if (!bbox) {
+                console.log('[selection] No valid bounding box computed - STOPPING');
+                break;
+            }
+
+            console.log(`[selection] Bounding box: x=${bbox.x.toFixed(1)}, y=${bbox.y.toFixed(1)}, w=${bbox.width.toFixed(1)}, h=${bbox.height.toFixed(1)}`);
+
+            // Find candidate sections that meet overlap threshold
+            console.log(`[selection] Finding candidates with ≥${this.overlapThreshold}% overlap...`);
+            const candidates = this._findCandidateSections(bbox, this.overlapThreshold);
+
+            if (candidates.size === 0) {
+                console.log(`[selection] No new candidates found - CONVERGED after ${iteration} iterations!`);
+                foundNewCandidates = false;
+                break;
+            }
+
+            console.log(`[selection] Found ${candidates.size} candidates:`, Array.from(candidates));
+
+            // Auto-select all candidates
+            let actuallySelected = 0;
+            for (const candidateId of candidates) {
+                console.log(`[selection] Auto-selecting candidate: ${candidateId}`);
+                const result = await this._selectPathInternal(candidateId, false);
+                if (result) actuallySelected++;
+            }
+
+            console.log(`[selection] Actually selected ${actuallySelected} new sections in this iteration`);
+
+            // If no candidates were added (all were already selected), we've converged
+            if (actuallySelected === 0) {
+                console.log(`[selection] No new selections added - CONVERGED`);
+                foundNewCandidates = false;
+            }
+        }
+
+        if (iteration >= 10) {
+            console.log(`[selection] ⚠️ WARNING: Hit max iteration limit (10)`);
+        }
+
+        this.isUpdating = previouslyUpdating;
+
+        // Apply final visual updates now that auto-selection is complete
+        console.log(`[selection] Applying final visual updates with updateGlobalBoundingBox()`);
+        this.updateGlobalBoundingBox();
+
+        console.log(`[selection] === _performSinglePassAutoSelect END ===`);
+        console.log(`[selection] Result: ${iteration} iterations | ${this.selectedIds.size} total (${this.manuallySelected.size} manual, ${this.autoSelected.size} auto)`);
     }
 
     updateGlobalBoundingBox() {
@@ -2319,23 +2593,27 @@ class SvgViewerInstance {
                 return;
             }
 
-            if (this.showBoundingBox) {
-                this.boundingBoxRect = layer.rect(bbox.x, bbox.y, bbox.width, bbox.height);
-                this.boundingBoxRect.attr({
-                    stroke: '#00F',
-                    strokeWidth: 2,
-                    fill: 'none',
-                    strokeDasharray: '4 2',
-                    'vector-effect': 'non-scaling-stroke',
-                    "pointer-events": "none"
-                });
-                layer.append(this.boundingBoxRect);
-            }
+            // Always create the bounding box rect (needed for computeIdsInsideBoundingBox)
+            // but only make it visible if showBoundingBox is true
+            this.boundingBoxRect = layer.rect(bbox.x, bbox.y, bbox.width, bbox.height);
+            this.boundingBoxRect.attr({
+                stroke: this.showBoundingBox ? '#00F' : 'none',
+                strokeWidth: 2,
+                fill: 'none',
+                strokeDasharray: '4 2',
+                'vector-effect': 'non-scaling-stroke',
+                "pointer-events": "none"
+            });
+            layer.append(this.boundingBoxRect);
 
             this.boundingBoxPathIds = this.computeIdsInsideBoundingBox(0.5);
 
-            if (!this.isUpdating)
-                this.autoSelectInBoundingBox();
+            // NOTE: autoSelectInBoundingBox() is deprecated and has been removed
+            // Auto-selection is now handled by _performSinglePassAutoSelect() which is called
+            // from _selectPathInternal() when isManual=true
+            if (!this.isUpdating) {
+                console.log(`[selection] Deprecated autoSelectInBoundingBox() would have been called here - now using _performSinglePassAutoSelect() instead`);
+            }
 
             this.highlight();
         } else {
@@ -2345,11 +2623,63 @@ class SvgViewerInstance {
     }
 
     highlight() {
+        console.log(`[selection-highlight] === HIGHLIGHT CALLED ===`);
         this.getPaths();
-        const allInsideSelected = [...this.boundingBoxPathIds].every(id => this.selectedIds.has(id));
+        console.log(`[selection-highlight] After getPaths: selectedIds.size=${this.selectedIds.size}, selectedPaths.length=${this.selectedPaths.length}`);
+
+        // Determine completeness based on auto-select criteria, not geometric bounding box
+        let allInsideSelected = true;
+
+        // If we have selected sections, check if there are any candidate sections (using auto-select threshold)
+        // that should be selected but aren't
+        if (this.selectedIds.size >= 2 && this.autoSelectEnabled) {
+            // Compute bounding box from selected sections
+            const selectedPathIds = Array.from(this.selectedIds);
+            const bbox = this._computeBoundingBoxFromIds(selectedPathIds);
+
+            if (bbox) {
+                // Find sections that meet the auto-select threshold
+                const candidates = this._findCandidateSections(bbox, this.overlapThreshold);
+
+                // Check if all candidates are selected
+                allInsideSelected = [...candidates].every(id => this.selectedIds.has(id));
+
+                console.log(`[selection-highlight] Auto-select check: ${candidates.size} candidates, ${this.selectedIds.size} selected, allInsideSelected: ${allInsideSelected}`);
+                console.log(`[selection-highlight] Candidates:`, Array.from(candidates));
+                console.log(`[selection-highlight] Selected:`, Array.from(this.selectedIds));
+            }
+        } else if (this.selectedIds.size < 2) {
+            // With fewer than 2 selections, auto-select doesn't apply, so always green
+            allInsideSelected = true;
+            console.log(`[selection-highlight] Less than 2 selections (${this.selectedIds.size}) - showing green`);
+        } else if (!this.autoSelectEnabled) {
+            // Auto-select disabled, always green
+            allInsideSelected = true;
+            console.log(`[selection-highlight] Auto-select disabled - showing green`);
+        }
 
         this.selectedPaths.forEach(path => {
-            path.attr({ fill: allInsideSelected ? "#00FF00" : "#f00" });
+            const color = allInsideSelected ? "#00FF00" : "#f00";
+            const pathId = path.attr("id");
+            const beforeColor = path.attr("fill");
+            const beforeOpacity = path.attr("opacity");
+            console.log(`[selection-highlight] Setting path ${pathId} to ${color} (was: ${beforeColor}, opacity: ${beforeOpacity})`);
+
+            // Set both fill color AND opacity to make it visible
+            // Use 0.6 opacity to make it visible but not completely opaque
+            path.attr({
+                fill: color,
+                opacity: 0.6
+            });
+
+            const afterColor = path.attr("fill");
+            const afterOpacity = path.attr("opacity");
+            console.log(`[selection-highlight] After setting: ${pathId} fill is now ${afterColor}, opacity: ${afterOpacity}`);
+
+            // Double-check by reading from DOM
+            const domFill = path.node.getAttribute("fill");
+            const domOpacity = path.node.style.opacity;
+            console.log(`[selection-highlight] DOM verification: ${pathId} has fill="${domFill}", style.opacity="${domOpacity}"`);
         });
 
         // Report the allInsideSelected state to Blazor
@@ -2368,44 +2698,125 @@ class SvgViewerInstance {
         this.selectedPaths.forEach(p => this.selectedIds.add(p.attr("id")));
     }
 
-    selectPath(pathId) {
-        if (!this.s) return false;
-        let path = this.rootSvg().select("#" + pathId) || this.s.select("#" + pathId);
-        if (!path) return false;
+    /**
+     * Internal selection method with manual/auto tracking
+     * @param {string} pathId - ID of path to select
+     * @param {boolean} isManual - true if user-initiated, false if auto-selected
+     * @returns {Promise<boolean>} true if selection succeeded
+     */
+    async _selectPathInternal(pathId, isManual = true) {
+        console.log(`[selection] _selectPathInternal called: pathId=${pathId}, isManual=${isManual}, isDeselecting=${this.isDeselecting}, isUpdating=${this.isUpdating}`);
 
-        if (!this.isInActiveLayer(path.node)) return false;
-        if (path.data("isSelected") === true) return false;
+        if (!this.s) {
+            console.log(`[selection] Skipping - no SVG instance`);
+            return false;
+        }
+
+        let path = this.rootSvg().select("#" + pathId) || this.s.select("#" + pathId);
+        if (!path) {
+            console.log(`[selection] Skipping - path not found: ${pathId}`);
+            return false;
+        }
+
+        if (!this.isInActiveLayer(path.node)) {
+            console.log(`[selection] Skipping - path not in active layer: ${pathId}`);
+            return false;
+        }
+
+        if (path.data("isSelected") === true) {
+            console.log(`[selection] Skipping - already selected: ${pathId}`);
+            return false;
+        }
+
+        console.log(`[selection] Selecting path: ${pathId} (${isManual ? 'MANUAL' : 'AUTO'})`);
 
         path.data("isSelected", true);
         path.attr({ fill: this.fillColor });
         path.addClass("is-selected");
 
-        if (!this.isUpdating) {
-            this.updateGlobalBoundingBox();
+        // Track selection source
+        if (isManual) {
+            this.manuallySelected.add(pathId);
+            console.log(`[selection] ✓ Manual selection added: ${pathId} | Total manual: ${this.manuallySelected.size}, Total auto: ${this.autoSelected.size}`);
         } else {
+            this.autoSelected.add(pathId);
+            console.log(`[selection] ✓ Auto selection added: ${pathId} | Total manual: ${this.manuallySelected.size}, Total auto: ${this.autoSelected.size}`);
+        }
+
+        if (!this.isUpdating) {
+            console.log(`[selection] Not updating - calling updateGlobalBoundingBox()`);
+            this.updateGlobalBoundingBox();
+
+            // Trigger auto-select only for manual selections (not during deselection)
+            if (isManual && !this.isDeselecting) {
+                console.log(`[selection] Triggering auto-select for manual selection`);
+                await this._performSinglePassAutoSelect();
+            } else {
+                console.log(`[selection] Skipping auto-select trigger (isManual=${isManual}, isDeselecting=${this.isDeselecting})`);
+            }
+        } else {
+            console.log(`[selection] isUpdating=true - calling highlight()`);
             this.highlight();
         }
         return true;
     }
 
-    selectPaths(paths) {
-        if (!this.s || !Array.isArray(paths)) return;
+    /**
+     * Public selectPath method - defaults to manual selection
+     */
+    selectPath(pathId) {
+        return this._selectPathInternal(pathId, true);
+    }
+
+    async selectPaths(paths) {
+        console.log(`[selection] selectPaths called with ${paths?.length || 0} paths:`, paths);
+
+        if (!this.s || !Array.isArray(paths)) {
+            console.log(`[selection] Skipping selectPaths - no SVG or invalid array`);
+            return;
+        }
+
         this.isUpdating = true;
         const ids = paths
             .filter((id) => id != null && String(id).trim() !== "")
             .map((id) => String(id).trim());
 
+        console.log(`[selection] Filtered to ${ids.length} valid IDs:`, ids);
+
+        let selectedCount = 0;
         for (const id of ids) {
             const path = this.rootSvg().select("#" + id) || this.s.select("#" + id);
-            if (!path) continue;
-            if (path.data("isSelected") === true) continue;
+            if (!path) {
+                console.log(`[selection] Path not found: ${id}`);
+                continue;
+            }
+            if (path.data("isSelected") === true) {
+                console.log(`[selection] Already selected: ${id}`);
+                continue;
+            }
 
             path.data("isSelected", true);
             path.attr({ fill: this.fillColor });
             path.addClass("is-selected");
+
+            // Track as manual selection
+            this.manuallySelected.add(id);
+            selectedCount++;
+            console.log(`[selection] ✓ Manually selected: ${id}`);
         }
+
+        console.log(`[selection] Selected ${selectedCount} new paths | Total manual: ${this.manuallySelected.size}, Total auto: ${this.autoSelected.size}`);
+
         this.updateGlobalBoundingBox();
         this.isUpdating = false;
+
+        // Trigger auto-select after initial selections are in place
+        if (!this.isDeselecting) {
+            console.log(`[selection] Triggering auto-select from selectPaths`);
+            await this._performSinglePassAutoSelect();
+        } else {
+            console.log(`[selection] Skipping auto-select from selectPaths (isDeselecting=true)`);
+        }
 
         // Report initial selection state
         this.getPaths();
@@ -2418,43 +2829,110 @@ class SvgViewerInstance {
     }
 
     unselectPath(pathId) {
-        if (!this.s) return false;
-        let path = this.rootSvg().select("#" + pathId) || this.s.select("#" + pathId);
-        if (!path) return false;
+        console.log(`[selection] unselectPath called: pathId=${pathId}`);
 
-        if (!this.isInActiveLayer(path.node)) return false;
-        if (path.data("isSelected") === false) return false;
+        if (!this.s) {
+            console.log(`[selection] Skipping unselect - no SVG instance`);
+            return false;
+        }
+
+        let path = this.rootSvg().select("#" + pathId) || this.s.select("#" + pathId);
+        if (!path) {
+            console.log(`[selection] Skipping unselect - path not found: ${pathId}`);
+            return false;
+        }
+
+        if (!this.isInActiveLayer(path.node)) {
+            console.log(`[selection] Skipping unselect - path not in active layer: ${pathId}`);
+            return false;
+        }
+
+        if (path.data("isSelected") === false) {
+            console.log(`[selection] Skipping unselect - already unselected: ${pathId}`);
+            return false;
+        }
+
+        // Set deselecting flag to pause auto-select
+        this.isDeselecting = true;
+        console.log(`[selection] isDeselecting flag set to TRUE`);
 
         const prevIsUpdating = this.isUpdating;
         this.isUpdating = true;
 
+        // Check if this is a manually selected or auto-selected section
+        const isManualSelection = this.manuallySelected.has(pathId);
+        const isAutoSelection = this.autoSelected.has(pathId);
+
+        console.log(`[selection] Deselecting ${pathId} | Type: ${isManualSelection ? 'MANUAL' : (isAutoSelection ? 'AUTO' : 'UNKNOWN')} | Before: manual=${this.manuallySelected.size}, auto=${this.autoSelected.size}`);
+
+        // Unselect the target path
         let originalColor = path.data("originalColor");
+        let originalOpacity = path.data("originalOpacity");
         path.data("isSelected", false);
-        path.attr({ fill: originalColor });
+        path.attr({
+            fill: originalColor,
+            opacity: originalOpacity
+        });
         path.removeClass("is-selected");
+
+        // Remove from tracking sets
+        this.manuallySelected.delete(pathId);
+        this.autoSelected.delete(pathId);
+
+        console.log(`[selection] ✓ Deselected ${pathId} | After: manual=${this.manuallySelected.size}, auto=${this.autoSelected.size}`);
+
+        // NOTE: We used to have "SMART CLEAR" logic here that would cascade clear auto-selected
+        // sections when deselecting a manual section. This has been removed because once selected,
+        // all sections should behave the same way regardless of how they were selected.
+        // Deselecting a section should only remove that one section, not cascade.
 
         this.updateGlobalBoundingBox();
 
         this.isUpdating = prevIsUpdating;
+
+        // Re-enable auto-select after a brief delay
+        setTimeout(() => {
+            this.isDeselecting = false;
+            console.log(`[selection] isDeselecting flag set to FALSE (after 100ms delay)`);
+        }, 100);
+
         // highlight() is already called by updateGlobalBoundingBox(), no need to call again
         return true;
     }
 
     unselectAllPaths() {
         if (!this.s) return;
+
+        // Set deselecting flag
+        this.isDeselecting = true;
+
         const scope = this.scope() || this.rootSvg() || this.s;
         scope.selectAll(".is-selected").forEach((path) => {
             let originalColor = path.data("originalColor");
+            let originalOpacity = path.data("originalOpacity");
             path.data("isSelected", false);
-            path.attr({ fill: originalColor });
+            path.attr({
+                fill: originalColor,
+                opacity: originalOpacity
+            });
             path.removeClass("is-selected");
         });
+
+        // Clear selection tracking sets
+        this.manuallySelected.clear();
+        this.autoSelected.clear();
+
         if (this.boundingBoxRect) {
             this.boundingBoxRect.remove();
             this.boundingBoxRect = null;
         }
         this.boundingBoxPathIds.clear();
         this.highlight();
+
+        // Re-enable auto-select after a brief delay
+        setTimeout(() => {
+            this.isDeselecting = false;
+        }, 100);
     }
 }
 
@@ -2600,6 +3078,30 @@ export function setRectangleType(containerId, rectangleType) {
     }
 
     console.log(`[display] Rectangle type set to: ${rectangleType}`);
+    return true;
+}
+
+/**
+ * Configure auto-select feature
+ * @param {string} containerId - Container ID
+ * @param {boolean} enabled - Enable or disable auto-select
+ * @param {number} threshold - Overlap threshold percentage (0-100)
+ */
+export function setAutoSelect(containerId, enabled, threshold) {
+    console.log(`[setAutoSelect] Called with containerId: ${containerId}, enabled: ${enabled}, threshold: ${threshold}`);
+
+    const instance = instances.get(containerId);
+    if (!instance) {
+        console.error(`[setAutoSelect] No instance found for containerId: ${containerId}`);
+        return false;
+    }
+
+    instance.autoSelectEnabled = enabled;
+    if (threshold !== undefined && threshold >= 0 && threshold <= 100) {
+        instance.overlapThreshold = threshold;
+    }
+
+    console.log(`[setAutoSelect] Auto-select configured: enabled=${instance.autoSelectEnabled}, threshold=${instance.overlapThreshold}%`);
     return true;
 }
 

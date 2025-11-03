@@ -422,12 +422,22 @@ function applyMatrixToPath(pathD, matrix) {
     return transformedCommands.join(' ');
 }
 
+// SVG file cache to avoid redundant file I/O
+const svgFileCache = new Map();
+
+function getCachedSvgContent(svgPath) {
+    if (!svgFileCache.has(svgPath)) {
+        svgFileCache.set(svgPath, fs.readFileSync(svgPath, 'utf8'));
+    }
+    return svgFileCache.get(svgPath);
+}
+
 /**
  * Parse SVG file and extract polygon from specified sections
  * Uses the same approach as run-hollowsquare-samples.js
  */
 function parseSvgCombination(svgPath, sectionIds) {
-    const svgContent = fs.readFileSync(svgPath, 'utf8');
+    const svgContent = getCachedSvgContent(svgPath);
 
     // Load SvgViewerAlgorithms to parse path data from LazyMagic.BlazorSvg
     const SvgViewerAlgorithms = require('../../LazyMagic.BlazorSvg/wwwroot/SvgViewerAlgorithms.js');
@@ -469,7 +479,7 @@ function parseSvgCombination(svgPath, sectionIds) {
  * Extract original SVG path data for visual reference
  */
 function extractOriginalPaths(svgPath, sectionIds) {
-    const svgContent = fs.readFileSync(svgPath, 'utf8');
+    const svgContent = getCachedSvgContent(svgPath);
     const paths = [];
 
     for (const sectionId of sectionIds) {
@@ -697,8 +707,9 @@ ${layout.usedBoundaryBased !== undefined ? `
 
 /**
  * Hybrid algorithm runner: Boundary-Based + Optimized with dimension constraints
+ * OPTIMIZED: Only runs expensive optimized algorithm if boundary result is poor or missing
  */
-function runHybridWithConstraints(polygon, options, algorithmType) {
+function runHybridWithConstraints(polygon, options, algorithmType, polygonArea) {
     const debugMode = options.debugMode || false;
     const startTime = performance.now();
 
@@ -736,36 +747,64 @@ function runHybridWithConstraints(polygon, options, algorithmType) {
         }
     }
 
-    // Step 2: Run optimized algorithm (grid-based search)
-    if (debugMode) {
-        console.log('[hybrid] Step 2: Running optimized algorithm...');
-    }
+    // Step 2: CONDITIONAL optimization - only run if boundary result needs improvement
+    // Skip expensive optimized algorithm if boundary result is good enough (>85% fill ratio)
+    const OPTIMIZATION_THRESHOLD = 0.85; // Only optimize if fill < 85%
+    let shouldOptimize = false;
+    let fillRatio = 0;
 
-    const optimizedStart = performance.now();
-    const optimizedOptions = {
-        debugMode: debugMode,
-        maxTime: options.maxTime || 5000,
-        gridStep: options.gridStep || 8.0,
-        polylabelPrecision: options.polylabelPrecision || 0.5,
-        binarySearchPrecision: options.binarySearchPrecision || 0.0001,
-        binarySearchMaxIterations: options.binarySearchMaxIterations || 20,
-        ...constraintParams.optimized
-    };
-    let optimizedRaw = null;
-    try {
-        optimizedRaw = optimized.fastInscribedRectangle(polygon, optimizedOptions);
-    } catch (err) {
-        console.error(`[hybrid] ⚠️  Optimized algorithm error: ${err.message}`);
-        if (debugMode) console.error(err.stack);
+    if (!boundaryResult) {
+        shouldOptimize = true; // Boundary failed, must try optimized
+        if (debugMode) console.log('[hybrid] Boundary failed - running optimized algorithm');
+    } else if (polygonArea) {
+        fillRatio = boundaryResult.area / polygonArea;
+        shouldOptimize = fillRatio < OPTIMIZATION_THRESHOLD;
+        if (debugMode) {
+            console.log(`[hybrid] Boundary fill ratio: ${(fillRatio * 100).toFixed(1)}% - ${shouldOptimize ? 'RUNNING' : 'SKIPPING'} optimized algorithm`);
+        }
+    } else {
+        // No polygon area provided, always run optimized to be safe
+        shouldOptimize = true;
     }
-    const optimizedTime = performance.now() - optimizedStart;
 
     let optimizedResult = null;
-    if (optimizedRaw) {
-        optimizedResult = optimizedRaw;
-        optimizedResult.type = 'optimized';
+    let optimizedTime = 0;
+
+    if (shouldOptimize) {
+        // Step 2: Run optimized algorithm (grid-based search)
         if (debugMode) {
-            console.log(`[hybrid] Optimized: ${optimizedResult.width.toFixed(1)}×${optimizedResult.height.toFixed(1)} = ${optimizedResult.area.toFixed(1)} sq ft`);
+            console.log('[hybrid] Step 2: Running optimized algorithm...');
+        }
+
+        const optimizedStart = performance.now();
+        const optimizedOptions = {
+            debugMode: debugMode,
+            maxTime: options.maxTime || 5000,
+            gridStep: options.gridStep || 8.0,
+            polylabelPrecision: options.polylabelPrecision || 0.5,
+            binarySearchPrecision: options.binarySearchPrecision || 0.0001,
+            binarySearchMaxIterations: options.binarySearchMaxIterations || 20,
+            ...constraintParams.optimized
+        };
+        let optimizedRaw = null;
+        try {
+            optimizedRaw = optimized.fastInscribedRectangle(polygon, optimizedOptions);
+        } catch (err) {
+            console.error(`[hybrid] ⚠️  Optimized algorithm error: ${err.message}`);
+            if (debugMode) console.error(err.stack);
+        }
+        optimizedTime = performance.now() - optimizedStart;
+
+        if (optimizedRaw) {
+            optimizedResult = optimizedRaw;
+            optimizedResult.type = 'optimized';
+            if (debugMode) {
+                console.log(`[hybrid] Optimized: ${optimizedResult.width.toFixed(1)}×${optimizedResult.height.toFixed(1)} = ${optimizedResult.area.toFixed(1)} sq ft`);
+            }
+        }
+    } else {
+        if (debugMode) {
+            console.log('[hybrid] ✓ Skipped optimized algorithm (boundary result good enough)');
         }
     }
 
@@ -860,7 +899,7 @@ function convertConstraintsToParams(options, algorithmType) {
         if (widthConstraint.mode === 'discrete' && heightConstraint.mode === 'discrete') {
             // Generate aspect ratios from discrete width/height combinations
             const aspectRatios = [];
-            const maxIncrements = 20; // Reasonable upper limit
+            const maxIncrements = 12; // Reduced from 20 for 44% fewer iterations (12×12=144 vs 20×20=400)
 
             for (let wi = widthConstraint.minIncrements || 0; wi < maxIncrements; wi++) {
                 const width = widthConstraint.base + wi * widthConstraint.increment;
@@ -976,8 +1015,8 @@ function runTest(testConfig, combination, testIndex, totalTests) {
         let layout;
 
         if (testConfig.algorithm === 'maxinscribed') {
-            // Max inscribed: Use hybrid approach (Boundary-Based + Optimized, no constraints)
-            layout = runHybridWithConstraints(polygon, testConfig.algorithmOptions, testConfig.algorithm);
+            // Max inscribed: Use hybrid approach (Boundary-Based + conditional Optimized)
+            layout = runHybridWithConstraints(polygon, testConfig.algorithmOptions, testConfig.algorithm, polygonArea);
         } else if (testConfig.algorithm === 'boardroom') {
             // Boardroom: Use dual BB/Optimized approach with incremental expansion
             const options = {

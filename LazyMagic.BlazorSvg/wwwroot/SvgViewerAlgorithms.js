@@ -53,7 +53,7 @@
                 }
             }
 
-            console.debug(`[winding] Removed ${points.length - cleaned.length} duplicate points`);
+            // console.debug(`[winding] Removed ${points.length - cleaned.length} duplicate points`);
 
             if (cleaned.length < 3) {
                 return cleaned;
@@ -92,13 +92,13 @@
             const finalPoints = simplified.length >= 3 ? simplified : cleaned;
 
             if (simplified.length < cleaned.length) {
-                console.debug(`[winding] Removed ${cleaned.length - simplified.length} collinear points (${cleaned.length} → ${simplified.length})`);
+                // console.debug(`[winding] Removed ${cleaned.length - simplified.length} collinear points (${cleaned.length} → ${simplified.length})`);
             }
             */
 
             // Skip collinear removal, just use cleaned points
             const finalPoints = cleaned;
-            console.debug(`[winding] Skipped collinear point removal, keeping all ${cleaned.length} vertices`);
+            // console.debug(`[winding] Skipped collinear point removal, keeping all ${cleaned.length} vertices`);
 
             // Step 3: Detect corrupted polygon structures
             if (finalPoints.length === 6) {
@@ -110,7 +110,7 @@
                 const areaRatio = polygonArea / boundingArea;
 
                 if (areaRatio < 0.8) {
-                    console.warn(`[winding] Detected corrupted 6-vertex polygon (area ratio: ${areaRatio.toFixed(3)}), forcing failure to trigger convex hull`);
+                    // console.warn(`[winding] Detected corrupted 6-vertex polygon (area ratio: ${areaRatio.toFixed(3)}), forcing failure to trigger convex hull`);
                     return null; // Force failure to trigger convex hull fallback
                 }
             }
@@ -391,7 +391,7 @@
         extractPathPoints(pathData) {
             const points = [];
 
-            console.debug(`[winding] Parsing path data: ${pathData}`);
+            // console.debug(`[winding] Parsing path data: ${pathData}`);
 
             // Simple regex-based parser for common SVG commands
             const commands = pathData.match(/[MmLlHhVvCcSsQqTtAaZz][^MmLlHhVvCcSsQqTtAaZz]*/g) || [];
@@ -402,7 +402,7 @@
                 const cmd = cmdStr[0];
                 const params = cmdStr.slice(1).trim().split(/[\s,]+/).map(Number).filter(n => !isNaN(n));
 
-                console.debug(`[winding] Processing command: ${cmd} with params: [${params.join(', ')}]`);
+                // console.debug(`[winding] Processing command: ${cmd} with params: [${params.join(', ')}]`);
 
                 switch (cmd.toLowerCase()) {
                     case 'm': // Move to
@@ -492,10 +492,10 @@
                 // Extract only the actual SVG command points (4 points per path)
                 const boundaryPoints = this.extractPathPoints(pathData);
 
-                console.debug(`[winding] Path ${pathIdx} original points: ${boundaryPoints.map(p => `(${p.x.toFixed(1)}, ${p.y.toFixed(1)})`).join(', ')}`);
+                // console.debug(`[winding] Path ${pathIdx} original points: ${boundaryPoints.map(p => `(${p.x.toFixed(1)}, ${p.y.toFixed(1)})`).join(', ')}`);
 
                 if (boundaryPoints.length < 2) {
-                    console.warn(`[winding] Path ${pathIdx} has insufficient boundary points: ${boundaryPoints.length}`);
+                    // console.warn(`[winding] Path ${pathIdx} has insufficient boundary points: ${boundaryPoints.length}`);
                     return segments;
                 }
 
@@ -520,7 +520,7 @@
                 }
 
             } catch (error) {
-                console.warn(`[winding] Error parsing path ${pathIdx}:`, error);
+                // console.warn(`[winding] Error parsing path ${pathIdx}:`, error);
             }
 
             return segments;
@@ -861,7 +861,7 @@
 
         // Mark shared/internal segments (edges shared between different paths)
         markSharedSegments(allSegments, tolerance = 0.01) {
-            console.debug(`[winding] Marking shared/internal segments with exact coordinate matching (tolerance ${tolerance}px)`);
+            // console.debug(`[winding] Marking shared/internal segments with exact coordinate matching (tolerance ${tolerance}px)`);
 
             // Create a copy of segments with isInternal flag
             const markedSegments = allSegments.map(seg => ({
@@ -895,18 +895,18 @@
                         if (!seg1.isInternal) {
                             seg1.isInternal = true;
                             sharedCount++;
-                            console.debug(`[winding] - Segment ${seg1.pathIdx}_${seg1.segmentIdx} marked as INTERNAL (shared with ${seg2.pathIdx}_${seg2.segmentIdx})`);
+                            // console.debug(`[winding] - Segment ${seg1.pathIdx}_${seg1.segmentIdx} marked as INTERNAL (shared with ${seg2.pathIdx}_${seg2.segmentIdx})`);
                         }
                         if (!seg2.isInternal) {
                             seg2.isInternal = true;
                             sharedCount++;
-                            console.debug(`[winding] - Segment ${seg2.pathIdx}_${seg2.segmentIdx} marked as INTERNAL (shared with ${seg1.pathIdx}_${seg1.segmentIdx})`);
+                            // console.debug(`[winding] - Segment ${seg2.pathIdx}_${seg2.segmentIdx} marked as INTERNAL (shared with ${seg1.pathIdx}_${seg1.segmentIdx})`);
                         }
                     }
                 }
             }
 
-            console.debug(`[winding] Marked ${sharedCount} segments as internal (shared between paths)`);
+            // console.debug(`[winding] Marked ${sharedCount} segments as internal (shared between paths)`);
             return markedSegments;
         },
 
@@ -940,12 +940,12 @@
                 pointToSegments.get(endKey).push({ segment, isStart: false });
             }
 
-            console.debug(`[winding] Created network with ${pointToSegments.size} nodes and ${segmentsWithIds.length} edges`);
+            // console.debug(`[winding] Created network with ${pointToSegments.size} nodes and ${segmentsWithIds.length} edges`);
 
             // Debug: show all points in the network
             for (const [pointKey, connections] of pointToSegments) {
                 const [x, y] = pointKey.split('_').map(Number);
-                console.debug(`[winding] Network point (${x.toFixed(1)}, ${y.toFixed(1)}) connects to ${connections.length} segments: ${connections.map(c => c.segment.id).join(', ')}`);
+                // console.debug(`[winding] Network point (${x.toFixed(1)}, ${y.toFixed(1)}) connects to ${connections.length} segments: ${connections.map(c => c.segment.id).join(', ')}`);
             }
 
             return {
@@ -974,7 +974,7 @@
                 pointCount++;
             }
             const centroid = { x: centroidX / pointCount, y: centroidY / pointCount };
-            console.debug(`[winding] Shape centroid: (${centroid.x.toFixed(1)}, ${centroid.y.toFixed(1)})`);
+            // console.debug(`[winding] Shape centroid: (${centroid.x.toFixed(1)}, ${centroid.y.toFixed(1)})`);
 
             // Find the leftmost point as starting point (guaranteed to be on outer edge)
             let startPoint = null;
@@ -989,7 +989,7 @@
                 }
             }
 
-            console.debug(`[winding] Starting traversal from leftmost point: (${startPoint.x.toFixed(1)}, ${startPoint.y.toFixed(1)})`);
+            // console.debug(`[winding] Starting traversal from leftmost point: (${startPoint.x.toFixed(1)}, ${startPoint.y.toFixed(1)})`);
 
             // Traverse the outer edge by always taking the most clockwise turn (rightmost/outward)
             const outerEdgePoints = [startPoint];
@@ -1010,17 +1010,17 @@
                     !visitedSegments.has(conn.segment.id) && !conn.segment.isInternal
                 );
 
-                console.debug(`[winding] Iteration ${iterations}: At point (${currentPoint.x.toFixed(1)}, ${currentPoint.y.toFixed(1)})`);
-                console.debug(`[winding] - Connected segments: ${connectedSegments.length}, Internal: ${internalSegments.length}, Available: ${availableSegments.length}`);
+                // console.debug(`[winding] Iteration ${iterations}: At point (${currentPoint.x.toFixed(1)}, ${currentPoint.y.toFixed(1)})`);
+                // console.debug(`[winding] - Connected segments: ${connectedSegments.length}, Internal: ${internalSegments.length}, Available: ${availableSegments.length}`);
                 if (internalSegments.length > 0) {
-                    console.debug(`[winding] - Excluding internal segments: ${internalSegments.map(conn => conn.segment.id).join(', ')}`);
+                    // console.debug(`[winding] - Excluding internal segments: ${internalSegments.map(conn => conn.segment.id).join(', ')}`);
                 }
-                console.debug(`[winding] - Visited segments: [${Array.from(visitedSegments).join(', ')}]`);
+                // console.debug(`[winding] - Visited segments: [${Array.from(visitedSegments).join(', ')}]`);
                 if (availableSegments.length > 0) {
-                    console.debug(`[winding] - Available segment destinations: ${availableSegments.map(conn => {
-                        const nextPt = conn.isStart ? conn.segment.end : conn.segment.start;
-                        return `${conn.segment.id}→(${nextPt.x.toFixed(1)},${nextPt.y.toFixed(1)})`;
-                    }).join(', ')}`);
+                    // console.debug(`[winding] - Available segment destinations: ${availableSegments.map(conn => {
+                    //     const nextPt = conn.isStart ? conn.segment.end : conn.segment.start;
+                    //     return `${conn.segment.id}→(${nextPt.x.toFixed(1)},${nextPt.y.toFixed(1)})`;
+                    // }).join(', ')}`);
                 }
 
                 // FAILURE DETECTION: Check if we're being forced into a potentially internal path
@@ -1030,18 +1030,18 @@
                     const nextKey = `${nextPoint.x.toFixed(2)}_${nextPoint.y.toFixed(2)}`;
                     const nextConnections = pointToSegments.get(nextKey) || [];
 
-                    console.debug(`[winding] - FORCED CHOICE: Only 1 segment available, going to (${nextPoint.x.toFixed(1)}, ${nextPoint.y.toFixed(1)}) with ${nextConnections.length} connections`);
+                    // console.debug(`[winding] - FORCED CHOICE: Only 1 segment available, going to (${nextPoint.x.toFixed(1)}, ${nextPoint.y.toFixed(1)}) with ${nextConnections.length} connections`);
 
                     // Flag potential internal segment: going to a high-degree vertex (merge point)
                     if (nextConnections.length >= 3) {
-                        console.debug(`[winding] - ⚠️  POTENTIAL INTERNAL SEGMENT: Forced to high-degree vertex (${nextConnections.length} connections)`);
+                        // console.debug(`[winding] - ⚠️  POTENTIAL INTERNAL SEGMENT: Forced to high-degree vertex (${nextConnections.length} connections)`);
                     }
                 }
 
                 if (availableSegments.length === 0) {
                     console.debug('[winding] No more available segments, traversal complete');
-                    console.debug(`[winding] - Total segments in network: ${segments.length}`);
-                    console.debug(`[winding] - Segments visited: ${visitedSegments.size}`);
+                    // console.debug(`[winding] - Total segments in network: ${segments.length}`);
+                    // console.debug(`[winding] - Segments visited: ${visitedSegments.size}`);
                     break;
                 }
 
@@ -1074,7 +1074,7 @@
                     const dotProduct = fromCentroidX * toNextX + fromCentroidY * toNextY;
                     const isOuterFacing = dotProduct > 0;
 
-                    console.debug(`[winding] - Candidate segment ${segment.id}: to (${nextPoint.x.toFixed(1)}, ${nextPoint.y.toFixed(1)}), turn angle: ${(turnAngle * 180 / Math.PI).toFixed(1)}°, outer-facing: ${isOuterFacing}`);
+                    // console.debug(`[winding] - Candidate segment ${segment.id}: to (${nextPoint.x.toFixed(1)}, ${nextPoint.y.toFixed(1)}), turn angle: ${(turnAngle * 180 / Math.PI).toFixed(1)}°, outer-facing: ${isOuterFacing}`);
 
                     // For outer edge, we want the SMALLEST turn angle (most clockwise = most outward)
                     // Treat angles near 360° as small angles (e.g., 350° -> 10°)
@@ -1090,7 +1090,7 @@
                     const currentConnections = pointToSegments.get(currentPointKey) || [];
                     if (currentConnections.length >= 4 && isOuterFacing) {
                         priority = -3; // Even higher priority than collinear for outer-facing at high-degree vertices
-                        console.debug(`[winding] - HIGH-DEGREE VERTEX: Prioritizing outer-facing segment at ${currentConnections.length}-connection vertex`);
+                        // console.debug(`[winding] - HIGH-DEGREE VERTEX: Prioritizing outer-facing segment at ${currentConnections.length}-connection vertex`);
                     }
 
                     // Special case: If this is a straight continuation (collinear), give it highest priority
@@ -1100,7 +1100,7 @@
 
                         if (isNearZero) {
                             priority = -2; // Higher priority than even sharp turns
-                            console.debug(`[winding] - COLLINEAR: Straight continuation detected (turn angle: ${(turnAngle * 180 / Math.PI).toFixed(1)}°), highest priority`);
+                            // console.debug(`[winding] - COLLINEAR: Straight continuation detected (turn angle: ${(turnAngle * 180 / Math.PI).toFixed(1)}°), highest priority`);
                         }
                     }
 
@@ -1124,10 +1124,10 @@
                 }
 
                 // Move to next point
-                console.debug(`[winding] - Selected segment ${bestSegment.id} with turn angle ${(bestAngle * 180 / Math.PI).toFixed(1)}°`);
+                // console.debug(`[winding] - Selected segment ${bestSegment.id} with turn angle ${(bestAngle * 180 / Math.PI).toFixed(1)}°`);
                 visitedSegments.add(bestSegment.id);
                 const nextPoint = bestConn.isStart ? bestSegment.end : bestSegment.start;
-                console.debug(`[winding] - Moving to next point: (${nextPoint.x.toFixed(1)}, ${nextPoint.y.toFixed(1)})`);
+                // console.debug(`[winding] - Moving to next point: (${nextPoint.x.toFixed(1)}, ${nextPoint.y.toFixed(1)})`);
 
                 // Update incoming angle for next iteration
                 incomingAngle = Math.atan2(nextPoint.y - currentPoint.y, nextPoint.x - currentPoint.x);
@@ -1144,18 +1144,18 @@
                 currentKey = nextKey;
             }
 
-            console.debug(`[winding] Traversal completed in ${iterations} iterations, found ${outerEdgePoints.length} outer edge points`);
+            // console.debug(`[winding] Traversal completed in ${iterations} iterations, found ${outerEdgePoints.length} outer edge points`);
 
             // VALIDATION: Basic polygon cleanup before returning
             const validatedPoints = this.basicPolygonCleanup(outerEdgePoints);
-            console.debug(`[winding] Polygon validation: ${outerEdgePoints.length} → ${validatedPoints?.length || 0} points`);
+            // console.debug(`[winding] Polygon validation: ${outerEdgePoints.length} → ${validatedPoints?.length || 0} points`);
 
             return validatedPoints || outerEdgePoints;
         },
 
         // Merge coincident points from different paths
         mergeCoincidentPoints(allSegments, tolerance) {
-            console.debug(`[winding] Merging adjacent points with ${tolerance}px tolerance (different paths only)`);
+            // console.debug(`[winding] Merging adjacent points with ${tolerance}px tolerance (different paths only)`);
 
             // First, find ALL potential connections within tolerance
             const potentialConnections = [];
@@ -1183,7 +1183,7 @@
                         // Check distance for potential connection
                         const distance = this.calculateDistance(combo.point1, combo.point2);
 
-                        console.debug(`[winding] - Checking seg${seg1.pathIdx}_${seg1.segmentIdx}.${combo.end1} (${combo.point1.x.toFixed(1)}, ${combo.point1.y.toFixed(1)}) vs seg${seg2.pathIdx}_${seg2.segmentIdx}.${combo.end2} (${combo.point2.x.toFixed(1)}, ${combo.point2.y.toFixed(1)}) = ${distance.toFixed(1)}px`);
+                        // console.debug(`[winding] - Checking seg${seg1.pathIdx}_${seg1.segmentIdx}.${combo.end1} (${combo.point1.x.toFixed(1)}, ${combo.point1.y.toFixed(1)}) vs seg${seg2.pathIdx}_${seg2.segmentIdx}.${combo.end2} (${combo.point2.x.toFixed(1)}, ${combo.point2.y.toFixed(1)}) = ${distance.toFixed(1)}px`);
 
                         if (distance <= tolerance) {
                             const point1Key = `${seg1.pathIdx}_${seg1.segmentIdx}_${combo.end1}`;
@@ -1201,7 +1201,7 @@
                                 const connPairKey = connGeomKey1 < connGeomKey2 ? `${connGeomKey1}-${connGeomKey2}` : `${connGeomKey2}-${connGeomKey1}`;
                                 return connPairKey === pairKey;
                             })) {
-                                console.debug(`[winding] - POTENTIAL CONNECTION: ${distance.toFixed(1)}px (new geometric pair)`);
+                                // console.debug(`[winding] - POTENTIAL CONNECTION: ${distance.toFixed(1)}px (new geometric pair)`);
                                 potentialConnections.push({
                                     distance,
                                     seg1: combo.seg1,
@@ -1214,14 +1214,14 @@
                                     point2Key
                                 });
                             } else {
-                                console.debug(`[winding] - DUPLICATE geometric pair: ${distance.toFixed(1)}px (skipping)`);
+                                // console.debug(`[winding] - DUPLICATE geometric pair: ${distance.toFixed(1)}px (skipping)`);
                             }
                         }
                     }
                 }
             }
 
-            console.debug(`[winding] Found ${potentialConnections.length} potential connections`);
+            // console.debug(`[winding] Found ${potentialConnections.length} potential connections`);
 
             // Cluster all points within tolerance using union-find
             return this.clusterAndMergePoints(allSegments, potentialConnections);

@@ -111,6 +111,18 @@ namespace LazyMagic.BlazorSvg
         }
 
         /// <summary>
+        /// Configure auto-select feature
+        /// </summary>
+        /// <param name="enabled">Enable or disable auto-select</param>
+        /// <param name="threshold">Overlap threshold percentage (0-100)</param>
+        public async ValueTask SetAutoSelectAsync(bool enabled, double threshold)
+        {
+            if (containerId == null) throw new InvalidOperationException("InitAsync must be called first");
+            var module = await moduleTask.Value;
+            await module.InvokeVoidAsync("setAutoSelect", containerId, enabled, threshold);
+        }
+
+        /// <summary>
         /// Extracts embedded metadata from the SVG including precomputed layout data
         /// </summary>
         /// <returns>SvgFloorLevel object containing all metadata, or null if extraction fails</returns>

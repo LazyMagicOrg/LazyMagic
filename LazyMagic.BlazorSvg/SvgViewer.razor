@@ -16,6 +16,8 @@
     [Parameter] public bool AllInsideSelected { get; set; } = false;
     [Parameter] public EventCallback<bool> AllInsideSelectedChanged { get; set; }
     [Parameter] public string RectangleType { get; set; } = "none";
+    [Parameter] public bool EnableAutoSelect { get; set; } = true;
+    [Parameter] public double OverlapThreshold { get; set; } = 60.0;
 
     private string containerId = $"svg-{Guid.NewGuid():N}";
     private string style = "";
@@ -59,6 +61,8 @@
             // Set initial rectangle type
             await svgViewerJS!.SetRectangleTypeAsync(RectangleType);
             lastRectangleType = RectangleType;
+            // Configure auto-select
+            await svgViewerJS!.SetAutoSelectAsync(EnableAutoSelect, OverlapThreshold);
             isInitialized = true;
             busy = false;
         }

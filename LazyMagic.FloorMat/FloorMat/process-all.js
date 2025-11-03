@@ -179,27 +179,27 @@ async function processProject(project) {
         // Generate temporary config files
         const configs = generateConfigFiles(project);
 
-        // Step 1: Run tests for all three algorithms
-        console.log('Step 1/5: Running tests (MaxInscribed, Boardroom, Hollow Square)...');
+        // Step 1: Run tests for all three algorithms IN PARALLEL
+        console.log('Step 1/5: Running tests (MaxInscribed, Boardroom, Hollow Square) in parallel...');
         console.log();
 
-        console.log('  Running MaxInscribed tests...');
-        await execAsync(`node run-tests.js "${configs.maxInscribed}"`, {
+        // Execute all three algorithms simultaneously for ~3x speedup
+        const execOptions = {
             cwd: __dirname,
             maxBuffer: 200 * 1024 * 1024 // 200MB buffer for verbose algorithm logging
-        });
+        };
 
-        console.log('  Running Boardroom tests...');
-        await execAsync(`node run-tests.js "${configs.boardroom}"`, {
-            cwd: __dirname,
-            maxBuffer: 200 * 1024 * 1024
-        });
-
-        console.log('  Running Hollow Square tests...');
-        await execAsync(`node run-tests.js "${configs.hollowSquare}"`, {
-            cwd: __dirname,
-            maxBuffer: 200 * 1024 * 1024
-        });
+        const [maxResult, boardroomResult, hollowResult] = await Promise.all([
+            execAsync(`node run-tests.js "${configs.maxInscribed}"`, execOptions)
+                .then(() => console.log('  ✓ MaxInscribed tests complete'))
+                .catch(err => { throw new Error(`MaxInscribed failed: ${err.message}`); }),
+            execAsync(`node run-tests.js "${configs.boardroom}"`, execOptions)
+                .then(() => console.log('  ✓ Boardroom tests complete'))
+                .catch(err => { throw new Error(`Boardroom failed: ${err.message}`); }),
+            execAsync(`node run-tests.js "${configs.hollowSquare}"`, execOptions)
+                .then(() => console.log('  ✓ Hollow Square tests complete'))
+                .catch(err => { throw new Error(`Hollow Square failed: ${err.message}`); })
+        ]);
 
         console.log('  ✓ All tests complete\\n');
 
