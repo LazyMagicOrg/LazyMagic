@@ -111,13 +111,13 @@ All three systems can run **independently** and are **embedded together** in the
 
 ### 1. Max-Inscribed Algorithms
 
-**Location:** Multiple JavaScript files in `LazyMagic.BlazorSvg/wwwroot/`
+**Location:** Multiple JavaScript files in `LazyMagic.FloorMat/FloorMat/`
 
 **Algorithm Files:**
 
-1. **SvgViewerBoundaryBased.js** - Fast boundary-based algorithm
-2. **SvgViewerOptimized.js** - Slow but accurate optimization
-3. **SvgViewerBoundaryBased.js** - Hybrid algorithm (combines both)
+1. **SvgViewerBoundaryBased.cjs** - Fast boundary-based algorithm + hybrid
+2. **SvgViewerOptimized.cjs** - Grid-based centroid sampling with binary search
+3. **SvgViewerInscribedRect.cjs** - Unified inscribed rectangle algorithm
 
 **Key Functions:**
 
@@ -1043,10 +1043,13 @@ npm run process
 ### File Locations
 
 - **Algorithms**:
-  - `wwwroot/SvgViewerBoundaryBased.js`
-  - `wwwroot/SvgViewerOptimized.js`
-  - `wwwroot/SvgViewerAlgorithms.js` (utilities)
-- **Orchestrator**: `FloorMat/process-all.js`
+  - `FloorMat/SvgViewerBoundaryBased.cjs` - Boundary-based + hybrid
+  - `FloorMat/SvgViewerOptimized.cjs` - Grid-based optimization
+  - `FloorMat/SvgViewerInscribedRect.cjs` - Unified inscribed rectangle
+  - `FloorMat/SvgViewerAlgorithms.cjs` - SVG path parsing utilities
+  - `FloorMat/kdtree.cjs` - Spatial data structures
+- **Test Runner**: `FloorMat/run-tests.js`
+- **Orchestrator**: `FloorMat/process-all.js` or `FloorMat/process-external.js`
 - **Project Extractor**: `FloorMat/extract-precomputed-project.js`
 - **Project Embedder**: `FloorMat/embed-project.js`
 - **Input Files**: `FloorMat/input/[ProjectName].svg` and `FloorMat/input/[ProjectName]-combinations.json`

@@ -1,12 +1,12 @@
 {
-  "timestamp": "2025-11-03T22:23:05.800Z",
+  "timestamp": "2025-11-04T00:27:15.627Z",
   "testName": "Level1 - Boardroom Layout",
   "algorithm": "boardroom",
   "totalTests": 45,
-  "passed": 0,
-  "failed": 45,
-  "totalRuntimeMs": 67,
-  "totalRuntimeSec": 0.1,
+  "passed": 45,
+  "failed": 0,
+  "totalRuntimeMs": 10182,
+  "totalRuntimeSec": 10.2,
   "configuration": {
     "width": {
       "mode": "fixed",
@@ -29,9 +29,16 @@
         "Foyer_Room_Foyer"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 14
+      "passed": true,
+      "layout": {
+        "width": 13,
+        "height": 210,
+        "area": 2730,
+        "angle": 151.20000000000002
+      },
+      "polygonArea": 21575.74551430729,
+      "fillRatio": 12.653096961074576,
+      "runtimeMs": 196
     },
     {
       "id": "BeachDeck_0002",
@@ -39,9 +46,16 @@
         "BeachDeck_Room_BeachDeck"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 138,
+        "height": 13,
+        "area": 1794,
+        "angle": 43.2
+      },
+      "polygonArea": 12387.362433485148,
+      "fillRatio": 14.48250190170034,
+      "runtimeMs": 83
     },
     {
       "id": "Ballroom_0003",
@@ -49,9 +63,16 @@
         "Ballroom_Room_1"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 132,
+        "height": 13,
+        "area": 1716,
+        "angle": 36
+      },
+      "polygonArea": 11130.584726101752,
+      "fillRatio": 15.416979810376882,
+      "runtimeMs": 80
     },
     {
       "id": "Ballroom_0004",
@@ -59,9 +80,16 @@
         "Ballroom_Room_2"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 0
+      "passed": true,
+      "layout": {
+        "width": 132,
+        "height": 13,
+        "area": 1716,
+        "angle": 36
+      },
+      "polygonArea": 9832.111083145399,
+      "fillRatio": 17.453016808787243,
+      "runtimeMs": 73
     },
     {
       "id": "Ballroom_0005",
@@ -69,9 +97,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 126,
+        "height": 13,
+        "area": 1638,
+        "angle": 43.2
+      },
+      "polygonArea": 10274.52373672137,
+      "fillRatio": 15.942344793518288,
+      "runtimeMs": 78
     },
     {
       "id": "Ballroom_0006",
@@ -80,9 +115,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 13,
+        "height": 228,
+        "area": 2964,
+        "angle": 72
+      },
+      "polygonArea": 21405.2861800207,
+      "fillRatio": 13.847046823258749,
+      "runtimeMs": 176
     },
     {
       "id": "Ballroom_0007",
@@ -90,9 +132,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 0
+      "passed": true,
+      "layout": {
+        "width": 132,
+        "height": 13,
+        "area": 1716,
+        "angle": 43.2
+      },
+      "polygonArea": 10859.232338887654,
+      "fillRatio": 15.802221984466494,
+      "runtimeMs": 68
     },
     {
       "id": "Ballroom_0008",
@@ -101,9 +150,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 234,
+        "height": 13,
+        "area": 3042,
+        "angle": 21.6
+      },
+      "polygonArea": 20691.06681502775,
+      "fillRatio": 14.701996891676078,
+      "runtimeMs": 247
     },
     {
       "id": "Ballroom_0009",
@@ -111,9 +167,16 @@
         "Ballroom_Room_5"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 0
+      "passed": true,
+      "layout": {
+        "width": 210,
+        "height": 13,
+        "area": 2730,
+        "angle": 21.6
+      },
+      "polygonArea": 19407.111232002077,
+      "fillRatio": 14.067008568994366,
+      "runtimeMs": 111
     },
     {
       "id": "Ballroom_0010",
@@ -121,9 +184,16 @@
         "Ballroom_Room_Grand"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 204,
+        "height": 13,
+        "area": 2652,
+        "angle": 151.20000000000002
+      },
+      "polygonArea": 24140.033255790855,
+      "fillRatio": 10.985900358541645,
+      "runtimeMs": 136
     },
     {
       "id": "Ballroom_0011",
@@ -132,9 +202,16 @@
         "Ballroom_Room_1"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 13,
+        "height": 144,
+        "area": 1872,
+        "angle": 43.2
+      },
+      "polygonArea": 13437.226079968957,
+      "fillRatio": 13.931446779708603,
+      "runtimeMs": 103
     },
     {
       "id": "Ballroom_0012",
@@ -143,9 +220,16 @@
         "Ballroom_Room_2"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 0
+      "passed": true,
+      "layout": {
+        "width": 144,
+        "height": 13,
+        "area": 1872,
+        "angle": 43.2
+      },
+      "polygonArea": 12138.402784451306,
+      "fillRatio": 15.422127879937708,
+      "runtimeMs": 100
     },
     {
       "id": "Ballroom_0013",
@@ -155,9 +239,16 @@
         "Ballroom_Room_2"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 216,
+        "height": 13,
+        "area": 2808,
+        "angle": 64.8
+      },
+      "polygonArea": 23269.16878943056,
+      "fillRatio": 12.067470159378722,
+      "runtimeMs": 158
     },
     {
       "id": "Ballroom_0014",
@@ -167,9 +258,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 13,
+        "height": 234,
+        "area": 3042,
+        "angle": 64.8
+      },
+      "polygonArea": 23711.927533887905,
+      "fillRatio": 12.82898657501599,
+      "runtimeMs": 247
     },
     {
       "id": "Ballroom_0015",
@@ -180,9 +278,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 264,
+        "height": 13,
+        "area": 3432,
+        "angle": 136.8
+      },
+      "polygonArea": 33543.870243349505,
+      "fillRatio": 10.231377521740912,
+      "runtimeMs": 263
     },
     {
       "id": "Ballroom_0016",
@@ -192,9 +297,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 234,
+        "height": 13,
+        "area": 3042,
+        "angle": 28.8
+      },
+      "polygonArea": 22997.358516333654,
+      "fillRatio": 13.227606108933983,
+      "runtimeMs": 230
     },
     {
       "id": "Ballroom_0017",
@@ -205,9 +317,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 282,
+        "height": 13,
+        "area": 3666,
+        "angle": 43.2
+      },
+      "polygonArea": 34128.124521312915,
+      "fillRatio": 10.74187360547924,
+      "runtimeMs": 241
     },
     {
       "id": "Ballroom_0018",
@@ -216,9 +335,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 0
+      "passed": true,
+      "layout": {
+        "width": 13,
+        "height": 138,
+        "area": 1794,
+        "angle": 43.2
+      },
+      "polygonArea": 12403.730911172664,
+      "fillRatio": 14.463390191608024,
+      "runtimeMs": 196
     },
     {
       "id": "Ballroom_0019",
@@ -228,9 +354,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 13,
+        "height": 234,
+        "area": 3042,
+        "angle": 115.2
+      },
+      "polygonArea": 23534.493354471993,
+      "fillRatio": 12.92570846621588,
+      "runtimeMs": 236
     },
     {
       "id": "Ballroom_0020",
@@ -239,9 +372,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 150,
+        "height": 13,
+        "area": 1950,
+        "angle": 50.4
+      },
+      "polygonArea": 12988.0243645499,
+      "fillRatio": 15.013830781857926,
+      "runtimeMs": 202
     },
     {
       "id": "Ballroom_0021",
@@ -251,9 +391,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 228,
+        "height": 13,
+        "area": 2964,
+        "angle": 21.6
+      },
+      "polygonArea": 22820.273989479043,
+      "fillRatio": 12.988450539053604,
+      "runtimeMs": 220
     },
     {
       "id": "Ballroom_0022",
@@ -263,9 +410,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 228,
+        "height": 13,
+        "area": 2964,
+        "angle": 72
+      },
+      "polygonArea": 23262.68664305502,
+      "fillRatio": 12.741434579246633,
+      "runtimeMs": 252
     },
     {
       "id": "Ballroom_0023",
@@ -276,9 +430,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 264,
+        "height": 13,
+        "area": 3432,
+        "angle": 36
+      },
+      "polygonArea": 34393.44908635435,
+      "fillRatio": 9.97864445459659,
+      "runtimeMs": 236
     },
     {
       "id": "Ballroom_0024",
@@ -289,9 +450,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 13,
+        "height": 234,
+        "area": 3042,
+        "angle": 36
+      },
+      "polygonArea": 33094.97544339799,
+      "fillRatio": 9.191727624039796,
+      "runtimeMs": 232
     },
     {
       "id": "Ballroom_0025",
@@ -302,9 +470,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 13,
+        "height": 240,
+        "area": 3120,
+        "angle": 64.8
+      },
+      "polygonArea": 25841.1347083392,
+      "fillRatio": 12.073773211642846,
+      "runtimeMs": 167
     },
     {
       "id": "Ballroom_0026",
@@ -316,9 +491,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 13,
+        "height": 270,
+        "area": 3510,
+        "angle": 50.4
+      },
+      "polygonArea": 35673.0774178008,
+      "fillRatio": 9.839352963275651,
+      "runtimeMs": 283
     },
     {
       "id": "Ballroom_0027",
@@ -329,9 +511,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 240,
+        "height": 13,
+        "area": 3120,
+        "angle": 28.8
+      },
+      "polygonArea": 25126.565690784948,
+      "fillRatio": 12.417136660837997,
+      "runtimeMs": 245
     },
     {
       "id": "Ballroom_0028",
@@ -343,9 +532,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 288,
+        "height": 13,
+        "area": 3744,
+        "angle": 43.2
+      },
+      "polygonArea": 36257.33169576421,
+      "fillRatio": 10.326187352715191,
+      "runtimeMs": 266
     },
     {
       "id": "Ballroom_0029",
@@ -357,9 +553,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 276,
+        "height": 13,
+        "area": 3588,
+        "angle": 43.2
+      },
+      "polygonArea": 36700.09044022157,
+      "fillRatio": 9.77654266504946,
+      "runtimeMs": 264
     },
     {
       "id": "Ballroom_0030",
@@ -371,9 +574,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 264,
+        "height": 13,
+        "area": 3432,
+        "angle": 144
+      },
+      "polygonArea": 35401.267144703896,
+      "fillRatio": 9.694568236700631,
+      "runtimeMs": 270
     },
     {
       "id": "Ballroom_0031",
@@ -386,9 +596,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 288,
+        "height": 13,
+        "area": 3744,
+        "angle": 43.2
+      },
+      "polygonArea": 46532.03314968315,
+      "fillRatio": 8.046070086721526,
+      "runtimeMs": 379
     },
     {
       "id": "Ballroom_0032",
@@ -397,9 +614,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 144,
+        "height": 13,
+        "area": 1872,
+        "angle": 36
+      },
+      "polygonArea": 12177.24644112472,
+      "fillRatio": 15.372933520322988,
+      "runtimeMs": 138
     },
     {
       "id": "Ballroom_0033",
@@ -409,9 +633,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 246,
+        "height": 13,
+        "area": 3198,
+        "angle": 14.4
+      },
+      "polygonArea": 23308.00888442405,
+      "fillRatio": 13.72060571908017,
+      "runtimeMs": 182
     },
     {
       "id": "Ballroom_0034",
@@ -422,9 +653,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 252,
+        "height": 13,
+        "area": 3276,
+        "angle": 158.4
+      },
+      "polygonArea": 25614.650238291255,
+      "fillRatio": 12.789555857775166,
+      "runtimeMs": 345
     },
     {
       "id": "Ballroom_0035",
@@ -436,9 +674,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 13,
+        "height": 270,
+        "area": 3510,
+        "angle": 57.6
+      },
+      "polygonArea": 35446.592947752855,
+      "fillRatio": 9.902221082781152,
+      "runtimeMs": 288
     },
     {
       "id": "Ballroom_0036",
@@ -448,9 +693,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 13,
+        "height": 150,
+        "area": 1950,
+        "angle": 50.4
+      },
+      "polygonArea": 14306.45361557601,
+      "fillRatio": 13.630212297175849,
+      "runtimeMs": 204
     },
     {
       "id": "Ballroom_0037",
@@ -461,9 +713,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 13,
+        "height": 246,
+        "area": 3198,
+        "angle": 72
+      },
+      "polygonArea": 25437.216058875343,
+      "fillRatio": 12.57213050594104,
+      "runtimeMs": 326
     },
     {
       "id": "Ballroom_0038",
@@ -474,9 +733,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 13,
+        "height": 234,
+        "area": 3042,
+        "angle": 158.4
+      },
+      "polygonArea": 25165.40934745837,
+      "fillRatio": 12.088021132496431,
+      "runtimeMs": 338
     },
     {
       "id": "Ballroom_0039",
@@ -488,9 +754,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 258,
+        "height": 13,
+        "area": 3354,
+        "angle": 36
+      },
+      "polygonArea": 36296.17179075768,
+      "fillRatio": 9.240643942659677,
+      "runtimeMs": 304
     },
     {
       "id": "Ballroom_0040",
@@ -502,9 +775,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 264,
+        "height": 13,
+        "area": 3432,
+        "angle": 151.20000000000002
+      },
+      "polygonArea": 34997.69814780134,
+      "fillRatio": 9.806359222558209,
+      "runtimeMs": 260
     },
     {
       "id": "Ballroom_0041",
@@ -516,9 +796,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 252,
+        "height": 13,
+        "area": 3276,
+        "angle": 158.4
+      },
+      "polygonArea": 27743.85741274255,
+      "fillRatio": 11.80801916353332,
+      "runtimeMs": 380
     },
     {
       "id": "Ballroom_0042",
@@ -531,9 +818,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 13,
+        "height": 282,
+        "area": 3666,
+        "angle": 50.4
+      },
+      "polygonArea": 37575.80012220415,
+      "fillRatio": 9.756279275697183,
+      "runtimeMs": 318
     },
     {
       "id": "Ballroom_0043",
@@ -546,9 +840,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 13,
+        "height": 282,
+        "area": 3666,
+        "angle": 136.8
+      },
+      "polygonArea": 38602.8131446249,
+      "fillRatio": 9.496717211425452,
+      "runtimeMs": 293
     },
     {
       "id": "Ballroom_0044",
@@ -561,9 +862,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 282,
+        "height": 13,
+        "area": 3666,
+        "angle": 144
+      },
+      "polygonArea": 37303.989849107245,
+      "fillRatio": 9.827367031861161,
+      "runtimeMs": 283
     },
     {
       "id": "Ballroom_0045",
@@ -577,9 +885,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "boardroom.findBoardroomLayout is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 13,
+        "height": 288,
+        "area": 3744,
+        "angle": 50.4
+      },
+      "polygonArea": 48434.7558540865,
+      "fillRatio": 7.729986316601025,
+      "runtimeMs": 407
     }
   ]
 }

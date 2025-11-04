@@ -105,9 +105,9 @@ All three systems can run **independently** and are **embedded together** in the
 
 ## Pipeline Components
 
-### 1. Boardroom Algorithm (`SvgViewerBoardroom.js`)
+### 1. Boardroom Algorithm (`SvgViewerBoardroom.cjs`)
 
-**Location:** `LazyMagic.BlazorSvg/wwwroot/SvgViewerBoardroom.js`
+**Location:** `LazyMagic.FloorMat/FloorMat/SvgViewerBoardroom.cjs`
 
 **Purpose:** Core algorithm for finding the largest boardroom layout that fits in a polygon.
 
@@ -761,12 +761,14 @@ LazyMagic.BlazorSvg/FloorMat/precomputed-boardroom.json
 Commit to repository:
 
 ```
-LazyMagic.BlazorSvg/wwwroot/SvgViewerBoardroom.js
-LazyMagic.BlazorSvg/FloorMat/test-runner-boardroom.js
-LazyMagic.BlazorSvg/FloorMat/extract-precomputed-boardroom.js
-LazyMagic.BlazorSvg/FloorMat/embed-boardroom-in-svg.js
-BlazorTest.WASM/wwwroot/Level1.svg  (with embedded data)
+LazyMagic.FloorMat/FloorMat/SvgViewerBoardroom.cjs
+LazyMagic.FloorMat/FloorMat/run-tests.js (unified test runner)
+LazyMagic.FloorMat/FloorMat/extract-precomputed-project.js (multi-algorithm extractor)
+LazyMagic.FloorMat/FloorMat/embed-project.js (unified embedder)
+LazyMagic.FloorMat/FloorMat/output/Level1-output.svg  (with embedded data)
 ```
+
+**Note:** Modern pipeline uses unified scripts instead of algorithm-specific runners.
 
 ---
 
@@ -911,8 +913,9 @@ npm run process
 
 ### File Locations
 
-- **Algorithm**: `wwwroot/SvgViewerBoardroom.js`
-- **Orchestrator**: `FloorMat/process-all.js`
+- **Algorithm**: `FloorMat/SvgViewerBoardroom.cjs`
+- **Test Runner**: `FloorMat/run-tests.js`
+- **Orchestrator**: `FloorMat/process-all.js` or `FloorMat/process-external.js`
 - **Project Extractor**: `FloorMat/extract-precomputed-project.js`
 - **Project Embedder**: `FloorMat/embed-project.js`
 - **Input Files**: `FloorMat/input/[ProjectName].svg` and `FloorMat/input/[ProjectName]-combinations.json`

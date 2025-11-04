@@ -1,12 +1,12 @@
 {
-  "timestamp": "2025-11-03T22:22:49.703Z",
+  "timestamp": "2025-11-04T00:29:25.555Z",
   "testName": "Level1 - Hollow Square Layout",
   "algorithm": "hollowsquare",
   "totalTests": 45,
-  "passed": 0,
-  "failed": 45,
-  "totalRuntimeMs": 70,
-  "totalRuntimeSec": 0.1,
+  "passed": 45,
+  "failed": 0,
+  "totalRuntimeMs": 140103,
+  "totalRuntimeSec": 140.1,
   "configuration": {
     "width": {
       "mode": "discrete",
@@ -32,9 +32,16 @@
         "Foyer_Room_Foyer"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 14
+      "passed": true,
+      "layout": {
+        "width": 109,
+        "height": 182,
+        "area": 19838,
+        "angle": 0
+      },
+      "polygonArea": 21575.74551430729,
+      "fillRatio": 91.94583791714192,
+      "runtimeMs": 2013
     },
     {
       "id": "BeachDeck_0002",
@@ -42,9 +49,16 @@
         "BeachDeck_Room_BeachDeck"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 121,
+        "height": 92,
+        "area": 11132,
+        "angle": 0
+      },
+      "polygonArea": 12387.362433485148,
+      "fillRatio": 89.86578103106365,
+      "runtimeMs": 848
     },
     {
       "id": "Ballroom_0003",
@@ -52,9 +66,16 @@
         "Ballroom_Room_1"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 0
+      "passed": true,
+      "layout": {
+        "width": 115,
+        "height": 92,
+        "area": 10580,
+        "angle": 0
+      },
+      "polygonArea": 11130.584726101752,
+      "fillRatio": 95.0534069893866,
+      "runtimeMs": 750
     },
     {
       "id": "Ballroom_0004",
@@ -62,9 +83,16 @@
         "Ballroom_Room_2"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 115,
+        "height": 74,
+        "area": 8510,
+        "angle": 0
+      },
+      "polygonArea": 9832.111083145399,
+      "fillRatio": 86.55313114381087,
+      "runtimeMs": 744
     },
     {
       "id": "Ballroom_0005",
@@ -72,9 +100,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 103,
+        "height": 92,
+        "area": 9476,
+        "angle": 0
+      },
+      "polygonArea": 10274.52373672137,
+      "fillRatio": 92.22811920841227,
+      "runtimeMs": 736
     },
     {
       "id": "Ballroom_0006",
@@ -83,9 +118,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 223,
+        "height": 92,
+        "area": 20516,
+        "angle": 0
+      },
+      "polygonArea": 21405.2861800207,
+      "fillRatio": 95.84548334209732,
+      "runtimeMs": 3813
     },
     {
       "id": "Ballroom_0007",
@@ -93,9 +135,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 97,
+        "height": 92,
+        "area": 8924,
+        "angle": 0
+      },
+      "polygonArea": 10859.232338887654,
+      "fillRatio": 82.17892132248194,
+      "runtimeMs": 782
     },
     {
       "id": "Ballroom_0008",
@@ -104,9 +153,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 0
+      "passed": true,
+      "layout": {
+        "width": 223,
+        "height": 74,
+        "area": 16502,
+        "angle": 0
+      },
+      "polygonArea": 20691.06681502775,
+      "fillRatio": 79.75422508429936,
+      "runtimeMs": 3121
     },
     {
       "id": "Ballroom_0009",
@@ -114,9 +170,16 @@
         "Ballroom_Room_5"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 199,
+        "height": 92,
+        "area": 18308,
+        "angle": 0
+      },
+      "polygonArea": 19407.111232002077,
+      "fillRatio": 94.33655416891898,
+      "runtimeMs": 2204
     },
     {
       "id": "Ballroom_0010",
@@ -124,9 +187,16 @@
         "Ballroom_Room_Grand"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 0
+      "passed": true,
+      "layout": {
+        "width": 115,
+        "height": 152,
+        "area": 17480,
+        "angle": 93.60000000000001
+      },
+      "polygonArea": 24140.033255790855,
+      "fillRatio": 72.41083645071944,
+      "runtimeMs": 2432
     },
     {
       "id": "Ballroom_0011",
@@ -135,9 +205,16 @@
         "Ballroom_Room_1"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 115,
+        "height": 110,
+        "area": 12650,
+        "angle": 0
+      },
+      "polygonArea": 13437.226079968957,
+      "fillRatio": 94.14145393339415,
+      "runtimeMs": 986
     },
     {
       "id": "Ballroom_0012",
@@ -146,9 +223,16 @@
         "Ballroom_Room_2"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 115,
+        "height": 92,
+        "area": 10580,
+        "angle": 0
+      },
+      "polygonArea": 12138.402784451306,
+      "fillRatio": 87.16138513340863,
+      "runtimeMs": 962
     },
     {
       "id": "Ballroom_0013",
@@ -158,9 +242,16 @@
         "Ballroom_Room_2"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 115,
+        "height": 188,
+        "area": 21620,
+        "angle": 0
+      },
+      "polygonArea": 23269.16878943056,
+      "fillRatio": 92.9126441758433,
+      "runtimeMs": 2865
     },
     {
       "id": "Ballroom_0014",
@@ -170,9 +261,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 223,
+        "height": 92,
+        "area": 20516,
+        "angle": 0
+      },
+      "polygonArea": 23711.927533887905,
+      "fillRatio": 86.52185686161344,
+      "runtimeMs": 3116
     },
     {
       "id": "Ballroom_0015",
@@ -183,9 +281,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 109,
+        "height": 188,
+        "area": 20492,
+        "angle": 0
+      },
+      "polygonArea": 33543.870243349505,
+      "fillRatio": 61.09014806978868,
+      "runtimeMs": 3834
     },
     {
       "id": "Ballroom_0016",
@@ -195,9 +300,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 211,
+        "height": 86,
+        "area": 18146,
+        "angle": 7.2
+      },
+      "polygonArea": 22997.358516333654,
+      "fillRatio": 78.90471415276662,
+      "runtimeMs": 3093
     },
     {
       "id": "Ballroom_0017",
@@ -208,9 +320,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 109,
+        "height": 188,
+        "area": 20492,
+        "angle": 0
+      },
+      "polygonArea": 34128.124521312915,
+      "fillRatio": 60.04431912806344,
+      "runtimeMs": 3883
     },
     {
       "id": "Ballroom_0018",
@@ -219,9 +338,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 103,
+        "height": 110,
+        "area": 11330,
+        "angle": 0
+      },
+      "polygonArea": 12403.730911172664,
+      "fillRatio": 91.34348432046764,
+      "runtimeMs": 920
     },
     {
       "id": "Ballroom_0019",
@@ -231,9 +357,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 223,
+        "height": 92,
+        "area": 20516,
+        "angle": 0
+      },
+      "polygonArea": 23534.493354471993,
+      "fillRatio": 87.17417320607659,
+      "runtimeMs": 3185
     },
     {
       "id": "Ballroom_0020",
@@ -242,9 +375,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 0
+      "passed": true,
+      "layout": {
+        "width": 103,
+        "height": 104,
+        "area": 10712,
+        "angle": 0
+      },
+      "polygonArea": 12988.0243645499,
+      "fillRatio": 82.4759770950062,
+      "runtimeMs": 1149
     },
     {
       "id": "Ballroom_0021",
@@ -254,9 +394,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 223,
+        "height": 74,
+        "area": 16502,
+        "angle": 0
+      },
+      "polygonArea": 22820.273989479043,
+      "fillRatio": 72.31289163139762,
+      "runtimeMs": 3082
     },
     {
       "id": "Ballroom_0022",
@@ -266,9 +413,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 103,
+        "height": 206,
+        "area": 21218,
+        "angle": 0
+      },
+      "polygonArea": 23262.68664305502,
+      "fillRatio": 91.21044497383774,
+      "runtimeMs": 3245
     },
     {
       "id": "Ballroom_0023",
@@ -279,9 +433,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 223,
+        "height": 92,
+        "area": 20516,
+        "angle": 0
+      },
+      "polygonArea": 34393.44908635435,
+      "fillRatio": 59.65089441448242,
+      "runtimeMs": 4005
     },
     {
       "id": "Ballroom_0024",
@@ -292,9 +453,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 97,
+        "height": 206,
+        "area": 19982,
+        "angle": 0
+      },
+      "polygonArea": 33094.97544339799,
+      "fillRatio": 60.37774535948823,
+      "runtimeMs": 3971
     },
     {
       "id": "Ballroom_0025",
@@ -305,9 +473,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 223,
+        "height": 110,
+        "area": 24530,
+        "angle": 0
+      },
+      "polygonArea": 25841.1347083392,
+      "fillRatio": 94.92617207743558,
+      "runtimeMs": 3546
     },
     {
       "id": "Ballroom_0026",
@@ -319,9 +494,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 223,
+        "height": 110,
+        "area": 24530,
+        "angle": 0
+      },
+      "polygonArea": 35673.0774178008,
+      "fillRatio": 68.76334136443069,
+      "runtimeMs": 4110
     },
     {
       "id": "Ballroom_0027",
@@ -332,9 +514,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 217,
+        "height": 98,
+        "area": 21266,
+        "angle": 0
+      },
+      "polygonArea": 25126.565690784948,
+      "fillRatio": 84.6355218683913,
+      "runtimeMs": 3270
     },
     {
       "id": "Ballroom_0028",
@@ -346,9 +535,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 211,
+        "height": 104,
+        "area": 21944,
+        "angle": 7.2
+      },
+      "polygonArea": 36257.33169576421,
+      "fillRatio": 60.52293142841404,
+      "runtimeMs": 4023
     },
     {
       "id": "Ballroom_0029",
@@ -360,9 +556,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 223,
+        "height": 110,
+        "area": 24530,
+        "angle": 0
+      },
+      "polygonArea": 36700.09044022157,
+      "fillRatio": 66.83907234494517,
+      "runtimeMs": 4125
     },
     {
       "id": "Ballroom_0030",
@@ -374,9 +577,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 97,
+        "height": 212,
+        "area": 20564,
+        "angle": 93.60000000000001
+      },
+      "polygonArea": 35401.267144703896,
+      "fillRatio": 58.08831620615145,
+      "runtimeMs": 4012
     },
     {
       "id": "Ballroom_0031",
@@ -389,9 +599,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 223,
+        "height": 188,
+        "area": 41924,
+        "angle": 0
+      },
+      "polygonArea": 46532.03314968315,
+      "fillRatio": 90.09707326808581,
+      "runtimeMs": 4815
     },
     {
       "id": "Ballroom_0032",
@@ -400,9 +617,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 127,
+        "height": 92,
+        "area": 11684,
+        "angle": 0
+      },
+      "polygonArea": 12177.24644112472,
+      "fillRatio": 95.94944190782788,
+      "runtimeMs": 1054
     },
     {
       "id": "Ballroom_0033",
@@ -412,9 +636,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 241,
+        "height": 92,
+        "area": 22172,
+        "angle": 0
+      },
+      "polygonArea": 23308.00888442405,
+      "fillRatio": 95.12610068900736,
+      "runtimeMs": 3493
     },
     {
       "id": "Ballroom_0034",
@@ -425,9 +656,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 241,
+        "height": 92,
+        "area": 22172,
+        "angle": 0
+      },
+      "polygonArea": 25614.650238291255,
+      "fillRatio": 86.55983897392888,
+      "runtimeMs": 4253
     },
     {
       "id": "Ballroom_0035",
@@ -439,9 +677,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 241,
+        "height": 86,
+        "area": 20726,
+        "angle": 0
+      },
+      "polygonArea": 35446.592947752855,
+      "fillRatio": 58.47106386373851,
+      "runtimeMs": 4747
     },
     {
       "id": "Ballroom_0036",
@@ -451,9 +696,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 127,
+        "height": 92,
+        "area": 11684,
+        "angle": 0
+      },
+      "polygonArea": 14306.45361557601,
+      "fillRatio": 81.66943614369364,
+      "runtimeMs": 1118
     },
     {
       "id": "Ballroom_0037",
@@ -464,9 +716,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 241,
+        "height": 92,
+        "area": 22172,
+        "angle": 0
+      },
+      "polygonArea": 25437.216058875343,
+      "fillRatio": 87.16362650960748,
+      "runtimeMs": 4336
     },
     {
       "id": "Ballroom_0038",
@@ -477,9 +736,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 103,
+        "height": 206,
+        "area": 21218,
+        "angle": 0
+      },
+      "polygonArea": 25165.40934745837,
+      "fillRatio": 84.31414608458554,
+      "runtimeMs": 3753
     },
     {
       "id": "Ballroom_0039",
@@ -491,9 +757,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 241,
+        "height": 92,
+        "area": 22172,
+        "angle": 0
+      },
+      "polygonArea": 36296.17179075768,
+      "fillRatio": 61.08633199065305,
+      "runtimeMs": 4794
     },
     {
       "id": "Ballroom_0040",
@@ -505,9 +778,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 97,
+        "height": 206,
+        "area": 19982,
+        "angle": 0
+      },
+      "polygonArea": 34997.69814780134,
+      "fillRatio": 57.09518356210901,
+      "runtimeMs": 4731
     },
     {
       "id": "Ballroom_0041",
@@ -519,9 +799,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 217,
+        "height": 110,
+        "area": 23870,
+        "angle": 0
+      },
+      "polygonArea": 27743.85741274255,
+      "fillRatio": 86.03706270865091,
+      "runtimeMs": 4374
     },
     {
       "id": "Ballroom_0042",
@@ -534,9 +821,16 @@
         "Ballroom_Room_3"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 217,
+        "height": 110,
+        "area": 23870,
+        "angle": 0
+      },
+      "polygonArea": 37575.80012220415,
+      "fillRatio": 63.52492807171078,
+      "runtimeMs": 4921
     },
     {
       "id": "Ballroom_0043",
@@ -549,9 +843,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 1
+      "passed": true,
+      "layout": {
+        "width": 217,
+        "height": 110,
+        "area": 23870,
+        "angle": 0
+      },
+      "polygonArea": 38602.8131446249,
+      "fillRatio": 61.834871750334294,
+      "runtimeMs": 4965
     },
     {
       "id": "Ballroom_0044",
@@ -564,9 +865,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 97,
+        "height": 212,
+        "area": 20564,
+        "angle": 93.60000000000001
+      },
+      "polygonArea": 37303.989849107245,
+      "fillRatio": 55.125470715546356,
+      "runtimeMs": 4829
     },
     {
       "id": "Ballroom_0045",
@@ -580,9 +888,16 @@
         "Ballroom_Room_4"
       ],
       "layoutRestriction": "allowed",
-      "passed": false,
-      "error": "unifiedAlgo.findInscribedRectangle is not a function",
-      "runtimeMs": 2
+      "passed": true,
+      "layout": {
+        "width": 217,
+        "height": 188,
+        "area": 40796,
+        "angle": 0
+      },
+      "polygonArea": 48434.7558540865,
+      "fillRatio": 84.22877184082675,
+      "runtimeMs": 5002
     }
   ]
 }

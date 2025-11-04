@@ -116,7 +116,7 @@ All three systems can run **independently** and are **embedded together** in the
 
 ### 1. Hollow Square Algorithm (`SvgViewerHollowSquare.js`)
 
-**Location:** `LazyMagic.BlazorSvg/wwwroot/SvgViewerHollowSquare.js`
+**Location:** `LazyMagic.FloorMat/FloorMat/SvgViewerHollowSquare.cjs`
 
 **Purpose:** Core algorithm for finding the largest hollow square layout that fits in a polygon.
 
@@ -810,12 +810,14 @@ LazyMagic.BlazorSvg/FloorMat/precomputed-hollowsquare.json
 Commit to repository:
 
 ```
-LazyMagic.BlazorSvg/wwwroot/SvgViewerHollowSquare.js
-LazyMagic.BlazorSvg/FloorMat/test-runner-hollowsquare.js
-LazyMagic.BlazorSvg/FloorMat/extract-precomputed-hollowsquare.js
-LazyMagic.BlazorSvg/FloorMat/embed-hollowsquare-in-svg.js
-BlazorTest.WASM/wwwroot/Level1.svg  (with embedded data)
+LazyMagic.FloorMat/FloorMat/SvgViewerHollowSquare.cjs
+LazyMagic.FloorMat/FloorMat/run-tests.js (unified test runner)
+LazyMagic.FloorMat/FloorMat/extract-precomputed-project.js (multi-algorithm extractor)
+LazyMagic.FloorMat/FloorMat/embed-project.js (unified embedder)
+LazyMagic.FloorMat/FloorMat/output/Level1-output.svg  (with embedded data)
 ```
+
+**Note:** Modern pipeline uses unified scripts instead of algorithm-specific runners.
 
 ---
 
@@ -950,8 +952,9 @@ npm run process
 
 ### File Locations
 
-- **Algorithm**: `wwwroot/SvgViewerHollowSquare.js`
-- **Orchestrator**: `FloorMat/process-all.js`
+- **Algorithm**: `FloorMat/SvgViewerHollowSquare.cjs`
+- **Test Runner**: `FloorMat/run-tests.js`
+- **Orchestrator**: `FloorMat/process-all.js` or `FloorMat/process-external.js`
 - **Project Extractor**: `FloorMat/extract-precomputed-project.js`
 - **Project Embedder**: `FloorMat/embed-project.js`
 - **Input Files**: `FloorMat/input/[ProjectName].svg` and `FloorMat/input/[ProjectName]-combinations.json`

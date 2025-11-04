@@ -1544,10 +1544,19 @@ class PolygonCache {
 ### Implementation References
 
 For actual implementations in this project, see:
-- `SvgViewerAlgorithms.js` - Winding number, convex hull, utilities
-- `SvgViewerBoundaryBased.js` - Boundary-based rectangle inscription
-- `SvgViewerOptimized.js` - Optimized rectangle inscription with spatial grids
-- `SvgViewerBoardroom.js` - Boardroom layout with fixed-width constraints
+
+**Build-Time Pipeline Algorithms (CommonJS):**
+- `LazyMagic.FloorMat/FloorMat/SvgViewerAlgorithms.cjs` - Winding number, convex hull, SVG path parsing
+- `LazyMagic.FloorMat/FloorMat/SvgViewerBoundaryBased.cjs` - Boundary-based + hybrid rectangle inscription
+- `LazyMagic.FloorMat/FloorMat/SvgViewerOptimized.cjs` - Grid-based centroid sampling with binary search
+- `LazyMagic.FloorMat/FloorMat/SvgViewerInscribedRect.cjs` - Unified inscribed rectangle algorithm
+- `LazyMagic.FloorMat/FloorMat/SvgViewerBoardroom.cjs` - Boardroom layout with fixed-width constraints
+- `LazyMagic.FloorMat/FloorMat/SvgViewerHollowSquare.cjs` - Hollow square layout algorithm
+- `LazyMagic.FloorMat/FloorMat/kdtree.cjs` - Spatial data structures (KDTree, SpatialGrid)
+
+**Runtime Browser Component (ES6):**
+- `LazyMagic.BlazorSvg/wwwroot/SvgViewer.js` - Main interactive SVG viewer
+- `LazyMagic.BlazorSvg/wwwroot/SvgViewerAlgorithms.js` - Core browser algorithms
 
 ---
 

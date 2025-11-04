@@ -30,17 +30,17 @@ console.log = function(...args) {
 // Load the algorithms (CommonJS modules) from local FloorMat directory
 // console.log is now suppressed, so algorithms won't flood output
 const require = createRequire(import.meta.url);
-const kdtree = require('./kdtree.js'); // Required by optimized algorithm
-const unifiedAlgo = require('./SvgViewerInscribedRect.js');
-const boundaryBased = require('./SvgViewerBoundaryBased.js');
-const optimized = require('./SvgViewerOptimized.js');
-const boardroom = require('./SvgViewerBoardroom.js');
-const hollowsquare = require('./SvgViewerHollowSquare.js');
+const kdtree = require('./kdtree.cjs'); // Required by optimized algorithm
+const unifiedAlgo = require('./SvgViewerInscribedRect.cjs');
+const boundaryBased = require('./SvgViewerBoundaryBased.cjs');
+const optimized = require('./SvgViewerOptimized.cjs');
+const boardroom = require('./SvgViewerBoardroom.cjs');
+const hollowsquare = require('./SvgViewerHollowSquare.cjs');
 
 // Make KDTree and SpatialGrid available globally for the algorithms
 global.KDTree = kdtree.KDTree;
 global.SpatialGrid = kdtree.SpatialGrid;
-global.SpatialHash = kdtree.SpatialHash;
+global.SpatialHash = optimized.SpatialHash;
 global.boundaryBasedInscribedRectangle = boundaryBased.boundaryBasedInscribedRectangle;
 global.fastInscribedRectangle = optimized.fastInscribedRectangle;
 

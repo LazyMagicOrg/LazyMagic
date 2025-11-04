@@ -14,6 +14,12 @@
 		<RootNamespace>WASMApp</RootNamespace>
 		<AssemblyName>WASMApp</AssemblyName>
 	</PropertyGroup>
+	<ItemGroup>
+	  <Content Remove="wwwroot\Level1.svg" />
+	</ItemGroup>
+	<ItemGroup>
+	  <None Include="wwwroot\Level1.svg" />
+	</ItemGroup>
  
 
 	<ItemGroup>

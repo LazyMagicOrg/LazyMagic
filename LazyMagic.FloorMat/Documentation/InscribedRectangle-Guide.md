@@ -846,24 +846,23 @@ C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic\LazyMagic.FloorMat\FloorMat
 **Live Test Version:**
 ```
 C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic\BlazorTest.WASM\wwwroot\
-├── Level1.svg                       # Copy from FloorMat/output/Level1-output/
-├── precomputed-rectangles.json      # External JSON (fallback, optional)
+├── Level1.svg                       # Copy from FloorMat/output/Level1-output.svg
+├── (precomputed data embedded in SVG - no external JSON needed)
 └── (other assets)
 ```
 
 **Production Assets (Source):**
 ```
 C:\Users\noaht\source\repos\_Dev\BCProjects\BCTenancies\bcs-cerulean\base\SetsCmp\data\
-├── Level1.svg                       # Copy from FloorMat/output/Level1-output/
-├── precomputed-rectangles.json      # Copy from FloorMat/output/Level1-output/ (optional)
+├── Level1.svg                       # Copy from FloorMat/output/Level1-output.svg
+├── (precomputed data embedded in SVG)
 └── Rooms.json                       # Graph connectivity
 ```
 
 **Production Assets (S3):**
 ```
 s3://bcs---assets-4933-b260/base/SetsCmp/data/
-├── Level1.svg                       # Deployed from BCTenancies
-├── precomputed-rectangles.json      # Deployed from BCTenancies (optional)
+├── Level1.svg                       # Deployed from BCTenancies (contains embedded data)
 └── Rooms.json
 ```
 
@@ -1157,13 +1156,12 @@ dotnet build LazyMagic.BlazorSvg\LazyMagic.BlazorSvg.csproj -c Release
 After regenerating precomputed data:
 
 ```powershell
-# Copy SVG
-Copy-Item "C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic\BlazorTest.WASM\wwwroot\Level1.svg" `
+# Copy SVG with embedded precomputed data
+Copy-Item "C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic\LazyMagic.FloorMat\FloorMat\output\Level1-output.svg" `
           "C:\Users\noaht\source\repos\_Dev\BCProjects\BCTenancies\bcs-cerulean\base\SetsCmp\data\Level1.svg" -Force
 
-# Copy precomputed rectangles
-Copy-Item "C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic\LazyMagic.BlazorSvg\test-harness\precomputed-rectangles.json" `
-          "C:\Users\noaht\source\repos\_Dev\BCProjects\BCTenancies\bcs-cerulean\base\SetsCmp\data\precomputed-rectangles.json" -Force
+# Note: Precomputed data is now embedded in the SVG file (in <script> tags)
+# No separate JSON files are needed
 ```
 
 ### 3. Deploy Assets to S3
@@ -1587,21 +1585,28 @@ Use prefixes (`[precomputed]`, `[outline]`, `[winding]`) to filter logs.
 
 ### Code Locations
 
-**LazyMagic.BlazorSvg:**
+**LazyMagic.BlazorSvg (Runtime Component):**
 - `SvgViewer.razor`: Blazor component
 - `SvgViewerJS.cs`: C# interop wrapper
-- `wwwroot/SvgViewer.js`: Main JavaScript (2,700+ lines)
-- `wwwroot/SvgViewerAlgorithms.js`: Core algorithms (winding, hull, utils)
-- `wwwroot/SvgViewerBoundaryBased.js`: Boundary-based + hybrid (1,500+ lines)
-- `wwwroot/SvgViewerOptimized.js`: Optimized algorithm (800+ lines)
+- `wwwroot/SvgViewer.js`: Main JavaScript for browser (2,949 lines, ES6 module)
+- `wwwroot/SvgViewerAlgorithms.js`: Core algorithms for browser (winding, hull, utils)
 
-**Test Harness:**
+**LazyMagic.FloorMat (Build-Time Pipeline):**
+- `FloorMat/SvgViewerBoundaryBased.cjs`: Boundary-based + hybrid algorithm (2,407 lines)
+- `FloorMat/SvgViewerOptimized.cjs`: Optimized fast algorithm (1,746 lines)
+- `FloorMat/SvgViewerInscribedRect.cjs`: Unified inscribed rectangle (630 lines)
+- `FloorMat/SvgViewerBoardroom.cjs`: Boardroom layout algorithm (570 lines)
+- `FloorMat/SvgViewerHollowSquare.cjs`: Hollow square layout algorithm
+- `FloorMat/kdtree.cjs`: Spatial data structures (KDTree, SpatialGrid)
+- `FloorMat/SvgViewerAlgorithms.cjs`: SVG path parsing utilities (CommonJS)
+
+**FloorMat Pipeline Scripts:**
 - `FloorMat/compute-all-combinations.js`: Validation + combination generator
-- `FloorMat/test-runner.js`: Node.js test runner
-- `FloorMat/run-tests.ps1`: PowerShell test runner (Playwright)
-- `FloorMat/inscribed-rectangle.spec.js`: Playwright test specs
-- `FloorMat/extract-precomputed-rectangles.js`: SVG parser + JSON generator
-- `FloorMat/embed-rectangles-in-svg.js`: SVG embedding script
+- `FloorMat/run-tests.js`: Unified test runner (loads .cjs algorithms)
+- `FloorMat/extract-precomputed-project.js`: Multi-algorithm data extractor
+- `FloorMat/embed-project.js`: SVG embedding script (all layout types)
+- `FloorMat/process-all.js`: Internal multi-project orchestrator
+- `FloorMat/process-external.js`: External directory processor
 
 **Production:**
 - `BCProjects/SetsApp/SetsCmp/SetsCmp.csproj`: References LazyMagic.BlazorSvg
