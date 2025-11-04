@@ -143,6 +143,51 @@
           "Orientation": "Vertical",
           "Section1Id": "Ballroom_Aisle_35",
           "Section2Id": "Ballroom_Room_3"
+        },
+        {
+          "Orientation": "Vertical",
+          "Section1Id": "Ballroom_Aisle_35",
+          "Section2Id": "Ballroom_Room_5"
+        },
+        {
+          "Orientation": "Vertical",
+          "Section1Id": "Ballroom_Aisle_46",
+          "Section2Id": "Ballroom_Room_4"
+        },
+        {
+          "Orientation": "Vertical",
+          "Section1Id": "Ballroom_Aisle_46",
+          "Section2Id": "Ballroom_Room_Grand"
+        },
+        {
+          "Orientation": "Horizontal",
+          "Section1Id": "Ballroom_Aisle_56",
+          "Section2Id": "Ballroom_Room_5"
+        },
+        {
+          "Orientation": "Horizontal",
+          "Section1Id": "Ballroom_Aisle_56",
+          "Section2Id": "Ballroom_Room_Grand"
+        },
+        {
+          "Orientation": "Intersection",
+          "Section1Id": "Ballroom_Crossing_3456",
+          "Section2Id": "Ballroom_Aisle_34"
+        },
+        {
+          "Orientation": "Intersection",
+          "Section1Id": "Ballroom_Crossing_3456",
+          "Section2Id": "Ballroom_Aisle_35"
+        },
+        {
+          "Orientation": "Intersection",
+          "Section1Id": "Ballroom_Crossing_3456",
+          "Section2Id": "Ballroom_Aisle_46"
+        },
+        {
+          "Orientation": "Intersection",
+          "Section1Id": "Ballroom_Crossing_3456",
+          "Section2Id": "Ballroom_Aisle_56"
         }
       ]
     }

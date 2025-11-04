@@ -18,5 +18,7 @@ public enum SvgInscribedRectangleType
     /// <summary>
     /// Hollow square layout - perimeter table arrangement with open center
     /// </summary>
-    HollowSquare
+    HollowSquare,
+
+    None
 }

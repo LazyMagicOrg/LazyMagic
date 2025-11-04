@@ -8,8 +8,8 @@
   },
   "testName": "Level1 - Max Inscribed (Hybrid Algorithm)",
   "algorithm": "maxinscribed",
-  "svgPath": "C:\\Users\\noaht\\source\\repos\\_Dev\\LazyMagic\\LazyMagic\\LazyMagic.FloorMat\\FloorMat\\input\\Level1.svg",
-  "outputDir": "C:\\Users\\noaht\\source\\repos\\_Dev\\LazyMagic\\LazyMagic\\LazyMagic.FloorMat\\FloorMat\\output\\ComputedLayouts\\Level1-MaxInscribedResults",
+  "svgPath": "/mnt/c/Users/TimothyMay/repos/_Dev/LazyMagic/LazyMagic/LazyMagic.FloorMat/FloorMat/input/Level1.svg",
+  "outputDir": "/mnt/c/Users/TimothyMay/repos/_Dev/LazyMagic/LazyMagic/LazyMagic.FloorMat/FloorMat/output/ComputedLayouts/Level1-MaxInscribedResults",
   "algorithmOptions": {
     "coverageThreshold": 0,
     "maxTime": 5000,
@@ -34,5 +34,5 @@
     "binarySearchMaxIterations": 20,
     "debugMode": false
   },
-  "combinationsFile": "C:\\Users\\noaht\\source\\repos\\_Dev\\LazyMagic\\LazyMagic\\LazyMagic.FloorMat\\FloorMat\\output\\Level1-valid-combinations.json"
+  "combinationsFile": "/mnt/c/Users/TimothyMay/repos/_Dev/LazyMagic/LazyMagic/LazyMagic.FloorMat/FloorMat/output/Level1-valid-combinations.json"
 }

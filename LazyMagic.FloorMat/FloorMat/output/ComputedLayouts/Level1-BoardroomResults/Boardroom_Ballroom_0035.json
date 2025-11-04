@@ -1,48 +1,46 @@
 {
   "testId": "Boardroom_Ballroom_0035",
   "sections": [
-    "Ballroom_Aisle_12",
     "Ballroom_Aisle_35",
-    "Ballroom_Room_1",
-    "Ballroom_Room_2",
-    "Ballroom_Room_3"
+    "Ballroom_Room_3",
+    "Ballroom_Room_5"
   ],
   "layout": {
     "corners": [
       {
-        "x": 465.50540237150585,
-        "y": 32.684514618538316
+        "x": 352.9001253879341,
+        "y": 53.03799208049739
       },
       {
-        "x": 472.47115070623283,
-        "y": 43.66077765006452
+        "x": 680.2979768217118,
+        "y": 94.3979591567178
       },
       {
-        "x": 244.50261082068877,
-        "y": 188.33401229439357
+        "x": 678.6686447853758,
+        "y": 107.29545027380601
       },
       {
-        "x": 237.53686248596182,
-        "y": 177.35774926286737
+        "x": 351.2707933515982,
+        "y": 65.9354831975856
       }
     ],
-    "width": 13,
-    "height": 270,
-    "area": 3510,
-    "angle": 57.6,
+    "width": 330,
+    "height": 13,
+    "area": 4290,
+    "angle": 7.2,
     "centroid": {
-      "x": 355.0040065960973,
-      "y": 110.50926345646594
+      "x": 515.784385086655,
+      "y": 80.1667211771517
     },
-    "sets": 45,
-    "tables": 90,
-    "orientation": "width×length",
+    "sets": 55,
+    "tables": 110,
+    "orientation": "length×width",
     "type": "boardroom",
     "algorithm": "Dedicated",
-    "computationTime": 184.44959999999992,
+    "computationTime": 141.89985700000034,
     "winningAlgorithm": "Dedicated"
   },
-  "polygonArea": 35446.592947752855,
-  "fillRatio": 9.902221082781152,
-  "runtimeMs": 288
+  "polygonArea": 31585.016492893374,
+  "fillRatio": 13.582389614915192,
+  "runtimeMs": 170
 }

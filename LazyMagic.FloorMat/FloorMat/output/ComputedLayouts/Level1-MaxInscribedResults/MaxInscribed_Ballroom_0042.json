@@ -1,52 +1,50 @@
 {
   "testId": "MaxInscribed_Ballroom_0042",
   "sections": [
-    "Ballroom_Aisle_12",
     "Ballroom_Aisle_34",
     "Ballroom_Aisle_35",
     "Ballroom_Room_1",
-    "Ballroom_Room_2",
     "Ballroom_Room_3"
   ],
   "layout": {
     "corners": [
       {
-        "x": 246.17150140375,
-        "y": 143.6992097875
+        "x": 234.81000000000003,
+        "y": 32.260000000000005
       },
       {
-        "x": 457.82849859625003,
-        "y": 143.6992097875
+        "x": 478.05556,
+        "y": 32.255595
       },
       {
-        "x": 457.82849859625003,
-        "y": 32.300790212500004
+        "x": 478.0572989322292,
+        "y": 128.28000904675457
       },
       {
-        "x": 246.17150140375,
-        "y": 32.300790212500004
+        "x": 234.81173893222916,
+        "y": 128.28441404675462
       }
     ],
-    "area": 23578.254979234713,
-    "width": 211.6569971925,
-    "height": 111.398419575,
-    "angle": 0,
-    "aspectRatio": 1.9,
-    "validScale": 0.963,
-    "elapsed": 5000.200500000006,
+    "width": 243.2455600398857,
+    "height": 96.0244140625,
+    "area": 23357.512376134688,
+    "angle": 0.0010375848534636134,
     "centroid": {
-      "x": 352,
-      "y": 88
+      "x": 356.4336494661146,
+      "y": 80.27000452337731
     },
-    "type": "optimized",
-    "hybridTotalTime": 5002.097999999998,
+    "aspectRatio": 2.5331637002394305,
+    "type": "boundary-based",
+    "computeTime": 2.3290129999950295,
+    "centroidStrategy": "uniform",
+    "hybridTotalTime": 2.3745469999994384,
     "usedBoundaryBased": true,
-    "usedOptimized": true,
-    "selectedAlgorithm": "optimized",
-    "boundaryTime": 1.8676000000050408,
-    "optimizedTime": 5000.221500000007
+    "usedOptimized": false,
+    "selectedAlgorithm": "boundary-based",
+    "boundaryTime": 2.355842000004486,
+    "optimizedTime": 0
   },
-  "polygonArea": 37575.80012220415,
-  "fillRatio": 62.748510750412315,
-  "runtimeMs": 5005
+  "polygonArea": 25437.216058875343,
+  "fillRatio": 91.82416944555919,
+  "runtimeMs": 4
 }

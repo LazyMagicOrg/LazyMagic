@@ -1,0 +1,43 @@
+{
+  "testId": "HollowSquare_Ballroom_0058",
+  "sections": [
+    "Ballroom_Aisle_12",
+    "Ballroom_Aisle_34",
+    "Ballroom_Aisle_35",
+    "Ballroom_Room_1",
+    "Ballroom_Room_3",
+    "Ballroom_Room_4",
+    "Ballroom_Room_5"
+  ],
+  "layout": {
+    "corners": [
+      {
+        "x": 235.202205,
+        "y": 33.521704375
+      },
+      {
+        "x": 680.202205,
+        "y": 33.521704375
+      },
+      {
+        "x": 680.202205,
+        "y": 125.521704375
+      },
+      {
+        "x": 235.202205,
+        "y": 125.521704375
+      }
+    ],
+    "width": 445,
+    "height": 92,
+    "area": 40940,
+    "angle": 0,
+    "centroid": {
+      "x": 457.702205,
+      "y": 79.521704375
+    }
+  },
+  "polygonArea": 58010.58319639356,
+  "fillRatio": 70.57332945852056,
+  "runtimeMs": 5002
+}

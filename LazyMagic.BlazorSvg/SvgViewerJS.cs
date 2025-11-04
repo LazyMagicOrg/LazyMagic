@@ -103,11 +103,19 @@ namespace LazyMagic.BlazorSvg
             return result;
         }
 
+        public async ValueTask SetRectangleTypeAsync(SvgInscribedRectangleType rectangleType)
+        {
+            if (containerId == null) throw new InvalidOperationException("InitAsync must be called first");
+            var module = await moduleTask.Value;
+            await module.InvokeVoidAsync("setRectangleType", containerId, rectangleType.ToString().ToLower());
+        }
+
+
         public async ValueTask SetRectangleTypeAsync(string rectangleType)
         {
             if (containerId == null) throw new InvalidOperationException("InitAsync must be called first");
             var module = await moduleTask.Value;
-            await module.InvokeVoidAsync("setRectangleType", containerId, rectangleType);
+            await module.InvokeVoidAsync("setRectangleType", containerId, rectangleType.ToLower());
         }
 
         /// <summary>

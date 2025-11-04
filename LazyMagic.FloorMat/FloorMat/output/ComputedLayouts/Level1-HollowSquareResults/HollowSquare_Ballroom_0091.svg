@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="458.05556 108.07719 582.54067 212.75528"
+     width="582.54067" height="212.75528"
+     style="background: white;">
+
+  <!-- Title -->
+  <text x="478.05556" y="148.07719" font-size="16" font-weight="bold" fill="#000">
+    HollowSquare_Ballroom_0091
+  </text>
+
+  <!-- Original test paths (gray, semi-transparent) -->
+  <g opacity="0.3">
+    <path id="Ballroom_Aisle_56" d="m 680.59623,128.07719 -5.95708,19.85693 H 478.05556 v -19.85693 z" fill="none" stroke="#808080" stroke-width="1"/>
+    <path id="Ballroom_Room_Grand" d="m 674.63915,147.93412 c -13.77093,46.32866 -28.44265,94.4522 -41.69955,140.98419 l -31.77108,11.91416 C 559.50968,285.82798 528.19209,276.69667 478.05556,263.60073 V 147.93412 Z" fill="none" stroke="#808080" stroke-width="1"/>
+  </g>
+
+  <!-- Boundary polygon (blue, dashed) -->
+  <polygon points="478.06,128.08 680.59623,128.07719 674.63915,147.93412 632.9395999999999,288.91831 601.16852,300.83247 478.05556,263.60073 478.05556,147.93412" fill="none" stroke="#4080ff" stroke-width="2" stroke-dasharray="5,5"/>
+
+  <!-- Layout rectangle (colored fill, solid border) -->
+  <polygon points="645.4671869278661,138.65023026900238 637.1160478304674,271.3877851499625 479.42782473880055,261.466883064331 487.77896383619924,128.72932818337085" fill="rgba(147, 51, 234, 0.15)" stroke="#9333ea" stroke-width="3"/>
+
+  <!-- Centroid marker -->
+  <circle cx="562.4475058333334" cy="200.05855666666668" r="4" fill="#9333ea"/>
+  <text x="570.4475058333334" y="205.05855666666668" font-size="10" fill="#9333ea">hollowsquare</text>
+
+  <!-- Corner markers -->
+
+  <circle cx="645.4671869278661" cy="138.65023026900238" r="3" fill="#9333ea"/>
+  <text x="651.4671869278661" y="142.65023026900238" font-size="8" fill="#9333ea">c0</text>
+  <circle cx="637.1160478304674" cy="271.3877851499625" r="3" fill="#9333ea"/>
+  <text x="643.1160478304674" y="275.3877851499625" font-size="8" fill="#9333ea">c1</text>
+  <circle cx="479.42782473880055" cy="261.466883064331" r="3" fill="#9333ea"/>
+  <text x="485.42782473880055" y="265.466883064331" font-size="8" fill="#9333ea">c2</text>
+  <circle cx="487.77896383619924" cy="128.72932818337085" r="3" fill="#9333ea"/>
+  <text x="493.77896383619924" y="132.72932818337085" font-size="8" fill="#9333ea">c3</text>
+
+  <!-- Vertex markers -->
+
+  <circle cx="478.06" cy="128.08" r="2" fill="#4080ff"/>
+  <text x="470.06" y="122.08000000000001" font-size="8" fill="#4080ff">p0</text>
+  <circle cx="680.59623" cy="128.07719" r="2" fill="#4080ff"/>
+  <text x="672.59623" y="122.07719" font-size="8" fill="#4080ff">p1</text>
+  <circle cx="674.63915" cy="147.93412" r="2" fill="#4080ff"/>
+  <text x="666.63915" y="141.93412" font-size="8" fill="#4080ff">p2</text>
+  <circle cx="632.9395999999999" cy="288.91831" r="2" fill="#4080ff"/>
+  <text x="624.9395999999999" y="282.91831" font-size="8" fill="#4080ff">p3</text>
+  <circle cx="601.16852" cy="300.83247" r="2" fill="#4080ff"/>
+  <text x="593.16852" y="294.83247" font-size="8" fill="#4080ff">p4</text>
+  <circle cx="478.05556" cy="263.60073" r="2" fill="#4080ff"/>
+  <text x="470.05556" y="257.60073" font-size="8" fill="#4080ff">p5</text>
+  <circle cx="478.05556" cy="147.93412" r="2" fill="#4080ff"/>
+  <text x="470.05556" y="141.93412" font-size="8" fill="#4080ff">p6</text>
+
+  <!-- Data Table (positioned to the right) -->
+  <g transform="translate(700.59623, 128.07719)">
+    <rect x="0" y="0" width="320" height="160" fill="white" stroke="#ccc" stroke-width="1"/>
+    <rect x="0" y="0" width="320" height="30" fill="#f0f0f0"/>
+    <text x="160" y="20" font-size="14" font-weight="bold" text-anchor="middle">Hollow Square Layout</text>
+
+    <text x="10" y="50" font-size="11" font-weight="bold">Tables:</text>
+    <text x="310" y="50" font-size="11" text-anchor="end">90 (20L × 25D)</text>
+
+    <text x="10" y="70" font-size="11" font-weight="bold">Dimensions:</text>
+    <text x="310" y="70" font-size="11" text-anchor="end">133.0 × 158.0 ft</text>
+
+    <text x="10" y="90" font-size="11" font-weight="bold">Area:</text>
+    <text x="310" y="90" font-size="11" text-anchor="end">21014.00 sq ft</text>
+
+    <text x="10" y="110" font-size="11" font-weight="bold">Fill Ratio:</text>
+    <text x="310" y="110" font-size="11" text-anchor="end">74.8%</text>
+
+    <text x="10" y="130" font-size="11" font-weight="bold">Angle:</text>
+    <text x="310" y="130" font-size="11" text-anchor="end">93.6°</text>
+
+    <text x="10" y="150" font-size="11" font-weight="bold">Runtime:</text>
+    <text x="310" y="150" font-size="11" text-anchor="end">2.79s</text>
+  </g>
+
+  <!-- Area Data (embedded as XML comments for extraction) -->
+  <!-- polygonArea: 28102.2477 -->
+  <!-- layoutArea: 21014.00 -->
+  <!-- fillRatio: 74.8 -->
+
+</svg>
