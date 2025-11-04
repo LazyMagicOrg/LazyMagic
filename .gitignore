@@ -367,3 +367,4 @@ FodyWeavers.xsd
 # the folder will be ignored.
 !**/[Pp]ackages/.gitkeep
 /LazyMagic.BlazorSvg/test-harness/nul
+/LazyMagic.FloorMat/FloorMat/nul
