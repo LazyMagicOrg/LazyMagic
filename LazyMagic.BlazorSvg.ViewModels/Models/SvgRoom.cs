@@ -10,6 +10,10 @@ public class SvgRoom
     /// </summary>
     public string Id { get; set; } = string.Empty;
 
+    public string Name { get; set; } = string.Empty;
+    public string Description { get; set; } = string.Empty;
+    public List<string> SelectedRoomSectionIds { get; set; } = new List<string>();
+
     /// <summary>
     /// Sections within this room
     /// </summary>
