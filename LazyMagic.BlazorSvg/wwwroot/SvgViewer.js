@@ -2347,7 +2347,7 @@ class SvgViewerInstance {
         }
     }
 
-    handleSelection(event) {
+    async handleSelection(event) {
         // Do nothing if selection is disabled
         if (this.disableSelection) return;
 
@@ -2367,14 +2367,21 @@ class SvgViewerInstance {
         if (isSelected) {
             this.unselectPath(id);
             this.dotNetObjectReference.invokeMethodAsync("OnPathUnselected", id);
-        } else {
-            this.selectPath(id);
-            this.dotNetObjectReference.invokeMethodAsync("OnPathSelected", id);
-        }
 
-        this.getPaths();
-        const mySelectedIds = Array.from(this.selectedIds);
-        this.dotNetObjectReference.invokeMethodAsync("OnPathsChanged", mySelectedIds);
+            // Report updated selection state after unselect
+            this.getPaths();
+            const mySelectedIds = Array.from(this.selectedIds);
+            this.dotNetObjectReference.invokeMethodAsync("OnPathsChanged", mySelectedIds);
+        } else {
+            // Wait for selection AND auto-select to complete before reporting
+            await this.selectPath(id);
+            this.dotNetObjectReference.invokeMethodAsync("OnPathSelected", id);
+
+            // Report updated selection state after selection completes (including auto-select)
+            this.getPaths();
+            const mySelectedIds = Array.from(this.selectedIds);
+            this.dotNetObjectReference.invokeMethodAsync("OnPathsChanged", mySelectedIds);
+        }
     }
 
     // Compute union of transformed bboxes (no cloning, includes transforms)
@@ -2821,8 +2828,8 @@ class SvgViewerInstance {
     /**
      * Public selectPath method - defaults to manual selection
      */
-    selectPath(pathId) {
-        return this._selectPathInternal(pathId, true);
+    async selectPath(pathId) {
+        return await this._selectPathInternal(pathId, true);
     }
 
     async selectPaths(paths) {
