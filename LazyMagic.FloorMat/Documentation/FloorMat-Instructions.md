@@ -2,6 +2,8 @@
 
 Generate precomputed layout data for SVG floor plans.
 
+**Last Updated:** 2025-11-05
+
 ---
 
 ## Quick Start (Two Options)
@@ -13,11 +15,11 @@ Generate precomputed layout data for SVG floor plans.
 You need two files from the venue:
 
 1. **`[VenueName].svg`** - The floor plan SVG
-2. **`[VenueName]-Rooms.json`** - Graph connectivity data (sections and joins)
+2. **`[VenueName]-data.json`** - Level data with graph connectivity (sections and joins)
 
 Example for "Level1" venue:
 - `Level1.svg`
-- `Level1-Rooms.json`
+- `Level1-data.json`
 
 #### Step 2: Place Files in Input Directory
 
@@ -27,7 +29,7 @@ cd C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic\LazyMagic.FloorMat\Floor
 # Your input directory should look like:
 # input/
 # ├── Level1.svg
-# └── Level1-Rooms.json
+# └── Level1-data.json
 ```
 
 #### Step 3: Run the Pipeline
@@ -37,10 +39,16 @@ npm run process
 ```
 
 **That's it!** The pipeline will:
-- Generate 251 valid room combinations (using 10 validation rules)
-- Run MaxInscribed, Boardroom, and Hollow Square layout algorithms
-- Extract precomputed data
-- Embed data into final SVG
+1. Generate valid room combinations using `compute-all-combinations.js` (10 validation rules)
+2. Calculate polygon areas using `calculate-polygon-areas.js` (Shoelace formula)
+3. Run all three algorithms in parallel via `run-tests.js`:
+   - MaxInscribed (hybrid boundary-based + optimized)
+   - Boardroom (fixed 13ft width, discrete length)
+   - Hollow Square (discrete width & height)
+4. Extract precomputed data using `extract-precomputed-project.js`
+5. Embed path metadata using `embed-path-metadata.js` (floormat:* attributes)
+6. Embed layout data using `embed-project.js` (three `<script>` elements in SVG)
+7. Clean up intermediate files
 
 ---
 
@@ -63,7 +71,7 @@ Example:
 C:\BCProjects\BCTenancies\bcs-cerulean\FloorMat\Level1\
 ├── input/
 │   ├── Level1.svg
-│   └── Level1-Rooms.json
+│   └── Level1-data.json
 ```
 
 #### Step 2: Run the Pipeline from FloorMat Directory
@@ -178,14 +186,15 @@ node embed-project.js "Level1" "input/Level1.svg" "output/Level1-output"
 - Check that the file extension is `.svg` (lowercase)
 - The script will show: "Please provide an SVG file and run the command again"
 
-### Error: "Rooms file not found"
-- Make sure your Rooms.json file follows the naming pattern: `[VenueName]-Rooms.json`
+### Error: "Data file not found"
+- Make sure your data JSON file follows the naming pattern: `[VenueName]-data.json`
 - Check that it's in the `input/` directory
 - For external processing: Verify the `input/` folder exists in your target directory
 
 ### Error: "Failed to generate combinations"
-- Verify `[VenueName]-Rooms.json` is valid JSON
-- Check that it contains `Level1.Rooms.Ballroom.RoomSections` and `Joins`
+- Verify `[VenueName]-data.json` is valid JSON
+- Check that it contains `Rooms[]`, `RoomSections[]`, and `Joins[]` arrays
+- Ensure each section has required fields: `Id`, `SectionType`, `LayoutRestriction`
 
 ### Error: "Target directory does not exist"
 **For external processing:**
@@ -200,7 +209,7 @@ node embed-project.js "Level1" "input/Level1.svg" "output/Level1-output"
 ### Need different venue?
 **Option 1 (Internal):**
 - Just change the file names in `FloorMat/input/`
-- `Cerulean.svg` + `Cerulean-Rooms.json` → outputs to `output/Cerulean-output/`
+- `Cerulean.svg` + `Cerulean-data.json` → outputs to `output/Cerulean-output/`
 - Pipeline auto-detects all projects in `input/` and processes them
 
 **Option 2 (External):**
@@ -210,8 +219,54 @@ node embed-project.js "Level1" "input/Level1.svg" "output/Level1-output"
 
 ---
 
+## Pipeline Components Reference
+
+### Core Scripts (ES6 Modules)
+
+| Script | Purpose | Lines |
+|--------|---------|-------|
+| **process-all.js** | Multi-project orchestrator (internal) | 362 |
+| **process-external.js** | Multi-project orchestrator (external) | 315 |
+| **run-tests.js** | Test runner with Playwright (loads .cjs algorithms) | 1,275 |
+| **compute-all-combinations.js** | Valid combination generator (10 rules) | 583 |
+| **calculate-polygon-areas.js** | Polygon area calculator (Shoelace formula) | 334 |
+| **extract-precomputed-project.js** | Per-project data extraction | 195 |
+| **embed-path-metadata.js** | Embeds floormat:* attributes | 198 |
+| **embed-project.js** | Embeds precomputed data in SVG | 170 |
+| **check-dependencies.js** | Auto-installs npm dependencies | 53 |
+
+### Algorithm Modules (CommonJS .cjs)
+
+| Module | Purpose | Lines |
+|--------|---------|-------|
+| **SvgViewerInscribedRect.cjs** | Unified API with dimension modes | 629 |
+| **SvgViewerBoundaryBased.cjs** | Boundary-based algorithm with hybrid sampling | 2,406 |
+| **SvgViewerOptimized.cjs** | Grid-based with polylabel + binary search | 1,745 |
+| **SvgViewerAlgorithms.cjs** | Geometric utilities (path parsing, point-in-polygon) | 1,340 |
+| **SvgViewerBoardroom.cjs** | Boardroom layout (fixed 13ft width) | 569 |
+| **SvgViewerHollowSquare.cjs** | Hollow square layout (discrete dimensions) | 403 |
+| **kdtree.cjs** | Spatial data structures (KDTree, SpatialGrid) | 462 |
+
+**Total:** 11 pipeline scripts (3,917 lines) + 7 algorithm modules (11,882 lines) = **15,799 lines of code**
+
+### 10 Validation Rules (compute-all-combinations.js)
+
+1. **Adjacency Constraint** - Shared aisles must be selected
+2. **Single section must be Room** - Not Aisle/Crossing alone
+3. **Aisle can include single room**
+4. **Crossing requires ≥2 aisles**
+5. **Three or more aisles require crossing**
+6. **U-Shape aisle requirement**
+7. **All sections must be connected** (single component)
+8. **Must include at least one room**
+9. **Aisle must have at least one connected room**
+10. **Crossing cannot be only bridge** (articulation point check)
+
+---
+
 ## More Information
 
-- **Complete Documentation:** `FloorMat/FloorMat-map.md`
+- **Complete File Map:** `FloorMat/FloorMat-map.md` (comprehensive documentation of all 21 JavaScript files)
 - **Algorithm Details:** See other `.md` files in `Documentation/`
-- **Validation Rules:** `InscribedRectangle-Guide.md` (Rules 1-10)
+- **Validation Rules:** `InscribedRectangle-Guide.md` (detailed rule explanations)
+- **Embedding Reference:** `EmbedData-QuickRef.md` (quick command reference)

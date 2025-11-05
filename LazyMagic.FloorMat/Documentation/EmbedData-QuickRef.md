@@ -2,6 +2,8 @@
 
 This document describes the process for generating, extracting, and embedding precomputed layout data into SVG floor plan files using the FloorMat multi-project pipeline.
 
+**Last Updated:** 2025-11-05
+
 ## Quick Start - Commands
 
 Navigate to the FloorMat directory:
@@ -13,9 +15,9 @@ cd "C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic\LazyMagic.FloorMat\Floo
 ### New Multi-Project Workflow (v3.0+)
 
 **Step 1: Prepare Your Files**
-Place your SVG and combinations file in the `input/` directory:
+Place your SVG and data file in the `input/` directory:
 - `input/YourProject.svg`
-- `input/YourProject-combinations.json`
+- `input/YourProject-data.json` (level data with graph connectivity: Rooms[], RoomSections[], Joins[])
 
 **Step 2: Run the Pipeline**
 Process all SVG files in input/ automatically:
@@ -25,16 +27,22 @@ npm run process
 ```
 
 **What happens:**
-- Auto-detects all .svg files in `input/`
-- Generates all three layout types (max-inscribed, boardroom, hollow square)
-- Extracts precomputed data for each project
-- Embeds data into `output/[ProjectName]-output/[ProjectName].svg`
+- Auto-detects all .svg files in `input/` (process-all.js - 362 lines)
+- Generates valid combinations using compute-all-combinations.js (583 lines, 10 validation rules)
+- Calculates polygon areas using calculate-polygon-areas.js (334 lines, Shoelace formula)
+- Runs all three algorithms in parallel via run-tests.js (1,275 lines):
+  - MaxInscribed (SvgViewerInscribedRect.cjs - unified API with hybrid selection)
+  - Boardroom (SvgViewerBoardroom.cjs - fixed 13ft width)
+  - Hollow Square (SvgViewerHollowSquare.cjs - discrete dimensions)
+- Extracts precomputed data via extract-precomputed-project.js (195 lines)
+- Embeds path metadata via embed-path-metadata.js (198 lines, floormat:* attributes)
+- Embeds layout data via embed-project.js (170 lines, three <script> elements)
 - **Preserves your original SVG in input/**
 
 **Step 3: Use the Output**
 Your processed SVG with embedded data is in:
 ```
-FloorMat/output/[ProjectName]-output/[ProjectName].svg
+FloorMat/output/[ProjectName]-output/[ProjectName]-output.svg
 ```
 
 ### Run Application
@@ -136,7 +144,7 @@ Ensure you have Node.js installed and the following:
 
 - **Your project files:**
   - `input/YourProject.svg` - Your SVG file
-  - `input/YourProject-combinations.json` - Valid path combinations for your project
+  - `input/YourProject-data.json` - Level data with graph connectivity (Rooms[], RoomSections[], Joins[])
 
 ### Step 1: Run Complete Pipeline
 
@@ -152,11 +160,13 @@ npm run process
 **What It Does:**
 1. **Auto-detection:** Scans `input/` for all .svg files
 2. **For each project** (e.g., `Level1.svg`):
-   - Loads `Level1-combinations.json`
+   - Generates valid combinations from `Level1-data.json` (compute-all-combinations.js, 10 rules)
+   - Calculates polygon areas (calculate-polygon-areas.js, Shoelace formula)
    - **Generates test configs** dynamically for all three algorithms
-   - **Runs test-runner** for max-inscribed, boardroom, and hollow square
-   - **Extracts data** from test results to JSON files
-   - **Embeds all data** into output SVG
+   - **Runs test-runner** (run-tests.js with Playwright) for max-inscribed, boardroom, and hollow square in parallel
+   - **Extracts data** from test results to JSON files (extract-precomputed-project.js)
+   - **Embeds path metadata** (embed-path-metadata.js, floormat:* attributes)
+   - **Embeds all layout data** into output SVG (embed-project.js, three <script> elements in <defs>)
    - **Preserves original** SVG in input/
 
 **Output Structure:**
@@ -164,14 +174,15 @@ npm run process
 FloorMat/
 ├── input/
 │   ├── Level1.svg                    # PRESERVED (original)
-│   └── Level1-combinations.json      # PRESERVED (original)
+│   └── Level1-data.json              # PRESERVED (graph connectivity)
 └── output/
     └── Level1-output/
-        ├── Level1.svg                # NEW (with embedded data)
+        ├── Level1-output.svg         # ← FINAL FILE (with embedded data)
+        ├── Level1-valid-combinations.json  # Generated (251 combos)
         ├── Level1-rectangles.json    # Precomputed max-inscribed
         ├── Level1-boardroom.json     # Precomputed boardroom
         ├── Level1-hollowsquare.json  # Precomputed hollow square
-        └── TestResults/
+        └── ComputedLayouts/
             ├── Level1-MaxInscribedResults/
             ├── Level1-BoardroomResults/
             └── Level1-HollowSquareResults/
@@ -316,13 +327,16 @@ output/Level1-output/
 
 ## Troubleshooting
 
+### Pipeline Fails - Missing Data File
+- Ensure `[ProjectName]-data.json` exists in `input/` directory
+- File must contain `Rooms[]`, `RoomSections[]`, and `Joins[]` arrays
+- Check that it's valid JSON
+
 ### Test Harness Fails
-- Ensure `valid-combinations.json` exists and contains 251 combinations
-- Check that TestResults directories exist (create if missing):
-  - `TestResults/MaxInscribedResults/`
-  - `TestResults/BoardroomResults/`
-  - `TestResults/HollowSquareResults/`
-- Verify all required dependencies are installed (`npm install`)
+- Check that ComputedLayouts directories are created automatically by pipeline
+- Verify all required dependencies are installed:
+  - Run `node check-dependencies.js` (auto-installs missing deps)
+  - Required: jsdom, xml-beautify, xmldom
 
 ### Extraction Returns Null Areas
 - This means the SVG files don't have area comment data

@@ -73,7 +73,7 @@ Now both polygons have matching vertices at the junction point (v2 and v10 share
 
 1. **Identify T-junctions:**
    - Look for vertices from one section that lie on edges of adjacent sections
-   - Check sections that will be merged together (defined in `Rooms.json`)
+   - Check sections that will be merged together (defined in `level data JSON (e.g., Level1-data.json)`)
 
 2. **Add collinear vertices:**
    - In Inkscape or your SVG editor:
@@ -201,7 +201,7 @@ Examples:
 ### Why It Matters
 
 The FloorMat pipeline:
-- Parses section IDs to match with `Rooms.json` configuration
+- Parses section IDs to match with `level data JSON (e.g., Level1-data.json)` configuration
 - Groups sections by room name prefix
 - Generates unique IDs based on naming pattern
 
@@ -212,7 +212,7 @@ Invalid names cause:
 
 ### Validation
 
-Check that your SVG path IDs match the sections defined in `Rooms.json`:
+Check that your SVG path IDs match the sections defined in `level data JSON (e.g., Level1-data.json)`:
 
 ```json
 {
@@ -278,10 +278,10 @@ Before processing an SVG file through FloorMat:
 - [ ] All paths have consistent winding direction (verified with `analyze-winding.js`)
 - [ ] No T-junctions exist (vertices meet vertices, not vertices meeting edges)
 - [ ] Collinear vertices added at all junction points
-- [ ] Path IDs follow naming convention and match `Rooms.json`
+- [ ] Path IDs follow naming convention and match `level data JSON (e.g., Level1-data.json)`
 - [ ] Coordinates use 6+ decimal places
 - [ ] Sections that should merge are properly adjacent in the SVG
 
 ---
 
-**Last Updated:** 2025-10-30
+**Last Updated:** 2025-11-05 (Updated for current file naming)

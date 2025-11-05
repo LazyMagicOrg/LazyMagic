@@ -9,7 +9,7 @@ This comprehensive guide covers the architecture, implementation, deployment, an
 - [HollowSquareLayoutPipeline.md](./HollowSquareLayoutPipeline.md) - Hollow square layout system
 - [EmbedData-QuickRef.md](./EmbedData-QuickRef.md) - Quick command reference for data regeneration
 
-**Last Updated:** 2025-10-25
+**Last Updated:** 2025-11-05
 **Version:** LazyMagic.BlazorSvg 3.0.1
 
 ---
@@ -697,7 +697,7 @@ Place your files in the `input/` directory:
 ```bash
 FloorMat/input/
 ├── YourProject.svg                      # Your SVG file
-└── YourProject-combinations.json        # Valid combinations for your project
+└── YourProject-data.json                # Level data with graph connectivity (sections + joins)
 ```
 
 **Step 2: Run the Pipeline**
@@ -707,30 +707,40 @@ cd "C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic\LazyMagic.FloorMat\Floo
 npm run process
 ```
 
-**Duration:** ~20 minutes per project
+**Duration:** ~20-30 minutes per project (all three algorithms run in parallel for ~3x speedup)
 
 **What it does:**
-1. **Auto-detects** all .svg files in `input/`
+1. **Auto-detects** all .svg files in `input/` via `process-all.js` (362 lines)
 2. **For each project** (e.g., `Level1.svg`):
-   - Loads `Level1-combinations.json` (must exist)
-   - **Generates temporary configs** for all three algorithms:
-     - Max-inscribed rectangles
-     - Boardroom layouts
-     - Hollow square layouts
-   - **Runs test-runner** for each algorithm:
-     - Loads SVG with selected paths
-     - Triggers layout calculation
-     - Captures results (corners, dimensions, areas, computation time)
-     - Saves visualizations to `output/[Project]-output/TestResults/`
-   - **Extracts precomputed data** from test results:
-     - Parses test result SVGs
-     - Generates `[Project]-rectangles.json`
-     - Generates `[Project]-boardroom.json`
-     - Generates `[Project]-hollowsquare.json`
-   - **Embeds all data** into final SVG:
+   - **Generates valid combinations** using `compute-all-combinations.js` (583 lines):
+     - Reads `Level1-data.json` (graph connectivity with Rooms[], RoomSections[], Joins[])
+     - Applies 10 validation rules (adjacency, connectivity, articulation points)
+     - Generates `Level1-valid-combinations.json` (251 combinations)
+   - **Calculates polygon areas** using `calculate-polygon-areas.js` (334 lines):
+     - Parses SVG paths with full M/L/H/V/C/S/Q/T/A/Z command support
+     - Applies Shoelace formula for area calculation
+     - Creates `Level1-data-with-areas.json`
+   - **Generates temporary test configs** dynamically (MaxInscribed, Boardroom, Hollow Square)
+   - **Runs all three algorithms in parallel** via `run-tests.js` (1,275 lines):
+     - Loads CommonJS algorithm modules (.cjs) via `createRequire()`
+     - Parses SVG with JSDOM, handles transforms (translate, scale, rotate, matrix)
+     - Merges multi-path polygons into unified coordinate space
+     - Launches Playwright headless browser for each test case
+     - Executes algorithms: SvgViewerInscribedRect.cjs (unified API with hybrid selection), SvgViewerBoardroom.cjs, SvgViewerHollowSquare.cjs
+     - Saves JSON + SVG results to `output/[Project]-output/ComputedLayouts/`
+   - **Extracts precomputed data** using `extract-precomputed-project.js` (195 lines):
+     - Parses test result JSON files
+     - Aggregates into three consolidated files
+     - Calculates statistics (total/avg time, min/max/avg area)
+   - **Embeds path metadata** using `embed-path-metadata.js` (198 lines):
+     - Adds floormat:* attributes to SVG paths (section-type, layout-restriction, polygon-area)
+     - Uses namespace `http://lazymagic.com/floormat`
+     - Creates `Level1-with-metadata.svg` (intermediate file)
+   - **Embeds all layout data** using `embed-project.js` (170 lines):
      - Reads original SVG from `input/` (preserves it)
-     - Embeds all three datasets as `<script>` tags
-     - Writes to `output/[Project]-output/[Project].svg`
+     - Embeds three datasets as `<script type="application/json">` elements in `<defs>`
+     - Writes to `output/[Project]-output/[Project]-output.svg`
+   - **Cleans up intermediate files** (`Level1-with-metadata.svg`, `Level1-data-with-areas.json`)
 
 **Console output:**
 ```
@@ -757,18 +767,19 @@ All projects processed successfully!
 ```
 FloorMat/
 ├── input/
-│   ├── Level1.svg                       # PRESERVED
-│   └── Level1-combinations.json         # PRESERVED
+│   ├── Level1.svg                       # PRESERVED (original)
+│   └── Level1-data.json                 # PRESERVED (graph connectivity)
 └── output/
     └── Level1-output/
-        ├── Level1.svg                   # ← Use this one!
-        ├── Level1-rectangles.json
-        ├── Level1-boardroom.json
-        ├── Level1-hollowsquare.json
-        └── TestResults/
-            ├── Level1-MaxInscribedResults/
-            ├── Level1-BoardroomResults/
-            └── Level1-HollowSquareResults/
+        ├── Level1-output.svg            # ← FINAL FILE: Use this one!
+        ├── Level1-valid-combinations.json   # Generated from Level1-data.json
+        ├── Level1-rectangles.json       # MaxInscribed precomputed data
+        ├── Level1-boardroom.json        # Boardroom precomputed data
+        ├── Level1-hollowsquare.json     # Hollow Square precomputed data
+        └── ComputedLayouts/             # Raw algorithm test results
+            ├── Level1-MaxInscribedResults/    # JSON + SVG per combo
+            ├── Level1-BoardroomResults/       # JSON + SVG per combo
+            └── Level1-HollowSquareResults/    # JSON + SVG per combo
 ```
 
 ### Key Benefits of New Pipeline
@@ -822,27 +833,42 @@ FloorMat/
 C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic\LazyMagic.FloorMat\FloorMat\
 ├── input/                           # Your source files (YOU PROVIDE)
 │   ├── Level1.svg
-│   ├── Level1-combinations.json
+│   ├── Level1-data.json             # Graph connectivity (Rooms[], RoomSections[], Joins[])
 │   ├── Level2.svg                   # Multiple projects supported
-│   └── Level2-combinations.json
+│   └── Level2-data.json
 ├── output/                          # Auto-generated outputs
 │   ├── Level1-output/
-│   │   ├── Level1.svg               # ← Final SVG with embedded data
-│   │   ├── Level1-rectangles.json
-│   │   ├── Level1-boardroom.json
-│   │   ├── Level1-hollowsquare.json
+│   │   ├── Level1-output.svg        # ← Final SVG with embedded data
+│   │   ├── Level1-valid-combinations.json  # Generated (251 combos)
+│   │   ├── Level1-rectangles.json   # MaxInscribed precomputed data
+│   │   ├── Level1-boardroom.json    # Boardroom precomputed data
+│   │   ├── Level1-hollowsquare.json # Hollow Square precomputed data
 │   │   └── TestResults/
 │   │       ├── Level1-MaxInscribedResults/
 │   │       ├── Level1-BoardroomResults/
 │   │       └── Level1-HollowSquareResults/
 │   └── Level2-output/
 │       └── ...
-├── process-all.js                   # Main orchestrator
-├── extract-precomputed-project.js   # Project-aware extractor
-├── embed-project.js                 # Project-aware embedder
-├── run-tests.js                     # Unified test runner
-└── package.json                     # npm scripts
+├── process-all.js                   # Main orchestrator (362 lines)
+├── extract-precomputed-project.js   # Project-aware extractor (195 lines)
+├── embed-project.js                 # Project-aware embedder (170 lines)
+├── run-tests.js                     # Unified test runner (1,275 lines)
+├── compute-all-combinations.js      # Combination generator (583 lines)
+├── calculate-polygon-areas.js       # Area calculator (334 lines)
+├── embed-path-metadata.js           # Metadata embedder (198 lines)
+├── check-dependencies.js            # Dependency checker (53 lines)
+├── package.json                     # npm scripts
+└── Algorithm modules (.cjs):        # CommonJS modules for Node.js
+    ├── SvgViewerInscribedRect.cjs   # Unified API (629 lines)
+    ├── SvgViewerBoundaryBased.cjs   # Boundary-based algorithm (2,406 lines)
+    ├── SvgViewerOptimized.cjs       # Grid + polylabel + binary search (1,745 lines)
+    ├── SvgViewerAlgorithms.cjs      # Geometric utilities (1,340 lines)
+    ├── SvgViewerBoardroom.cjs       # Boardroom layout (569 lines)
+    ├── SvgViewerHollowSquare.cjs    # Hollow square layout (403 lines)
+    └── kdtree.cjs                   # Spatial structures (462 lines)
 ```
+
+**Note:** Browser versions of algorithms (.js) exist in `LazyMagic.BlazorSvg/wwwroot/` for runtime use. FloorMat uses .cjs versions for build-time precomputation.
 
 **Live Test Version:**
 ```

@@ -10,6 +10,7 @@ This document describes the parallel precomputation system for **maximum inscrib
 - [HollowSquareLayoutPipeline.md](./HollowSquareLayoutPipeline.md) - Hollow square layout system
 
 **Created:** 2025-10-25
+**Updated:** 2025-11-05 (Updated for unified pipeline)
 
 ---
 
@@ -83,7 +84,7 @@ The max-inscribed pipeline is a **parallel system** that runs alongside the boar
 │  Max-Inscribed       │  Boardroom Layouts   │  Hollow Square Layouts      │
 │  Rectangles          │                      │                             │
 ├──────────────────────┼──────────────────────┼─────────────────────────────┤
-│ test-runner.js       │ test-runner-         │ test-runner-hollowsquare.js │
+│ run-tests.js       │ test-runner-         │ test-runner-hollowsquare.js │
 │                      │   boardroom.js       │                             │
 │ extract-precomputed- │ extract-precomputed- │ extract-precomputed-        │
 │   rectangles.js      │   boardroom.js       │   hollowsquare.js           │
@@ -177,22 +178,33 @@ if (improvementPercent >= 5%) {
 }
 ```
 
-### 2. Test Runner (`test-runner.js`)
+### 2. Unified Test Runner (`run-tests.js`)
 
-**Location:** `LazyMagic.BlazorSvg/FloorMat/test-runner.js`
+**Location:** `LazyMagic.FloorMat/FloorMat/run-tests.js` (1,275 lines)
 
-**Purpose:** Generate max-inscribed rectangles for all 251 valid combinations.
+**Purpose:** Execute max-inscribed rectangle tests for all valid combinations using Playwright headless browser.
 
 **Usage:**
 
 ```bash
-cd "C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic\LazyMagic.BlazorSvg\test-harness"
-node test-runner.js
+cd "C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic\LazyMagic.FloorMat\FloorMat"
+# Max-inscribed tests are run automatically via process-all.js
+# Or run manually with a max-inscribed test config:
+node run-tests.js test-configs/maxinscribed-full.json
 ```
+
+**Key Responsibilities:**
+- Loads CommonJS algorithm modules (SvgViewerInscribedRect.cjs) via `createRequire()`
+- Parses SVG files using JSDOM, handles transforms
+- Merges multi-path polygons into unified coordinate space
+- Launches Playwright for each test case
+- Executes hybrid algorithm (boundary-based + optimized)
+- Generates JSON and SVG output files
 
 **Output:**
 
-- Directory: `LazyMagic.BlazorSvg/TestResults/MaxInscribedResults/`
+- Directory: `output/[Project]-output/ComputedLayouts/[Project]-MaxInscribedResults/`
+- Files: `MaxInscribed_[PathId].svg` and `MaxInscribed_[PathId].json` for each combination
 - Files: `Combo_0001.svg` through `Combo_0251.svg`
 - Summary: `results.txt` (line-delimited JSON)
 
@@ -228,19 +240,21 @@ Running 251 tests...
 251 passed (15.2m)
 ```
 
-### 3. Data Extraction (`extract-precomputed-rectangles.js`)
+### 3. Data Extraction (`extract-precomputed-project.js`)
 
-**Location:** `LazyMagic.BlazorSvg/FloorMat/extract-precomputed-rectangles.js`
+**Location:** `LazyMagic.FloorMat/FloorMat/extract-precomputed-project.js` (195 lines)
 
-**Purpose:** Parse generated SVG files and extract rectangle data into JSON.
+**Purpose:** Parse generated JSON files and extract max-inscribed rectangle data into consolidated precomputed format.
 
 **Usage:**
 
 ```bash
-node extract-precomputed-rectangles.js
+# Automatically called by process-all.js
+# Or run manually:
+node extract-precomputed-project.js "Level1" "output/Level1-output/ComputedLayouts" "output/Level1-output/Level1-valid-combinations.json" "output/Level1-output"
 ```
 
-**Output:** `precomputed-rectangles.json`
+**Output:** `output/[Project]-output/[Project]-rectangles.json`
 
 **Data Structure:**
 
@@ -285,7 +299,7 @@ node extract-precomputed-rectangles.js
 
 **Extraction Process:**
 
-1. Load `valid-combinations.json` (251 combos)
+1. Load `valid-data.json` (251 combos)
 2. For each combination:
    - Read `TestResults/MaxInscribedResults/Combo_XXXX.svg`
    - Extract area data from XML comments
@@ -300,17 +314,21 @@ node extract-precomputed-rectangles.js
 - Boundary-based: ~15% (simple shapes)
 - Optimized: ~85% (complex shapes where boundary-based was insufficient)
 
-### 4. SVG Embedding (`embed-rectangles-in-svg.js`)
+### 4. SVG Embedding (`embed-project.js`)
 
-**Location:** `LazyMagic.BlazorSvg/FloorMat/embed-rectangles-in-svg.js`
+**Location:** `LazyMagic.FloorMat/FloorMat/embed-project.js` (170 lines)
 
-**Purpose:** Embed max-inscribed data directly into Level1.svg.
+**Purpose:** Embed all three layout datasets (MaxInscribed, Boardroom, Hollow Square) into project-specific output SVG.
 
 **Usage:**
 
 ```bash
-node embed-rectangles-in-svg.js
+# Automatically called by process-all.js
+# Or run manually:
+node embed-project.js "Level1" "input/Level1.svg" "output/Level1-output"
 ```
+
+**Output:** `output/[Project]-output/[Project]-output.svg`
 
 **Embedded Structure:**
 
@@ -356,7 +374,7 @@ cd "C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic\LazyMagic.FloorMat\Floo
 
 # 2. Place your SVG and combinations file in input/:
 #    - input/YourProject.svg
-#    - input/YourProject-combinations.json
+#    - input/YourProject-data.json
 
 # 3. Run the complete pipeline (auto-processes all SVGs in input/)
 npm run process
@@ -386,21 +404,31 @@ dotnet run --project BlazorTest.WASM/BlazorTest.WASM.csproj
 FloorMat/
 ├── input/                          # Your original files (preserved)
 │   ├── Level1.svg
-│   ├── Level1-combinations.json
+│   ├── Level1-data.json
 │   ├── Level2.svg                  # You can have multiple projects
-│   └── Level2-combinations.json
+│   └── Level2-data.json
 ├── output/                         # Auto-generated outputs
 │   ├── Level1-output/
-│   │   ├── Level1.svg              # SVG with embedded data
+│   │   ├── Level1-output.svg       # ← FINAL FILE (SVG with embedded data)
+│   │   ├── Level1-valid-combinations.json  # Generated (251 combos)
 │   │   ├── Level1-rectangles.json
 │   │   ├── Level1-boardroom.json
 │   │   ├── Level1-hollowsquare.json
-│   │   └── TestResults/
+│   │   └── ComputedLayouts/
 │   └── Level2-output/
 │       └── ...
-├── process-all.js                  # Main orchestrator
-├── extract-precomputed-project.js  # Project-aware extraction
-└── embed-project.js                # Project-aware embedding
+├── process-all.js                  # Main orchestrator (362 lines)
+├── compute-all-combinations.js     # Combination generator (583 lines)
+├── calculate-polygon-areas.js      # Area calculator (334 lines)
+├── run-tests.js                    # Test runner with Playwright (1,275 lines)
+├── extract-precomputed-project.js  # Project-aware extraction (195 lines)
+├── embed-path-metadata.js          # Metadata embedder (198 lines)
+├── embed-project.js                # Project-aware embedding (170 lines)
+└── Algorithm modules (.cjs):       # CommonJS for Node.js
+    ├── SvgViewerInscribedRect.cjs  # Unified API (629 lines)
+    ├── SvgViewerBoundaryBased.cjs  # (2,406 lines)
+    ├── SvgViewerOptimized.cjs      # (1,745 lines)
+    └── ... (other algorithms)
 ```
 
 ### Single Command Workflow
@@ -414,7 +442,7 @@ npm run process
 **What happens:**
 1. Scans `input/` for all .svg files
 2. For each SVG (e.g., `Level1.svg`):
-   - Loads `Level1-combinations.json`
+   - Loads `Level1-data.json`
    - Generates configs for all three algorithms
    - Runs test-runner for max-inscribed, boardroom, and hollow square
    - Extracts data to `Level1-rectangles.json`, `Level1-boardroom.json`, `Level1-hollowsquare.json`
@@ -758,9 +786,9 @@ public class AreaData
 
 | Stage | Duration |
 |-------|----------|
-| test-runner.js | 15-20 minutes |
-| extract-precomputed-rectangles.js | 30 seconds |
-| embed-rectangles-in-svg.js | 5 seconds |
+| run-tests.js | 15-20 minutes |
+| extract-precomputed-project.js | 30 seconds |
+| embed-project.js | 5 seconds |
 | **Total** | **~20 minutes** |
 
 **Computation Statistics:**
@@ -983,7 +1011,7 @@ Could reduce total time from 20 minutes to ~5-7 minutes.
 Only recompute changed combinations:
 
 ```javascript
-// Compare old and new valid-combinations.json
+// Compare old and new valid-data.json
 const changed = findChangedCombinations(oldCombos, newCombos);
 
 // Recompute only changed
@@ -1052,7 +1080,7 @@ npm run process
 - **Orchestrator**: `FloorMat/process-all.js` or `FloorMat/process-external.js`
 - **Project Extractor**: `FloorMat/extract-precomputed-project.js`
 - **Project Embedder**: `FloorMat/embed-project.js`
-- **Input Files**: `FloorMat/input/[ProjectName].svg` and `FloorMat/input/[ProjectName]-combinations.json`
+- **Input Files**: `FloorMat/input/[ProjectName].svg` and `FloorMat/input/[ProjectName]-data.json`
 - **Output Directory**: `FloorMat/output/[ProjectName]-output/`
   - Embedded SVG: `[ProjectName].svg`
   - Rectangles JSON: `[ProjectName]-rectangles.json`

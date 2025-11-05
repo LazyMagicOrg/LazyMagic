@@ -10,7 +10,7 @@ This document describes the parallel precomputation system for **boardroom-style
 - [HollowSquareLayoutPipeline.md](./HollowSquareLayoutPipeline.md) - Hollow square layout system
 
 **Created:** 2025-10-20
-**Updated:** 2025-10-25
+**Updated:** 2025-11-05 (Updated for unified pipeline)
 
 ---
 
@@ -151,24 +151,35 @@ calculateRectangleCorners(centroid, width, height, angleDegrees)
 }
 ```
 
-### 2. Test Runner (`test-runner-boardroom.js`)
+### 2. Unified Test Runner (`run-tests.js`)
 
-**Location:** `LazyMagic.BlazorSvg/FloorMat/test-runner-boardroom.js`
+**Location:** `LazyMagic.FloorMat/FloorMat/run-tests.js` (1,275 lines)
 
-**Purpose:** Generate boardroom layouts for all 251 valid combinations.
+**Purpose:** Execute boardroom layout tests for all valid combinations using Playwright headless browser.
 
 **Usage:**
 
 ```bash
-cd "C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic\LazyMagic.BlazorSvg\test-harness"
-node test-runner-boardroom.js
+cd "C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic\LazyMagic.FloorMat\FloorMat"
+# Boardroom tests are run automatically via process-all.js
+# Or run manually with a boardroom test config:
+node run-tests.js test-configs/boardroom-full.json
 ```
+
+**Key Responsibilities:**
+- Loads CommonJS algorithm modules (SvgViewerBoardroom.cjs) via `createRequire()`
+- Parses SVG files using JSDOM
+- Handles SVG transforms (translate, scale, rotate, matrix)
+- Merges multi-path polygons into unified coordinate space
+- Launches Playwright for each test case
+- Executes `findBoardroomLayout()` algorithm
+- Generates JSON and SVG output files
 
 **Output:**
 
-- Directory: `LazyMagic.BlazorSvg/TestResults/BoardroomResults/`
-- Files: `Combo_0001.svg` through `Combo_0251.svg`
-- Summary: `boardroom-summary.json`
+- Directory: `output/[Project]-output/ComputedLayouts/[Project]-BoardroomResults/`
+- Files: `Boardroom_[PathId].svg` and `Boardroom_[PathId].json` for each combination
+- Summary: Performance metrics embedded in each JSON file
 
 **Each SVG contains:**
 
@@ -192,19 +203,21 @@ node test-runner-boardroom.js
 7. Generate visualization SVG
 8. Save to `TestResults/BoardroomResults/`
 
-### 3. Data Extraction (`extract-precomputed-boardroom.js`)
+### 3. Data Extraction (`extract-precomputed-project.js`)
 
-**Location:** `LazyMagic.BlazorSvg/FloorMat/extract-precomputed-boardroom.js`
+**Location:** `LazyMagic.FloorMat/FloorMat/extract-precomputed-project.js` (195 lines)
 
-**Purpose:** Parse generated SVG files and extract boardroom data into JSON.
+**Purpose:** Parse generated JSON files and extract boardroom data into consolidated precomputed format.
 
 **Usage:**
 
 ```bash
-node extract-precomputed-boardroom.js
+# Automatically called by process-all.js
+# Or run manually:
+node extract-precomputed-project.js "Level1" "output/Level1-output/ComputedLayouts" "output/Level1-output/Level1-valid-combinations.json" "output/Level1-output"
 ```
 
-**Output:** `precomputed-boardroom.json`
+**Output:** `output/[Project]-output/[Project]-boardroom.json`
 
 **Data Structure:**
 
@@ -256,17 +269,21 @@ node extract-precomputed-boardroom.js
    - Build layout object
 3. Write `precomputed-boardroom.json`
 
-### 4. SVG Embedding (`embed-boardroom-in-svg.js`)
+### 4. SVG Embedding (`embed-project.js`)
 
-**Location:** `LazyMagic.BlazorSvg/FloorMat/embed-boardroom-in-svg.js`
+**Location:** `LazyMagic.FloorMat/FloorMat/embed-project.js` (170 lines)
 
-**Purpose:** Embed boardroom data directly into Level1.svg.
+**Purpose:** Embed all three layout datasets (MaxInscribed, Boardroom, Hollow Square) into project-specific output SVG.
 
 **Usage:**
 
 ```bash
-node embed-boardroom-in-svg.js
+# Automatically called by process-all.js
+# Or run manually:
+node embed-project.js "Level1" "input/Level1.svg" "output/Level1-output"
 ```
+
+**Output:** `output/[Project]-output/[Project]-output.svg`
 
 **Embedded Structure:**
 
@@ -312,18 +329,21 @@ FloorMat now supports processing multiple SVG projects automatically:
 # 1. Navigate to FloorMat directory
 cd "C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic\LazyMagic.FloorMat\FloorMat"
 
-# 2. Place your SVG and combinations file in input/:
+# 2. Place your SVG and data file in input/:
 #    - input/YourProject.svg
-#    - input/YourProject-combinations.json
+#    - input/YourProject-data.json (graph connectivity: Rooms[], RoomSections[], Joins[])
 
 # 3. Run the complete pipeline (auto-processes all SVGs in input/)
 npm run process
 
 # This will:
 # - Auto-detect all .svg files in input/
-# - Generate all three layout types (max-inscribed, boardroom, hollow square)
-# - Extract precomputed data for each project
-# - Embed data into output/[ProjectName]-output/[ProjectName].svg
+# - Generate valid combinations from -data.json (compute-all-combinations.js, 10 rules)
+# - Calculate polygon areas (calculate-polygon-areas.js, Shoelace formula)
+# - Run all three algorithms in parallel (run-tests.js with Playwright)
+# - Extract precomputed data (extract-precomputed-project.js)
+# - Embed path metadata (embed-path-metadata.js, floormat:* attributes)
+# - Embed all layout data (embed-project.js) into output/[ProjectName]-output/[ProjectName]-output.svg
 # - Preserve your original SVG in input/
 
 # 4. Navigate back to root
@@ -344,21 +364,29 @@ dotnet run --project BlazorTest.WASM/BlazorTest.WASM.csproj
 FloorMat/
 ├── input/                          # Your original files (preserved)
 │   ├── Level1.svg
-│   ├── Level1-combinations.json
+│   ├── Level1-data.json            # Graph connectivity
 │   ├── Level2.svg                  # You can have multiple projects
-│   └── Level2-combinations.json
+│   └── Level2-data.json
 ├── output/                         # Auto-generated outputs
 │   ├── Level1-output/
-│   │   ├── Level1.svg              # SVG with embedded data
+│   │   ├── Level1-output.svg       # ← FINAL FILE (with embedded data)
+│   │   ├── Level1-valid-combinations.json  # Generated (251 combos)
 │   │   ├── Level1-rectangles.json
 │   │   ├── Level1-boardroom.json
 │   │   ├── Level1-hollowsquare.json
-│   │   └── TestResults/
+│   │   └── ComputedLayouts/
 │   └── Level2-output/
 │       └── ...
-├── process-all.js                  # Main orchestrator
-├── extract-precomputed-project.js  # Project-aware extraction
-└── embed-project.js                # Project-aware embedding
+├── process-all.js                  # Main orchestrator (362 lines)
+├── compute-all-combinations.js     # Combination generator (583 lines)
+├── calculate-polygon-areas.js      # Area calculator (334 lines)
+├── run-tests.js                    # Test runner with Playwright (1,275 lines)
+├── extract-precomputed-project.js  # Project-aware extraction (195 lines)
+├── embed-path-metadata.js          # Metadata embedder (198 lines)
+├── embed-project.js                # Project-aware embedding (170 lines)
+└── Algorithm modules (.cjs):       # CommonJS for Node.js
+    ├── SvgViewerBoardroom.cjs      # (569 lines)
+    └── ... (other algorithms)
 ```
 
 ### Single Command Workflow

@@ -10,6 +10,7 @@ This document describes the parallel precomputation system for **hollow square-s
 - [BoardroomLayoutPipeline.md](./BoardroomLayoutPipeline.md) - Boardroom layout system
 
 **Created:** 2025-10-25
+**Updated:** 2025-11-05 (Updated for unified pipeline)
 
 ---
 
@@ -161,22 +162,33 @@ calculateRectangleCorners(centroid, width, height, angleDegrees)
 }
 ```
 
-### 2. Test Runner (`test-runner-hollowsquare.js`)
+### 2. Unified Test Runner (`run-tests.js`)
 
-**Location:** `LazyMagic.BlazorSvg/FloorMat/test-runner-hollowsquare.js`
+**Location:** `LazyMagic.FloorMat/FloorMat/run-tests.js` (1,275 lines)
 
-**Purpose:** Generate hollow square layouts for all 251 valid combinations.
+**Purpose:** Execute hollow square layout tests for all valid combinations using Playwright headless browser.
 
 **Usage:**
 
 ```bash
-cd "C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic\LazyMagic.BlazorSvg\test-harness"
-node test-runner-hollowsquare.js
+cd "C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic\LazyMagic.FloorMat\FloorMat"
+# Hollow square tests are run automatically via process-all.js
+# Or run manually with a hollow square test config:
+node run-tests.js test-configs/hollowsquare-full.json
 ```
+
+**Key Responsibilities:**
+- Loads CommonJS algorithm modules (SvgViewerHollowSquare.cjs) via `createRequire()`
+- Parses SVG files using JSDOM, handles transforms
+- Merges multi-path polygons into unified coordinate space
+- Launches Playwright for each test case
+- Executes `findHollowSquareLayout()` algorithm
+- Generates JSON and SVG output files
 
 **Output:**
 
-- Directory: `LazyMagic.BlazorSvg/TestResults/HollowSquareResults/`
+- Directory: `output/[Project]-output/ComputedLayouts/[Project]-HollowSquareResults/`
+- Files: `HollowSquare_[PathId].svg` and `HollowSquare_[PathId].json` for each combination
 - Files: `Combo_0001.svg` through `Combo_0251.svg`
 - Summary: `hollowsquare-summary.json`
 
@@ -204,19 +216,21 @@ node test-runner-hollowsquare.js
 7. Generate visualization SVG
 8. Save to `TestResults/HollowSquareResults/`
 
-### 3. Data Extraction (`extract-precomputed-hollowsquare.js`)
+### 3. Data Extraction (`extract-precomputed-project.js`)
 
-**Location:** `LazyMagic.BlazorSvg/FloorMat/extract-precomputed-hollowsquare.js`
+**Location:** `LazyMagic.FloorMat/FloorMat/extract-precomputed-project.js` (195 lines)
 
-**Purpose:** Parse generated SVG files and extract hollow square data into JSON.
+**Purpose:** Parse generated JSON files and extract hollow square data into consolidated precomputed format.
 
 **Usage:**
 
 ```bash
-node extract-precomputed-hollowsquare.js
+# Automatically called by process-all.js
+# Or run manually:
+node extract-precomputed-project.js "Level1" "output/Level1-output/ComputedLayouts" "output/Level1-output/Level1-valid-combinations.json" "output/Level1-output"
 ```
 
-**Output:** `precomputed-hollowsquare.json`
+**Output:** `output/[Project]-output/[Project]-hollowsquare.json`
 
 **Data Structure:**
 
@@ -260,7 +274,7 @@ node extract-precomputed-hollowsquare.js
 
 **Extraction Process:**
 
-1. Load `valid-combinations.json` (251 combos)
+1. Load `Level1-valid-combinations.json` (251 combos)
 2. For each combination:
    - Read `TestResults/HollowSquareResults/Combo_XXXX.svg`
    - Extract area data from XML comments
@@ -269,17 +283,21 @@ node extract-precomputed-hollowsquare.js
    - Build layout object
 3. Write `precomputed-hollowsquare.json`
 
-### 4. SVG Embedding (`embed-hollowsquare-in-svg.js`)
+### 4. SVG Embedding (`embed-project.js`)
 
-**Location:** `LazyMagic.BlazorSvg/FloorMat/embed-hollowsquare-in-svg.js`
+**Location:** `LazyMagic.FloorMat/FloorMat/embed-project.js` (170 lines)
 
-**Purpose:** Embed hollow square data directly into Level1.svg.
+**Purpose:** Embed all three layout datasets (MaxInscribed, Boardroom, Hollow Square) into project-specific output SVG.
 
 **Usage:**
 
 ```bash
-node embed-hollowsquare-in-svg.js
+# Automatically called by process-all.js
+# Or run manually:
+node embed-project.js "Level1" "input/Level1.svg" "output/Level1-output"
 ```
+
+**Output:** `output/[Project]-output/[Project]-output.svg`
 
 **Embedded Structure:**
 
@@ -327,7 +345,7 @@ cd "C:\Users\noaht\source\repos\_Dev\LazyMagic\LazyMagic\LazyMagic.FloorMat\Floo
 
 # 2. Place your SVG and combinations file in input/:
 #    - input/YourProject.svg
-#    - input/YourProject-combinations.json
+#    - input/YourProject-data.json
 
 # 3. Run the complete pipeline (auto-processes all SVGs in input/)
 npm run process
@@ -357,21 +375,29 @@ dotnet run --project BlazorTest.WASM/BlazorTest.WASM.csproj
 FloorMat/
 ├── input/                          # Your original files (preserved)
 │   ├── Level1.svg
-│   ├── Level1-combinations.json
+│   ├── Level1-data.json
 │   ├── Level2.svg                  # You can have multiple projects
-│   └── Level2-combinations.json
+│   └── Level2-data.json
 ├── output/                         # Auto-generated outputs
 │   ├── Level1-output/
-│   │   ├── Level1.svg              # SVG with embedded data
+│   │   ├── Level1-output.svg       # ← FINAL FILE (SVG with embedded data)
+│   │   ├── Level1-valid-combinations.json  # Generated (251 combos)
 │   │   ├── Level1-rectangles.json
 │   │   ├── Level1-boardroom.json
 │   │   ├── Level1-hollowsquare.json
-│   │   └── TestResults/
+│   │   └── ComputedLayouts/
 │   └── Level2-output/
 │       └── ...
-├── process-all.js                  # Main orchestrator
-├── extract-precomputed-project.js  # Project-aware extraction
-└── embed-project.js                # Project-aware embedding
+├── process-all.js                  # Main orchestrator (362 lines)
+├── compute-all-combinations.js     # Combination generator (583 lines)
+├── calculate-polygon-areas.js      # Area calculator (334 lines)
+├── run-tests.js                    # Test runner with Playwright (1,275 lines)
+├── extract-precomputed-project.js  # Project-aware extraction (195 lines)
+├── embed-path-metadata.js          # Metadata embedder (198 lines)
+├── embed-project.js                # Project-aware embedding (170 lines)
+└── Algorithm modules (.cjs):       # CommonJS for Node.js
+    ├── SvgViewerHollowSquare.cjs   # (403 lines)
+    └── ... (other algorithms)
 ```
 
 ### Single Command Workflow
@@ -385,7 +411,7 @@ npm run process
 **What happens:**
 1. Scans `input/` for all .svg files
 2. For each SVG (e.g., `Level1.svg`):
-   - Loads `Level1-combinations.json`
+   - Loads `Level1-data.json`
    - Generates configs for all three algorithms
    - Runs test-runner for max-inscribed, boardroom, and hollow square
    - Extracts data to `Level1-rectangles.json`, `Level1-boardroom.json`, `Level1-hollowsquare.json`
@@ -957,9 +983,9 @@ npm run process
 - **Orchestrator**: `FloorMat/process-all.js` or `FloorMat/process-external.js`
 - **Project Extractor**: `FloorMat/extract-precomputed-project.js`
 - **Project Embedder**: `FloorMat/embed-project.js`
-- **Input Files**: `FloorMat/input/[ProjectName].svg` and `FloorMat/input/[ProjectName]-combinations.json`
+- **Input Files**: `FloorMat/input/[ProjectName].svg` and `FloorMat/input/[ProjectName]-data.json`
 - **Output Directory**: `FloorMat/output/[ProjectName]-output/`
-  - Embedded SVG: `[ProjectName].svg`
+  - Embedded SVG: `[ProjectName]-output.svg`
   - Hollow Square JSON: `[ProjectName]-hollowsquare.json`
   - Test Results: `TestResults/[ProjectName]-HollowSquareResults/*.svg`
 

@@ -1,10 +1,12 @@
-# Rooms.json Schema Documentation
+# Level Data JSON Schema Documentation
 
-This document describes the structure and properties of the Rooms.json configuration file used by the FloorMat pipeline.
+This document describes the structure and properties of the level data JSON file (e.g., `Level1-data.json`) used by the FloorMat pipeline.
+
+**Last Updated:** 2025-11-05
 
 ## Overview
 
-Rooms.json defines the venue layout structure, including rooms, sections, and their connectivity. It is used to generate valid section combinations for layout testing.
+The level data JSON file (formerly called `Rooms.json`, now named `[VenueName]-data.json`) defines the venue layout structure, including rooms, sections, joins, and their connectivity. It is used by `compute-all-combinations.js` to generate valid section combinations for layout testing.
 
 ## File Structure
 
@@ -318,7 +320,7 @@ The FloorMat pipeline validates combinations using these rules:
 Use the provided utility script to add the property to all sections:
 
 ```bash
-node add-layout-restriction.js <path-to-Rooms.json>
+node add-layout-restriction.js <path-to-Level1-data.json>
 ```
 
 This will add `"LayoutRestriction": "allowed"` to all sections that don't already have the property.
