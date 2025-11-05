@@ -35,16 +35,16 @@
     },
     "aspectRatio": 0.5176819903725112,
     "type": "boundary-based",
-    "computeTime": 3.160428999999567,
+    "computeTime": 2.5082000000002154,
     "centroidStrategy": "uniform",
-    "hybridTotalTime": 4718.931159,
+    "hybridTotalTime": 5002.7209,
     "usedBoundaryBased": true,
     "usedOptimized": true,
     "selectedAlgorithm": "boundary-based",
-    "boundaryTime": 3.1920109999991837,
-    "optimizedTime": 4715.713892
+    "boundaryTime": 2.539199999999255,
+    "optimizedTime": 5000.126700000004
   },
   "polygonArea": 33094.97544339799,
   "fillRatio": 67.10988773982756,
-  "runtimeMs": 4722
+  "runtimeMs": 5005
 }

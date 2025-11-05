@@ -31,18 +31,18 @@
     "angle": 12,
     "aspectRatio": 0.5,
     "validScale": 0.793,
-    "elapsed": 5000.045138999994,
+    "elapsed": 5000.111399999994,
     "centroid": {
       "x": 568,
       "y": 160
     },
     "type": "optimized",
-    "hybridTotalTime": 5002.038969000045,
+    "hybridTotalTime": 5002.412500000035,
     "usedBoundaryBased": true,
     "usedOptimized": true,
     "selectedAlgorithm": "optimized",
-    "boundaryTime": 1.9354330000351183,
-    "optimizedTime": 5000.075215000019
+    "boundaryTime": 2.2652000000234693,
+    "optimizedTime": 5000.131099999999
   },
   "polygonArea": 49762.736388292644,
   "fillRatio": 77.67986855312242,

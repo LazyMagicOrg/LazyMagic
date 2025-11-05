@@ -1,0 +1,34 @@
+{
+  "testName": "U-Shape Full Test Suite (Unified Algorithm)",
+  "algorithm": "ushape",
+  "svgPath": "../../BlazorTest.WASM/wwwroot/Level1-normal.svg",
+  "outputDir": "../TestResults/UShapeResults",
+  "timeout": 3600000,
+
+  "algorithmOptions": {
+    "width": {
+      "mode": "discrete",
+      "base": 16.5,
+      "increment": 6,
+      "minIncrements": 0
+    },
+    "height": {
+      "mode": "discrete",
+      "base": 14,
+      "increment": 6,
+      "minIncrements": 0
+    },
+    "angleSamples": 25,
+    "centroidSamples": 25,
+    "debugMode": false
+  },
+
+  "combinationsFile": "../Level1-valid-combinations.json",
+
+  "outputOptions": {
+    "generateSVG": true,
+    "generateJSON": true,
+    "generateSummary": true,
+    "deleteExistingResults": true
+  }
+}

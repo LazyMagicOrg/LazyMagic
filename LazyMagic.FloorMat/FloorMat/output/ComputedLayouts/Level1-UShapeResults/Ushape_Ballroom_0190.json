@@ -1,0 +1,45 @@
+{
+  "testId": "Ushape_Ballroom_0190",
+  "sections": [
+    "Ballroom_Aisle_12",
+    "Ballroom_Aisle_34",
+    "Ballroom_Aisle_35",
+    "Ballroom_Aisle_56",
+    "Ballroom_Crossing_3456",
+    "Ballroom_Room_1",
+    "Ballroom_Room_3",
+    "Ballroom_Room_4",
+    "Ballroom_Room_5"
+  ],
+  "layout": {
+    "corners": [
+      {
+        "x": 242.452205,
+        "y": 33.97492625000001
+      },
+      {
+        "x": 672.952205,
+        "y": 33.97492625000001
+      },
+      {
+        "x": 672.952205,
+        "y": 143.97492625
+      },
+      {
+        "x": 242.452205,
+        "y": 143.97492625
+      }
+    ],
+    "width": 430.5,
+    "height": 110,
+    "area": 47355,
+    "angle": 0,
+    "centroid": {
+      "x": 457.702205,
+      "y": 88.97492625000001
+    }
+  },
+  "polygonArea": 62367.57211147937,
+  "fillRatio": 75.9288816235382,
+  "runtimeMs": 5006
+}

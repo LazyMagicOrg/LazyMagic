@@ -26,22 +26,22 @@
   <polygon points="234.81,32.26 350.97122,32.255595 458.19863,32.255595 478.05556,32.255595 680.59623,32.255595 680.59623,128.07719 674.63915,147.93412 478.05556,147.93412 458.19863,147.93412 458.19863,259.13292 350.97121999999996,239.27599 350.97121999999996,147.93412 234.80818,147.93412 234.80818,128.07719" fill="none" stroke="#4080ff" stroke-width="2" stroke-dasharray="5,5"/>
 
   <!-- Layout rectangle (colored fill, solid border) -->
-  <polygon points="236.4550433416933,35.79757330599404 671.0012825174347,90.6935296071593 669.3719504810987,103.59102072424753 234.82571130535737,48.69506442308226" fill="rgba(5, 150, 105, 0.15)" stroke="#059669" stroke-width="3"/>
+  <polygon points="675.0934378457482,133.14694940222353 674.6397443886158,146.1390301534718 236.9065621542518,130.85305059777647 237.36025561138428,117.86096984652822" fill="rgba(5, 150, 105, 0.15)" stroke="#059669" stroke-width="3"/>
 
   <!-- Centroid marker -->
-  <circle cx="452.913496911396" cy="69.69429701512078" r="4" fill="#059669"/>
-  <text x="460.913496911396" y="74.69429701512078" font-size="10" fill="#059669">boardroom</text>
+  <circle cx="456" cy="132" r="4" fill="#059669"/>
+  <text x="464" y="137" font-size="10" fill="#059669">boardroom</text>
 
   <!-- Corner markers -->
 
-  <circle cx="236.4550433416933" cy="35.79757330599404" r="3" fill="#059669"/>
-  <text x="242.4550433416933" y="39.79757330599404" font-size="8" fill="#059669">c0</text>
-  <circle cx="671.0012825174347" cy="90.6935296071593" r="3" fill="#059669"/>
-  <text x="677.0012825174347" y="94.6935296071593" font-size="8" fill="#059669">c1</text>
-  <circle cx="669.3719504810987" cy="103.59102072424753" r="3" fill="#059669"/>
-  <text x="675.3719504810987" y="107.59102072424753" font-size="8" fill="#059669">c2</text>
-  <circle cx="234.82571130535737" cy="48.69506442308226" r="3" fill="#059669"/>
-  <text x="240.82571130535737" y="52.69506442308226" font-size="8" fill="#059669">c3</text>
+  <circle cx="675.0934378457482" cy="133.14694940222353" r="3" fill="#059669"/>
+  <text x="681.0934378457482" y="137.14694940222353" font-size="8" fill="#059669">c0</text>
+  <circle cx="674.6397443886158" cy="146.1390301534718" r="3" fill="#059669"/>
+  <text x="680.6397443886158" y="150.1390301534718" font-size="8" fill="#059669">c1</text>
+  <circle cx="236.9065621542518" cy="130.85305059777647" r="3" fill="#059669"/>
+  <text x="242.9065621542518" y="134.85305059777647" font-size="8" fill="#059669">c2</text>
+  <circle cx="237.36025561138428" cy="117.86096984652822" r="3" fill="#059669"/>
+  <text x="243.36025561138428" y="121.86096984652822" font-size="8" fill="#059669">c3</text>
 
   <!-- Vertex markers -->
 
@@ -84,7 +84,7 @@
     <text x="310" y="50" font-size="11" text-anchor="end">144 (72 sets)</text>
 
     <text x="10" y="70" font-size="11" font-weight="bold">Dimensions:</text>
-    <text x="310" y="70" font-size="11" text-anchor="end">438.0 × 13.0 ft</text>
+    <text x="310" y="70" font-size="11" text-anchor="end">13.0 × 438.0 ft</text>
 
     <text x="10" y="90" font-size="11" font-weight="bold">Area:</text>
     <text x="310" y="90" font-size="11" text-anchor="end">5694.00 sq ft</text>
@@ -93,10 +93,10 @@
     <text x="310" y="110" font-size="11" text-anchor="end">9.1%</text>
 
     <text x="10" y="130" font-size="11" font-weight="bold">Angle:</text>
-    <text x="310" y="130" font-size="11" text-anchor="end">7.2°</text>
+    <text x="310" y="130" font-size="11" text-anchor="end">92.0°</text>
 
     <text x="10" y="150" font-size="11" font-weight="bold">Runtime:</text>
-    <text x="310" y="150" font-size="11" text-anchor="end">319ms</text>
+    <text x="310" y="150" font-size="11" text-anchor="end">464ms</text>
   </g>
 
   <!-- Area Data (embedded as XML comments for extraction) -->

@@ -171,6 +171,24 @@ function generateConfigFiles() {
         combinationsFile: combinationsPath
     };
 
+    // U-Shape config
+    const ushapeConfig = {
+        ...baseConfig,
+        testName: `${prefix} - U-Shape Layout`,
+        algorithm: "ushape",
+        svgPath: svgPath,
+        outputDir: path.join(computedLayoutsDir, `${prefix}-UShapeResults`),
+        algorithmOptions: {
+            width: { mode: "discrete", base: 16.5, increment: 6, minIncrements: 0 },
+            height: { mode: "discrete", base: 14, increment: 6, minIncrements: 0 },
+            maxTime: 5000,
+            angleSamples: 25,
+            centroidSamples: 25,
+            debugMode: false
+        },
+        combinationsFile: combinationsPath
+    };
+
     // Write temporary config files
     const tempConfigDir = path.join(projectOutputDir, '.temp-configs');
     if (!fs.existsSync(tempConfigDir)) {
@@ -180,15 +198,18 @@ function generateConfigFiles() {
     const maxInscribedPath = path.join(tempConfigDir, 'maxinscribed.json');
     const boardroomPath = path.join(tempConfigDir, 'boardroom.json');
     const hollowSquarePath = path.join(tempConfigDir, 'hollowsquare.json');
+    const ushapePath = path.join(tempConfigDir, 'ushape.json');
 
     fs.writeFileSync(maxInscribedPath, JSON.stringify(maxInscribedConfig, null, 2));
     fs.writeFileSync(boardroomPath, JSON.stringify(boardroomConfig, null, 2));
     fs.writeFileSync(hollowSquarePath, JSON.stringify(hollowSquareConfig, null, 2));
+    fs.writeFileSync(ushapePath, JSON.stringify(ushapeConfig, null, 2));
 
     return {
         maxInscribed: maxInscribedPath,
         boardroom: boardroomPath,
         hollowSquare: hollowSquarePath,
+        ushape: ushapePath,
         combinationsPath: combinationsPath
     };
 }
@@ -219,8 +240,8 @@ async function processProject() {
             throw new Error(`Failed to generate combinations file: ${configs.combinationsPath}`);
         }
 
-        // Step 1: Run tests for all three algorithms
-        console.log('Step 1/5: Running tests (MaxInscribed, Boardroom, Hollow Square)...');
+        // Step 1: Run tests for all four algorithms
+        console.log('Step 1/5: Running tests (MaxInscribed, Boardroom, Hollow Square, U-Shape)...');
         console.log();
 
         console.log('  Running MaxInscribed tests...');
@@ -237,6 +258,12 @@ async function processProject() {
 
         console.log('  Running Hollow Square tests...');
         await execAsync(`node run-tests.js "${configs.hollowSquare}"`, {
+            cwd: __dirname,
+            maxBuffer: 200 * 1024 * 1024
+        });
+
+        console.log('  Running U-Shape tests...');
+        await execAsync(`node run-tests.js "${configs.ushape}"`, {
             cwd: __dirname,
             maxBuffer: 200 * 1024 * 1024
         });

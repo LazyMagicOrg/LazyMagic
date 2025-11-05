@@ -47,15 +47,21 @@ class SvgViewerInstance {
         this.precomputedHollowSquares = null;  // Will be loaded on first use
         this.precomputedHollowSquaresPromise = null;  // Track loading promise
 
+        // Precomputed U-shape layouts cache
+        this.precomputedUShapes = null;  // Will be loaded on first use
+        this.precomputedUShapesPromise = null;  // Track loading promise
+
         // Display toggles
         this.showRectangle = true;  // Show max inscribed rectangle
         this.showBoardroom = true;  // Show boardroom layout
         this.showHollowSquare = true;  // Show hollow square layout
+        this.showUShape = true;  // Show U-shape layout
 
         // SVG elements for layouts
         this.rectangleGroup = null;  // Group for max rectangle
         this.boardroomGroup = null;  // Group for boardroom layout
         this.hollowSquareGroup = null;  // Group for hollow square layout
+        this.ushapeGroup = null;  // Group for U-shape layout
 
         // Rectangle type configuration map - centralizes all type-specific details
         this.rectangleTypeConfig = {
@@ -94,6 +100,18 @@ class SvgViewerInstance {
                 groupProp: 'hollowSquareGroup',
                 logPrefix: 'hollowsquare',
                 displayName: 'Hollow square layout'
+            },
+            'ushape': {
+                scriptId: 'precomputed-ushape',
+                cacheProp: 'precomputedUShapes',
+                cachePromiseProp: 'precomputedUShapesPromise',
+                embeddedDataProp: 'embeddedUShapeData',
+                dataArrayKey: 'ushapeLayouts',
+                layoutKey: 'ushapeLayout',
+                showProp: 'showUShape',
+                groupProp: 'ushapeGroup',
+                logPrefix: 'ushape',
+                displayName: 'U-shape layout'
             }
         };
 
@@ -144,6 +162,16 @@ class SvgViewerInstance {
                 const data = JSON.parse(jsonText);
                 this.embeddedHollowSquareData = data;
                 console.log(`[precomputed] ✓ Extracted embedded hollow square from SVG: ${data.hollowSquareLayouts.length} layouts`);
+            }
+
+            // Extract U-Shape layouts
+            const ushapeMatch = svgText.match(/<script\s+type="application\/json"\s+id="precomputed-ushape"[^>]*>([\s\S]*?)<\/script>/i);
+            if (ushapeMatch) {
+                let jsonText = ushapeMatch[1];
+                jsonText = jsonText.replace(/<!\[CDATA\[|\]\]>/g, '').trim();
+                const data = JSON.parse(jsonText);
+                this.embeddedUShapeData = data;
+                console.log(`[precomputed] ✓ Extracted embedded U-shape from SVG: ${data.ushapeLayouts.length} layouts`);
             }
 
             return true;

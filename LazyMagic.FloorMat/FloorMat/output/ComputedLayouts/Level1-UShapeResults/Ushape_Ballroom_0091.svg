@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="458.05556 108.07719 582.54067 212.75528"
+     width="582.54067" height="212.75528"
+     style="background: white;">
+
+  <!-- Title -->
+  <text x="478.05556" y="148.07719" font-size="16" font-weight="bold" fill="#000">
+    Ushape_Ballroom_0091
+  </text>
+
+  <!-- Original test paths (gray, semi-transparent) -->
+  <g opacity="0.3">
+    <path id="Ballroom_Aisle_56" d="m 680.59623,128.07719 -5.95708,19.85693 H 478.05556 v -19.85693 z" fill="none" stroke="#808080" stroke-width="1"/>
+    <path id="Ballroom_Room_Grand" d="m 674.63915,147.93412 c -13.77093,46.32866 -28.44265,94.4522 -41.69955,140.98419 l -31.77108,11.91416 C 559.50968,285.82798 528.19209,276.69667 478.05556,263.60073 V 147.93412 Z" fill="none" stroke="#808080" stroke-width="1"/>
+  </g>
+
+  <!-- Boundary polygon (blue, dashed) -->
+  <polygon points="478.06,128.08 680.59623,128.07719 674.63915,147.93412 632.9395999999999,288.91831 601.16852,300.83247 478.05556,263.60073 478.05556,147.93412" fill="none" stroke="#4080ff" stroke-width="2" stroke-dasharray="5,5"/>
+
+  <!-- Layout rectangle (colored fill, solid border) -->
+  <polygon points="645.3886987784546,139.89776367953772 637.1945359798791,270.1402517394272 479.5063128882122,260.21934965379563 487.7004756867876,129.9768615939062" fill="rgba(255, 0, 255, 0.15)" stroke="#FF00FF" stroke-width="3"/>
+
+  <!-- Centroid marker -->
+  <circle cx="562.4475058333334" cy="200.05855666666668" r="4" fill="#FF00FF"/>
+  <text x="570.4475058333334" y="205.05855666666668" font-size="10" fill="#FF00FF">ushape</text>
+
+  <!-- Corner markers -->
+
+  <circle cx="645.3886987784546" cy="139.89776367953772" r="3" fill="#FF00FF"/>
+  <text x="651.3886987784546" y="143.89776367953772" font-size="8" fill="#FF00FF">c0</text>
+  <circle cx="637.1945359798791" cy="270.1402517394272" r="3" fill="#FF00FF"/>
+  <text x="643.1945359798791" y="274.1402517394272" font-size="8" fill="#FF00FF">c1</text>
+  <circle cx="479.5063128882122" cy="260.21934965379563" r="3" fill="#FF00FF"/>
+  <text x="485.5063128882122" y="264.21934965379563" font-size="8" fill="#FF00FF">c2</text>
+  <circle cx="487.7004756867876" cy="129.9768615939062" r="3" fill="#FF00FF"/>
+  <text x="493.7004756867876" y="133.9768615939062" font-size="8" fill="#FF00FF">c3</text>
+
+  <!-- Vertex markers -->
+
+  <circle cx="478.06" cy="128.08" r="2" fill="#4080ff"/>
+  <text x="470.06" y="122.08000000000001" font-size="8" fill="#4080ff">p0</text>
+  <circle cx="680.59623" cy="128.07719" r="2" fill="#4080ff"/>
+  <text x="672.59623" y="122.07719" font-size="8" fill="#4080ff">p1</text>
+  <circle cx="674.63915" cy="147.93412" r="2" fill="#4080ff"/>
+  <text x="666.63915" y="141.93412" font-size="8" fill="#4080ff">p2</text>
+  <circle cx="632.9395999999999" cy="288.91831" r="2" fill="#4080ff"/>
+  <text x="624.9395999999999" y="282.91831" font-size="8" fill="#4080ff">p3</text>
+  <circle cx="601.16852" cy="300.83247" r="2" fill="#4080ff"/>
+  <text x="593.16852" y="294.83247" font-size="8" fill="#4080ff">p4</text>
+  <circle cx="478.05556" cy="263.60073" r="2" fill="#4080ff"/>
+  <text x="470.05556" y="257.60073" font-size="8" fill="#4080ff">p5</text>
+  <circle cx="478.05556" cy="147.93412" r="2" fill="#4080ff"/>
+  <text x="470.05556" y="141.93412" font-size="8" fill="#4080ff">p6</text>
+
+  <!-- Data Table (positioned to the right) -->
+  <g transform="translate(700.59623, 128.07719)">
+    <rect x="0" y="0" width="320" height="160" fill="white" stroke="#ccc" stroke-width="1"/>
+    <rect x="0" y="0" width="320" height="30" fill="#f0f0f0"/>
+    <text x="160" y="20" font-size="14" font-weight="bold" text-anchor="middle">U-Shape Layout</text>
+
+    <text x="10" y="50" font-size="11" font-weight="bold">Tables:</text>
+    <text x="310" y="50" font-size="11" text-anchor="end">65 (20L × 25D)</text>
+
+    <text x="10" y="70" font-size="11" font-weight="bold">Dimensions:</text>
+    <text x="310" y="70" font-size="11" text-anchor="end">130.5 × 158.0 ft</text>
+
+    <text x="10" y="90" font-size="11" font-weight="bold">Area:</text>
+    <text x="310" y="90" font-size="11" text-anchor="end">20619.00 sq ft</text>
+
+    <text x="10" y="110" font-size="11" font-weight="bold">Fill Ratio:</text>
+    <text x="310" y="110" font-size="11" text-anchor="end">73.4%</text>
+
+    <text x="10" y="130" font-size="11" font-weight="bold">Angle:</text>
+    <text x="310" y="130" font-size="11" text-anchor="end">93.6°</text>
+
+    <text x="10" y="150" font-size="11" font-weight="bold">Runtime:</text>
+    <text x="310" y="150" font-size="11" text-anchor="end">3.72s</text>
+  </g>
+
+  <!-- Area Data (embedded as XML comments for extraction) -->
+  <!-- polygonArea: 28102.2477 -->
+  <!-- layoutArea: 20619.00 -->
+  <!-- fillRatio: 73.4 -->
+
+</svg>

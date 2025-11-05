@@ -41,6 +41,11 @@ const dataFiles = [
         path: path.join(projectOutputDir, `${prefix}-hollowsquare.json`),
         id: 'precomputed-hollowsquare',
         name: 'Hollow Square Layouts'
+    },
+    {
+        path: path.join(projectOutputDir, `${prefix}-ushape.json`),
+        id: 'precomputed-ushape',
+        name: 'U-Shape Layouts'
     }
 ];
 

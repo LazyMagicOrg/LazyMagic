@@ -119,6 +119,24 @@ function generateConfigFiles(project) {
         combinationsFile: project.combinationsPath
     };
 
+    // U-Shape config
+    const ushapeConfig = {
+        ...baseConfig,
+        testName: `${project.prefix} - U-Shape Layout`,
+        algorithm: "ushape",
+        svgPath: project.svgPath,
+        outputDir: path.join(computedLayoutsDir, `${project.prefix}-UShapeResults`),
+        algorithmOptions: {
+            width: { mode: "discrete", base: 16.5, increment: 6, minIncrements: 0 },
+            height: { mode: "discrete", base: 14, increment: 6, minIncrements: 0 },
+            maxTime: 5000,
+            angleSamples: 25,
+            centroidSamples: 25,
+            debugMode: false
+        },
+        combinationsFile: project.combinationsPath
+    };
+
     // Write temporary config files
     const tempConfigDir = path.join(projectOutputDir, '.temp-configs');
     if (!fs.existsSync(tempConfigDir)) {
@@ -128,15 +146,18 @@ function generateConfigFiles(project) {
     const maxInscribedPath = path.join(tempConfigDir, 'maxinscribed.json');
     const boardroomPath = path.join(tempConfigDir, 'boardroom.json');
     const hollowSquarePath = path.join(tempConfigDir, 'hollowsquare.json');
+    const ushapePath = path.join(tempConfigDir, 'ushape.json');
 
     fs.writeFileSync(maxInscribedPath, JSON.stringify(maxInscribedConfig, null, 2));
     fs.writeFileSync(boardroomPath, JSON.stringify(boardroomConfig, null, 2));
     fs.writeFileSync(hollowSquarePath, JSON.stringify(hollowSquareConfig, null, 2));
+    fs.writeFileSync(ushapePath, JSON.stringify(ushapeConfig, null, 2));
 
     return {
         maxInscribed: maxInscribedPath,
         boardroom: boardroomPath,
-        hollowSquare: hollowSquarePath
+        hollowSquare: hollowSquarePath,
+        ushape: ushapePath
     };
 }
 
@@ -179,17 +200,17 @@ async function processProject(project) {
         // Generate temporary config files
         const configs = generateConfigFiles(project);
 
-        // Step 1: Run tests for all three algorithms IN PARALLEL
-        console.log('Step 1/5: Running tests (MaxInscribed, Boardroom, Hollow Square) in parallel...');
+        // Step 1: Run tests for all four algorithms IN PARALLEL
+        console.log('Step 1/5: Running tests (MaxInscribed, Boardroom, Hollow Square, U-Shape) in parallel...');
         console.log();
 
-        // Execute all three algorithms simultaneously for ~3x speedup
+        // Execute all four algorithms simultaneously for ~4x speedup
         const execOptions = {
             cwd: __dirname,
             maxBuffer: 200 * 1024 * 1024 // 200MB buffer for verbose algorithm logging
         };
 
-        const [maxResult, boardroomResult, hollowResult] = await Promise.all([
+        const [maxResult, boardroomResult, hollowResult, ushapeResult] = await Promise.all([
             execAsync(`node run-tests.js "${configs.maxInscribed}"`, execOptions)
                 .then(() => console.log('  ✓ MaxInscribed tests complete'))
                 .catch(err => { throw new Error(`MaxInscribed failed: ${err.message}`); }),
@@ -198,7 +219,10 @@ async function processProject(project) {
                 .catch(err => { throw new Error(`Boardroom failed: ${err.message}`); }),
             execAsync(`node run-tests.js "${configs.hollowSquare}"`, execOptions)
                 .then(() => console.log('  ✓ Hollow Square tests complete'))
-                .catch(err => { throw new Error(`Hollow Square failed: ${err.message}`); })
+                .catch(err => { throw new Error(`Hollow Square failed: ${err.message}`); }),
+            execAsync(`node run-tests.js "${configs.ushape}"`, execOptions)
+                .then(() => console.log('  ✓ U-Shape tests complete'))
+                .catch(err => { throw new Error(`U-Shape failed: ${err.message}`); })
         ]);
 
         console.log('  ✓ All tests complete\\n');

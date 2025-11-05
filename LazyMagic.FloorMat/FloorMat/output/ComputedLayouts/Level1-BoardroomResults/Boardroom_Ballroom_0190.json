@@ -14,39 +14,39 @@
   "layout": {
     "corners": [
       {
-        "x": 236.4550433416933,
-        "y": 35.79757330599404
+        "x": 675.0934378457482,
+        "y": 133.14694940222353
       },
       {
-        "x": 671.0012825174347,
-        "y": 90.6935296071593
+        "x": 674.6397443886158,
+        "y": 146.1390301534718
       },
       {
-        "x": 669.3719504810987,
-        "y": 103.59102072424753
+        "x": 236.9065621542518,
+        "y": 130.85305059777647
       },
       {
-        "x": 234.82571130535737,
-        "y": 48.69506442308226
+        "x": 237.36025561138428,
+        "y": 117.86096984652822
       }
     ],
-    "width": 438,
-    "height": 13,
+    "width": 13,
+    "height": 438,
     "area": 5694,
-    "angle": 7.2,
+    "angle": 92,
     "centroid": {
-      "x": 452.913496911396,
-      "y": 69.69429701512078
+      "x": 456,
+      "y": 132
     },
     "sets": 73,
     "tables": 146,
-    "orientation": "length×width",
+    "orientation": "width×length",
     "type": "boardroom",
-    "algorithm": "Dedicated",
-    "computationTime": 213.03583300000173,
-    "winningAlgorithm": "Dedicated"
+    "algorithm": "Optimized",
+    "computationTime": 100.34810000000289,
+    "winningAlgorithm": "Optimized"
   },
   "polygonArea": 62367.57211147937,
   "fillRatio": 9.1297445246421,
-  "runtimeMs": 319
+  "runtimeMs": 464
 }

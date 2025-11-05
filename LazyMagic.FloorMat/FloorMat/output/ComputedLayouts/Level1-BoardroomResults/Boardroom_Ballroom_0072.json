@@ -38,10 +38,10 @@
     "orientation": "length×width",
     "type": "boardroom",
     "algorithm": "Dedicated",
-    "computationTime": 172.74065399999927,
+    "computationTime": 259.34140000000116,
     "winningAlgorithm": "Dedicated"
   },
   "polygonArea": 25515.11192595066,
   "fillRatio": 12.22804747654954,
-  "runtimeMs": 277
+  "runtimeMs": 365
 }

@@ -100,7 +100,7 @@
     <text x="310" y="130" font-size="11" text-anchor="end">28.8°</text>
 
     <text x="10" y="150" font-size="11" font-weight="bold">Runtime:</text>
-    <text x="310" y="150" font-size="11" text-anchor="end">457ms</text>
+    <text x="310" y="150" font-size="11" text-anchor="end">680ms</text>
   </g>
 
   <!-- Area Data (embedded as XML comments for extraction) -->

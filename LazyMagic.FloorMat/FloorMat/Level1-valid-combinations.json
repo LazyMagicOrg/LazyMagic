@@ -1,0 +1,3891 @@
+{
+  "generatedAt": "2025-11-05T22:21:47.516Z",
+  "totalCombinations": 253,
+  "roomSummary": {
+    "Foyer": 1,
+    "BeachDeck": 1,
+    "Ballroom": 251
+  },
+  "combinations": [
+    {
+      "id": "Foyer_0001",
+      "roomId": "Foyer",
+      "key": "Foyer_Room_Foyer",
+      "sections": [
+        "Foyer_Room_Foyer"
+      ],
+      "size": 1,
+      "layoutRestriction": "allowed",
+      "overrides": {
+        "area": 3000
+      }
+    },
+    {
+      "id": "BeachDeck_0002",
+      "roomId": "BeachDeck",
+      "key": "BeachDeck_Room_BeachDeck",
+      "sections": [
+        "BeachDeck_Room_BeachDeck"
+      ],
+      "size": 1,
+      "layoutRestriction": "allowed",
+      "overrides": {
+        "area": 3141.5,
+        "width": 61,
+        "depth": 51.5
+      }
+    },
+    {
+      "id": "Ballroom_0003",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Room_1",
+      "sections": [
+        "Ballroom_Room_1"
+      ],
+      "size": 1,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0004",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Room_2",
+      "sections": [
+        "Ballroom_Room_2"
+      ],
+      "size": 1,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0005",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Room_3"
+      ],
+      "size": 1,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0006",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Room_1_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "size": 2,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0007",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Room_4"
+      ],
+      "size": 1,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0008",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Room_2_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "size": 2,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0009",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Room_5"
+      ],
+      "size": 1,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0010",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Room_Grand"
+      ],
+      "size": 1,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0011",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Room_1",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_1"
+      ],
+      "size": 2,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0012",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Room_2",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_2"
+      ],
+      "size": 2,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0013",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Room_1_Ballroom_Room_2",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2"
+      ],
+      "size": 3,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0014",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Room_1_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "size": 3,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0015",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0016",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Room_2_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "size": 3,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0017",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0018",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_3"
+      ],
+      "size": 2,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0019",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "size": 3,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0020",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_4"
+      ],
+      "size": 2,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0021",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Room_2_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "size": 3,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0022",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 3,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0023",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0024",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0025",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0026",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0027",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_2_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0028",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0029",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0030",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0031",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0032",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_35_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_3"
+      ],
+      "size": 2,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0033",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "size": 3,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0034",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_35_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_5"
+      ],
+      "size": 2,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0035",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_35_Ballroom_Room_3_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "size": 3,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0036",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0037",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0038",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0039",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0040",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0041",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_3"
+      ],
+      "size": 3,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0042",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0043",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0044",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0045",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0046",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_3_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0047",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0048",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0049",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0050",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0051",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0052",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0053",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0054",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0055",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0056",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0057",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0058",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0059",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0060",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0061",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_46_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_4"
+      ],
+      "size": 2,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0062",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "size": 3,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0063",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_46_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 2,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0064",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_46_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 3,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0065",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0066",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0067",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0068",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0069",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0070",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_4"
+      ],
+      "size": 3,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0071",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0072",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0073",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0074",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0075",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0076",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0077",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0078",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0079",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0080",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0081",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0082",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0083",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0084",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0085",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0086",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0087",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0088",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0089",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0090",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_56_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_5"
+      ],
+      "size": 2,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0091",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_56_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 2,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0092",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_56_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 3,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0093",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_5"
+      ],
+      "size": 3,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0094",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_3_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0095",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0096",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0097",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0098",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0099",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0100",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0101",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0102",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0103",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 3,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0104",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0105",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0106",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0107",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0108",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0109",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0110",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0111",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0112",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0113",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0114",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0115",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0116",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0117",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0118",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0119",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0120",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0121",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0122",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0123",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0124",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0125",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0126",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0127",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0128",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0129",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0130",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0131",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0132",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0133",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_4"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0134",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0135",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0136",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0137",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0138",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0139",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0140",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0141",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0142",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0143",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0144",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0145",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0146",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0147",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0148",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0149",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0150",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0151",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0152",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0153",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0154",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0155",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0156",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0157",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0158",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0159",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0160",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0161",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0162",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0163",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0164",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0165",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0166",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0167",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 10,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0168",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0169",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0170",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 10,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0171",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_5"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0172",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0173",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0174",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0175",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0176",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0177",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0178",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0179",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0180",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0181",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0182",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0183",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0184",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0185",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0186",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0187",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0188",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0189",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0190",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0191",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0192",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 10,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0193",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0194",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 10,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0195",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 4,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0196",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0197",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0198",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 5,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0199",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0200",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0201",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0202",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0203",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0204",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0205",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0206",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0207",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0208",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0209",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0210",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0211",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0212",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0213",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0214",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0215",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0216",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 10,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0217",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0218",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 10,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0219",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 6,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0220",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0221",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0222",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 7,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0223",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0224",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0225",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 10,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0226",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0227",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 10,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0228",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0229",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0230",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0231",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0232",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0233",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0234",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0235",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0236",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 8,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0237",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0238",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 9,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0239",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 10,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0240",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 10,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0241",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 10,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0242",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 10,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0243",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "size": 11,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0244",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 10,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0245",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 10,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0246",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 11,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0247",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 10,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0248",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 11,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0249",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 10,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0250",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 11,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0251",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 11,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0252",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 11,
+      "layoutRestriction": "allowed"
+    },
+    {
+      "id": "Ballroom_0253",
+      "roomId": "Ballroom",
+      "key": "Ballroom_Aisle_12_Ballroom_Aisle_34_Ballroom_Aisle_35_Ballroom_Aisle_46_Ballroom_Aisle_56_Ballroom_Crossing_3456_Ballroom_Room_1_Ballroom_Room_2_Ballroom_Room_3_Ballroom_Room_4_Ballroom_Room_5_Ballroom_Room_Grand",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "size": 12,
+      "layoutRestriction": "allowed"
+    }
+  ]
+}

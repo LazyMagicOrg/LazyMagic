@@ -22,22 +22,22 @@
   <polygon points="458.2,128.08 478.05556,128.07719 478.05556,32.255595 680.59623,32.255595 680.59623,128.07719 674.63915,147.93412 632.9395999999999,288.91831 601.16852,300.83247 478.05556,263.60073 458.19863,259.13292 458.19863,147.93412" fill="none" stroke="#4080ff" stroke-width="2" stroke-dasharray="5,5"/>
 
   <!-- Layout rectangle (colored fill, solid border) -->
-  <polygon points="676.1695806966757,65.264718354481 635.5078354315735,278.42105176260645 462.6252793033243,245.44194039551897 503.2870245684265,32.28560698739352" fill="rgba(147, 51, 234, 0.15)" stroke="#9333ea" stroke-width="3"/>
+  <polygon points="490.33449323146203,33.645824591594746 658.0018777536088,54.82714106396217 629.9272334352046,277.0608341584052 462.25984891305785,255.8795176860378" fill="rgba(147, 51, 234, 0.15)" stroke="#9333ea" stroke-width="3"/>
 
   <!-- Centroid marker -->
-  <circle cx="569.39743" cy="155.353329375" r="4" fill="#9333ea"/>
-  <text x="577.39743" y="160.353329375" font-size="10" fill="#9333ea">hollowsquare</text>
+  <circle cx="560.1308633333333" cy="155.353329375" r="4" fill="#9333ea"/>
+  <text x="568.1308633333333" y="160.353329375" font-size="10" fill="#9333ea">hollowsquare</text>
 
   <!-- Corner markers -->
 
-  <circle cx="676.1695806966757" cy="65.264718354481" r="3" fill="#9333ea"/>
-  <text x="682.1695806966757" y="69.264718354481" font-size="8" fill="#9333ea">c0</text>
-  <circle cx="635.5078354315735" cy="278.42105176260645" r="3" fill="#9333ea"/>
-  <text x="641.5078354315735" y="282.42105176260645" font-size="8" fill="#9333ea">c1</text>
-  <circle cx="462.6252793033243" cy="245.44194039551897" r="3" fill="#9333ea"/>
-  <text x="468.6252793033243" y="249.44194039551897" font-size="8" fill="#9333ea">c2</text>
-  <circle cx="503.2870245684265" cy="32.28560698739352" r="3" fill="#9333ea"/>
-  <text x="509.2870245684265" y="36.28560698739352" font-size="8" fill="#9333ea">c3</text>
+  <circle cx="490.33449323146203" cy="33.645824591594746" r="3" fill="#9333ea"/>
+  <text x="496.33449323146203" y="37.645824591594746" font-size="8" fill="#9333ea">c0</text>
+  <circle cx="658.0018777536088" cy="54.82714106396217" r="3" fill="#9333ea"/>
+  <text x="664.0018777536088" y="58.82714106396217" font-size="8" fill="#9333ea">c1</text>
+  <circle cx="629.9272334352046" cy="277.0608341584052" r="3" fill="#9333ea"/>
+  <text x="635.9272334352046" y="281.0608341584052" font-size="8" fill="#9333ea">c2</text>
+  <circle cx="462.25984891305785" cy="255.8795176860378" r="3" fill="#9333ea"/>
+  <text x="468.25984891305785" y="259.8795176860378" font-size="8" fill="#9333ea">c3</text>
 
   <!-- Vertex markers -->
 
@@ -71,27 +71,27 @@
     <text x="160" y="20" font-size="14" font-weight="bold" text-anchor="middle">Hollow Square Layout</text>
 
     <text x="10" y="50" font-size="11" font-weight="bold">Tables:</text>
-    <text x="310" y="50" font-size="11" text-anchor="end">124 (34L × 28D)</text>
+    <text x="310" y="50" font-size="11" text-anchor="end">124 (26L × 36D)</text>
 
     <text x="10" y="70" font-size="11" font-weight="bold">Dimensions:</text>
-    <text x="310" y="70" font-size="11" text-anchor="end">217.0 × 176.0 ft</text>
+    <text x="310" y="70" font-size="11" text-anchor="end">169.0 × 224.0 ft</text>
 
     <text x="10" y="90" font-size="11" font-weight="bold">Area:</text>
-    <text x="310" y="90" font-size="11" text-anchor="end">38192.00 sq ft</text>
+    <text x="310" y="90" font-size="11" text-anchor="end">37856.00 sq ft</text>
 
     <text x="10" y="110" font-size="11" font-weight="bold">Fill Ratio:</text>
-    <text x="310" y="110" font-size="11" text-anchor="end">76.1%</text>
+    <text x="310" y="110" font-size="11" text-anchor="end">75.5%</text>
 
     <text x="10" y="130" font-size="11" font-weight="bold">Angle:</text>
-    <text x="310" y="130" font-size="11" text-anchor="end">100.8°</text>
+    <text x="310" y="130" font-size="11" text-anchor="end">7.2°</text>
 
     <text x="10" y="150" font-size="11" font-weight="bold">Runtime:</text>
-    <text x="310" y="150" font-size="11" text-anchor="end">8.29s</text>
+    <text x="310" y="150" font-size="11" text-anchor="end">5.00s</text>
   </g>
 
   <!-- Area Data (embedded as XML comments for extraction) -->
   <!-- polygonArea: 50157.0278 -->
-  <!-- layoutArea: 38192.00 -->
-  <!-- fillRatio: 76.1 -->
+  <!-- layoutArea: 37856.00 -->
+  <!-- fillRatio: 75.5 -->
 
 </svg>

@@ -22,22 +22,22 @@
   <polygon points="350.97,147.93 458.19863,147.93412 478.05556,147.93412 478.05556,128.07719 478.05556,32.255595 680.59623,32.255595 680.59623,128.07719 674.63915,147.93412 632.9395999999999,288.91831 601.16852,300.83247 478.05556,263.60073 458.19863,259.13292 350.97121999999996,239.27599" fill="none" stroke="#4080ff" stroke-width="2" stroke-dasharray="5,5"/>
 
   <!-- Layout rectangle (colored fill, solid border) -->
-  <polygon points="674.5461089444897,64.70257441072384 633.8843636793874,277.8589078188493 466.8955310555104,246.00408433927612 507.5572763206126,32.847750931150685" fill="rgba(147, 51, 234, 0.15)" stroke="#9333ea" stroke-width="3"/>
+  <polygon points="515.2366709241053,42.85992195493486 678.9272251548439,84.88851288579531 626.2049690758947,290.2281430450651 462.51441484515607,248.19955211420466" fill="rgba(147, 51, 234, 0.15)" stroke="#9333ea" stroke-width="3"/>
 
   <!-- Centroid marker -->
-  <circle cx="570.72082" cy="155.353329375" r="4" fill="#9333ea"/>
-  <text x="578.72082" y="160.353329375" font-size="10" fill="#9333ea">hollowsquare</text>
+  <circle cx="570.72082" cy="166.5440325" r="4" fill="#9333ea"/>
+  <text x="578.72082" y="171.5440325" font-size="10" fill="#9333ea">hollowsquare</text>
 
   <!-- Corner markers -->
 
-  <circle cx="674.5461089444897" cy="64.70257441072384" r="3" fill="#9333ea"/>
-  <text x="680.5461089444897" y="68.70257441072384" font-size="8" fill="#9333ea">c0</text>
-  <circle cx="633.8843636793874" cy="277.8589078188493" r="3" fill="#9333ea"/>
-  <text x="639.8843636793874" y="281.8589078188493" font-size="8" fill="#9333ea">c1</text>
-  <circle cx="466.8955310555104" cy="246.00408433927612" r="3" fill="#9333ea"/>
-  <text x="472.8955310555104" y="250.00408433927612" font-size="8" fill="#9333ea">c2</text>
-  <circle cx="507.5572763206126" cy="32.847750931150685" r="3" fill="#9333ea"/>
-  <text x="513.5572763206126" y="36.847750931150685" font-size="8" fill="#9333ea">c3</text>
+  <circle cx="515.2366709241053" cy="42.85992195493486" r="3" fill="#9333ea"/>
+  <text x="521.2366709241053" y="46.85992195493486" font-size="8" fill="#9333ea">c0</text>
+  <circle cx="678.9272251548439" cy="84.88851288579531" r="3" fill="#9333ea"/>
+  <text x="684.9272251548439" y="88.88851288579531" font-size="8" fill="#9333ea">c1</text>
+  <circle cx="626.2049690758947" cy="290.2281430450651" r="3" fill="#9333ea"/>
+  <text x="632.2049690758947" y="294.2281430450651" font-size="8" fill="#9333ea">c2</text>
+  <circle cx="462.51441484515607" cy="248.19955211420466" r="3" fill="#9333ea"/>
+  <text x="468.51441484515607" y="252.19955211420466" font-size="8" fill="#9333ea">c3</text>
 
   <!-- Vertex markers -->
 
@@ -75,19 +75,19 @@
     <text x="160" y="20" font-size="14" font-weight="bold" text-anchor="middle">Hollow Square Layout</text>
 
     <text x="10" y="50" font-size="11" font-weight="bold">Tables:</text>
-    <text x="310" y="50" font-size="11" text-anchor="end">122 (34L × 27D)</text>
+    <text x="310" y="50" font-size="11" text-anchor="end">120 (26L × 34D)</text>
 
     <text x="10" y="70" font-size="11" font-weight="bold">Dimensions:</text>
-    <text x="310" y="70" font-size="11" text-anchor="end">217.0 × 170.0 ft</text>
+    <text x="310" y="70" font-size="11" text-anchor="end">169.0 × 212.0 ft</text>
 
     <text x="10" y="90" font-size="11" font-weight="bold">Area:</text>
-    <text x="310" y="90" font-size="11" text-anchor="end">36890.00 sq ft</text>
+    <text x="310" y="90" font-size="11" text-anchor="end">35828.00 sq ft</text>
 
     <text x="10" y="110" font-size="11" font-weight="bold">Fill Ratio:</text>
-    <text x="310" y="110" font-size="11" text-anchor="end">60.9%</text>
+    <text x="310" y="110" font-size="11" text-anchor="end">59.1%</text>
 
     <text x="10" y="130" font-size="11" font-weight="bold">Angle:</text>
-    <text x="310" y="130" font-size="11" text-anchor="end">100.8°</text>
+    <text x="310" y="130" font-size="11" text-anchor="end">14.4°</text>
 
     <text x="10" y="150" font-size="11" font-weight="bold">Runtime:</text>
     <text x="310" y="150" font-size="11" text-anchor="end">5.00s</text>
@@ -95,7 +95,7 @@
 
   <!-- Area Data (embedded as XML comments for extraction) -->
   <!-- polygonArea: 60622.0040 -->
-  <!-- layoutArea: 36890.00 -->
-  <!-- fillRatio: 60.9 -->
+  <!-- layoutArea: 35828.00 -->
+  <!-- fillRatio: 59.1 -->
 
 </svg>

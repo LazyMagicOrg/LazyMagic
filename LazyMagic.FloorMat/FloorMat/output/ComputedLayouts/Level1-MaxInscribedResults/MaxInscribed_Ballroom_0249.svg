@@ -27,22 +27,22 @@
   <polygon points="234.81,128.08 350.97122,128.07719 458.19863,128.07719 458.19863,32.255595 478.05556,32.255595 680.59623,32.255595 680.59623,128.07719 674.63915,147.93412 632.9395999999999,288.91831 601.16852,300.83247 478.05556,263.60073 458.19863,259.13292 350.97122,239.27599 234.80818000000002,225.87058000000002 234.80818,147.93412" fill="none" stroke="#4080ff" stroke-width="2" stroke-dasharray="5,5"/>
 
   <!-- Layout rectangle (colored fill, solid border) -->
-  <polygon points="429.5152573991555,244.53696172777052 628.5369617277705,290.4847426008445 674.4847426008445,91.4630382722295 475.4630382722295,45.51525739915549" fill="rgba(220, 38, 38, 0.15)" stroke="#dc2626" stroke-width="3"/>
+  <polygon points="458.19863,32.255595 458.1986299999999,259.13292000000007 641.9378878125,259.13292000000007 641.9378878125,32.25559500000002" fill="rgba(220, 38, 38, 0.15)" stroke="#dc2626" stroke-width="3"/>
 
   <!-- Centroid marker -->
-  <circle cx="552" cy="168" r="4" fill="#dc2626"/>
-  <text x="560" y="173" font-size="10" fill="#dc2626">maxinscribed</text>
+  <circle cx="550.06825890625" cy="145.69425750000002" r="4" fill="#dc2626"/>
+  <text x="558.06825890625" y="150.69425750000002" font-size="10" fill="#dc2626">maxinscribed</text>
 
   <!-- Corner markers -->
 
-  <circle cx="429.5152573991555" cy="244.53696172777052" r="3" fill="#dc2626"/>
-  <text x="435.5152573991555" y="248.53696172777052" font-size="8" fill="#dc2626">c0</text>
-  <circle cx="628.5369617277705" cy="290.4847426008445" r="3" fill="#dc2626"/>
-  <text x="634.5369617277705" y="294.4847426008445" font-size="8" fill="#dc2626">c1</text>
-  <circle cx="674.4847426008445" cy="91.4630382722295" r="3" fill="#dc2626"/>
-  <text x="680.4847426008445" y="95.4630382722295" font-size="8" fill="#dc2626">c2</text>
-  <circle cx="475.4630382722295" cy="45.51525739915549" r="3" fill="#dc2626"/>
-  <text x="481.4630382722295" y="49.51525739915549" font-size="8" fill="#dc2626">c3</text>
+  <circle cx="458.19863" cy="32.255595" r="3" fill="#dc2626"/>
+  <text x="464.19863" y="36.255595" font-size="8" fill="#dc2626">c0</text>
+  <circle cx="458.1986299999999" cy="259.13292000000007" r="3" fill="#dc2626"/>
+  <text x="464.1986299999999" y="263.13292000000007" font-size="8" fill="#dc2626">c1</text>
+  <circle cx="641.9378878125" cy="259.13292000000007" r="3" fill="#dc2626"/>
+  <text x="647.9378878125" y="263.13292000000007" font-size="8" fill="#dc2626">c2</text>
+  <circle cx="641.9378878125" cy="32.25559500000002" r="3" fill="#dc2626"/>
+  <text x="647.9378878125" y="36.25559500000002" font-size="8" fill="#dc2626">c3</text>
 
   <!-- Vertex markers -->
 
@@ -84,16 +84,16 @@
     <text x="160" y="20" font-size="14" font-weight="bold" text-anchor="middle">Max Inscribed Rectangle</text>
 
     <text x="10" y="50" font-size="11" font-weight="bold">Dimensions:</text>
-    <text x="310" y="50" font-size="11" text-anchor="end">204.3 × 204.3 ft</text>
+    <text x="310" y="50" font-size="11" text-anchor="end">226.9 × 183.7 ft</text>
 
     <text x="10" y="70" font-size="11" font-weight="bold">Area:</text>
-    <text x="310" y="70" font-size="11" text-anchor="end">41720.84 sq ft</text>
+    <text x="310" y="70" font-size="11" text-anchor="end">41686.27 sq ft</text>
 
     <text x="10" y="90" font-size="11" font-weight="bold">Fill Ratio:</text>
-    <text x="310" y="90" font-size="11" text-anchor="end">54.1%</text>
+    <text x="310" y="90" font-size="11" text-anchor="end">54.0%</text>
 
     <text x="10" y="110" font-size="11" font-weight="bold">Angle:</text>
-    <text x="310" y="110" font-size="11" text-anchor="end">13.0°</text>
+    <text x="310" y="110" font-size="11" text-anchor="end">90.0°</text>
 
     <text x="10" y="130" font-size="11" font-weight="bold">Runtime:</text>
     <text x="310" y="130" font-size="11" text-anchor="end">5.01s</text>
@@ -101,14 +101,14 @@
     <!-- Hybrid Algorithm Info -->
     <line x1="10" x2="310" y1="145" y2="145" stroke="#ccc" stroke-width="1"/>
     <text x="10" y="160" font-size="11" font-weight="bold">Algorithm Used:</text>
-    <text x="310" y="160" font-size="11" text-anchor="end">optimized</text>
+    <text x="310" y="160" font-size="11" text-anchor="end">boundary-based</text>
 
     <text x="10" y="180" font-size="10" fill="#666">Boundary: ✓ | Optimized: ✓</text>
   </g>
 
   <!-- Area Data (embedded as XML comments for extraction) -->
   <!-- polygonArea: 77186.3577 -->
-  <!-- layoutArea: 41720.84 -->
-  <!-- fillRatio: 54.1 -->
+  <!-- layoutArea: 41686.27 -->
+  <!-- fillRatio: 54.0 -->
 
 </svg>

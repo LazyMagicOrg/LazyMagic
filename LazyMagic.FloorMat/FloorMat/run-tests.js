@@ -36,6 +36,7 @@ const boundaryBased = require('./SvgViewerBoundaryBased.cjs');
 const optimized = require('./SvgViewerOptimized.cjs');
 const boardroom = require('./SvgViewerBoardroom.cjs');
 const hollowsquare = require('./SvgViewerHollowSquare.cjs');
+const ushape = require('./SvgViewerUShape.cjs');
 
 // Make KDTree and SpatialGrid available globally for the algorithms
 global.KDTree = kdtree.KDTree;
@@ -534,6 +535,19 @@ function calculateLayoutData(layout, algorithmType) {
         if (layout.type) {
             data.algorithmUsed = layout.type;
         }
+    } else if (algorithmType === 'ushape') {
+        // Calculate lengthRun and depthRun from dimensions
+        const lengthRun = Math.round((layout.width - 16.5) / 6);
+        const depthRun = Math.round((layout.height - 14) / 6);
+        const tables = (lengthRun + 1) * 2 + (depthRun + 1);
+
+        data.tables = `${tables} (${lengthRun + 1}L × ${depthRun + 1}D)`;
+        data.type = 'U-Shape Layout';
+        data.color = '#FF00FF'; // pink/magenta
+        // Note which algorithm was used (boundary-based or unified)
+        if (layout.type) {
+            data.algorithmUsed = layout.type;
+        }
     } else if (algorithmType === 'boardroom') {
         const sets = Math.round((Math.max(layout.width, layout.height) - 14) / 6) + 1;
         data.tables = `${sets * 2} (${sets} sets)`;
@@ -924,6 +938,38 @@ function convertConstraintsToParams(options, algorithmType) {
         return result;
     }
 
+    if (algorithmType === 'ushape') {
+        // Discrete width and height
+        const widthConstraint = options.width || { mode: 'discrete', base: 16.5, increment: 6, minIncrements: 0 };
+        const heightConstraint = options.height || { mode: 'discrete', base: 14, increment: 6, minIncrements: 0 };
+
+        if (widthConstraint.mode === 'discrete' && heightConstraint.mode === 'discrete') {
+            // Generate aspect ratios from discrete width/height combinations
+            const aspectRatios = [];
+            const maxIncrements = 12; // Reduced from 20 for 44% fewer iterations (12×12=144 vs 20×20=400)
+
+            for (let wi = widthConstraint.minIncrements || 0; wi < maxIncrements; wi++) {
+                const width = widthConstraint.base + wi * widthConstraint.increment;
+
+                for (let hi = heightConstraint.minIncrements || 0; hi < maxIncrements; hi++) {
+                    const height = heightConstraint.base + hi * heightConstraint.increment;
+                    const aspect = width / height;
+
+                    // Avoid duplicates and extremes
+                    if (!aspectRatios.includes(aspect) && aspect > 0.3 && aspect < 5.0) {
+                        aspectRatios.push(aspect);
+                    }
+                }
+            }
+
+            // Sort and limit to reasonable number
+            aspectRatios.sort((a, b) => a - b);
+            result.optimized.aspectRatios = aspectRatios.slice(0, 50);
+        }
+
+        return result;
+    }
+
     // Default: no constraints
     result.optimized.aspectRatios = options.aspectRatios || [0.5, 0.6, 0.7, 0.85, 1.0, 1.2, 1.4, 1.7, 2.0, 2.3, 2.5, 2.8, 3.0];
     return result;
@@ -943,6 +989,12 @@ function checkDimensionConstraints(rectangle, options, algorithmType) {
     } else if (algorithmType === 'hollowsquare') {
         // Hollow square: width and height must meet discrete constraints
         const widthConstraint = options.width || { mode: 'discrete', base: 19, increment: 6, minIncrements: 0 };
+        const heightConstraint = options.height || { mode: 'discrete', base: 14, increment: 6, minIncrements: 0 };
+        return checkDimensionValue(rectangle.width, widthConstraint) &&
+               checkDimensionValue(rectangle.height, heightConstraint);
+    } else if (algorithmType === 'ushape') {
+        // U-shape: width and height must meet discrete constraints
+        const widthConstraint = options.width || { mode: 'discrete', base: 16.5, increment: 6, minIncrements: 0 };
         const heightConstraint = options.height || { mode: 'discrete', base: 14, increment: 6, minIncrements: 0 };
         return checkDimensionValue(rectangle.width, widthConstraint) &&
                checkDimensionValue(rectangle.height, heightConstraint);
@@ -1029,6 +1081,9 @@ function runTest(testConfig, combination, testIndex, totalTests) {
                 debugMode: testConfig.algorithmOptions.debugMode || false
             };
             layout = boardroom.findBoardroomLayout(polygon, options);
+        } else if (testConfig.algorithm === 'ushape') {
+            // U-Shape: Use Unified algorithm (handles dimension constraints)
+            layout = unifiedAlgo.findInscribedRectangle(polygon, testConfig.algorithmOptions);
         } else {
             // Hollow Square: Use Unified algorithm (handles dimension constraints)
             layout = unifiedAlgo.findInscribedRectangle(polygon, testConfig.algorithmOptions);

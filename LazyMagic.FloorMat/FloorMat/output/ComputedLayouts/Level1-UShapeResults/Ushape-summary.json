@@ -1,0 +1,5673 @@
+{
+  "timestamp": "2025-11-05T23:12:33.139Z",
+  "testName": "Level1 - U-Shape Layout",
+  "algorithm": "ushape",
+  "totalTests": 253,
+  "passed": 253,
+  "failed": 0,
+  "totalRuntimeMs": 1204280,
+  "totalRuntimeSec": 1204.3,
+  "configuration": {
+    "width": {
+      "mode": "discrete",
+      "base": 16.5,
+      "increment": 6,
+      "minIncrements": 0
+    },
+    "height": {
+      "mode": "discrete",
+      "base": 14,
+      "increment": 6,
+      "minIncrements": 0
+    },
+    "maxTime": 5000,
+    "angleSamples": 25,
+    "centroidSamples": 25,
+    "debugMode": false
+  },
+  "results": [
+    {
+      "id": "Foyer_0001",
+      "sections": [
+        "Foyer_Room_Foyer"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 112.5,
+        "height": 182,
+        "area": 20475,
+        "angle": 0
+      },
+      "polygonArea": 21575.74551430729,
+      "fillRatio": 94.89822720805931,
+      "runtimeMs": 3083
+    },
+    {
+      "id": "BeachDeck_0002",
+      "sections": [
+        "BeachDeck_Room_BeachDeck"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 118.5,
+        "height": 92,
+        "area": 10902,
+        "angle": 0
+      },
+      "polygonArea": 12387.362433485148,
+      "fillRatio": 88.00905001802514,
+      "runtimeMs": 1344
+    },
+    {
+      "id": "Ballroom_0003",
+      "sections": [
+        "Ballroom_Room_1"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 112.5,
+        "height": 92,
+        "area": 10350,
+        "angle": 0
+      },
+      "polygonArea": 11130.584726101752,
+      "fillRatio": 92.98702857657385,
+      "runtimeMs": 1034
+    },
+    {
+      "id": "Ballroom_0004",
+      "sections": [
+        "Ballroom_Room_2"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 76.5,
+        "height": 110,
+        "area": 8415,
+        "angle": 93.60000000000001
+      },
+      "polygonArea": 9832.111083145399,
+      "fillRatio": 85.5869093507836,
+      "runtimeMs": 1086
+    },
+    {
+      "id": "Ballroom_0005",
+      "sections": [
+        "Ballroom_Room_3"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 106.5,
+        "height": 92,
+        "area": 9798,
+        "angle": 0
+      },
+      "polygonArea": 10274.52373672137,
+      "fillRatio": 95.3620844242321,
+      "runtimeMs": 1027
+    },
+    {
+      "id": "Ballroom_0006",
+      "sections": [
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 220.5,
+        "height": 92,
+        "area": 20286,
+        "angle": 0
+      },
+      "polygonArea": 21405.2861800207,
+      "fillRatio": 94.77098240776888,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0007",
+      "sections": [
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 106.5,
+        "height": 86,
+        "area": 9159,
+        "angle": 0
+      },
+      "polygonArea": 10859.232338887654,
+      "fillRatio": 84.34297852897939,
+      "runtimeMs": 1067
+    },
+    {
+      "id": "Ballroom_0008",
+      "sections": [
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 76.5,
+        "height": 218,
+        "area": 16677,
+        "angle": 93.60000000000001
+      },
+      "polygonArea": 20691.06681502775,
+      "fillRatio": 80.60000071087507,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0009",
+      "sections": [
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 202.5,
+        "height": 92,
+        "area": 18630,
+        "angle": 0
+      },
+      "polygonArea": 19407.111232002077,
+      "fillRatio": 95.99573979500549,
+      "runtimeMs": 4254
+    },
+    {
+      "id": "Ballroom_0010",
+      "sections": [
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 160.5,
+        "height": 110,
+        "area": 17655,
+        "angle": 0
+      },
+      "polygonArea": 24140.033255790855,
+      "fillRatio": 73.13577331449953,
+      "runtimeMs": 4144
+    },
+    {
+      "id": "Ballroom_0011",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_1"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 112.5,
+        "height": 110,
+        "area": 12375,
+        "angle": 0
+      },
+      "polygonArea": 13437.226079968957,
+      "fillRatio": 92.09490058701601,
+      "runtimeMs": 1402
+    },
+    {
+      "id": "Ballroom_0012",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_2"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 94.5,
+        "height": 110,
+        "area": 10395,
+        "angle": 93.60000000000001
+      },
+      "polygonArea": 12138.402784451306,
+      "fillRatio": 85.63729664100026,
+      "runtimeMs": 1485
+    },
+    {
+      "id": "Ballroom_0013",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 112.5,
+        "height": 188,
+        "area": 21150,
+        "angle": 0
+      },
+      "polygonArea": 23269.16878943056,
+      "fillRatio": 90.8928040850641,
+      "runtimeMs": 4573
+    },
+    {
+      "id": "Ballroom_0014",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 220.5,
+        "height": 92,
+        "area": 20286,
+        "angle": 0
+      },
+      "polygonArea": 23711.927533887905,
+      "fillRatio": 85.55188088782853,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0015",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 106.5,
+        "height": 188,
+        "area": 20022,
+        "angle": 0
+      },
+      "polygonArea": 33543.870243349505,
+      "fillRatio": 59.68899788470179,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0016",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 208.5,
+        "height": 86,
+        "area": 17931,
+        "angle": 7.2
+      },
+      "polygonArea": 22997.358516333654,
+      "fillRatio": 77.96982417465327,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0017",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 106.5,
+        "height": 188,
+        "area": 20022,
+        "angle": 0
+      },
+      "polygonArea": 34128.124521312915,
+      "fillRatio": 58.66715584530969,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0018",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_3"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 106.5,
+        "height": 110,
+        "area": 11715,
+        "angle": 0
+      },
+      "polygonArea": 12403.730911172664,
+      "fillRatio": 94.44738912747381,
+      "runtimeMs": 1296
+    },
+    {
+      "id": "Ballroom_0019",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 220.5,
+        "height": 92,
+        "area": 20286,
+        "angle": 0
+      },
+      "polygonArea": 23534.493354471993,
+      "fillRatio": 86.19688426878874,
+      "runtimeMs": 5001
+    },
+    {
+      "id": "Ballroom_0020",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 106.5,
+        "height": 104,
+        "area": 11076,
+        "angle": 0
+      },
+      "polygonArea": 12988.0243645499,
+      "fillRatio": 85.27855884095301,
+      "runtimeMs": 1846
+    },
+    {
+      "id": "Ballroom_0021",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 76.5,
+        "height": 218,
+        "area": 16677,
+        "angle": 93.60000000000001
+      },
+      "polygonArea": 22820.273989479043,
+      "fillRatio": 73.07975358967508,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0022",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 106.5,
+        "height": 206,
+        "area": 21939,
+        "angle": 0
+      },
+      "polygonArea": 23262.68664305502,
+      "fillRatio": 94.30982902634678,
+      "runtimeMs": 5001
+    },
+    {
+      "id": "Ballroom_0023",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 100.5,
+        "height": 206,
+        "area": 20703,
+        "angle": 0
+      },
+      "polygonArea": 34393.44908635435,
+      "fillRatio": 60.19460260591877,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0024",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 100.5,
+        "height": 206,
+        "area": 20703,
+        "angle": 0
+      },
+      "polygonArea": 33094.97544339799,
+      "fillRatio": 62.556323800294514,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0025",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 220.5,
+        "height": 110,
+        "area": 24255,
+        "angle": 0
+      },
+      "polygonArea": 25841.1347083392,
+      "fillRatio": 93.86197732320424,
+      "runtimeMs": 4891
+    },
+    {
+      "id": "Ballroom_0026",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 220.5,
+        "height": 110,
+        "area": 24255,
+        "angle": 0
+      },
+      "polygonArea": 35673.0774178008,
+      "fillRatio": 67.99245188725097,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0027",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 214.5,
+        "height": 98,
+        "area": 21021,
+        "angle": 0
+      },
+      "polygonArea": 25126.565690784948,
+      "fillRatio": 83.66045825239601,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0028",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 106.5,
+        "height": 206,
+        "area": 21939,
+        "angle": 100.8
+      },
+      "polygonArea": 36257.33169576421,
+      "fillRatio": 60.50914111410752,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0029",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 220.5,
+        "height": 110,
+        "area": 24255,
+        "angle": 0
+      },
+      "polygonArea": 36700.09044022157,
+      "fillRatio": 66.08975539040543,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0030",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 100.5,
+        "height": 206,
+        "area": 20703,
+        "angle": 0
+      },
+      "polygonArea": 35401.267144703896,
+      "fillRatio": 58.48095751876839,
+      "runtimeMs": 4973
+    },
+    {
+      "id": "Ballroom_0031",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 220.5,
+        "height": 188,
+        "area": 41454,
+        "angle": 0
+      },
+      "polygonArea": 46532.03314968315,
+      "fillRatio": 89.08701639288304,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0032",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_3"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 124.5,
+        "height": 92,
+        "area": 11454,
+        "angle": 0
+      },
+      "polygonArea": 12177.24644112472,
+      "fillRatio": 94.0606733663352,
+      "runtimeMs": 1487
+    },
+    {
+      "id": "Ballroom_0033",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 238.5,
+        "height": 92,
+        "area": 21942,
+        "angle": 0
+      },
+      "polygonArea": 23308.00888442405,
+      "fillRatio": 94.13931541215042,
+      "runtimeMs": 4975
+    },
+    {
+      "id": "Ballroom_0034",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 220.5,
+        "height": 92,
+        "area": 20286,
+        "angle": 0
+      },
+      "polygonArea": 21310.3833834911,
+      "fillRatio": 95.19303165477223,
+      "runtimeMs": 4835
+    },
+    {
+      "id": "Ballroom_0035",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 328.5,
+        "height": 92,
+        "area": 30222,
+        "angle": 0
+      },
+      "polygonArea": 31585.016492893374,
+      "fillRatio": 95.68461047598296,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0036",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 92,
+        "area": 40710,
+        "angle": 0
+      },
+      "polygonArea": 42715.7789361927,
+      "fillRatio": 95.30436062236191,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0037",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 238.5,
+        "height": 92,
+        "area": 21942,
+        "angle": 0
+      },
+      "polygonArea": 25614.650238291255,
+      "fillRatio": 85.66191533312049,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0038",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 238.5,
+        "height": 86,
+        "area": 20511,
+        "angle": 0
+      },
+      "polygonArea": 35446.592947752855,
+      "fillRatio": 57.86451755809806,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0039",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 92,
+        "area": 40710,
+        "angle": 0
+      },
+      "polygonArea": 45022.420290059905,
+      "fillRatio": 90.42161602535613,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0040",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 86,
+        "area": 38055,
+        "angle": 0
+      },
+      "polygonArea": 54854.362999521516,
+      "fillRatio": 69.3746092727974,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0041",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_3"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 124.5,
+        "height": 92,
+        "area": 11454,
+        "angle": 0
+      },
+      "polygonArea": 14306.45361557601,
+      "fillRatio": 80.0617700778729,
+      "runtimeMs": 1812
+    },
+    {
+      "id": "Ballroom_0042",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 238.5,
+        "height": 92,
+        "area": 21942,
+        "angle": 0
+      },
+      "polygonArea": 25437.216058875343,
+      "fillRatio": 86.25943951261985,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0043",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 100.5,
+        "height": 206,
+        "area": 20703,
+        "angle": 0
+      },
+      "polygonArea": 25165.40934745837,
+      "fillRatio": 82.26768622816357,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0044",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 238.5,
+        "height": 92,
+        "area": 21942,
+        "angle": 0
+      },
+      "polygonArea": 36296.17179075768,
+      "fillRatio": 60.45265634759649,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0045",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 100.5,
+        "height": 206,
+        "area": 20703,
+        "angle": 0
+      },
+      "polygonArea": 34997.69814780134,
+      "fillRatio": 59.155319051463465,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0046",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 328.5,
+        "height": 92,
+        "area": 30222,
+        "angle": 0
+      },
+      "polygonArea": 33714.22366734467,
+      "fillRatio": 89.64169039808795,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0047",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 92,
+        "area": 40710,
+        "angle": 0
+      },
+      "polygonArea": 44844.98611064399,
+      "fillRatio": 90.77937921434086,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0048",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 328.5,
+        "height": 92,
+        "area": 30222,
+        "angle": 0
+      },
+      "polygonArea": 44573.17939922702,
+      "fillRatio": 67.80310583032832,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0049",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 92,
+        "area": 40710,
+        "angle": 0
+      },
+      "polygonArea": 55703.94184252636,
+      "fillRatio": 73.08279926595885,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0050",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 322.5,
+        "height": 92,
+        "area": 29670,
+        "angle": 0
+      },
+      "polygonArea": 54405.468199569994,
+      "fillRatio": 54.53495941099998,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0051",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 220.5,
+        "height": 110,
+        "area": 24255,
+        "angle": 0
+      },
+      "polygonArea": 27743.85741274255,
+      "fillRatio": 87.42475726846786,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0052",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 220.5,
+        "height": 110,
+        "area": 24255,
+        "angle": 0
+      },
+      "polygonArea": 37575.80012220415,
+      "fillRatio": 64.54952368577064,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0053",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 220.5,
+        "height": 110,
+        "area": 24255,
+        "angle": 0
+      },
+      "polygonArea": 38602.8131446249,
+      "fillRatio": 62.832208391468725,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0054",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 100.5,
+        "height": 206,
+        "area": 20703,
+        "angle": 0
+      },
+      "polygonArea": 37303.989849107245,
+      "fillRatio": 55.49808501380842,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0055",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 220.5,
+        "height": 188,
+        "area": 41454,
+        "angle": 0
+      },
+      "polygonArea": 48434.7558540865,
+      "fillRatio": 85.5873004189046,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0056",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 92,
+        "area": 40710,
+        "angle": 0
+      },
+      "polygonArea": 47151.6274645112,
+      "fillRatio": 86.33848329125117,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0057",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 86,
+        "area": 38055,
+        "angle": 0
+      },
+      "polygonArea": 56983.57017397281,
+      "fillRatio": 66.78240742694214,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0058",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 92,
+        "area": 40710,
+        "angle": 0
+      },
+      "polygonArea": 58010.58319639356,
+      "fillRatio": 70.17685007954012,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0059",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 322.5,
+        "height": 92,
+        "area": 29670,
+        "angle": 0
+      },
+      "polygonArea": 56711.7599008759,
+      "fillRatio": 52.31719144646356,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0060",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 220.5,
+        "height": 188,
+        "area": 41454,
+        "angle": 0
+      },
+      "polygonArea": 67842.52590585517,
+      "fillRatio": 61.103267377640925,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0061",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 124.5,
+        "height": 86,
+        "area": 10707,
+        "angle": 0
+      },
+      "polygonArea": 13111.657621783292,
+      "fillRatio": 81.6601554803546,
+      "runtimeMs": 1431
+    },
+    {
+      "id": "Ballroom_0062",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 238.5,
+        "height": 74,
+        "area": 17649,
+        "angle": 0
+      },
+      "polygonArea": 22943.492097923387,
+      "fillRatio": 76.92377396027437,
+      "runtimeMs": 4979
+    },
+    {
+      "id": "Ballroom_0063",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 178.5,
+        "height": 104,
+        "area": 18564,
+        "angle": 0
+      },
+      "polygonArea": 26392.275090463096,
+      "fillRatio": 70.33876365856818,
+      "runtimeMs": 4114
+    },
+    {
+      "id": "Ballroom_0064",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 286.5,
+        "height": 92,
+        "area": 26358,
+        "angle": 7.2
+      },
+      "polygonArea": 37251.54269525294,
+      "fillRatio": 70.75680117634127,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0065",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 376.5,
+        "height": 80,
+        "area": 30120,
+        "angle": 7.2
+      },
+      "polygonArea": 47083.37717139304,
+      "fillRatio": 63.97162185362595,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0066",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 232.5,
+        "height": 86,
+        "area": 19995,
+        "angle": 7.2
+      },
+      "polygonArea": 25249.78379922929,
+      "fillRatio": 79.18879685857078,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0067",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 106.5,
+        "height": 188,
+        "area": 20022,
+        "angle": 0
+      },
+      "polygonArea": 36380.54980420855,
+      "fillRatio": 55.03490218744255,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0068",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 376.5,
+        "height": 86,
+        "area": 32379,
+        "angle": 7.2
+      },
+      "polygonArea": 49389.668872698945,
+      "fillRatio": 65.55824474842368,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0069",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 394.5,
+        "height": 80,
+        "area": 31560,
+        "angle": 7.2
+      },
+      "polygonArea": 60520.4348776782,
+      "fillRatio": 52.147675514539806,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0070",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 106.5,
+        "height": 104,
+        "area": 11076,
+        "angle": 100.8
+      },
+      "polygonArea": 15240.44964744554,
+      "fillRatio": 72.67502111957998,
+      "runtimeMs": 1767
+    },
+    {
+      "id": "Ballroom_0071",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 232.5,
+        "height": 74,
+        "area": 17205,
+        "angle": 7.2
+      },
+      "polygonArea": 25072.69927237468,
+      "fillRatio": 68.62045371778785,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0072",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 100.5,
+        "height": 200,
+        "area": 20100,
+        "angle": 0
+      },
+      "polygonArea": 25515.11192595066,
+      "fillRatio": 78.77684432007875,
+      "runtimeMs": 4927
+    },
+    {
+      "id": "Ballroom_0073",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 220.5,
+        "height": 92,
+        "area": 20286,
+        "angle": 0
+      },
+      "polygonArea": 36645.874369249985,
+      "fillRatio": 55.35684534524912,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0074",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 100.5,
+        "height": 200,
+        "area": 20100,
+        "angle": 0
+      },
+      "polygonArea": 35347.40072629363,
+      "fillRatio": 56.86415291364932,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0075",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 286.5,
+        "height": 98,
+        "area": 28077,
+        "angle": 7.2
+      },
+      "polygonArea": 39380.33472091518,
+      "fillRatio": 71.29700699341213,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0076",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 400.5,
+        "height": 74,
+        "area": 29637,
+        "angle": 0
+      },
+      "polygonArea": 49212.584345844334,
+      "fillRatio": 60.2224012291739,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0077",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 274.5,
+        "height": 98,
+        "area": 26901,
+        "angle": 14.4
+      },
+      "polygonArea": 49654.996999420306,
+      "fillRatio": 54.17581638422827,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0078",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 262.5,
+        "height": 104,
+        "area": 27300,
+        "angle": 14.4
+      },
+      "polygonArea": 60785.759442719645,
+      "fillRatio": 44.91183502564554,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0079",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 382.5,
+        "height": 80,
+        "area": 30600,
+        "angle": 0
+      },
+      "polygonArea": 59487.28579976329,
+      "fillRatio": 51.43956324213696,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0080",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 232.5,
+        "height": 92,
+        "area": 21390,
+        "angle": 7.2
+      },
+      "polygonArea": 27378.990973680586,
+      "fillRatio": 78.12559644934394,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0081",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 232.5,
+        "height": 98,
+        "area": 22785,
+        "angle": 7.2
+      },
+      "polygonArea": 38509.75697865985,
+      "fillRatio": 59.1668236510199,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0082",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 220.5,
+        "height": 110,
+        "area": 24255,
+        "angle": 0
+      },
+      "polygonArea": 38952.515723117205,
+      "fillRatio": 62.26812196780747,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0083",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 88.5,
+        "height": 236,
+        "area": 20886,
+        "angle": 93.60000000000001
+      },
+      "polygonArea": 37653.69242759953,
+      "fillRatio": 55.46866363812678,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0084",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 220.5,
+        "height": 188,
+        "area": 41454,
+        "angle": 0
+      },
+      "polygonArea": 48784.4584325788,
+      "fillRatio": 84.97378331521368,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0085",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 370.5,
+        "height": 98,
+        "area": 36309,
+        "angle": 7.2
+      },
+      "polygonArea": 51518.87604715024,
+      "fillRatio": 70.47708099604093,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0086",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 388.5,
+        "height": 98,
+        "area": 38073,
+        "angle": 7.2
+      },
+      "polygonArea": 62649.64205212949,
+      "fillRatio": 60.77129693465804,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0087",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 262.5,
+        "height": 104,
+        "area": 27300,
+        "angle": 14.4
+      },
+      "polygonArea": 63092.40079658685,
+      "fillRatio": 43.26987030976458,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0088",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 370.5,
+        "height": 98,
+        "area": 36309,
+        "angle": 7.2
+      },
+      "polygonArea": 61793.57750106919,
+      "fillRatio": 58.75853360225302,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0089",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 214.5,
+        "height": 182,
+        "area": 39039,
+        "angle": 0
+      },
+      "polygonArea": 72924.34350604846,
+      "fillRatio": 53.533563859593805,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0090",
+      "sections": [
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 190.5,
+        "height": 110,
+        "area": 20955,
+        "angle": 0
+      },
+      "polygonArea": 23369.802478062964,
+      "fillRatio": 89.66699662810707,
+      "runtimeMs": 3713
+    },
+    {
+      "id": "Ballroom_0091",
+      "sections": [
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 130.5,
+        "height": 158,
+        "area": 20619,
+        "angle": 93.60000000000001
+      },
+      "polygonArea": 28102.2476675046,
+      "fillRatio": 73.37135535903171,
+      "runtimeMs": 3720
+    },
+    {
+      "id": "Ballroom_0092",
+      "sections": [
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 160.5,
+        "height": 218,
+        "area": 34989,
+        "angle": 0
+      },
+      "polygonArea": 47509.68755153261,
+      "fillRatio": 73.6460326371296,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0093",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 190.5,
+        "height": 110,
+        "area": 20955,
+        "angle": 0
+      },
+      "polygonArea": 25273.074629552,
+      "fillRatio": 82.91432802361592,
+      "runtimeMs": 4392
+    },
+    {
+      "id": "Ballroom_0094",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 328.5,
+        "height": 92,
+        "area": 30222,
+        "angle": 0
+      },
+      "polygonArea": 35547.707738954276,
+      "fillRatio": 85.0181401904624,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0095",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 92,
+        "area": 40710,
+        "angle": 0
+      },
+      "polygonArea": 46678.470182253586,
+      "fillRatio": 87.21365511990857,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0096",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 160.5,
+        "height": 218,
+        "area": 34989,
+        "angle": 0
+      },
+      "polygonArea": 49412.95970302165,
+      "fillRatio": 70.80935894204369,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0097",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 154.5,
+        "height": 224,
+        "area": 34608,
+        "angle": 7.2
+      },
+      "polygonArea": 59687.592812423936,
+      "fillRatio": 57.98189936853403,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0098",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 86,
+        "area": 38055,
+        "angle": 0
+      },
+      "polygonArea": 70818.35525572325,
+      "fillRatio": 53.736068654213135,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0099",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 92,
+        "area": 40710,
+        "angle": 0
+      },
+      "polygonArea": 48985.11153612079,
+      "fillRatio": 83.10688436420347,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0100",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 86,
+        "area": 38055,
+        "angle": 0
+      },
+      "polygonArea": 58817.0542455824,
+      "fillRatio": 64.70062210376373,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0101",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 86,
+        "area": 38055,
+        "angle": 0
+      },
+      "polygonArea": 73124.99660959045,
+      "fillRatio": 52.04102805388578,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0102",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 86,
+        "area": 38055,
+        "angle": 0
+      },
+      "polygonArea": 82956.93931905206,
+      "fillRatio": 45.873196760117466,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0103",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 130.5,
+        "height": 164,
+        "area": 21402,
+        "angle": 93.60000000000001
+      },
+      "polygonArea": 30354.96633652399,
+      "fillRatio": 70.505760944457,
+      "runtimeMs": 4716
+    },
+    {
+      "id": "Ballroom_0104",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 292.5,
+        "height": 86,
+        "area": 25155,
+        "angle": 0
+      },
+      "polygonArea": 41214.23394131384,
+      "fillRatio": 61.034738716286576,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0105",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 406.5,
+        "height": 74,
+        "area": 30081,
+        "angle": 0
+      },
+      "polygonArea": 51046.068417453935,
+      "fillRatio": 58.9291221294421,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0106",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 172.5,
+        "height": 212,
+        "area": 36570,
+        "angle": 14.4
+      },
+      "polygonArea": 49762.736388292644,
+      "fillRatio": 73.48872400152734,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0107",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 160.5,
+        "height": 224,
+        "area": 35952,
+        "angle": 7.2
+      },
+      "polygonArea": 60622.003993082486,
+      "fillRatio": 59.30519882533485,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0108",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 172.5,
+        "height": 212,
+        "area": 36570,
+        "angle": 14.4
+      },
+      "polygonArea": 70453.83846922257,
+      "fillRatio": 51.90632731242235,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0109",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 400.5,
+        "height": 80,
+        "area": 32040,
+        "angle": 7.2
+      },
+      "polygonArea": 53352.36011875984,
+      "fillRatio": 60.053575753125955,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0110",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 400.5,
+        "height": 80,
+        "area": 32040,
+        "angle": 7.2
+      },
+      "polygonArea": 64483.126123739115,
+      "fillRatio": 49.68741735398689,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0111",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 172.5,
+        "height": 212,
+        "area": 36570,
+        "angle": 14.4
+      },
+      "polygonArea": 72760.13017052849,
+      "fillRatio": 50.261042571378866,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0112",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 172.5,
+        "height": 212,
+        "area": 36570,
+        "angle": 14.4
+      },
+      "polygonArea": 83890.89617550775,
+      "fillRatio": 43.592334409555086,
+      "runtimeMs": 5006
+    },
+    {
+      "id": "Ballroom_0113",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 124.5,
+        "height": 110,
+        "area": 13695,
+        "angle": 0
+      },
+      "polygonArea": 14700.75128460093,
+      "fillRatio": 93.15850418029684,
+      "runtimeMs": 1783
+    },
+    {
+      "id": "Ballroom_0114",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 238.5,
+        "height": 92,
+        "area": 21942,
+        "angle": 0
+      },
+      "polygonArea": 25831.513727900256,
+      "fillRatio": 84.94275725042297,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0115",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 100.5,
+        "height": 206,
+        "area": 20703,
+        "angle": 0
+      },
+      "polygonArea": 25559.707016483277,
+      "fillRatio": 80.99858103478564,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0116",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 238.5,
+        "height": 92,
+        "area": 21942,
+        "angle": 0
+      },
+      "polygonArea": 36690.4694597826,
+      "fillRatio": 59.80299604520244,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0117",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 100.5,
+        "height": 206,
+        "area": 20703,
+        "angle": 0
+      },
+      "polygonArea": 35391.99581682625,
+      "fillRatio": 58.49627725757492,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0118",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 328.5,
+        "height": 92,
+        "area": 30222,
+        "angle": 0
+      },
+      "polygonArea": 34108.52133636957,
+      "fillRatio": 88.6054241459438,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0119",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 92,
+        "area": 40710,
+        "angle": 0
+      },
+      "polygonArea": 45239.2837796689,
+      "fillRatio": 89.98816205462471,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0120",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 328.5,
+        "height": 92,
+        "area": 30222,
+        "angle": 0
+      },
+      "polygonArea": 44967.47706825194,
+      "fillRatio": 67.20857377461681,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0121",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 92,
+        "area": 40710,
+        "angle": 0
+      },
+      "polygonArea": 56098.23951155128,
+      "fillRatio": 72.56912222997182,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0122",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 322.5,
+        "height": 92,
+        "area": 29670,
+        "angle": 0
+      },
+      "polygonArea": 54799.765868594906,
+      "fillRatio": 54.14256708896548,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0123",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 238.5,
+        "height": 110,
+        "area": 26235,
+        "angle": 0
+      },
+      "polygonArea": 28138.155081767454,
+      "fillRatio": 93.2363899614704,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0124",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 238.5,
+        "height": 110,
+        "area": 26235,
+        "angle": 0
+      },
+      "polygonArea": 37970.097791229055,
+      "fillRatio": 69.0938436457232,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0125",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 238.5,
+        "height": 110,
+        "area": 26235,
+        "angle": 0
+      },
+      "polygonArea": 38997.11081364982,
+      "fillRatio": 67.27421455749791,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0126",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 100.5,
+        "height": 206,
+        "area": 20703,
+        "angle": 0
+      },
+      "polygonArea": 37698.28751813215,
+      "fillRatio": 54.91761393681942,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0127",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 220.5,
+        "height": 188,
+        "area": 41454,
+        "angle": 0
+      },
+      "polygonArea": 48829.05352311142,
+      "fillRatio": 84.8961776012703,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0128",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 92,
+        "area": 40710,
+        "angle": 0
+      },
+      "polygonArea": 47545.92513353612,
+      "fillRatio": 85.62247949884888,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0129",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 86,
+        "area": 38055,
+        "angle": 0
+      },
+      "polygonArea": 57377.867842997715,
+      "fillRatio": 66.32348225997066,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0130",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 92,
+        "area": 40710,
+        "angle": 0
+      },
+      "polygonArea": 58404.88086541848,
+      "fillRatio": 69.70307857284644,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0131",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 322.5,
+        "height": 92,
+        "area": 29670,
+        "angle": 0
+      },
+      "polygonArea": 57106.057569900804,
+      "fillRatio": 51.95595924947606,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0132",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 220.5,
+        "height": 188,
+        "area": 41454,
+        "angle": 0
+      },
+      "polygonArea": 68236.82357488008,
+      "fillRatio": 60.7501900414667,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0133",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 118.5,
+        "height": 110,
+        "area": 13035,
+        "angle": 0
+      },
+      "polygonArea": 15634.747316470446,
+      "fillRatio": 83.3719901969139,
+      "runtimeMs": 1645
+    },
+    {
+      "id": "Ballroom_0134",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 232.5,
+        "height": 74,
+        "area": 17205,
+        "angle": 7.2
+      },
+      "polygonArea": 25466.996941399593,
+      "fillRatio": 67.55802437008681,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0135",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 100.5,
+        "height": 200,
+        "area": 20100,
+        "angle": 0
+      },
+      "polygonArea": 25909.409594975565,
+      "fillRatio": 77.57799314692936,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0136",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 220.5,
+        "height": 92,
+        "area": 20286,
+        "angle": 0
+      },
+      "polygonArea": 37040.17203827489,
+      "fillRatio": 54.767564197698036,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0137",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 100.5,
+        "height": 200,
+        "area": 20100,
+        "angle": 0
+      },
+      "polygonArea": 35741.69839531854,
+      "fillRatio": 56.23683513213435,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0138",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 286.5,
+        "height": 98,
+        "area": 28077,
+        "angle": 7.2
+      },
+      "polygonArea": 39774.6323899401,
+      "fillRatio": 70.59021872217556,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0139",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 400.5,
+        "height": 74,
+        "area": 29637,
+        "angle": 0
+      },
+      "polygonArea": 49606.88201486925,
+      "fillRatio": 59.74372666904676,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0140",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 256.5,
+        "height": 110,
+        "area": 28215,
+        "angle": 14.4
+      },
+      "polygonArea": 50049.294668445225,
+      "fillRatio": 56.374420832325576,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0141",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 262.5,
+        "height": 104,
+        "area": 27300,
+        "angle": 14.4
+      },
+      "polygonArea": 61180.057111744565,
+      "fillRatio": 44.62238397413868,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0142",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 382.5,
+        "height": 80,
+        "area": 30600,
+        "angle": 0
+      },
+      "polygonArea": 59881.583468788194,
+      "fillRatio": 51.10085309609339,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0143",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 94.5,
+        "height": 236,
+        "area": 22302,
+        "angle": 93.60000000000001
+      },
+      "polygonArea": 27773.2886427055,
+      "fillRatio": 80.30017722030732,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0144",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 226.5,
+        "height": 104,
+        "area": 23556,
+        "angle": 7.2
+      },
+      "polygonArea": 38904.05464768475,
+      "fillRatio": 60.54895874819016,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0145",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 220.5,
+        "height": 110,
+        "area": 24255,
+        "angle": 0
+      },
+      "polygonArea": 39346.81339214211,
+      "fillRatio": 61.64412797109493,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0146",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 238.5,
+        "height": 92,
+        "area": 21942,
+        "angle": 0
+      },
+      "polygonArea": 38047.990096624446,
+      "fillRatio": 57.66927489277983,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0147",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 220.5,
+        "height": 188,
+        "area": 41454,
+        "angle": 0
+      },
+      "polygonArea": 49178.75610160371,
+      "fillRatio": 84.29249392635248,
+      "runtimeMs": 5006
+    },
+    {
+      "id": "Ballroom_0148",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 370.5,
+        "height": 98,
+        "area": 36309,
+        "angle": 7.2
+      },
+      "polygonArea": 51913.17371617515,
+      "fillRatio": 69.94178433110672,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0149",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 388.5,
+        "height": 98,
+        "area": 38073,
+        "angle": 7.2
+      },
+      "polygonArea": 63043.93972115443,
+      "fillRatio": 60.391213125953456,
+      "runtimeMs": 5006
+    },
+    {
+      "id": "Ballroom_0150",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 262.5,
+        "height": 104,
+        "area": 27300,
+        "angle": 14.4
+      },
+      "polygonArea": 63486.69846561177,
+      "fillRatio": 43.0011335599493,
+      "runtimeMs": 5006
+    },
+    {
+      "id": "Ballroom_0151",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 370.5,
+        "height": 98,
+        "area": 36309,
+        "angle": 7.2
+      },
+      "polygonArea": 62187.87517009411,
+      "fillRatio": 58.38597942233738,
+      "runtimeMs": 5006
+    },
+    {
+      "id": "Ballroom_0152",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 214.5,
+        "height": 182,
+        "area": 39039,
+        "angle": 0
+      },
+      "polygonArea": 73318.64117507337,
+      "fillRatio": 53.245667642395354,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0153",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 124.5,
+        "height": 200,
+        "area": 24900,
+        "angle": 0
+      },
+      "polygonArea": 27812.132299378914,
+      "fillRatio": 89.52927352699258,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0154",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 118.5,
+        "height": 200,
+        "area": 23700,
+        "angle": 0
+      },
+      "polygonArea": 38942.89474267824,
+      "fillRatio": 60.85834182744184,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0155",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 118.5,
+        "height": 200,
+        "area": 23700,
+        "angle": 0
+      },
+      "polygonArea": 37644.42109972189,
+      "fillRatio": 62.957536090719934,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0156",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 328.5,
+        "height": 92,
+        "area": 30222,
+        "angle": 0
+      },
+      "polygonArea": 47219.90235114756,
+      "fillRatio": 64.00267365073347,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0157",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 92,
+        "area": 40710,
+        "angle": 0
+      },
+      "polygonArea": 58350.6647944469,
+      "fillRatio": 69.7678426516818,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0158",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 322.5,
+        "height": 92,
+        "area": 29670,
+        "angle": 0
+      },
+      "polygonArea": 57052.191151490544,
+      "fillRatio": 52.00501400764315,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0159",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 256.5,
+        "height": 110,
+        "area": 28215,
+        "angle": 14.4
+      },
+      "polygonArea": 51952.01737284856,
+      "fillRatio": 54.30972929791533,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0160",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 262.5,
+        "height": 104,
+        "area": 27300,
+        "angle": 14.4
+      },
+      "polygonArea": 63082.7798161479,
+      "fillRatio": 43.27646955249071,
+      "runtimeMs": 5006
+    },
+    {
+      "id": "Ballroom_0161",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 382.5,
+        "height": 80,
+        "area": 30600,
+        "angle": 0
+      },
+      "polygonArea": 61784.306173191544,
+      "fillRatio": 49.527140297122024,
+      "runtimeMs": 5006
+    },
+    {
+      "id": "Ballroom_0162",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 238.5,
+        "height": 110,
+        "area": 26235,
+        "angle": 0
+      },
+      "polygonArea": 41249.53609654546,
+      "fillRatio": 63.60071526282477,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0163",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 118.5,
+        "height": 200,
+        "area": 23700,
+        "angle": 0
+      },
+      "polygonArea": 39950.71280102779,
+      "fillRatio": 59.323096731806714,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0164",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 238.5,
+        "height": 188,
+        "area": 44838,
+        "angle": 0
+      },
+      "polygonArea": 51081.47880600704,
+      "fillRatio": 87.777411790058,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0165",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 92,
+        "area": 40710,
+        "angle": 0
+      },
+      "polygonArea": 60657.30614831411,
+      "fillRatio": 67.11475102514338,
+      "runtimeMs": 5006
+    },
+    {
+      "id": "Ballroom_0166",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 322.5,
+        "height": 92,
+        "area": 29670,
+        "angle": 0
+      },
+      "polygonArea": 59358.48285279644,
+      "fillRatio": 49.984431161387434,
+      "runtimeMs": 5008
+    },
+    {
+      "id": "Ballroom_0167",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 220.5,
+        "height": 188,
+        "area": 41454,
+        "angle": 0
+      },
+      "polygonArea": 70489.2488577757,
+      "fillRatio": 58.80896827775912,
+      "runtimeMs": 5008
+    },
+    {
+      "id": "Ballroom_0168",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 262.5,
+        "height": 104,
+        "area": 27300,
+        "angle": 14.4
+      },
+      "polygonArea": 65389.421170015106,
+      "fillRatio": 41.74987255051381,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0169",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 370.5,
+        "height": 98,
+        "area": 36309,
+        "angle": 7.2
+      },
+      "polygonArea": 64090.59787449744,
+      "fillRatio": 56.65261552263951,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0170",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 226.5,
+        "height": 188,
+        "area": 42582,
+        "angle": 0
+      },
+      "polygonArea": 75221.3638794767,
+      "fillRatio": 56.60891773808693,
+      "runtimeMs": 5007
+    },
+    {
+      "id": "Ballroom_0171",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 208.5,
+        "height": 110,
+        "area": 22935,
+        "angle": 0
+      },
+      "polygonArea": 25667.372298576905,
+      "fillRatio": 89.35468630449405,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0172",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 328.5,
+        "height": 92,
+        "area": 30222,
+        "angle": 0
+      },
+      "polygonArea": 35942.00540797918,
+      "fillRatio": 84.08545838483089,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0173",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 92,
+        "area": 40710,
+        "angle": 0
+      },
+      "polygonArea": 47072.76785127849,
+      "fillRatio": 86.48312359413197,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0174",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 160.5,
+        "height": 218,
+        "area": 34989,
+        "angle": 0
+      },
+      "polygonArea": 49807.257372046566,
+      "fillRatio": 70.24879876167796,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0175",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 154.5,
+        "height": 224,
+        "area": 34608,
+        "angle": 7.2
+      },
+      "polygonArea": 60081.890481448856,
+      "fillRatio": 57.601383249892436,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0176",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 86,
+        "area": 38055,
+        "angle": 0
+      },
+      "polygonArea": 71212.65292474817,
+      "fillRatio": 53.43853716587904,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0177",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 92,
+        "area": 40710,
+        "angle": 0
+      },
+      "polygonArea": 49379.4092051457,
+      "fillRatio": 82.44327069785541,
+      "runtimeMs": 5006
+    },
+    {
+      "id": "Ballroom_0178",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 86,
+        "area": 38055,
+        "angle": 0
+      },
+      "polygonArea": 59211.35191460731,
+      "fillRatio": 64.26977052454686,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0179",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 86,
+        "area": 38055,
+        "angle": 0
+      },
+      "polygonArea": 73519.29427861536,
+      "fillRatio": 51.76192232719663,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0180",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 86,
+        "area": 38055,
+        "angle": 0
+      },
+      "polygonArea": 83351.23698807697,
+      "fillRatio": 45.656191047822844,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0181",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 316.5,
+        "height": 110,
+        "area": 34815,
+        "angle": 0
+      },
+      "polygonArea": 38071.212582430475,
+      "fillRatio": 91.44704788327864,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0182",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 92,
+        "area": 40710,
+        "angle": 0
+      },
+      "polygonArea": 49201.975025729786,
+      "fillRatio": 82.74058100048022,
+      "runtimeMs": 5006
+    },
+    {
+      "id": "Ballroom_0183",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 316.5,
+        "height": 110,
+        "area": 34815,
+        "angle": 0
+      },
+      "polygonArea": 48930.168314312825,
+      "fillRatio": 71.15242231818786,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0184",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 92,
+        "area": 40710,
+        "angle": 0
+      },
+      "polygonArea": 60060.930757612165,
+      "fillRatio": 67.78116736867317,
+      "runtimeMs": 5006
+    },
+    {
+      "id": "Ballroom_0185",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 322.5,
+        "height": 110,
+        "area": 35475,
+        "angle": 0
+      },
+      "polygonArea": 58762.457114655794,
+      "fillRatio": 60.37017807268013,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0186",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 316.5,
+        "height": 110,
+        "area": 34815,
+        "angle": 0
+      },
+      "polygonArea": 62211.097655900136,
+      "fillRatio": 55.96268400947933,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0187",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 86,
+        "area": 38055,
+        "angle": 0
+      },
+      "polygonArea": 73341.86009919945,
+      "fillRatio": 51.88714868770472,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0188",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 430.5,
+        "height": 110,
+        "area": 47355,
+        "angle": 0
+      },
+      "polygonArea": 51508.616379597006,
+      "fillRatio": 91.93607463849041,
+      "runtimeMs": 5006
+    },
+    {
+      "id": "Ballroom_0189",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 430.5,
+        "height": 110,
+        "area": 47355,
+        "angle": 0
+      },
+      "polygonArea": 61340.5590890586,
+      "fillRatio": 77.20014408614475,
+      "runtimeMs": 5006
+    },
+    {
+      "id": "Ballroom_0190",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 430.5,
+        "height": 110,
+        "area": 47355,
+        "angle": 0
+      },
+      "polygonArea": 62367.57211147937,
+      "fillRatio": 75.9288816235382,
+      "runtimeMs": 5006
+    },
+    {
+      "id": "Ballroom_0191",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 322.5,
+        "height": 110,
+        "area": 35475,
+        "angle": 0
+      },
+      "polygonArea": 61068.748815961706,
+      "fillRatio": 58.09026824326848,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0192",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 430.5,
+        "height": 110,
+        "area": 47355,
+        "angle": 0
+      },
+      "polygonArea": 72199.51482094097,
+      "fillRatio": 65.58908341343177,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0193",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 436.5,
+        "height": 110,
+        "area": 48015,
+        "angle": 0
+      },
+      "polygonArea": 75648.50145306665,
+      "fillRatio": 63.471184594170914,
+      "runtimeMs": 5007
+    },
+    {
+      "id": "Ballroom_0194",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 436.5,
+        "height": 110,
+        "area": 48015,
+        "angle": 0
+      },
+      "polygonArea": 85480.44416252826,
+      "fillRatio": 56.17074229130895,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0195",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 178.5,
+        "height": 128,
+        "area": 22848,
+        "angle": 0
+      },
+      "polygonArea": 30749.257770467393,
+      "fillRatio": 74.30423254620466,
+      "runtimeMs": 5001
+    },
+    {
+      "id": "Ballroom_0196",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 292.5,
+        "height": 86,
+        "area": 25155,
+        "angle": 0
+      },
+      "polygonArea": 41608.531610338745,
+      "fillRatio": 60.45635120117907,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0197",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 406.5,
+        "height": 74,
+        "area": 30081,
+        "angle": 0
+      },
+      "polygonArea": 51440.36608647884,
+      "fillRatio": 58.47742208799487,
+      "runtimeMs": 5002
+    },
+    {
+      "id": "Ballroom_0198",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 166.5,
+        "height": 224,
+        "area": 37296,
+        "angle": 7.2
+      },
+      "polygonArea": 50157.027822236036,
+      "fillRatio": 74.35847301834265,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0199",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 166.5,
+        "height": 224,
+        "area": 37296,
+        "angle": 14.4
+      },
+      "polygonArea": 61016.30166210739,
+      "fillRatio": 61.12464863330405,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0200",
+      "sections": [
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 172.5,
+        "height": 212,
+        "area": 36570,
+        "angle": 14.4
+      },
+      "polygonArea": 70848.1361382475,
+      "fillRatio": 51.61744823976762,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0201",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 400.5,
+        "height": 80,
+        "area": 32040,
+        "angle": 7.2
+      },
+      "polygonArea": 53746.657787784745,
+      "fillRatio": 59.61300910376214,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0202",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 400.5,
+        "height": 80,
+        "area": 32040,
+        "angle": 7.2
+      },
+      "polygonArea": 64877.42379276402,
+      "fillRatio": 49.38543814924648,
+      "runtimeMs": 5006
+    },
+    {
+      "id": "Ballroom_0203",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 172.5,
+        "height": 212,
+        "area": 36570,
+        "angle": 14.4
+      },
+      "polygonArea": 73154.42783955339,
+      "fillRatio": 49.9901387790326,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0204",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 172.5,
+        "height": 212,
+        "area": 36570,
+        "angle": 14.4
+      },
+      "polygonArea": 84285.19384453265,
+      "fillRatio": 43.38840350471852,
+      "runtimeMs": 5006
+    },
+    {
+      "id": "Ballroom_0205",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 286.5,
+        "height": 110,
+        "area": 31515,
+        "angle": 0
+      },
+      "polygonArea": 43737.32363600099,
+      "fillRatio": 72.05516337094625,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0206",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 298.5,
+        "height": 104,
+        "area": 31044,
+        "angle": 7.2
+      },
+      "polygonArea": 53569.57326093014,
+      "fillRatio": 57.95080697915751,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0207",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 280.5,
+        "height": 116,
+        "area": 32538,
+        "angle": 7.2
+      },
+      "polygonArea": 54011.98591450611,
+      "fillRatio": 60.24218411725016,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0208",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 262.5,
+        "height": 116,
+        "area": 30450,
+        "angle": 7.2
+      },
+      "polygonArea": 65142.74835780545,
+      "fillRatio": 46.74349911174949,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0209",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 292.5,
+        "height": 116,
+        "area": 33930,
+        "angle": 14.4
+      },
+      "polygonArea": 63844.27471484908,
+      "fillRatio": 53.14493766519125,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0210",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 166.5,
+        "height": 224,
+        "area": 37296,
+        "angle": 14.4
+      },
+      "polygonArea": 63145.09368776964,
+      "fillRatio": 59.063971279250374,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0211",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 172.5,
+        "height": 212,
+        "area": 36570,
+        "angle": 14.4
+      },
+      "polygonArea": 72977.3433126988,
+      "fillRatio": 50.111443278089915,
+      "runtimeMs": 5006
+    },
+    {
+      "id": "Ballroom_0212",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 382.5,
+        "height": 98,
+        "area": 37485,
+        "angle": 0
+      },
+      "polygonArea": 55875.86496223605,
+      "fillRatio": 67.0862098069254,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0213",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 394.5,
+        "height": 98,
+        "area": 38661,
+        "angle": 7.2
+      },
+      "polygonArea": 67006.63096721531,
+      "fillRatio": 57.697274794961515,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0214",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 262.5,
+        "height": 116,
+        "area": 30450,
+        "angle": 7.2
+      },
+      "polygonArea": 67449.38971167266,
+      "fillRatio": 45.144959991729,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0215",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 388.5,
+        "height": 98,
+        "area": 38073,
+        "angle": 0
+      },
+      "polygonArea": 66150.566416155,
+      "fillRatio": 57.55506273443183,
+      "runtimeMs": 5006
+    },
+    {
+      "id": "Ballroom_0216",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 394.5,
+        "height": 122,
+        "area": 48129,
+        "angle": 7.2
+      },
+      "polygonArea": 77281.33242113426,
+      "fillRatio": 62.27765294952145,
+      "runtimeMs": 5007
+    },
+    {
+      "id": "Ballroom_0217",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 388.5,
+        "height": 98,
+        "area": 38073,
+        "angle": 0
+      },
+      "polygonArea": 75283.63501400469,
+      "fillRatio": 50.57274398734525,
+      "runtimeMs": 5007
+    },
+    {
+      "id": "Ballroom_0218",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 394.5,
+        "height": 98,
+        "area": 38661,
+        "angle": 7.2
+      },
+      "polygonArea": 86414.40101898398,
+      "fillRatio": 44.73907073834458,
+      "runtimeMs": 5008
+    },
+    {
+      "id": "Ballroom_0219",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 184.5,
+        "height": 218,
+        "area": 40221,
+        "angle": 0
+      },
+      "polygonArea": 52059.68265494219,
+      "fillRatio": 77.25940295600648,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0220",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 172.5,
+        "height": 218,
+        "area": 37605,
+        "angle": 0
+      },
+      "polygonArea": 62334.31576434448,
+      "fillRatio": 60.327926181408785,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0221",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 184.5,
+        "height": 218,
+        "area": 40221,
+        "angle": 0
+      },
+      "polygonArea": 73465.07820764382,
+      "fillRatio": 54.74846142042917,
+      "runtimeMs": 5006
+    },
+    {
+      "id": "Ballroom_0222",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 184.5,
+        "height": 224,
+        "area": 41328,
+        "angle": 7.2
+      },
+      "polygonArea": 62919.024366510755,
+      "fillRatio": 65.68442600009102,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0223",
+      "sections": [
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 184.5,
+        "height": 224,
+        "area": 41328,
+        "angle": 7.2
+      },
+      "polygonArea": 72750.85884265084,
+      "fillRatio": 56.80757678666893,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0224",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 184.5,
+        "height": 218,
+        "area": 40221,
+        "angle": 0
+      },
+      "polygonArea": 75771.71956151101,
+      "fillRatio": 53.08180972103826,
+      "runtimeMs": 5008
+    },
+    {
+      "id": "Ballroom_0225",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 184.5,
+        "height": 218,
+        "area": 40221,
+        "angle": 0
+      },
+      "polygonArea": 85603.66227097262,
+      "fillRatio": 46.98513934215003,
+      "runtimeMs": 5007
+    },
+    {
+      "id": "Ballroom_0226",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 184.5,
+        "height": 224,
+        "area": 41328,
+        "angle": 7.2
+      },
+      "polygonArea": 75057.15054395676,
+      "fillRatio": 55.06204232439721,
+      "runtimeMs": 5008
+    },
+    {
+      "id": "Ballroom_0227",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 184.5,
+        "height": 224,
+        "area": 41328,
+        "angle": 7.2
+      },
+      "polygonArea": 86187.91654893602,
+      "fillRatio": 47.95103728552792,
+      "runtimeMs": 5008
+    },
+    {
+      "id": "Ballroom_0228",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 316.5,
+        "height": 110,
+        "area": 34815,
+        "angle": 0
+      },
+      "polygonArea": 51182.59359720845,
+      "fillRatio": 68.02117195151057,
+      "runtimeMs": 5003
+    },
+    {
+      "id": "Ballroom_0229",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 442.5,
+        "height": 92,
+        "area": 40710,
+        "angle": 0
+      },
+      "polygonArea": 62313.35604050779,
+      "fillRatio": 65.33109847836765,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0230",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 322.5,
+        "height": 110,
+        "area": 35475,
+        "angle": 0
+      },
+      "polygonArea": 61014.882397551446,
+      "fillRatio": 58.14155269341899,
+      "runtimeMs": 5004
+    },
+    {
+      "id": "Ballroom_0231",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 274.5,
+        "height": 122,
+        "area": 33489,
+        "angle": 14.4
+      },
+      "polygonArea": 55914.70861890946,
+      "fillRatio": 59.893006379138235,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0232",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 262.5,
+        "height": 128,
+        "area": 33600,
+        "angle": 14.4
+      },
+      "polygonArea": 67045.4710622088,
+      "fillRatio": 50.11524189131866,
+      "runtimeMs": 5007
+    },
+    {
+      "id": "Ballroom_0233",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 274.5,
+        "height": 128,
+        "area": 35136,
+        "angle": 14.4
+      },
+      "polygonArea": 65746.99741925244,
+      "fillRatio": 53.441223750411545,
+      "runtimeMs": 5007
+    },
+    {
+      "id": "Ballroom_0234",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 172.5,
+        "height": 218,
+        "area": 37605,
+        "angle": 0
+      },
+      "polygonArea": 64463.52293879576,
+      "fillRatio": 58.33531629306653,
+      "runtimeMs": 5006
+    },
+    {
+      "id": "Ballroom_0235",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 184.5,
+        "height": 218,
+        "area": 40221,
+        "angle": 0
+      },
+      "polygonArea": 75594.2853820951,
+      "fillRatio": 53.206402834157295,
+      "runtimeMs": 5006
+    },
+    {
+      "id": "Ballroom_0236",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 184.5,
+        "height": 224,
+        "area": 41328,
+        "angle": 7.2
+      },
+      "polygonArea": 65047.81639217299,
+      "fillRatio": 63.5347999244643,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0237",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 196.5,
+        "height": 212,
+        "area": 41658,
+        "angle": 14.4
+      },
+      "polygonArea": 74880.06601710213,
+      "fillRatio": 55.632963772341725,
+      "runtimeMs": 5007
+    },
+    {
+      "id": "Ballroom_0238",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 292.5,
+        "height": 200,
+        "area": 58500,
+        "angle": 0
+      },
+      "polygonArea": 75322.47867067813,
+      "fillRatio": 77.66605803796143,
+      "runtimeMs": 5006
+    },
+    {
+      "id": "Ballroom_0239",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 286.5,
+        "height": 200,
+        "area": 57300,
+        "angle": 0
+      },
+      "polygonArea": 86453.24111397745,
+      "fillRatio": 66.2786024695793,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0240",
+      "sections": [
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 286.5,
+        "height": 200,
+        "area": 57300,
+        "angle": 0
+      },
+      "polygonArea": 85154.7674710211,
+      "fillRatio": 67.28924486758734,
+      "runtimeMs": 5006
+    },
+    {
+      "id": "Ballroom_0241",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 430.5,
+        "height": 110,
+        "area": 47355,
+        "angle": 0
+      },
+      "polygonArea": 64619.997394374994,
+      "fillRatio": 73.28226850736786,
+      "runtimeMs": 5006
+    },
+    {
+      "id": "Ballroom_0242",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 322.5,
+        "height": 110,
+        "area": 35475,
+        "angle": 0
+      },
+      "polygonArea": 63321.17409885733,
+      "fillRatio": 56.02391380901474,
+      "runtimeMs": 5007
+    },
+    {
+      "id": "Ballroom_0243",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 430.5,
+        "height": 110,
+        "area": 47355,
+        "angle": 0
+      },
+      "polygonArea": 74451.94010383659,
+      "fillRatio": 63.60478979319405,
+      "runtimeMs": 5009
+    },
+    {
+      "id": "Ballroom_0244",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 262.5,
+        "height": 128,
+        "area": 33600,
+        "angle": 14.4
+      },
+      "polygonArea": 69352.11241607601,
+      "fillRatio": 48.44841610363325,
+      "runtimeMs": 5007
+    },
+    {
+      "id": "Ballroom_0245",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 388.5,
+        "height": 98,
+        "area": 38073,
+        "angle": 0
+      },
+      "polygonArea": 68053.28912055836,
+      "fillRatio": 55.94586314932197,
+      "runtimeMs": 5007
+    },
+    {
+      "id": "Ballroom_0246",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 394.5,
+        "height": 122,
+        "area": 48129,
+        "angle": 7.2
+      },
+      "polygonArea": 79184.05512553762,
+      "fillRatio": 60.781176113924396,
+      "runtimeMs": 5005
+    },
+    {
+      "id": "Ballroom_0247",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 436.5,
+        "height": 110,
+        "area": 48015,
+        "angle": 0
+      },
+      "polygonArea": 77900.9267359623,
+      "fillRatio": 61.63598048421455,
+      "runtimeMs": 5009
+    },
+    {
+      "id": "Ballroom_0248",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 436.5,
+        "height": 110,
+        "area": 48015,
+        "angle": 0
+      },
+      "polygonArea": 87732.86944542392,
+      "fillRatio": 54.72863284138762,
+      "runtimeMs": 5009
+    },
+    {
+      "id": "Ballroom_0249",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 196.5,
+        "height": 212,
+        "area": 41658,
+        "angle": 14.4
+      },
+      "polygonArea": 77186.35771840805,
+      "fillRatio": 53.97067724322099,
+      "runtimeMs": 5009
+    },
+    {
+      "id": "Ballroom_0250",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 196.5,
+        "height": 212,
+        "area": 41658,
+        "angle": 14.4
+      },
+      "polygonArea": 88317.12372338731,
+      "fillRatio": 47.16865568502263,
+      "runtimeMs": 5009
+    },
+    {
+      "id": "Ballroom_0251",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 286.5,
+        "height": 200,
+        "area": 57300,
+        "angle": 0
+      },
+      "polygonArea": 88759.88246784465,
+      "fillRatio": 64.5561918367324,
+      "runtimeMs": 5008
+    },
+    {
+      "id": "Ballroom_0252",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 286.5,
+        "height": 200,
+        "area": 57300,
+        "angle": 0
+      },
+      "polygonArea": 87461.05917232699,
+      "fillRatio": 65.51487089482897,
+      "runtimeMs": 5007
+    },
+    {
+      "id": "Ballroom_0253",
+      "sections": [
+        "Ballroom_Aisle_12",
+        "Ballroom_Aisle_34",
+        "Ballroom_Aisle_35",
+        "Ballroom_Aisle_46",
+        "Ballroom_Aisle_56",
+        "Ballroom_Crossing_3456",
+        "Ballroom_Room_1",
+        "Ballroom_Room_2",
+        "Ballroom_Room_3",
+        "Ballroom_Room_4",
+        "Ballroom_Room_5",
+        "Ballroom_Room_Grand"
+      ],
+      "layoutRestriction": "allowed",
+      "passed": true,
+      "layout": {
+        "width": 406.5,
+        "height": 182,
+        "area": 73983,
+        "angle": 0
+      },
+      "polygonArea": 98591.82517730625,
+      "fillRatio": 75.03969002191604,
+      "runtimeMs": 5009
+    }
+  ]
+}

@@ -15,42 +15,42 @@
   "layout": {
     "corners": [
       {
-        "x": 429.5152573991555,
-        "y": 244.53696172777052
+        "x": 458.19863,
+        "y": 32.255595
       },
       {
-        "x": 628.5369617277705,
-        "y": 290.4847426008445
+        "x": 458.1986299999999,
+        "y": 259.13292000000007
       },
       {
-        "x": 674.4847426008445,
-        "y": 91.4630382722295
+        "x": 641.9378878125,
+        "y": 259.13292000000007
       },
       {
-        "x": 475.4630382722295,
-        "y": 45.51525739915549
+        "x": 641.9378878125,
+        "y": 32.25559500000002
       }
     ],
-    "area": 41720.8373610267,
-    "width": 204.25679269249946,
-    "height": 204.25679269249946,
-    "angle": 13,
-    "aspectRatio": 1,
-    "validScale": 0.758,
-    "elapsed": 5000.080200000084,
+    "width": 226.87732500000004,
+    "height": 183.7392578125,
+    "area": 41686.27130998536,
+    "angle": 89.99963883778906,
     "centroid": {
-      "x": 552,
-      "y": 168
+      "x": 550.06825890625,
+      "y": 145.69425750000002
     },
-    "type": "optimized",
-    "hybridTotalTime": 5005.534176000045,
+    "aspectRatio": 1.2347787168680144,
+    "type": "boundary-based",
+    "computeTime": 4.882199999992736,
+    "centroidStrategy": "uniform",
+    "hybridTotalTime": 5005.0336000000825,
     "usedBoundaryBased": true,
     "usedOptimized": true,
-    "selectedAlgorithm": "optimized",
-    "boundaryTime": 5.39862200000789,
-    "optimizedTime": 5000.1179520000005
+    "selectedAlgorithm": "boundary-based",
+    "boundaryTime": 4.909199999994598,
+    "optimizedTime": 5000.116399999941
   },
   "polygonArea": 77186.35771840805,
-  "fillRatio": 54.05208717482567,
-  "runtimeMs": 5009
+  "fillRatio": 54.0073045836229,
+  "runtimeMs": 5011
 }

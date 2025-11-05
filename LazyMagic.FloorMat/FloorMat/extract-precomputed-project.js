@@ -117,6 +117,12 @@ const hollowSquarePath = path.join(testResultsDir, `${prefix}-HollowSquareResult
 const hollowSquareLayouts = extractLayoutsFromDir(hollowSquarePath, `HollowSquare`, combinations);
 const hollowSquareStats = calculateStatistics(hollowSquareLayouts);
 
+// Extract UShape layouts
+console.log('Extracting UShape layouts...');
+const ushapePath = path.join(testResultsDir, `${prefix}-UShapeResults`);
+const ushapeLayouts = extractLayoutsFromDir(ushapePath, `UShape`, combinations);
+const ushapeStats = calculateStatistics(ushapeLayouts);
+
 console.log();
 console.log('Generating output files...');
 
@@ -189,6 +195,29 @@ fs.writeFileSync(hollowSquareOutputPath, JSON.stringify(hollowSquareOutput, null
 const hollowSquareSize = (fs.statSync(hollowSquareOutputPath).size / 1024).toFixed(1);
 console.log(`  ✓ ${prefix}-hollowsquare.json (${hollowSquareSize} KB)`);
 
-const totalSize = parseFloat(rectSize) + parseFloat(boardroomSize) + parseFloat(hollowSquareSize);
+// UShape output
+const ushapeOutput = {
+    generatedAt: new Date().toISOString(),
+    project: prefix,
+    totalCombinations: combinations.length,
+    successfulComputations: ushapeLayouts.length,
+    failedComputations: combinations.length - ushapeLayouts.length,
+    statistics: ushapeStats,
+    ushapeLayouts: ushapeLayouts.map(u => ({
+        key: u.key,
+        sections: u.sections,
+        ushapeLayout: u.layout,
+        polygonArea: u.polygonArea,
+        ushapeArea: u.layout.area,
+        computationTimeMs: u.runtimeMs
+    }))
+};
+
+const ushapeOutputPath = path.join(projectOutputDir, `${prefix}-ushape.json`);
+fs.writeFileSync(ushapeOutputPath, JSON.stringify(ushapeOutput, null, 2));
+const ushapeSize = (fs.statSync(ushapeOutputPath).size / 1024).toFixed(1);
+console.log(`  ✓ ${prefix}-ushape.json (${ushapeSize} KB)`);
+
+const totalSize = parseFloat(rectSize) + parseFloat(boardroomSize) + parseFloat(hollowSquareSize) + parseFloat(ushapeSize);
 console.log();
 console.log(`Total data size: ${totalSize.toFixed(1)} KB`);

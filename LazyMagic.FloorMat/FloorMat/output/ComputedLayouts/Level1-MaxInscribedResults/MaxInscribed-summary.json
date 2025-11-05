@@ -1,12 +1,12 @@
 {
-  "timestamp": "2025-11-04T21:32:49.846Z",
+  "timestamp": "2025-11-05T23:08:10.755Z",
   "testName": "Level1 - Max Inscribed (Hybrid Algorithm)",
   "algorithm": "maxinscribed",
   "totalTests": 253,
   "passed": 253,
   "failed": 0,
-  "totalRuntimeMs": 1020913,
-  "totalRuntimeSec": 1020.9,
+  "totalRuntimeMs": 941767,
+  "totalRuntimeSec": 941.8,
   "configuration": {
     "coverageThreshold": 0,
     "maxTime": 5000,
@@ -47,7 +47,7 @@
       },
       "polygonArea": 21575.74551430729,
       "fillRatio": 99.29378769254062,
-      "runtimeMs": 22
+      "runtimeMs": 18
     },
     {
       "id": "BeachDeck_0002",
@@ -64,7 +64,7 @@
       },
       "polygonArea": 12387.362433485148,
       "fillRatio": 95.32791920873204,
-      "runtimeMs": 3
+      "runtimeMs": 4
     },
     {
       "id": "Ballroom_0003",
@@ -81,7 +81,7 @@
       },
       "polygonArea": 11130.584726101752,
       "fillRatio": 100.28559963553754,
-      "runtimeMs": 3
+      "runtimeMs": 4
     },
     {
       "id": "Ballroom_0004",
@@ -98,7 +98,7 @@
       },
       "polygonArea": 9832.111083145399,
       "fillRatio": 92.3442836545118,
-      "runtimeMs": 3
+      "runtimeMs": 7
     },
     {
       "id": "Ballroom_0005",
@@ -115,7 +115,7 @@
       },
       "polygonArea": 10274.52373672137,
       "fillRatio": 100.46087075833996,
-      "runtimeMs": 3
+      "runtimeMs": 2
     },
     {
       "id": "Ballroom_0006",
@@ -168,7 +168,7 @@
       },
       "polygonArea": 20691.06681502775,
       "fillRatio": 84.26424264003963,
-      "runtimeMs": 2657
+      "runtimeMs": 4089
     },
     {
       "id": "Ballroom_0009",
@@ -185,7 +185,7 @@
       },
       "polygonArea": 19407.111232002077,
       "fillRatio": 100.2150651278036,
-      "runtimeMs": 1
+      "runtimeMs": 2
     },
     {
       "id": "Ballroom_0010",
@@ -202,7 +202,7 @@
       },
       "polygonArea": 24140.033255790855,
       "fillRatio": 78.00104362307066,
-      "runtimeMs": 14
+      "runtimeMs": 18
     },
     {
       "id": "Ballroom_0011",
@@ -220,7 +220,7 @@
       },
       "polygonArea": 13437.226079968957,
       "fillRatio": 100.28506907986025,
-      "runtimeMs": 1
+      "runtimeMs": 2
     },
     {
       "id": "Ballroom_0012",
@@ -238,7 +238,7 @@
       },
       "polygonArea": 12138.402784451306,
       "fillRatio": 93.84878131615181,
-      "runtimeMs": 1
+      "runtimeMs": 2
     },
     {
       "id": "Ballroom_0013",
@@ -276,7 +276,7 @@
       },
       "polygonArea": 23711.927533887905,
       "fillRatio": 90.46401764465877,
-      "runtimeMs": 2
+      "runtimeMs": 3
     },
     {
       "id": "Ballroom_0015",
@@ -296,7 +296,7 @@
       },
       "polygonArea": 33543.870243349505,
       "fillRatio": 67.23711590787535,
-      "runtimeMs": 7423
+      "runtimeMs": 5005
     },
     {
       "id": "Ballroom_0016",
@@ -315,7 +315,7 @@
       },
       "polygonArea": 22997.358516333654,
       "fillRatio": 73.49773555722042,
-      "runtimeMs": 3542
+      "runtimeMs": 4711
     },
     {
       "id": "Ballroom_0017",
@@ -353,7 +353,7 @@
       },
       "polygonArea": 12403.730911172664,
       "fillRatio": 100.4605724792788,
-      "runtimeMs": 4
+      "runtimeMs": 3
     },
     {
       "id": "Ballroom_0019",
@@ -372,7 +372,7 @@
       },
       "polygonArea": 23534.493354471993,
       "fillRatio": 91.14605521800625,
-      "runtimeMs": 6
+      "runtimeMs": 4
     },
     {
       "id": "Ballroom_0020",
@@ -409,7 +409,7 @@
       },
       "polygonArea": 22820.273989479043,
       "fillRatio": 76.4021096059843,
-      "runtimeMs": 3657
+      "runtimeMs": 4674
     },
     {
       "id": "Ballroom_0022",
@@ -428,7 +428,7 @@
       },
       "polygonArea": 23262.68664305502,
       "fillRatio": 95.86040589129445,
-      "runtimeMs": 2
+      "runtimeMs": 4
     },
     {
       "id": "Ballroom_0023",
@@ -448,7 +448,7 @@
       },
       "polygonArea": 34393.44908635435,
       "fillRatio": 62.368744275361664,
-      "runtimeMs": 4615
+      "runtimeMs": 5005
     },
     {
       "id": "Ballroom_0024",
@@ -468,7 +468,7 @@
       },
       "polygonArea": 33094.97544339799,
       "fillRatio": 67.10988773982756,
-      "runtimeMs": 4722
+      "runtimeMs": 5005
     },
     {
       "id": "Ballroom_0025",
@@ -509,7 +509,7 @@
       },
       "polygonArea": 35673.0774178008,
       "fillRatio": 72.64288806197331,
-      "runtimeMs": 5007
+      "runtimeMs": 5005
     },
     {
       "id": "Ballroom_0027",
@@ -529,7 +529,7 @@
       },
       "polygonArea": 25126.565690784948,
       "fillRatio": 87.10380830065293,
-      "runtimeMs": 2
+      "runtimeMs": 5
     },
     {
       "id": "Ballroom_0028",
@@ -550,7 +550,7 @@
       },
       "polygonArea": 36257.33169576421,
       "fillRatio": 62.20515923443727,
-      "runtimeMs": 7974
+      "runtimeMs": 5011
     },
     {
       "id": "Ballroom_0029",
@@ -571,7 +571,7 @@
       },
       "polygonArea": 36700.09044022157,
       "fillRatio": 70.61005405172966,
-      "runtimeMs": 5004
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0030",
@@ -614,7 +614,7 @@
       },
       "polygonArea": 46532.03314968315,
       "fillRatio": 93.12141123553708,
-      "runtimeMs": 3
+      "runtimeMs": 4
     },
     {
       "id": "Ballroom_0032",
@@ -632,7 +632,7 @@
       },
       "polygonArea": 12177.24644112472,
       "fillRatio": 100.21408781645948,
-      "runtimeMs": 3
+      "runtimeMs": 4
     },
     {
       "id": "Ballroom_0033",
@@ -651,7 +651,7 @@
       },
       "polygonArea": 23308.00888442405,
       "fillRatio": 100.21313812158115,
-      "runtimeMs": 2
+      "runtimeMs": 3
     },
     {
       "id": "Ballroom_0034",
@@ -688,7 +688,7 @@
       },
       "polygonArea": 31585.016492893374,
       "fillRatio": 100.21259797451403,
-      "runtimeMs": 2
+      "runtimeMs": 4
     },
     {
       "id": "Ballroom_0036",
@@ -708,7 +708,7 @@
       },
       "polygonArea": 42715.7789361927,
       "fillRatio": 100.21246799983987,
-      "runtimeMs": 2
+      "runtimeMs": 3
     },
     {
       "id": "Ballroom_0037",
@@ -728,7 +728,7 @@
       },
       "polygonArea": 25614.650238291255,
       "fillRatio": 91.18809805654739,
-      "runtimeMs": 2
+      "runtimeMs": 5
     },
     {
       "id": "Ballroom_0038",
@@ -749,7 +749,7 @@
       },
       "polygonArea": 35446.592947752855,
       "fillRatio": 65.89494344509474,
-      "runtimeMs": 5003
+      "runtimeMs": 5005
     },
     {
       "id": "Ballroom_0039",
@@ -792,7 +792,7 @@
       },
       "polygonArea": 54854.362999521516,
       "fillRatio": 78.03638433526994,
-      "runtimeMs": 5004
+      "runtimeMs": 5003
     },
     {
       "id": "Ballroom_0041",
@@ -811,7 +811,7 @@
       },
       "polygonArea": 14306.45361557601,
       "fillRatio": 87.09624979236446,
-      "runtimeMs": 2
+      "runtimeMs": 3
     },
     {
       "id": "Ballroom_0042",
@@ -831,7 +831,7 @@
       },
       "polygonArea": 25437.216058875343,
       "fillRatio": 91.82416944555919,
-      "runtimeMs": 4
+      "runtimeMs": 5
     },
     {
       "id": "Ballroom_0043",
@@ -851,7 +851,7 @@
       },
       "polygonArea": 25165.40934745837,
       "fillRatio": 88.61252972030309,
-      "runtimeMs": 2
+      "runtimeMs": 3
     },
     {
       "id": "Ballroom_0044",
@@ -872,7 +872,7 @@
       },
       "polygonArea": 36296.17179075768,
       "fillRatio": 64.35255076151682,
-      "runtimeMs": 5005
+      "runtimeMs": 5008
     },
     {
       "id": "Ballroom_0045",
@@ -893,7 +893,7 @@
       },
       "polygonArea": 34997.69814780134,
       "fillRatio": 63.718991597913735,
-      "runtimeMs": 7976
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0046",
@@ -913,7 +913,7 @@
       },
       "polygonArea": 33714.22366734467,
       "fillRatio": 93.88371480985698,
-      "runtimeMs": 2
+      "runtimeMs": 4
     },
     {
       "id": "Ballroom_0047",
@@ -934,7 +934,7 @@
       },
       "polygonArea": 44844.98611064399,
       "fillRatio": 95.45406353645987,
-      "runtimeMs": 4
+      "runtimeMs": 5
     },
     {
       "id": "Ballroom_0048",
@@ -977,7 +977,7 @@
       },
       "polygonArea": 55703.94184252636,
       "fillRatio": 76.84619816669928,
-      "runtimeMs": 5004
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0050",
@@ -999,7 +999,7 @@
       },
       "polygonArea": 54405.468199569994,
       "fillRatio": 58.17806461933156,
-      "runtimeMs": 5004
+      "runtimeMs": 5009
     },
     {
       "id": "Ballroom_0051",
@@ -1020,7 +1020,7 @@
       },
       "polygonArea": 27743.85741274255,
       "fillRatio": 93.40505335441613,
-      "runtimeMs": 2
+      "runtimeMs": 4
     },
     {
       "id": "Ballroom_0052",
@@ -1042,7 +1042,7 @@
       },
       "polygonArea": 37575.80012220415,
       "fillRatio": 62.748510750412315,
-      "runtimeMs": 4585
+      "runtimeMs": 5005
     },
     {
       "id": "Ballroom_0053",
@@ -1064,7 +1064,7 @@
       },
       "polygonArea": 38602.8131446249,
       "fillRatio": 67.03163631325101,
-      "runtimeMs": 4747
+      "runtimeMs": 5005
     },
     {
       "id": "Ballroom_0054",
@@ -1086,7 +1086,7 @@
       },
       "polygonArea": 37303.989849107245,
       "fillRatio": 59.77961186581877,
-      "runtimeMs": 7814
+      "runtimeMs": 5007
     },
     {
       "id": "Ballroom_0055",
@@ -1109,7 +1109,7 @@
       },
       "polygonArea": 48434.7558540865,
       "fillRatio": 89.41997467127065,
-      "runtimeMs": 5
+      "runtimeMs": 4
     },
     {
       "id": "Ballroom_0056",
@@ -1154,7 +1154,7 @@
       },
       "polygonArea": 56983.57017397281,
       "fillRatio": 75.12053282074362,
-      "runtimeMs": 5004
+      "runtimeMs": 5005
     },
     {
       "id": "Ballroom_0058",
@@ -1177,7 +1177,7 @@
       },
       "polygonArea": 58010.58319639356,
       "fillRatio": 73.79060712086056,
-      "runtimeMs": 5006
+      "runtimeMs": 5008
     },
     {
       "id": "Ballroom_0059",
@@ -1200,7 +1200,7 @@
       },
       "polygonArea": 56711.7599008759,
       "fillRatio": 55.8121428446569,
-      "runtimeMs": 5005
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0060",
@@ -1224,7 +1224,7 @@
       },
       "polygonArea": 67842.52590585517,
       "fillRatio": 63.83952519238086,
-      "runtimeMs": 5003
+      "runtimeMs": 5005
     },
     {
       "id": "Ballroom_0061",
@@ -1261,7 +1261,7 @@
       },
       "polygonArea": 22943.492097923387,
       "fillRatio": 82.77895916799206,
-      "runtimeMs": 3179
+      "runtimeMs": 5005
     },
     {
       "id": "Ballroom_0063",
@@ -1279,7 +1279,7 @@
       },
       "polygonArea": 26392.275090463096,
       "fillRatio": 77.41788807103134,
-      "runtimeMs": 6594
+      "runtimeMs": 5003
     },
     {
       "id": "Ballroom_0064",
@@ -1298,7 +1298,7 @@
       },
       "polygonArea": 37251.54269525294,
       "fillRatio": 72.7780242144146,
-      "runtimeMs": 5002
+      "runtimeMs": 5003
     },
     {
       "id": "Ballroom_0065",
@@ -1318,7 +1318,7 @@
       },
       "polygonArea": 47083.37717139304,
       "fillRatio": 69.05526804890995,
-      "runtimeMs": 5003
+      "runtimeMs": 5004
     },
     {
       "id": "Ballroom_0066",
@@ -1338,7 +1338,7 @@
       },
       "polygonArea": 25249.78379922929,
       "fillRatio": 79.51598454847509,
-      "runtimeMs": 3522
+      "runtimeMs": 5003
     },
     {
       "id": "Ballroom_0067",
@@ -1359,7 +1359,7 @@
       },
       "polygonArea": 36380.54980420855,
       "fillRatio": 61.9944751711783,
-      "runtimeMs": 4891
+      "runtimeMs": 5007
     },
     {
       "id": "Ballroom_0068",
@@ -1380,7 +1380,7 @@
       },
       "polygonArea": 49389.668872698945,
       "fillRatio": 67.19190611440156,
-      "runtimeMs": 5005
+      "runtimeMs": 5007
     },
     {
       "id": "Ballroom_0069",
@@ -1421,7 +1421,7 @@
       },
       "polygonArea": 15240.44964744554,
       "fillRatio": 77.360237100958,
-      "runtimeMs": 5370
+      "runtimeMs": 3386
     },
     {
       "id": "Ballroom_0071",
@@ -1441,7 +1441,7 @@
       },
       "polygonArea": 25072.69927237468,
       "fillRatio": 75.74925918079137,
-      "runtimeMs": 3857
+      "runtimeMs": 4375
     },
     {
       "id": "Ballroom_0072",
@@ -1482,7 +1482,7 @@
       },
       "polygonArea": 36645.874369249985,
       "fillRatio": 58.535272189178976,
-      "runtimeMs": 5004
+      "runtimeMs": 5005
     },
     {
       "id": "Ballroom_0074",
@@ -1503,7 +1503,7 @@
       },
       "polygonArea": 35347.40072629363,
       "fillRatio": 63.088600247973716,
-      "runtimeMs": 5004
+      "runtimeMs": 5005
     },
     {
       "id": "Ballroom_0075",
@@ -1523,7 +1523,7 @@
       },
       "polygonArea": 39380.33472091518,
       "fillRatio": 76.48066110733399,
-      "runtimeMs": 5003
+      "runtimeMs": 5004
     },
     {
       "id": "Ballroom_0076",
@@ -1544,7 +1544,7 @@
       },
       "polygonArea": 49212.584345844334,
       "fillRatio": 66.06755719978824,
-      "runtimeMs": 5004
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0077",
@@ -1565,7 +1565,7 @@
       },
       "polygonArea": 49654.996999420306,
       "fillRatio": 60.655205237830415,
-      "runtimeMs": 7992
+      "runtimeMs": 5004
     },
     {
       "id": "Ballroom_0078",
@@ -1587,7 +1587,7 @@
       },
       "polygonArea": 60785.759442719645,
       "fillRatio": 49.548349180729396,
-      "runtimeMs": 5006
+      "runtimeMs": 5007
     },
     {
       "id": "Ballroom_0079",
@@ -1609,7 +1609,7 @@
       },
       "polygonArea": 59487.28579976329,
       "fillRatio": 54.65630491467829,
-      "runtimeMs": 5005
+      "runtimeMs": 5010
     },
     {
       "id": "Ballroom_0080",
@@ -1630,7 +1630,7 @@
       },
       "polygonArea": 27378.990973680586,
       "fillRatio": 79.93791894258685,
-      "runtimeMs": 3602
+      "runtimeMs": 4506
     },
     {
       "id": "Ballroom_0081",
@@ -1696,7 +1696,7 @@
       },
       "polygonArea": 37653.69242759953,
       "fillRatio": 59.224418389084946,
-      "runtimeMs": 5004
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0084",
@@ -1719,7 +1719,7 @@
       },
       "polygonArea": 48784.4584325788,
       "fillRatio": 88.8219062746339,
-      "runtimeMs": 3
+      "runtimeMs": 6
     },
     {
       "id": "Ballroom_0085",
@@ -1741,7 +1741,7 @@
       },
       "polygonArea": 51518.87604715024,
       "fillRatio": 67.64661813057266,
-      "runtimeMs": 7985
+      "runtimeMs": 5005
     },
     {
       "id": "Ballroom_0086",
@@ -1764,7 +1764,7 @@
       },
       "polygonArea": 62649.64205212949,
       "fillRatio": 61.45328045445223,
-      "runtimeMs": 5007
+      "runtimeMs": 5009
     },
     {
       "id": "Ballroom_0087",
@@ -1787,7 +1787,7 @@
       },
       "polygonArea": 63092.40079658685,
       "fillRatio": 47.73687474334667,
-      "runtimeMs": 5006
+      "runtimeMs": 5007
     },
     {
       "id": "Ballroom_0088",
@@ -1810,7 +1810,7 @@
       },
       "polygonArea": 61793.57750106919,
       "fillRatio": 56.398704775064665,
-      "runtimeMs": 5006
+      "runtimeMs": 5008
     },
     {
       "id": "Ballroom_0089",
@@ -1834,7 +1834,7 @@
       },
       "polygonArea": 72924.34350604846,
       "fillRatio": 59.419507755978515,
-      "runtimeMs": 5006
+      "runtimeMs": 5007
     },
     {
       "id": "Ballroom_0090",
@@ -1852,7 +1852,7 @@
       },
       "polygonArea": 23369.802478062964,
       "fillRatio": 97.58090324492386,
-      "runtimeMs": 1
+      "runtimeMs": 3
     },
     {
       "id": "Ballroom_0091",
@@ -1870,7 +1870,7 @@
       },
       "polygonArea": 28102.2476675046,
       "fillRatio": 78.50177495059711,
-      "runtimeMs": 3463
+      "runtimeMs": 4437
     },
     {
       "id": "Ballroom_0092",
@@ -1889,7 +1889,7 @@
       },
       "polygonArea": 47509.68755153261,
       "fillRatio": 79.26559577165662,
-      "runtimeMs": 7991
+      "runtimeMs": 5003
     },
     {
       "id": "Ballroom_0093",
@@ -1908,7 +1908,7 @@
       },
       "polygonArea": 25273.074629552,
       "fillRatio": 90.23225182892077,
-      "runtimeMs": 2
+      "runtimeMs": 5
     },
     {
       "id": "Ballroom_0094",
@@ -1928,7 +1928,7 @@
       },
       "polygonArea": 35547.707738954276,
       "fillRatio": 89.0413689418341,
-      "runtimeMs": 5
+      "runtimeMs": 6
     },
     {
       "id": "Ballroom_0095",
@@ -1949,7 +1949,7 @@
       },
       "polygonArea": 46678.470182253586,
       "fillRatio": 91.70472247234235,
-      "runtimeMs": 3
+      "runtimeMs": 4
     },
     {
       "id": "Ballroom_0096",
@@ -2012,7 +2012,7 @@
       },
       "polygonArea": 70818.35525572325,
       "fillRatio": 60.44529187439905,
-      "runtimeMs": 5006
+      "runtimeMs": 5005
     },
     {
       "id": "Ballroom_0099",
@@ -2034,7 +2034,7 @@
       },
       "polygonArea": 48985.11153612079,
       "fillRatio": 87.38647354800047,
-      "runtimeMs": 3
+      "runtimeMs": 5
     },
     {
       "id": "Ballroom_0100",
@@ -2080,7 +2080,7 @@
       },
       "polygonArea": 73124.99660959045,
       "fillRatio": 58.53861677903532,
-      "runtimeMs": 5007
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0102",
@@ -2104,7 +2104,7 @@
       },
       "polygonArea": 82956.93931905206,
       "fillRatio": 51.600700178122096,
-      "runtimeMs": 8001
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0103",
@@ -2123,7 +2123,7 @@
       },
       "polygonArea": 30354.96633652399,
       "fillRatio": 72.84716937375268,
-      "runtimeMs": 4154
+      "runtimeMs": 5003
     },
     {
       "id": "Ballroom_0104",
@@ -2164,7 +2164,7 @@
       },
       "polygonArea": 51046.068417453935,
       "fillRatio": 63.69452794344404,
-      "runtimeMs": 5005
+      "runtimeMs": 5004
     },
     {
       "id": "Ballroom_0106",
@@ -2205,7 +2205,7 @@
       },
       "polygonArea": 60622.003993082486,
       "fillRatio": 62.12192185687171,
-      "runtimeMs": 5007
+      "runtimeMs": 5004
     },
     {
       "id": "Ballroom_0108",
@@ -2227,7 +2227,7 @@
       },
       "polygonArea": 70453.83846922257,
       "fillRatio": 53.45280649982435,
-      "runtimeMs": 7993
+      "runtimeMs": 5009
     },
     {
       "id": "Ballroom_0109",
@@ -2249,7 +2249,7 @@
       },
       "polygonArea": 53352.36011875984,
       "fillRatio": 62.20129693473264,
-      "runtimeMs": 5005
+      "runtimeMs": 5007
     },
     {
       "id": "Ballroom_0110",
@@ -2272,7 +2272,7 @@
       },
       "polygonArea": 64483.126123739115,
       "fillRatio": 51.464409271157365,
-      "runtimeMs": 5005
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0111",
@@ -2288,14 +2288,14 @@
       "layoutRestriction": "allowed",
       "passed": true,
       "layout": {
-        "width": 212.18983802825136,
-        "height": 163.868613219965,
-        "area": 34771.254497058544,
-        "angle": 92
+        "width": 90.20313259944372,
+        "height": 367.9014129866521,
+        "area": 33185.859939157686,
+        "angle": 96
       },
       "polygonArea": 72760.13017052849,
-      "fillRatio": 47.788884400790494,
-      "runtimeMs": 5009
+      "fillRatio": 45.609951303522585,
+      "runtimeMs": 5007
     },
     {
       "id": "Ballroom_0112",
@@ -2312,14 +2312,14 @@
       "layoutRestriction": "allowed",
       "passed": true,
       "layout": {
-        "width": 212.18983802825136,
-        "height": 163.868613219965,
-        "area": 34771.254497058544,
-        "angle": 92
+        "width": 90.20313259944372,
+        "height": 367.9014129866521,
+        "area": 33185.859939157686,
+        "angle": 96
       },
       "polygonArea": 83890.89617550775,
-      "fillRatio": 41.44818577729074,
-      "runtimeMs": 5006
+      "fillRatio": 39.55835668953841,
+      "runtimeMs": 5008
     },
     {
       "id": "Ballroom_0113",
@@ -2339,7 +2339,7 @@
       },
       "polygonArea": 14700.75128460093,
       "fillRatio": 100.28345566438823,
-      "runtimeMs": 5
+      "runtimeMs": 3
     },
     {
       "id": "Ballroom_0114",
@@ -2360,7 +2360,7 @@
       },
       "polygonArea": 25831.513727900256,
       "fillRatio": 90.4225459730088,
-      "runtimeMs": 4
+      "runtimeMs": 3
     },
     {
       "id": "Ballroom_0115",
@@ -2403,7 +2403,7 @@
       },
       "polygonArea": 36690.4694597826,
       "fillRatio": 63.660979867639675,
-      "runtimeMs": 4456
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0117",
@@ -2425,7 +2425,7 @@
       },
       "polygonArea": 35391.99581682625,
       "fillRatio": 63.00910651571301,
-      "runtimeMs": 8001
+      "runtimeMs": 5004
     },
     {
       "id": "Ballroom_0118",
@@ -2490,7 +2490,7 @@
       },
       "polygonArea": 44967.47706825194,
       "fillRatio": 70.3890181567565,
-      "runtimeMs": 5006
+      "runtimeMs": 5004
     },
     {
       "id": "Ballroom_0121",
@@ -2513,7 +2513,7 @@
       },
       "polygonArea": 56098.23951155128,
       "fillRatio": 76.30606933067196,
-      "runtimeMs": 5005
+      "runtimeMs": 5007
     },
     {
       "id": "Ballroom_0122",
@@ -2536,7 +2536,7 @@
       },
       "polygonArea": 54799.765868594906,
       "fillRatio": 57.75945926757166,
-      "runtimeMs": 5005
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0123",
@@ -2558,7 +2558,7 @@
       },
       "polygonArea": 28138.155081767454,
       "fillRatio": 100.2825031814619,
-      "runtimeMs": 3
+      "runtimeMs": 4
     },
     {
       "id": "Ballroom_0124",
@@ -2581,7 +2581,7 @@
       },
       "polygonArea": 37970.097791229055,
       "fillRatio": 74.31488667146323,
-      "runtimeMs": 4682
+      "runtimeMs": 5005
     },
     {
       "id": "Ballroom_0125",
@@ -2604,7 +2604,7 @@
       },
       "polygonArea": 38997.11081364982,
       "fillRatio": 72.35775818735512,
-      "runtimeMs": 4865
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0126",
@@ -2627,7 +2627,7 @@
       },
       "polygonArea": 37698.28751813215,
       "fillRatio": 59.154359018389854,
-      "runtimeMs": 7904
+      "runtimeMs": 5005
     },
     {
       "id": "Ballroom_0127",
@@ -2674,7 +2674,7 @@
       },
       "polygonArea": 47545.92513353612,
       "fillRatio": 90.03160925935504,
-      "runtimeMs": 3
+      "runtimeMs": 5
     },
     {
       "id": "Ballroom_0129",
@@ -2722,7 +2722,7 @@
       },
       "polygonArea": 58404.88086541848,
       "fillRatio": 73.29243874944083,
-      "runtimeMs": 5005
+      "runtimeMs": 5009
     },
     {
       "id": "Ballroom_0131",
@@ -2746,7 +2746,7 @@
       },
       "polygonArea": 57106.057569900804,
       "fillRatio": 55.42677921138566,
-      "runtimeMs": 5005
+      "runtimeMs": 5007
     },
     {
       "id": "Ballroom_0132",
@@ -2791,7 +2791,7 @@
       },
       "polygonArea": 15634.747316470446,
       "fillRatio": 90.72776554936044,
-      "runtimeMs": 2
+      "runtimeMs": 3
     },
     {
       "id": "Ballroom_0134",
@@ -2812,7 +2812,7 @@
       },
       "polygonArea": 25466.996941399593,
       "fillRatio": 74.57645673399807,
-      "runtimeMs": 3297
+      "runtimeMs": 4323
     },
     {
       "id": "Ballroom_0135",
@@ -2833,7 +2833,7 @@
       },
       "polygonArea": 25909.409594975565,
       "fillRatio": 86.06798142392604,
-      "runtimeMs": 3
+      "runtimeMs": 4
     },
     {
       "id": "Ballroom_0136",
@@ -2855,7 +2855,7 @@
       },
       "polygonArea": 37040.17203827489,
       "fillRatio": 57.91215625558985,
-      "runtimeMs": 4798
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0137",
@@ -2877,7 +2877,7 @@
       },
       "polygonArea": 35741.69839531854,
       "fillRatio": 62.39261519027767,
-      "runtimeMs": 8009
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0138",
@@ -2942,7 +2942,7 @@
       },
       "polygonArea": 50049.294668445225,
       "fillRatio": 62.228108435133564,
-      "runtimeMs": 5005
+      "runtimeMs": 5007
     },
     {
       "id": "Ballroom_0141",
@@ -2965,7 +2965,7 @@
       },
       "polygonArea": 61180.057111744565,
       "fillRatio": 50.906669309599,
-      "runtimeMs": 5006
+      "runtimeMs": 5007
     },
     {
       "id": "Ballroom_0142",
@@ -2988,7 +2988,7 @@
       },
       "polygonArea": 59881.583468788194,
       "fillRatio": 55.13435060658273,
-      "runtimeMs": 5008
+      "runtimeMs": 5015
     },
     {
       "id": "Ballroom_0143",
@@ -3010,7 +3010,7 @@
       },
       "polygonArea": 27773.2886427055,
       "fillRatio": 85.80781155191134,
-      "runtimeMs": 4
+      "runtimeMs": 3
     },
     {
       "id": "Ballroom_0144",
@@ -3033,7 +3033,7 @@
       },
       "polygonArea": 38904.05464768475,
       "fillRatio": 61.80009971767397,
-      "runtimeMs": 8338
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0145",
@@ -3056,7 +3056,7 @@
       },
       "polygonArea": 39346.81339214211,
       "fillRatio": 65.86036190175786,
-      "runtimeMs": 5004
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0146",
@@ -3079,7 +3079,7 @@
       },
       "polygonArea": 38047.990096624446,
       "fillRatio": 62.62981808297482,
-      "runtimeMs": 5005
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0147",
@@ -3103,7 +3103,7 @@
       },
       "polygonArea": 49178.75610160371,
       "fillRatio": 88.10976401283939,
-      "runtimeMs": 5
+      "runtimeMs": 7
     },
     {
       "id": "Ballroom_0148",
@@ -3126,7 +3126,7 @@
       },
       "polygonArea": 51913.17371617515,
       "fillRatio": 66.60193833873997,
-      "runtimeMs": 5005
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0149",
@@ -3150,7 +3150,7 @@
       },
       "polygonArea": 63043.93972115443,
       "fillRatio": 61.68827399122586,
-      "runtimeMs": 5006
+      "runtimeMs": 5011
     },
     {
       "id": "Ballroom_0150",
@@ -3174,7 +3174,7 @@
       },
       "polygonArea": 63486.69846561177,
       "fillRatio": 49.05709402130823,
-      "runtimeMs": 5006
+      "runtimeMs": 5008
     },
     {
       "id": "Ballroom_0151",
@@ -3198,7 +3198,7 @@
       },
       "polygonArea": 62187.87517009411,
       "fillRatio": 54.37604146064419,
-      "runtimeMs": 8109
+      "runtimeMs": 5016
     },
     {
       "id": "Ballroom_0152",
@@ -3223,7 +3223,7 @@
       },
       "polygonArea": 73318.64117507337,
       "fillRatio": 59.09995773394735,
-      "runtimeMs": 5008
+      "runtimeMs": 5013
     },
     {
       "id": "Ballroom_0153",
@@ -3245,7 +3245,7 @@
       },
       "polygonArea": 27812.132299378914,
       "fillRatio": 94.6885339334042,
-      "runtimeMs": 3
+      "runtimeMs": 5
     },
     {
       "id": "Ballroom_0154",
@@ -3268,7 +3268,7 @@
       },
       "polygonArea": 38942.89474267824,
       "fillRatio": 65.84218425274858,
-      "runtimeMs": 4640
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0155",
@@ -3291,7 +3291,7 @@
       },
       "polygonArea": 37644.42109972189,
       "fillRatio": 69.9584690867231,
-      "runtimeMs": 4798
+      "runtimeMs": 5007
     },
     {
       "id": "Ballroom_0156",
@@ -3314,7 +3314,7 @@
       },
       "polygonArea": 47219.90235114756,
       "fillRatio": 67.03140841509587,
-      "runtimeMs": 5003
+      "runtimeMs": 5007
     },
     {
       "id": "Ballroom_0157",
@@ -3338,7 +3338,7 @@
       },
       "polygonArea": 58350.6647944469,
       "fillRatio": 73.36053785465099,
-      "runtimeMs": 5004
+      "runtimeMs": 5009
     },
     {
       "id": "Ballroom_0158",
@@ -3362,7 +3362,7 @@
       },
       "polygonArea": 57052.191151490544,
       "fillRatio": 55.479110980242815,
-      "runtimeMs": 8263
+      "runtimeMs": 5008
     },
     {
       "id": "Ballroom_0159",
@@ -3409,7 +3409,7 @@
       },
       "polygonArea": 63082.7798161479,
       "fillRatio": 49.37120629127254,
-      "runtimeMs": 5006
+      "runtimeMs": 5012
     },
     {
       "id": "Ballroom_0161",
@@ -3433,7 +3433,7 @@
       },
       "polygonArea": 61784.306173191544,
       "fillRatio": 53.4364213557854,
-      "runtimeMs": 5006
+      "runtimeMs": 5010
     },
     {
       "id": "Ballroom_0162",
@@ -3457,7 +3457,7 @@
       },
       "polygonArea": 41249.53609654546,
       "fillRatio": 68.40667268730517,
-      "runtimeMs": 4932
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0163",
@@ -3481,7 +3481,7 @@
       },
       "polygonArea": 39950.71280102779,
       "fillRatio": 65.9198768970332,
-      "runtimeMs": 5004
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0164",
@@ -3506,7 +3506,7 @@
       },
       "polygonArea": 51081.47880600704,
       "fillRatio": 92.36809212423759,
-      "runtimeMs": 4
+      "runtimeMs": 5
     },
     {
       "id": "Ballroom_0165",
@@ -3531,7 +3531,7 @@
       },
       "polygonArea": 60657.30614831411,
       "fillRatio": 70.57082526926641,
-      "runtimeMs": 8233
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0166",
@@ -3556,7 +3556,7 @@
       },
       "polygonArea": 59358.48285279644,
       "fillRatio": 53.32354690413814,
-      "runtimeMs": 5005
+      "runtimeMs": 5009
     },
     {
       "id": "Ballroom_0167",
@@ -3582,7 +3582,7 @@
       },
       "polygonArea": 70489.2488577757,
       "fillRatio": 66.93018900329778,
-      "runtimeMs": 5005
+      "runtimeMs": 5010
     },
     {
       "id": "Ballroom_0168",
@@ -3607,7 +3607,7 @@
       },
       "polygonArea": 65389.421170015106,
       "fillRatio": 47.629614699175995,
-      "runtimeMs": 5007
+      "runtimeMs": 5010
     },
     {
       "id": "Ballroom_0169",
@@ -3632,7 +3632,7 @@
       },
       "polygonArea": 64090.59787449744,
       "fillRatio": 51.513518789613954,
-      "runtimeMs": 5007
+      "runtimeMs": 5013
     },
     {
       "id": "Ballroom_0170",
@@ -3658,7 +3658,7 @@
       },
       "polygonArea": 75221.3638794767,
       "fillRatio": 62.72551435992884,
-      "runtimeMs": 5005
+      "runtimeMs": 5012
     },
     {
       "id": "Ballroom_0171",
@@ -3678,7 +3678,7 @@
       },
       "polygonArea": 25667.372298576905,
       "fillRatio": 97.82047612319602,
-      "runtimeMs": 2
+      "runtimeMs": 4
     },
     {
       "id": "Ballroom_0172",
@@ -3699,7 +3699,7 @@
       },
       "polygonArea": 35942.00540797918,
       "fillRatio": 88.06455076427191,
-      "runtimeMs": 4
+      "runtimeMs": 5
     },
     {
       "id": "Ballroom_0173",
@@ -3721,7 +3721,7 @@
       },
       "polygonArea": 47072.76785127849,
       "fillRatio": 90.93657222412111,
-      "runtimeMs": 4
+      "runtimeMs": 8
     },
     {
       "id": "Ballroom_0174",
@@ -3742,7 +3742,7 @@
       },
       "polygonArea": 49807.257372046566,
       "fillRatio": 70.21940624238573,
-      "runtimeMs": 8265
+      "runtimeMs": 5004
     },
     {
       "id": "Ballroom_0175",
@@ -3764,7 +3764,7 @@
       },
       "polygonArea": 60081.890481448856,
       "fillRatio": 58.21115166651892,
-      "runtimeMs": 5015
+      "runtimeMs": 5026
     },
     {
       "id": "Ballroom_0176",
@@ -3787,7 +3787,7 @@
       },
       "polygonArea": 71212.65292474817,
       "fillRatio": 60.110612056827975,
-      "runtimeMs": 5008
+      "runtimeMs": 5013
     },
     {
       "id": "Ballroom_0177",
@@ -3834,7 +3834,7 @@
       },
       "polygonArea": 59211.35191460731,
       "fillRatio": 72.29418034012238,
-      "runtimeMs": 5004
+      "runtimeMs": 5008
     },
     {
       "id": "Ballroom_0179",
@@ -3858,7 +3858,7 @@
       },
       "polygonArea": 73519.29427861536,
       "fillRatio": 58.22466327376302,
-      "runtimeMs": 5008
+      "runtimeMs": 5007
     },
     {
       "id": "Ballroom_0180",
@@ -3883,7 +3883,7 @@
       },
       "polygonArea": 83351.23698807697,
       "fillRatio": 51.356600191901144,
-      "runtimeMs": 5006
+      "runtimeMs": 5007
     },
     {
       "id": "Ballroom_0181",
@@ -3905,7 +3905,7 @@
       },
       "polygonArea": 38071.212582430475,
       "fillRatio": 98.62240170721293,
-      "runtimeMs": 4
+      "runtimeMs": 6
     },
     {
       "id": "Ballroom_0182",
@@ -3928,7 +3928,7 @@
       },
       "polygonArea": 49201.975025729786,
       "fillRatio": 87.00130739179774,
-      "runtimeMs": 5
+      "runtimeMs": 9
     },
     {
       "id": "Ballroom_0183",
@@ -3951,7 +3951,7 @@
       },
       "polygonArea": 48930.168314312825,
       "fillRatio": 72.26856566254975,
-      "runtimeMs": 8108
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0184",
@@ -3999,7 +3999,7 @@
       },
       "polygonArea": 58762.457114655794,
       "fillRatio": 63.79829258699146,
-      "runtimeMs": 5006
+      "runtimeMs": 5007
     },
     {
       "id": "Ballroom_0186",
@@ -4022,7 +4022,7 @@
       },
       "polygonArea": 62211.097655900136,
       "fillRatio": 60.259371961416775,
-      "runtimeMs": 5004
+      "runtimeMs": 5005
     },
     {
       "id": "Ballroom_0187",
@@ -4046,7 +4046,7 @@
       },
       "polygonArea": 73341.86009919945,
       "fillRatio": 58.365524786353184,
-      "runtimeMs": 5008
+      "runtimeMs": 5012
     },
     {
       "id": "Ballroom_0188",
@@ -4070,7 +4070,7 @@
       },
       "polygonArea": 51508.616379597006,
       "fillRatio": 99.05548662715942,
-      "runtimeMs": 5
+      "runtimeMs": 4
     },
     {
       "id": "Ballroom_0189",
@@ -4095,7 +4095,7 @@
       },
       "polygonArea": 61340.5590890586,
       "fillRatio": 77.96241208903731,
-      "runtimeMs": 5005
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0190",
@@ -4120,7 +4120,7 @@
       },
       "polygonArea": 62367.57211147937,
       "fillRatio": 81.61890506945612,
-      "runtimeMs": 8241
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0191",
@@ -4196,7 +4196,7 @@
       },
       "polygonArea": 75648.50145306665,
       "fillRatio": 67.28980547932503,
-      "runtimeMs": 5006
+      "runtimeMs": 5007
     },
     {
       "id": "Ballroom_0194",
@@ -4222,7 +4222,7 @@
       },
       "polygonArea": 85480.44416252826,
       "fillRatio": 55.94563753529851,
-      "runtimeMs": 5006
+      "runtimeMs": 5009
     },
     {
       "id": "Ballroom_0195",
@@ -4242,7 +4242,7 @@
       },
       "polygonArea": 30749.257770467393,
       "fillRatio": 78.30942273801314,
-      "runtimeMs": 3766
+      "runtimeMs": 5003
     },
     {
       "id": "Ballroom_0196",
@@ -4263,7 +4263,7 @@
       },
       "polygonArea": 41608.531610338745,
       "fillRatio": 65.15715819266677,
-      "runtimeMs": 8267
+      "runtimeMs": 5005
     },
     {
       "id": "Ballroom_0197",
@@ -4306,7 +4306,7 @@
       },
       "polygonArea": 50157.027822236036,
       "fillRatio": 77.06954356263095,
-      "runtimeMs": 5004
+      "runtimeMs": 5005
     },
     {
       "id": "Ballroom_0199",
@@ -4328,7 +4328,7 @@
       },
       "polygonArea": 61016.30166210739,
       "fillRatio": 61.72047948300978,
-      "runtimeMs": 5007
+      "runtimeMs": 5010
     },
     {
       "id": "Ballroom_0200",
@@ -4351,7 +4351,7 @@
       },
       "polygonArea": 70848.1361382475,
       "fillRatio": 53.15532066385832,
-      "runtimeMs": 5008
+      "runtimeMs": 5013
     },
     {
       "id": "Ballroom_0201",
@@ -4374,7 +4374,7 @@
       },
       "polygonArea": 53746.657787784745,
       "fillRatio": 61.744974115767235,
-      "runtimeMs": 5006
+      "runtimeMs": 5011
     },
     {
       "id": "Ballroom_0202",
@@ -4398,7 +4398,7 @@
       },
       "polygonArea": 64877.42379276402,
       "fillRatio": 51.151630257641344,
-      "runtimeMs": 8340
+      "runtimeMs": 5011
     },
     {
       "id": "Ballroom_0203",
@@ -4415,14 +4415,14 @@
       "layoutRestriction": "allowed",
       "passed": true,
       "layout": {
-        "width": 186.80583477755803,
-        "height": 186.80583477755803,
-        "area": 34896.41990694031,
-        "angle": 18
+        "width": 90.20313259944372,
+        "height": 367.9014129866521,
+        "area": 33185.859939157686,
+        "angle": 96
       },
       "polygonArea": 73154.42783955339,
-      "fillRatio": 47.70240289962653,
-      "runtimeMs": 5010
+      "fillRatio": 45.3641165944772,
+      "runtimeMs": 5016
     },
     {
       "id": "Ballroom_0204",
@@ -4440,14 +4440,14 @@
       "layoutRestriction": "allowed",
       "passed": true,
       "layout": {
-        "width": 186.80583477755803,
-        "height": 186.80583477755803,
-        "area": 34896.41990694031,
-        "angle": 18
+        "width": 90.20313259944372,
+        "height": 367.9014129866521,
+        "area": 33185.859939157686,
+        "angle": 96
       },
       "polygonArea": 84285.19384453265,
-      "fillRatio": 41.402787743845174,
-      "runtimeMs": 5009
+      "fillRatio": 39.37329728442021,
+      "runtimeMs": 5012
     },
     {
       "id": "Ballroom_0205",
@@ -4469,7 +4469,7 @@
       },
       "polygonArea": 43737.32363600099,
       "fillRatio": 75.45568368945847,
-      "runtimeMs": 5003
+      "runtimeMs": 5005
     },
     {
       "id": "Ballroom_0206",
@@ -4492,7 +4492,7 @@
       },
       "polygonArea": 53569.57326093014,
       "fillRatio": 60.694066301061646,
-      "runtimeMs": 5004
+      "runtimeMs": 5008
     },
     {
       "id": "Ballroom_0207",
@@ -4515,7 +4515,7 @@
       },
       "polygonArea": 54011.98591450611,
       "fillRatio": 65.01319641797161,
-      "runtimeMs": 5004
+      "runtimeMs": 5008
     },
     {
       "id": "Ballroom_0208",
@@ -4539,7 +4539,7 @@
       },
       "polygonArea": 65142.74835780545,
       "fillRatio": 53.90457015870981,
-      "runtimeMs": 8252
+      "runtimeMs": 5011
     },
     {
       "id": "Ballroom_0209",
@@ -4563,7 +4563,7 @@
       },
       "polygonArea": 63844.27471484908,
       "fillRatio": 59.69795440450461,
-      "runtimeMs": 5006
+      "runtimeMs": 5013
     },
     {
       "id": "Ballroom_0210",
@@ -4603,14 +4603,14 @@
       "layoutRestriction": "allowed",
       "passed": true,
       "layout": {
-        "width": 188.01232813168642,
-        "height": 188.01232813168642,
-        "area": 35348.635529496925,
-        "angle": 12
+        "width": 286.0594876479986,
+        "height": 108.63018518278427,
+        "area": 31074.695116494477,
+        "angle": 7
       },
       "polygonArea": 72977.3433126988,
-      "fillRatio": 48.437821829211344,
-      "runtimeMs": 5008
+      "fillRatio": 42.58129126918651,
+      "runtimeMs": 5016
     },
     {
       "id": "Ballroom_0212",
@@ -4634,7 +4634,7 @@
       },
       "polygonArea": 55875.86496223605,
       "fillRatio": 73.00852106716835,
-      "runtimeMs": 5004
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0213",
@@ -4659,7 +4659,7 @@
       },
       "polygonArea": 67006.63096721531,
       "fillRatio": 63.00619080492682,
-      "runtimeMs": 5006
+      "runtimeMs": 5008
     },
     {
       "id": "Ballroom_0214",
@@ -4684,7 +4684,7 @@
       },
       "polygonArea": 67449.38971167266,
       "fillRatio": 52.06113597461965,
-      "runtimeMs": 8292
+      "runtimeMs": 5008
     },
     {
       "id": "Ballroom_0215",
@@ -4709,7 +4709,7 @@
       },
       "polygonArea": 66150.566416155,
       "fillRatio": 61.66862183126233,
-      "runtimeMs": 5008
+      "runtimeMs": 5014
     },
     {
       "id": "Ballroom_0216",
@@ -4735,7 +4735,7 @@
       },
       "polygonArea": 77281.33242113426,
       "fillRatio": 56.06953786646024,
-      "runtimeMs": 5006
+      "runtimeMs": 5012
     },
     {
       "id": "Ballroom_0217",
@@ -4760,7 +4760,7 @@
       },
       "polygonArea": 75283.63501400469,
       "fillRatio": 54.187264781818634,
-      "runtimeMs": 5007
+      "runtimeMs": 5013
     },
     {
       "id": "Ballroom_0218",
@@ -4786,7 +4786,7 @@
       },
       "polygonArea": 86414.40101898398,
       "fillRatio": 48.85565977583079,
-      "runtimeMs": 5009
+      "runtimeMs": 5011
     },
     {
       "id": "Ballroom_0219",
@@ -4831,7 +4831,7 @@
       },
       "polygonArea": 62334.31576434448,
       "fillRatio": 63.39381921421666,
-      "runtimeMs": 8249
+      "runtimeMs": 5005
     },
     {
       "id": "Ballroom_0221",
@@ -4855,7 +4855,7 @@
       },
       "polygonArea": 73465.07820764382,
       "fillRatio": 58.26763215848159,
-      "runtimeMs": 5006
+      "runtimeMs": 5011
     },
     {
       "id": "Ballroom_0222",
@@ -4878,7 +4878,7 @@
       },
       "polygonArea": 62919.024366510755,
       "fillRatio": 66.2538425058181,
-      "runtimeMs": 5007
+      "runtimeMs": 5010
     },
     {
       "id": "Ballroom_0223",
@@ -4902,7 +4902,7 @@
       },
       "polygonArea": 72750.85884265084,
       "fillRatio": 57.30004012756259,
-      "runtimeMs": 5007
+      "runtimeMs": 5013
     },
     {
       "id": "Ballroom_0224",
@@ -4927,7 +4927,7 @@
       },
       "polygonArea": 75771.71956151101,
       "fillRatio": 56.49384992539437,
-      "runtimeMs": 5007
+      "runtimeMs": 5011
     },
     {
       "id": "Ballroom_0225",
@@ -4953,7 +4953,7 @@
       },
       "polygonArea": 85603.66227097262,
       "fillRatio": 50.005292296338986,
-      "runtimeMs": 5005
+      "runtimeMs": 5007
     },
     {
       "id": "Ballroom_0226",
@@ -4978,7 +4978,7 @@
       },
       "polygonArea": 75057.15054395676,
       "fillRatio": 55.53937367442698,
-      "runtimeMs": 8344
+      "runtimeMs": 5010
     },
     {
       "id": "Ballroom_0227",
@@ -5004,7 +5004,7 @@
       },
       "polygonArea": 86187.91654893602,
       "fillRatio": 48.36672352593255,
-      "runtimeMs": 5008
+      "runtimeMs": 5015
     },
     {
       "id": "Ballroom_0228",
@@ -5028,7 +5028,7 @@
       },
       "polygonArea": 51182.59359720845,
       "fillRatio": 69.08819645855912,
-      "runtimeMs": 5004
+      "runtimeMs": 5008
     },
     {
       "id": "Ballroom_0229",
@@ -5053,7 +5053,7 @@
       },
       "polygonArea": 62313.35604050779,
       "fillRatio": 68.69532353087156,
-      "runtimeMs": 5005
+      "runtimeMs": 5008
     },
     {
       "id": "Ballroom_0230",
@@ -5078,7 +5078,7 @@
       },
       "polygonArea": 61014.882397551446,
       "fillRatio": 61.443114938820166,
-      "runtimeMs": 5006
+      "runtimeMs": 5011
     },
     {
       "id": "Ballroom_0231",
@@ -5102,7 +5102,7 @@
       },
       "polygonArea": 55914.70861890946,
       "fillRatio": 65.47610358667247,
-      "runtimeMs": 5004
+      "runtimeMs": 5005
     },
     {
       "id": "Ballroom_0232",
@@ -5127,7 +5127,7 @@
       },
       "polygonArea": 67045.4710622088,
       "fillRatio": 54.60588456680925,
-      "runtimeMs": 8332
+      "runtimeMs": 5007
     },
     {
       "id": "Ballroom_0233",
@@ -5152,7 +5152,7 @@
       },
       "polygonArea": 65746.99741925244,
       "fillRatio": 57.97029142808668,
-      "runtimeMs": 5006
+      "runtimeMs": 5012
     },
     {
       "id": "Ballroom_0234",
@@ -5176,7 +5176,7 @@
       },
       "polygonArea": 64463.52293879576,
       "fillRatio": 60.60528379739731,
-      "runtimeMs": 5004
+      "runtimeMs": 5010
     },
     {
       "id": "Ballroom_0235",
@@ -5201,7 +5201,7 @@
       },
       "polygonArea": 75594.2853820951,
       "fillRatio": 56.62645174645653,
-      "runtimeMs": 5007
+      "runtimeMs": 5013
     },
     {
       "id": "Ballroom_0236",
@@ -5225,7 +5225,7 @@
       },
       "polygonArea": 65047.81639217299,
       "fillRatio": 64.13872082883147,
-      "runtimeMs": 5007
+      "runtimeMs": 5011
     },
     {
       "id": "Ballroom_0237",
@@ -5243,14 +5243,14 @@
       "layoutRestriction": "allowed",
       "passed": true,
       "layout": {
-        "width": 204.25679269249946,
-        "height": 204.25679269249946,
-        "area": 41720.8373610267,
-        "angle": 13
+        "width": 226.877325,
+        "height": 183.7392578125,
+        "area": 41686.27130998536,
+        "angle": 86.55261285600272
       },
       "polygonArea": 74880.06601710213,
-      "fillRatio": 55.716881114258,
-      "runtimeMs": 5009
+      "fillRatio": 55.67071922781756,
+      "runtimeMs": 5014
     },
     {
       "id": "Ballroom_0238",
@@ -5275,7 +5275,7 @@
       },
       "polygonArea": 75322.47867067813,
       "fillRatio": 81.57072563234442,
-      "runtimeMs": 8298
+      "runtimeMs": 5006
     },
     {
       "id": "Ballroom_0239",
@@ -5301,7 +5301,7 @@
       },
       "polygonArea": 86453.24111397745,
       "fillRatio": 68.61865045619375,
-      "runtimeMs": 5006
+      "runtimeMs": 5013
     },
     {
       "id": "Ballroom_0240",
@@ -5327,7 +5327,7 @@
       },
       "polygonArea": 85154.7674710211,
       "fillRatio": 72.353564245203,
-      "runtimeMs": 5007
+      "runtimeMs": 5010
     },
     {
       "id": "Ballroom_0241",
@@ -5353,7 +5353,7 @@
       },
       "polygonArea": 64619.997394374994,
       "fillRatio": 78.77395779688467,
-      "runtimeMs": 5006
+      "runtimeMs": 5010
     },
     {
       "id": "Ballroom_0242",
@@ -5379,7 +5379,7 @@
       },
       "polygonArea": 63321.17409885733,
       "fillRatio": 55.84399938641557,
-      "runtimeMs": 5008
+      "runtimeMs": 5011
     },
     {
       "id": "Ballroom_0243",
@@ -5406,7 +5406,7 @@
       },
       "polygonArea": 74451.94010383659,
       "fillRatio": 63.36784161932542,
-      "runtimeMs": 5006
+      "runtimeMs": 5010
     },
     {
       "id": "Ballroom_0244",
@@ -5432,7 +5432,7 @@
       },
       "polygonArea": 69352.11241607601,
       "fillRatio": 52.78970064510502,
-      "runtimeMs": 8259
+      "runtimeMs": 5012
     },
     {
       "id": "Ballroom_0245",
@@ -5458,7 +5458,7 @@
       },
       "polygonArea": 68053.28912055836,
       "fillRatio": 59.94440999045416,
-      "runtimeMs": 5007
+      "runtimeMs": 5016
     },
     {
       "id": "Ballroom_0246",
@@ -5485,7 +5485,7 @@
       },
       "polygonArea": 79184.05512553762,
       "fillRatio": 59.586475240693396,
-      "runtimeMs": 5007
+      "runtimeMs": 5010
     },
     {
       "id": "Ballroom_0247",
@@ -5511,7 +5511,7 @@
       },
       "polygonArea": 77900.9267359623,
       "fillRatio": 65.34418986865998,
-      "runtimeMs": 5006
+      "runtimeMs": 5008
     },
     {
       "id": "Ballroom_0248",
@@ -5538,7 +5538,7 @@
       },
       "polygonArea": 87732.86944542392,
       "fillRatio": 54.50930735199576,
-      "runtimeMs": 5006
+      "runtimeMs": 5010
     },
     {
       "id": "Ballroom_0249",
@@ -5557,14 +5557,14 @@
       "layoutRestriction": "allowed",
       "passed": true,
       "layout": {
-        "width": 204.25679269249946,
-        "height": 204.25679269249946,
-        "area": 41720.8373610267,
-        "angle": 13
+        "width": 226.87732500000004,
+        "height": 183.7392578125,
+        "area": 41686.27130998536,
+        "angle": 89.99963883778906
       },
       "polygonArea": 77186.35771840805,
-      "fillRatio": 54.05208717482567,
-      "runtimeMs": 5009
+      "fillRatio": 54.0073045836229,
+      "runtimeMs": 5011
     },
     {
       "id": "Ballroom_0250",
@@ -5591,7 +5591,7 @@
       },
       "polygonArea": 88317.12372338731,
       "fillRatio": 47.80310315741975,
-      "runtimeMs": 8342
+      "runtimeMs": 5015
     },
     {
       "id": "Ballroom_0251",
@@ -5618,7 +5618,7 @@
       },
       "polygonArea": 88759.88246784465,
       "fillRatio": 67.23641275712048,
-      "runtimeMs": 5006
+      "runtimeMs": 5015
     },
     {
       "id": "Ballroom_0252",
@@ -5645,7 +5645,7 @@
       },
       "polygonArea": 87461.05917232699,
       "fillRatio": 70.49612018572778,
-      "runtimeMs": 5007
+      "runtimeMs": 5015
     },
     {
       "id": "Ballroom_0253",
@@ -5673,7 +5673,7 @@
       },
       "polygonArea": 98591.82517730625,
       "fillRatio": 81.91981588443933,
-      "runtimeMs": 5007
+      "runtimeMs": 5010
     }
   ]
 }
