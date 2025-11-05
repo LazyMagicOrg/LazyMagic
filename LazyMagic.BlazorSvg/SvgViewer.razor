@@ -26,7 +26,8 @@
     private string? lastSvgUrl;
     private bool busy;
     private string paths = string.Empty;
-    private int lastChangeCount = 0;    
+    private int lastChangeCount = 0;
+    private SvgFloorLevel? cachedFloorMetadata = null;    
 
     protected override async Task OnInitializedAsync()
     {
@@ -51,6 +52,7 @@
         {
             busy = true;
             lastSvgUrl = SvgUrl;
+            cachedFloorMetadata = null; // Clear cache when loading new SVG
             await svgViewerJS!.LoadSvgAsync(SvgUrl!);
             busy = false;
         }
@@ -136,6 +138,7 @@
 
     /// <summary>
     /// Extracts floor metadata from the loaded SVG including rooms, sections, and precomputed layout data
+    /// Uses cached metadata if available to improve performance
     /// </summary>
     /// <returns>SvgFloorLevel object containing all metadata, or null if extraction fails</returns>
     public async Task<SvgFloorLevel?> GetFloorMetadataAsync()
@@ -143,7 +146,120 @@
         if (svgViewerJS == null)
             throw new InvalidOperationException("SvgViewer not initialized");
 
-        return await svgViewerJS.GetFloorMetadataAsync();
+        if (cachedFloorMetadata == null)
+        {
+            cachedFloorMetadata = await svgViewerJS.GetFloorMetadataAsync();
+        }
+
+        return cachedFloorMetadata;
+    }
+
+    /// <summary>
+    /// Gets area information for the currently selected sections based on the inscribed rectangle type
+    /// </summary>
+    /// <param name="inscribedRectangleType">The type of inscribed rectangle layout to calculate area for</param>
+    /// <returns>Tuple containing (polygonArea, floormatArea, inscribedArea)</returns>
+    public async Task<(double polygonArea, double floormatArea, double inscribedArea)> GetAreasForTypeAsync(SvgInscribedRectangleType inscribedRectangleType)
+    {
+        var startTime = DateTime.Now;
+        Console.WriteLine($"[GetAreasForTypeAsync] START - Type: {inscribedRectangleType}");
+
+        if (svgViewerJS == null)
+            throw new InvalidOperationException("SvgViewer not initialized");
+
+        // Get the floor metadata (use cache if available)
+        var metadataStart = DateTime.Now;
+        SvgFloorLevel? floorMetadata;
+        if (cachedFloorMetadata == null)
+        {
+            Console.WriteLine($"[GetAreasForTypeAsync] Cache miss - fetching floor metadata from JS");
+            floorMetadata = await svgViewerJS.GetFloorMetadataAsync();
+            cachedFloorMetadata = floorMetadata;
+        }
+        else
+        {
+            Console.WriteLine($"[GetAreasForTypeAsync] Cache hit - using cached floor metadata");
+            floorMetadata = cachedFloorMetadata;
+        }
+        var metadataElapsed = (DateTime.Now - metadataStart).TotalMilliseconds;
+        Console.WriteLine($"[GetAreasForTypeAsync] GetFloorMetadataAsync took {metadataElapsed:F2}ms");
+
+        if (floorMetadata == null)
+        {
+            Console.WriteLine($"[GetAreasForTypeAsync] Floor metadata is null, returning (0, 0, 0)");
+            return (0, 0, 0);
+        }
+
+        // Get currently selected paths
+        var areaDataStart = DateTime.Now;
+        var areaData = await svgViewerJS.GetAreaDataAsync();
+        var areaDataElapsed = (DateTime.Now - areaDataStart).TotalMilliseconds;
+        Console.WriteLine($"[GetAreasForTypeAsync] GetAreaDataAsync took {areaDataElapsed:F2}ms");
+
+        if (areaData?.SelectedSectionIds == null || areaData.SelectedSectionIds.Count == 0)
+        {
+            Console.WriteLine($"[GetAreasForTypeAsync] No selected sections, returning (0, 0, 0)");
+            return (0, 0, 0);
+        }
+
+        Console.WriteLine($"[GetAreasForTypeAsync] Selected sections: {string.Join(", ", areaData.SelectedSectionIds)}");
+
+        // Calculate polygon and floormat areas from selected sections
+        var calcStart = DateTime.Now;
+        double polygonArea = 0;
+        double floormatArea = 0;
+
+        foreach (var room in floorMetadata.Rooms)
+        {
+            foreach (var section in room.RoomSections)
+            {
+                if (areaData.SelectedSectionIds.Contains(section.Id))
+                {
+                    polygonArea += section.PolygonArea ?? 0;
+                    floormatArea += section.FloormatArea ?? 0;
+                }
+            }
+        }
+        var calcElapsed = (DateTime.Now - calcStart).TotalMilliseconds;
+        Console.WriteLine($"[GetAreasForTypeAsync] Area calculation took {calcElapsed:F2}ms - Polygon: {polygonArea:F2}, Floormat: {floormatArea:F2}");
+
+        // Calculate inscribed area based on type
+        var inscribedStart = DateTime.Now;
+        double inscribedArea = 0;
+
+        if (inscribedRectangleType != SvgInscribedRectangleType.None)
+        {
+            // Find matching precomputed layout
+            var matchingLayout = floorMetadata.InscribedRectangles?.Layouts?.FirstOrDefault(layout =>
+                layout.LayoutType == inscribedRectangleType &&
+                layout.Sections.Count == areaData.SelectedSectionIds.Count &&
+                layout.Sections.All(s => areaData.SelectedSectionIds.Contains(s)));
+
+            if (matchingLayout != null)
+            {
+                inscribedArea = matchingLayout.InscribedArea;
+                Console.WriteLine($"[GetAreasForTypeAsync] Found matching precomputed layout: {inscribedArea:F2}");
+            }
+            else
+            {
+                // No precomputed layout found, use floormat or polygon as fallback
+                inscribedArea = floormatArea > 0 ? floormatArea : polygonArea;
+                Console.WriteLine($"[GetAreasForTypeAsync] No matching precomputed layout, using fallback: {inscribedArea:F2}");
+            }
+        }
+        else
+        {
+            // None type - use full area
+            inscribedArea = floormatArea > 0 ? floormatArea : polygonArea;
+            Console.WriteLine($"[GetAreasForTypeAsync] None type, using full area: {inscribedArea:F2}");
+        }
+        var inscribedElapsed = (DateTime.Now - inscribedStart).TotalMilliseconds;
+        Console.WriteLine($"[GetAreasForTypeAsync] Inscribed area lookup took {inscribedElapsed:F2}ms");
+
+        var totalElapsed = (DateTime.Now - startTime).TotalMilliseconds;
+        Console.WriteLine($"[GetAreasForTypeAsync] COMPLETE - Total time: {totalElapsed:F2}ms");
+
+        return (polygonArea, floormatArea, inscribedArea);
     }
 
     public async ValueTask DisposeAsync()

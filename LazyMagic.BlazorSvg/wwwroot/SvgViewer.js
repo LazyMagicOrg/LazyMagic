@@ -3204,7 +3204,9 @@ export async function getAreaData(containerId) {
     const hollowSquareData = instance.precomputedHollowSquares.lookup.get(sortedKey);
 
     // Build result object
-    const result = {};
+    const result = {
+        selectedSectionIds: selectedPaths
+    };
 
     if (rectData) {
         console.log('[getAreaData] Found rectData:', rectData);
@@ -3233,13 +3235,8 @@ export async function getAreaData(containerId) {
         }
     }
 
-    if (Object.keys(result).length > 0) {
-        console.log('[getAreaData] Returning:', result);
-        return result;
-    }
-
-    console.log('[getAreaData] No data found for key:', sortedKey);
-    return null;
+    console.log('[getAreaData] Returning:', result);
+    return result;
 }
 
 /**

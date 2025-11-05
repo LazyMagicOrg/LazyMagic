@@ -145,6 +145,9 @@ namespace LazyMagic.BlazorSvg
 
     public class AreaData
     {
+        [System.Text.Json.Serialization.JsonPropertyName("selectedSectionIds")]
+        public List<string>? SelectedSectionIds { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("polygonArea")]
         public double? PolygonArea { get; set; }
 
