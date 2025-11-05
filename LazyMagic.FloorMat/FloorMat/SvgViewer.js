@@ -31,6 +31,7 @@ class SvgViewerInstance {
         // Visual configuration
         this.showOutlines = false;  // Toggle for orange selection outlines
         this.showBoundingBox = false;  // Toggle for blue bounding box
+        this.showUnifiedPath = false;  // Toggle for magenta unified path (debug mode)
         this.verboseLogging = false;  // Enable verbose logging for debugging
 
         // Precomputed rectangles cache
@@ -1689,6 +1690,16 @@ class SvgViewerInstance {
         if (debugCleanup) console.debug(`[cleanup] Found ${classRects.length} rectangles with debug-inscribed-rectangle class`);
         classRects.remove();
 
+        // Remove boardroom layouts by class
+        const classBoardrooms = scope.selectAll(".debug-boardroom-layout");
+        if (debugCleanup) console.debug(`[cleanup] Found ${classBoardrooms.length} boardroom layouts with debug-boardroom-layout class`);
+        classBoardrooms.remove();
+
+        // Remove hollow square layouts by class
+        const classHollowSquares = scope.selectAll(".debug-hollowsquare-layout");
+        if (debugCleanup) console.debug(`[cleanup] Found ${classHollowSquares.length} hollow square layouts with debug-hollowsquare-layout class`);
+        classHollowSquares.remove();
+
         // Also remove any leftover debug paths by color attributes
         const allPaths = scope.selectAll("path");
         if (debugCleanup) console.debug(`[cleanup] Checking ${allPaths.length} total paths for magenta colors`);
@@ -1815,21 +1826,27 @@ class SvgViewerInstance {
             // Create the merged path element
             const unifiedPath = scope.path(pathData);
 
-            if (debugVisible) {
-                // Clean up previous rectangle, boardroom, and hollow square visualizations
-                if (this.rectangleGroup) {
-                    this.rectangleGroup.remove();
-                    this.rectangleGroup = null;
-                }
-                if (this.boardroomGroup) {
-                    this.boardroomGroup.remove();
-                    this.boardroomGroup = null;
-                }
-                if (this.hollowSquareGroup) {
-                    this.hollowSquareGroup.remove();
-                    this.hollowSquareGroup = null;
-                }
+            // Clean up previous rectangle, boardroom, and hollow square visualizations
+            // First remove by stored references
+            if (this.rectangleGroup) {
+                this.rectangleGroup.remove();
+                this.rectangleGroup = null;
+            }
+            if (this.boardroomGroup) {
+                this.boardroomGroup.remove();
+                this.boardroomGroup = null;
+            }
+            if (this.hollowSquareGroup) {
+                this.hollowSquareGroup.remove();
+                this.hollowSquareGroup = null;
+            }
 
+            // Also remove any orphaned elements by class (handles race conditions during auto-select)
+            scope.selectAll(".debug-inscribed-rectangle").remove();
+            scope.selectAll(".debug-boardroom-layout").remove();
+            scope.selectAll(".debug-hollowsquare-layout").remove();
+
+            if (debugVisible) {
                 // Debug mode: Make it visible with distinctive styling
                 unifiedPath.attr({
                     fill: 'rgba(255, 0, 255, 0.3)',     // Semi-transparent magenta fill
@@ -1866,9 +1883,18 @@ class SvgViewerInstance {
                 }
 
                 console.debug('[outline] Debug mode: Merged SVG path made visible with magenta styling (non-interactive)');
+            } else {
+                // Normal mode: Hidden
+                unifiedPath.attr({
+                    fill: '#000000',
+                    stroke: 'none',
+                    visibility: 'hidden',
+                    'fill-rule': 'nonzero'               // Fill rule to merge overlapping areas
+                });
+            }
 
-                // Visualize the largest inscribed rectangle if found (always create it, display state set later)
-                if (largestRect) {
+            // Visualize the largest inscribed rectangle if found (always create it, display state set later)
+            if (largestRect) {
                     let rectPath;
 
                     if (largestRect.corners) {
@@ -2121,15 +2147,6 @@ class SvgViewerInstance {
                         hollowSquarePath.attr({ display: this.showHollowSquare ? 'block' : 'none' });
                     }
                 }
-            } else {
-                // Normal mode: Hidden
-                unifiedPath.attr({
-                    fill: '#000000',
-                    stroke: 'none',
-                    visibility: 'hidden',
-                    'fill-rule': 'nonzero'               // Fill rule to merge overlapping areas
-                });
-            }
 
             console.debug(`[outline] Created merged SVG path from ${groupPaths.length} original paths`);
             return unifiedPath;
@@ -2150,11 +2167,35 @@ class SvgViewerInstance {
     async visualizeGroups() {
         if (!this.s) return;
 
-        const scope = this.scope();
+        // If already running, mark that we need to re-run with updated state
+        if (this.isVisualizingGroups) {
+            console.debug('[visualize] Marking visualizeGroups() for re-run with updated selection');
+            this.needsReVisualize = true;
+            return;
+        }
+
+        this.isVisualizingGroups = true;
+
+        try {
+            const scope = this.scope();
 
         // Remove existing outlines (selection + groups + debug paths including rectangles)
         scope.selectAll(".group-outline").remove();
         this._cleanupDebugPaths(scope);
+
+        // Also clear stored references to ensure clean state
+        if (this.rectangleGroup) {
+            this.rectangleGroup.remove();
+            this.rectangleGroup = null;
+        }
+        if (this.boardroomGroup) {
+            this.boardroomGroup.remove();
+            this.boardroomGroup = null;
+        }
+        if (this.hollowSquareGroup) {
+            this.hollowSquareGroup.remove();
+            this.hollowSquareGroup = null;
+        }
 
         // 1) Live selection perimeter (even when not grouped)
         this.getPaths();
@@ -2169,7 +2210,7 @@ class SvgViewerInstance {
                 sampleStride: 1,      // full-fidelity sampling
                 downsampleEveryN: 1,
                 minContainment: 0.0,  // disable containment validation to debug core algorithm
-                debugShowUnifiedPath: true  // Set to true to see the unified path in magenta
+                debugShowUnifiedPath: this.showUnifiedPath  // Controlled by showUnifiedPath toggle
             });
 
             console.debug(`[visualize] generateGroupOutline returned:`, selectionPathData ? `${selectionPathData.substring(0, 100)}...` : 'null');
@@ -2188,7 +2229,7 @@ class SvgViewerInstance {
                 selectionOutline.addClass("group-outline"); // easy cleanup
             }
         } else {
-            // No selections - clean up any lingering rectangle and boardroom visualizations
+            // No selections - clean up any lingering rectangle, boardroom, and hollow square visualizations
             if (this.rectangleGroup) {
                 this.rectangleGroup.remove();
                 this.rectangleGroup = null;
@@ -2198,6 +2239,11 @@ class SvgViewerInstance {
                 this.boardroomGroup.remove();
                 this.boardroomGroup = null;
                 console.debug('[cleanup] Removed boardroom visualization (no selections)');
+            }
+            if (this.hollowSquareGroup) {
+                this.hollowSquareGroup.remove();
+                this.hollowSquareGroup = null;
+                console.debug('[cleanup] Removed hollow square visualization (no selections)');
             }
         }
 
@@ -2217,6 +2263,17 @@ class SvgViewerInstance {
                 });
             }
         });
+        } finally {
+            this.isVisualizingGroups = false;
+
+            // If a new call came in while we were running, re-run with the latest selection state
+            if (this.needsReVisualize) {
+                this.needsReVisualize = false;
+                console.debug('[visualize] Re-running visualizeGroups() with updated selection state');
+                // Use setTimeout to avoid deep recursion and let the call stack clear
+                setTimeout(() => this.visualizeGroups(), 0);
+            }
+        }
     }
 
     async loadSvgAsync(svgContent) {

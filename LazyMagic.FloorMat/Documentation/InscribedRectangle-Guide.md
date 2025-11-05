@@ -641,6 +641,7 @@ if (improvementPercent >= 5%) {
   - `useFastMode`: Toggle for fast algorithms
   - `showOutlines`: Toggle for orange selection outlines
   - `showBoundingBox`: Toggle for blue bounding box
+  - `showUnifiedPath`: Toggle for magenta unified path (debug mode)
 
 ### Visual Feedback
 
@@ -648,9 +649,9 @@ if (improvementPercent >= 5%) {
 - **Unselected**: Original color (white/gray)
 - **Selected (complete)**: Green fill (all paths in bounding box selected)
 - **Selected (incomplete)**: Red fill (some paths in bounding box not selected)
-- **Orange outline**: Concave hull around selected paths (optional)
-- **Blue dashed box**: Axis-aligned bounding box (optional)
-- **Magenta path**: Debug visualization of unified merged path
+- **Orange outline**: Concave hull around selected paths (optional, controlled by `showOutlines`)
+- **Blue dashed box**: Axis-aligned bounding box (optional, controlled by `showBoundingBox`)
+- **Magenta path**: Debug visualization of unified merged path (optional, controlled by `showUnifiedPath`)
 - **Red rectangle**: Final inscribed rectangle (debug mode)
 
 ### Path Selection Flow
