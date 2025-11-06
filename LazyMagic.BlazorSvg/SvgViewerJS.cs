@@ -166,6 +166,9 @@ namespace LazyMagic.BlazorSvg
         [System.Text.Json.Serialization.JsonPropertyName("hollowSquareArea")]
         public double? HollowSquareArea { get; set; }
 
+        [System.Text.Json.Serialization.JsonPropertyName("ushapeArea")]
+        public double? UShapeArea { get; set; }
+
         [System.Text.Json.Serialization.JsonPropertyName("computationTimeMs")]
         public double? ComputationTimeMs { get; set; }
     }

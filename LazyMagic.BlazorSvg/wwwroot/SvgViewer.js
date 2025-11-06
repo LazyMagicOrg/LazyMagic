@@ -47,15 +47,21 @@ class SvgViewerInstance {
         this.precomputedHollowSquares = null;  // Will be loaded on first use
         this.precomputedHollowSquaresPromise = null;  // Track loading promise
 
+        // Precomputed U-Shape layouts cache
+        this.precomputedUShapes = null;  // Will be loaded on first use
+        this.precomputedUShapesPromise = null;  // Track loading promise
+
         // Display toggles
         this.showRectangle = true;  // Show max inscribed rectangle
         this.showBoardroom = true;  // Show boardroom layout
         this.showHollowSquare = true;  // Show hollow square layout
+        this.showUShape = true;  // Show U-Shape layout
 
         // SVG elements for layouts
         this.rectangleGroup = null;  // Group for max rectangle
         this.boardroomGroup = null;  // Group for boardroom layout
         this.hollowSquareGroup = null;  // Group for hollow square layout
+        this.ushapeGroup = null;  // Group for U-Shape layout
 
         // Rectangle type configuration map - centralizes all type-specific details
         this.rectangleTypeConfig = {
@@ -94,6 +100,18 @@ class SvgViewerInstance {
                 groupProp: 'hollowSquareGroup',
                 logPrefix: 'hollowsquare',
                 displayName: 'Hollow square layout'
+            },
+            'ushape': {
+                scriptId: 'precomputed-ushape',
+                cacheProp: 'precomputedUShapes',
+                cachePromiseProp: 'precomputedUShapesPromise',
+                embeddedDataProp: 'embeddedUShapeData',
+                dataArrayKey: 'ushapeLayouts',
+                layoutKey: 'ushapeLayout',
+                showProp: 'showUShape',
+                groupProp: 'ushapeGroup',
+                logPrefix: 'ushape',
+                displayName: 'U-shape layout'
             }
         };
 
@@ -144,6 +162,16 @@ class SvgViewerInstance {
                 const data = JSON.parse(jsonText);
                 this.embeddedHollowSquareData = data;
                 console.log(`[precomputed] ✓ Extracted embedded hollow square from SVG: ${data.hollowSquareLayouts.length} layouts`);
+            }
+
+            // Extract U-Shape layouts
+            const ushapeMatch = svgText.match(/<script\s+type="application\/json"\s+id="precomputed-ushape"[^>]*>([\s\S]*?)<\/script>/i);
+            if (ushapeMatch) {
+                let jsonText = ushapeMatch[1];
+                jsonText = jsonText.replace(/<!\[CDATA\[|\]\]>/g, '').trim();
+                const data = JSON.parse(jsonText);
+                this.embeddedUShapeData = data;
+                console.log(`[precomputed] ✓ Extracted embedded U-shape from SVG: ${data.ushapeLayouts.length} layouts`);
             }
 
             return true;
@@ -2148,6 +2176,92 @@ class SvgViewerInstance {
                     }
                 }
 
+                // Try to lookup precomputed U-Shape layout
+                let ushapeLayout = await this.lookupPrecomputedLayout('ushape', pathIds);
+                console.log(`[ushape] Lookup result:`, ushapeLayout);
+                console.log(`[ushape] showUShape flag:`, this.showUShape);
+
+                // Visualize the U-Shape layout if found (always create it, display state set later)
+                if (ushapeLayout) {
+                    console.log(`[ushape] Rendering U-Shape layout...`);
+                    let ushapePath;
+
+                    if (ushapeLayout.corners) {
+                        // Create a polygon from corners
+                        const corners = ushapeLayout.corners;
+                        const pathData = `M ${corners[0].x} ${corners[0].y} ` +
+                                       `L ${corners[1].x} ${corners[1].y} ` +
+                                       `L ${corners[2].x} ${corners[2].y} ` +
+                                       `L ${corners[3].x} ${corners[3].y} Z`;
+                        ushapePath = scope.path(pathData);
+                        console.debug(`[ushape] Debug mode: Visualized U-Shape layout (${ushapeLayout.width.toFixed(1)}x${ushapeLayout.height.toFixed(1)})`);
+                        console.debug(`[ushape] U-Shape path data:`, pathData);
+                    }
+
+                    if (ushapePath) {
+                        ushapePath.attr({
+                            fill: 'rgba(255, 0, 255, 0.15)',   // Semi-transparent pink/magenta fill
+                            stroke: '#FF00FF',                   // Pink/magenta border
+                            strokeWidth: 3,
+                            'fill-opacity': 0.15,
+                            'stroke-opacity': 1.0,
+                            'pointer-events': 'none',
+                            'stroke-dasharray': '6,6'            // Different dash pattern to distinguish from others
+                        });
+
+                        // Set style attribute directly to ensure it's not overridden
+                        ushapePath.node.setAttribute('style',
+                            'stroke: #FF00FF !important; ' +
+                            'stroke-width: 3px !important; ' +
+                            'stroke-dasharray: 6,6 !important; ' +
+                            'fill: rgba(255, 0, 255, 0.15) !important; ' +
+                            'pointer-events: none !important; ' +
+                            'z-index: 10000 !important;'
+                        );
+
+                        ushapePath.addClass("debug-ushape-layout");
+
+                        // Apply the same transform and parent group as the source paths
+                        if (pathIds && pathIds.length > 0) {
+                            const firstPathId = pathIds[0];
+                            const pathElement = this.s.node.querySelector(`path[id="${firstPathId}"]`);
+                            if (pathElement) {
+                                // Get the path's own transform (if any) and apply it to U-Shape layout
+                                const pathTransform = pathElement.getAttribute('transform');
+                                if (pathTransform) {
+                                    ushapePath.node.setAttribute('transform', pathTransform);
+                                    console.debug(`[ushape] Applied path transform: ${pathTransform}`);
+                                }
+
+                                // Move U-Shape layout into the same parent group as the source path
+                                const parentGroup = pathElement.parentElement;
+                                if (parentGroup && parentGroup.tagName === 'g') {
+                                    console.debug(`[ushape] Moving into parent group: ${parentGroup.getAttribute('id')}`);
+                                    parentGroup.appendChild(ushapePath.node);
+                                    console.debug(`[ushape] Now inherits parent transforms from DOM hierarchy`);
+                                } else {
+                                    // Fallback: append to root SVG
+                                    console.debug(`[ushape] No parent group found, appending to root SVG`);
+                                    this.s.node.appendChild(ushapePath.node);
+                                }
+                            } else {
+                                // Fallback: append to root SVG
+                                console.debug(`[ushape] Path element not found, appending to root SVG`);
+                                this.s.node.appendChild(ushapePath.node);
+                            }
+                        } else {
+                            // Fallback: append to root SVG
+                            console.debug(`[ushape] No pathIds provided, appending to root SVG`);
+                            this.s.node.appendChild(ushapePath.node);
+                        }
+
+                        this.ushapeGroup = ushapePath;  // Store reference
+
+                        // Set initial display state based on current showUShape flag
+                        ushapePath.attr({ display: this.showUShape ? 'block' : 'none' });
+                    }
+                }
+
             console.debug(`[outline] Created merged SVG path from ${groupPaths.length} original paths`);
             return unifiedPath;
 
@@ -3189,6 +3303,7 @@ export async function getAreaData(containerId) {
     await instance.loadPrecomputedData('maxinscribed');
     await instance.loadPrecomputedData('boardroom');
     await instance.loadPrecomputedData('hollowsquare');
+    await instance.loadPrecomputedData('ushape');
 
     // Create sorted key to match precomputed format
     const sortedKey = selectedPaths.slice().sort().join('_');
@@ -3202,6 +3317,9 @@ export async function getAreaData(containerId) {
 
     // Get hollow square data
     const hollowSquareData = instance.precomputedHollowSquares.lookup.get(sortedKey);
+
+    // Get U-Shape data
+    const ushapeData = instance.precomputedUShapes?.lookup?.get(sortedKey);
 
     // Build result object
     const result = {
@@ -3232,6 +3350,15 @@ export async function getAreaData(containerId) {
         // Use polygon area from hollow square if rect/boardroom data not available
         if (!result.polygonArea) {
             result.polygonArea = hollowSquareData.polygonArea;
+        }
+    }
+
+    if (ushapeData) {
+        console.log('[getAreaData] Found ushapeData:', ushapeData);
+        result.ushapeArea = ushapeData.ushapeLayout.area;
+        // Use polygon area from U-Shape if other data not available
+        if (!result.polygonArea) {
+            result.polygonArea = ushapeData.polygonArea;
         }
     }
 

@@ -20,5 +20,10 @@ public enum SvgInscribedRectangleType
     /// </summary>
     HollowSquare,
 
+    /// <summary>
+    /// U-shape layout - three-sided table arrangement with one open side
+    /// </summary>
+    UShape,
+
     None
 }

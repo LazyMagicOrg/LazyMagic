@@ -99,6 +99,21 @@
                         </td>
                         <td>@(rectangleType == "hollowsquare" ? "✓ Active" : "")</td>
                     </tr>
+                    <tr class="@(rectangleType == "ushape" ? "table-active" : "")" style="cursor: pointer;" @onclick='() => SelectRectangleType("ushape")'>
+                        <td><strong style="color: #FF00FF;">U-Shape</strong></td>
+                        <td>U-shape seating layout</td>
+                        <td>
+                            @if (areaData?.UShapeArea != null)
+                            {
+                                <text>@areaData.UShapeArea.Value.ToString("F2")</text>
+                            }
+                            else
+                            {
+                                <em class="text-muted">N/A</em>
+                            }
+                        </td>
+                        <td>@(rectangleType == "ushape" ? "✓ Active" : "")</td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -207,6 +222,12 @@
                     var hollowSquareArea = areaData.HollowSquareArea.Value;
                     <div>Hollow Square Layout Area: <code>@($"{hollowSquareArea:F2}")</code> sq in</div>
                 }
+
+                @if (rectangleType == "ushape" && areaData.UShapeArea.HasValue)
+                {
+                    var ushapeArea = areaData.UShapeArea.Value;
+                    <div>U-Shape Layout Area: <code>@($"{ushapeArea:F2}")</code> sq in</div>
+                }
             </div>
         </div>
     }
@@ -258,6 +279,8 @@ else if (currentPaths.Count > 1 || initialPaths.Count > 1)
                         @onclick="() => testRectangleType = SvgInscribedRectangleType.Boardroom">Boardroom</button>
                 <button class="btn btn-outline-info @(testRectangleType == SvgInscribedRectangleType.HollowSquare ? "active" : "")"
                         @onclick="() => testRectangleType = SvgInscribedRectangleType.HollowSquare">Hollow Square</button>
+                <button class="btn btn-outline-danger @(testRectangleType == SvgInscribedRectangleType.UShape ? "active" : "")"
+                        @onclick="() => testRectangleType = SvgInscribedRectangleType.UShape">U-Shape</button>
             </div>
             <button class="btn btn-success" @onclick="TestGetAreasForTypeAsync">Get Areas for @testRectangleType Type</button>
 
