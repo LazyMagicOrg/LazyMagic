@@ -20,4 +20,8 @@
 		<PackageReference Include="Microsoft.AspNetCore.Components.Web" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<ProjectReference Include="..\LazyMagic.BlazorSvg.ViewModels\LazyMagic.BlazorSvg.ViewModels.csproj" />
+	</ItemGroup>
+
 </Project>

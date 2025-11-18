@@ -25,6 +25,7 @@ public class MauiOIDCService : IOIDCService, IDisposable
 
     public event EventHandler<OIDCAuthenticationStateChangedEventArgs>? AuthenticationStateChanged;
     public event Action<string>? OnAuthenticationRequested;
+    public Func<Task>? OnLogoutNavigate { get; set; }
 
     public MauiOIDCService(ILogger<MauiOIDCService> logger, 
         ILoggerFactory loggerFactory, 
@@ -508,7 +509,7 @@ public class MauiOIDCService : IOIDCService, IDisposable
         
         AuthenticationStateChanged?.Invoke(this, new OIDCAuthenticationStateChangedEventArgs(_currentState));
         _logger.LogInformation("Fired AuthenticationStateChanged event");
-        
+
         _logger.LogInformation("=== LOGOUT COMPLETED - WEBVIEW SESSION CLEARED - NEXT LOGIN WILL FORCE CREDENTIALS ===");
     }
 
@@ -651,17 +652,36 @@ public class MauiOIDCService : IOIDCService, IDisposable
             }
         });
 
-        // Wait for logout to complete
+        // Invoke navigation callback immediately while modal is showing - don't wait for timer
+        if (OnLogoutNavigate != null)
+        {
+            _logger.LogInformation("Invoking OnLogoutNavigate callback immediately...");
+            await OnLogoutNavigate();
+            _logger.LogInformation("OnLogoutNavigate callback completed - home navigation done");
+        }
+
+        // Wait for logout to complete (3 second timer)
         var logoutCompleted = await logoutPage.WaitForLogoutAsync();
-        
-        // Close the logout page
+
+        // Close the logout modal - navigation already complete, home showing underneath
+        // TODO - pending senior dev approval: Defensive modal pop approach + callback pattern
         await MainThread.InvokeOnMainThreadAsync(async () =>
         {
-            if (Application.Current?.MainPage?.Navigation != null)
+            try
             {
-                await Application.Current.MainPage.Navigation.PopModalAsync();
-                _logger.LogInformation("✅ Server-side logout completed and page closed");
+                if (Application.Current?.MainPage?.Navigation != null)
+                {
+                    await Application.Current.MainPage.Navigation.PopModalAsync(false);
+                    _logger.LogInformation("✅ Logout modal closed");
+                }
             }
+            catch (InvalidOperationException ex)
+            {
+                // Modal stack might be empty if navigation was already cleared - that's fine
+                _logger.LogDebug("Could not pop logout modal (stack may be empty): {Message}", ex.Message);
+            }
+
+            _logger.LogInformation("✅ Server-side logout completed");
         });
     }
 

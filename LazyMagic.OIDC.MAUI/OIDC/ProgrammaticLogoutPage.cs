@@ -38,18 +38,15 @@ public class ProgrammaticLogoutPage : ContentPage, ILogoutPage
         // Navigate to the logout URL
         _webView.Source = logoutUrl;
         _logger.LogInformation("Loading logout URL: {LogoutUrl}", logoutUrl);
-        
-        // Auto-close after a delay since logout typically doesn't require user interaction
+
+        // Auto-complete after delay - modal will be popped by MauiOIDCService after completion
         _ = Task.Run(async () =>
         {
             await Task.Delay(3000); // Wait 3 seconds for logout to complete
-            await MainThread.InvokeOnMainThreadAsync(async () =>
+            await MainThread.InvokeOnMainThreadAsync(() =>
             {
                 _logoutCompletionSource.TrySetResult(true);
-                if (Navigation != null)
-                {
-                    await Navigation.PopModalAsync();
-                }
+                _logger.LogInformation("Logout delay completed - signaling completion");
             });
         });
     }
@@ -151,15 +148,12 @@ public class ProgrammaticLogoutPage : ContentPage, ILogoutPage
         }
     }
 
-    private async void OnCloseClicked(object? sender, EventArgs e)
+    private void OnCloseClicked(object? sender, EventArgs e)
     {
         _logger.LogInformation("User closed logout dialog");
-        
-        // Complete the logout
+
+        // Complete the logout - modal will be popped by MauiOIDCService after completion
         _logoutCompletionSource.TrySetResult(true);
-        
-        // Close this modal page
-        await Application.Current.MainPage.Navigation.PopModalAsync();
     }
 
     protected override bool OnBackButtonPressed()

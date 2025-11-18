@@ -21,6 +21,7 @@ public class BlazorOIDCService : IOIDCService, IDisposable
 
     public event EventHandler<OIDCAuthenticationStateChangedEventArgs>? AuthenticationStateChanged;
     public event Action<string>? OnAuthenticationRequested;
+    public Func<Task>? OnLogoutNavigate { get; set; }
 
     public BlazorOIDCService(
         AuthenticationStateProvider authStateProvider,

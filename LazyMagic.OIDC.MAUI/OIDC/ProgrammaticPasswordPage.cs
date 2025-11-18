@@ -126,10 +126,10 @@ public class ProgrammaticPasswordPage : ContentPage, IPasswordPage
     private async void OnCloseClicked(object? sender, EventArgs e)
     {
         _logger.LogInformation("User closed {PageTitle} dialog", _pageTitle);
-        
+
         // Complete with null to indicate cancellation
         _passwordCompletionSource.TrySetResult(null);
-        
+
         // Close this modal page
         await Application.Current.MainPage.Navigation.PopModalAsync();
     }

@@ -61,6 +61,12 @@ public interface IOIDCService
     /// Event raised when authentication is requested (optional for UI handling)
     /// </summary>
     event Action<string>? OnAuthenticationRequested;
+
+    /// <summary>
+    /// Callback invoked after logout to allow app to navigate before modal closes
+    /// Returns Task that completes when navigation is done
+    /// </summary>
+    Func<Task>? OnLogoutNavigate { get; set; }
 }
 
 /// <summary>

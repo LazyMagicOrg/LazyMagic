@@ -148,10 +148,10 @@ public class ProgrammaticAuthenticationPage : ContentPage, IAuthenticationPage
     private async void OnCloseClicked(object? sender, EventArgs e)
     {
         _logger.LogInformation("User closed authentication dialog");
-        
+
         // Complete with null to indicate cancellation
         _authCompletionSource.TrySetResult(null);
-        
+
         // Close this modal page
         await Application.Current.MainPage.Navigation.PopModalAsync();
     }
