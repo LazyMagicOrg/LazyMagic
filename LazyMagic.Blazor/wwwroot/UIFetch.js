@@ -12,11 +12,21 @@ try {
 
     window.fetch = async function (...args) {
 
-        async function modifyUrl(originalUrl) {
-            const url = new URL(window.appConfig.assetsUrl);
-            url.hostname = assetHostUrl.hostname;
-            url.port = assetHostUrl.port;
-            return url.href;
+        // TODO: Review this method and where it is called.
+        // The argument orignialUrl is not used.
+        // I'm not sure why we need this method at all. In what
+        // circumstances would the original URL need to be modified?
+        async function modifyUrl(url) {
+            // Check if url is a string and convert to URL object if needed
+            const urlObj = typeof url === 'string' ? new URL(url) : url;
+
+            const assetHostUrl = new URL(window.appConfig.assetsUrl);
+            console.log("Asset host URL: " + assetHostUrl.href + ", originalUrl: " + urlObj.href);
+
+            urlObj.hostname = assetHostUrl.hostname;
+            urlObj.port = assetHostUrl.port;
+
+            return urlObj.href;
         }
 
         try {
@@ -48,7 +58,7 @@ try {
                     if (cacheName) {
                         if (fetchRecursion == 1)
                             await window.staticContentModule.lazyLoadAssetCache(cacheName);
-
+                        console.log("Fetching from cache: " + cacheName + ", URL: " + request.url);
                         const newUrl = await modifyUrl(request.url);
                         request = new Request(newUrl, {
                             method: request.method,
