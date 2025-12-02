@@ -18,7 +18,9 @@
       "Bash(dotnet build:*)",
       "Bash(node -c:*)",
       "Bash(node -e:*)",
-      "Bash(node run-tests.js:*)"
+      "Bash(node run-tests.js:*)",
+      "Bash(git rev-list:*)",
+      "Bash(git fetch:*)"
     ],
     "deny": []
   }
