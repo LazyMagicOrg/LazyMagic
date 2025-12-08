@@ -1,4 +1,4 @@
-﻿@namespace LazyMagic.Blazor
+@namespace LazyMagic.Blazor
 @inject IResizeListener ResizeListener
 @inject IJSRuntime JS
 @implements IDisposable
@@ -10,17 +10,20 @@
 @code {
     [Parameter] public RenderFragment? ChildContent { get; set; }
     [Parameter] public int HeaderHeight { get; set; } = 0;
+    [Parameter] public int FooterHeight { get; set; } = 0;
     [Parameter] public int MaxWidth { get; set; } = 0;
     [Parameter] public int MinWidth { get; set; } = 0;
 
     private bool isLoaded = false;
     private WindowSize _windowSize = new WindowSize();
+    private int refresh = 0;
     protected override void OnParametersSet()
     {
         _windowSize.HeaderHeight = HeaderHeight;
+        _windowSize.FooterHeight = FooterHeight;
         _windowSize.MaxWidth = MaxWidth;
         _windowSize.MinWidth = MinWidth;
-        _windowSize.HeaderHeight = HeaderHeight;
+        _windowSize.Refresh = refresh;
         base.OnParametersSet();
     }
 
@@ -44,7 +47,15 @@
     {
         if (_windowSize.Width != window.Width || _windowSize.Height != window.Height)
         {
-            _windowSize.BrowserWindowSize = window;
+            _windowSize = new WindowSize
+            {
+                BrowserWindowSize = window,
+                HeaderHeight = HeaderHeight,
+                FooterHeight = FooterHeight,
+                MaxWidth = MaxWidth,
+                MinWidth = MinWidth,
+                Refresh = ++refresh
+            };
             // JS already hid the content instantly
             isLoaded = false;
             await InvokeAsync(StateHasChanged);
