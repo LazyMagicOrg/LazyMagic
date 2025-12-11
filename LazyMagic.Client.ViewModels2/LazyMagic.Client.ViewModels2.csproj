@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="$(SolutionDir)CommonPackageHandling.targets" />
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+
+		<Description>LazyMagic ViewModels base</Description>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+	<ItemGroup>
+		<Compile Remove="ClientConfig\**" />
+		<Content Remove="ClientConfig\**" />
+		<EmbeddedResource Remove="ClientConfig\**" />
+		<None Remove="ClientConfig\**" />
+	</ItemGroup>
+	<ItemGroup>
+	  <Content Remove="Base\IItemId.cs" />
+	  <Content Remove="Config\ConfigureLazyMagicClientViewModels.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<!--<ProjectReference Include="..\LazyMagic.Client.FactoryGenerator\LazyMagic.Client.FactoryGenerator.csproj" PrivateAssets="all" OutputItemType="Analyzer" />-->
+		<ProjectReference Include="..\LazyMagic.Client.FactoryGenerator\LazyMagic.Client.FactoryGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="true" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<PackageReference Include="DeepCloner" />
+		<PackageReference Include="DynamicData" />
+
+		<PackageReference Include="FluentValidation" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Forms" />
+
+		<PackageReference Include="ReactiveUI" />
+		<PackageReference Include="ReactiveUI.Fody" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\LazyMagic.Client.Base\LazyMagic.Client.Base.csproj" />
+		<ProjectReference Include="..\LazyMagic.Shared\LazyMagic.Shared.csproj" />
+	</ItemGroup>
+
+</Project>
