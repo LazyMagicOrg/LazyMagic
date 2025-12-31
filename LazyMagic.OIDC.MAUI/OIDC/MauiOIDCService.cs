@@ -595,8 +595,10 @@ public class MauiOIDCService : IOIDCService, IDisposable
     {
         try
         {
-            // Use centralized logout URL builder - no redirect URI for MAUI
-            var logoutUrl = _configProvider.BuildLogoutUrl("");
+            // Use centralized logout URL builder with async version to ensure
+            // end_session_endpoint is fetched from the OpenID discovery document
+            // Pass the ID token for providers that require id_token_hint (e.g., Keycloak)
+            var logoutUrl = await _configProvider.BuildLogoutUrlAsync("", _idToken);
             
             if (string.IsNullOrEmpty(logoutUrl))
             {
@@ -615,7 +617,7 @@ public class MauiOIDCService : IOIDCService, IDisposable
                 logoutUrl = uriBuilder.ToString();
             }
             
-            _logger.LogInformation("Navigating to Cognito logout URL: {LogoutUrl}", logoutUrl);
+            _logger.LogInformation("Navigating to OIDC logout URL (end_session_endpoint from discovery): {LogoutUrl}", logoutUrl);
             
             // Create the logout page with optional UI injection
             IAuthenticationUI? customUI = null;

@@ -6,16 +6,20 @@ using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
 using System.Security.Claims;
 using LazyMagic.Blazor;
+using LazyMagic.OIDC.Base;
 
 namespace LazyMagic.OIDC.WASM.Services;
 
 /// <summary>
 /// Custom RemoteAuthenticationService that avoids slow Cognito iframe calls
-/// by implementing fast JWT token parsing and caching directly
+/// by implementing fast JWT token parsing and caching directly.
+/// For providers with native session management (like Keycloak), it delegates
+/// to the base Microsoft implementation.
 /// </summary>
 public class CognitoRemoteAuthenticationService : RemoteAuthenticationService<RemoteAuthenticationState, RemoteUserAccount, OidcProviderOptions>
 {
     private readonly ILzJsUtilities _jsUtilities;
+    private readonly IDynamicConfigurationProvider _configProvider;
     private readonly ILogger<CognitoRemoteAuthenticationService> _logger;
 
     public CognitoRemoteAuthenticationService(
@@ -24,16 +28,19 @@ public class CognitoRemoteAuthenticationService : RemoteAuthenticationService<Re
         NavigationManager navigation,
         AccountClaimsPrincipalFactory<RemoteUserAccount> accountClaimsPrincipalFactory,
         ILzJsUtilities jsUtilities,
+        IDynamicConfigurationProvider configProvider,
         ILogger<CognitoRemoteAuthenticationService> logger)
         : base(jsRuntime, options, navigation, accountClaimsPrincipalFactory)
     {
         _jsUtilities = jsUtilities;
+        _configProvider = configProvider;
         _logger = logger;
     }
 
     /// <summary>
     /// Override the slow GetAuthenticationStateAsync method with fast implementation
-    /// that completely bypasses Microsoft's iframe-based authentication checks
+    /// that completely bypasses Microsoft's iframe-based authentication checks.
+    /// For providers with native session management (Keycloak, etc.), uses the base implementation.
     /// </summary>
     public override async Task<AuthenticationState> GetAuthenticationStateAsync()
     {
@@ -41,6 +48,15 @@ public class CognitoRemoteAuthenticationService : RemoteAuthenticationService<Re
         
         try
         {
+            // For providers with native session management (Keycloak, Auth0, etc.),
+            // use the base Microsoft implementation which properly handles their auth flow
+            if (!_configProvider.RequiresClientSideTokenStorage())
+            {
+                _logger.LogDebug("[CognitoAuth][{Timestamp}] Provider has native session management, using base implementation", 
+                    startTime.ToString("HH:mm:ss.fff"));
+                return await base.GetAuthenticationStateAsync();
+            }
+
             _logger.LogDebug("[CognitoAuth][{Timestamp}] Fast authentication check started", 
                 startTime.ToString("HH:mm:ss.fff"));
 
@@ -59,7 +75,7 @@ public class CognitoRemoteAuthenticationService : RemoteAuthenticationService<Re
             }
 
             // If no cache, return anonymous state quickly
-            // We avoid calling the slow base implementation that causes 5+ second delays
+            // We avoid calling the slow base implementation that causes 5+ second delays with Cognito
             _logger.LogDebug("[CognitoAuth][{Timestamp}] No cached auth state, returning anonymous", 
                 DateTime.UtcNow.ToString("HH:mm:ss.fff"));
             
@@ -75,6 +91,19 @@ public class CognitoRemoteAuthenticationService : RemoteAuthenticationService<Re
             var elapsed = (DateTime.UtcNow - startTime).TotalMilliseconds;
             _logger.LogError(ex, "[CognitoAuth][{Timestamp}] Fast authentication failed after {ElapsedMs}ms", 
                 DateTime.UtcNow.ToString("HH:mm:ss.fff"), elapsed);
+
+            // For non-Cognito providers, try base implementation on error
+            if (!_configProvider.RequiresClientSideTokenStorage())
+            {
+                try
+                {
+                    return await base.GetAuthenticationStateAsync();
+                }
+                catch
+                {
+                    // Fall through to anonymous
+                }
+            }
 
             // Return unauthenticated state instead of calling slow base implementation
             // We know the base implementation will fail with Cognito due to iframe restrictions

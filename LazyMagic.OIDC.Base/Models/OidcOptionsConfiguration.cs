@@ -11,6 +11,11 @@ public class OidcOptionsConfiguration
     public string? MetadataUrl { get; set; }
     public string? RedirectUri { get; set; }
     public string? PostLogoutRedirectUri { get; set; }
+    /// <summary>
+    /// The end_session_endpoint from the OpenID discovery document.
+    /// This is populated by fetching the .well-known/openid-configuration.
+    /// </summary>
+    public string? EndSessionEndpoint { get; set; }
     public List<string> DefaultScopes { get; set; } = new();
     public string? NameClaim { get; set; } = "name";
     public string? RoleClaim { get; set; } = "cognito:groups";

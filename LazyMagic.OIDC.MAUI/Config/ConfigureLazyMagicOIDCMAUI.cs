@@ -1,4 +1,4 @@
-﻿using LazyMagic.OIDC.Base.Services;
+using LazyMagic.OIDC.Base.Services;
 using Microsoft.Maui.Hosting;
 
 namespace LazyMagic.OIDC.MAUI;
@@ -37,6 +37,9 @@ public static class ConfigureLazyMagicOIDCMAUI
             var logger = provider.GetRequiredService<ILogger<LazyOidcConfig>>();
             return new LazyOidcConfig(lzHost, logger);
         });
+
+        // Register OpenID discovery service for fetching end_session_endpoint
+        services.TryAddSingleton<IOpenIdDiscoveryService, OpenIdDiscoveryService>();
 
         // Register dynamic configuration provider (MAUI implementation)  
         services.TryAddScoped<IDynamicConfigurationProvider, DynamicConfigurationProvider>();

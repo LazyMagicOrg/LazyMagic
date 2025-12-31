@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using System.Text.Json;
 using LazyMagic.Blazor;
+using LazyMagic.OIDC.Base;
 
 namespace LazyMagic.OIDC.WASM.Services;
 
@@ -19,23 +20,42 @@ public class FastAuthenticationService : IFastAuthenticationService
 {
     private readonly ILzJsUtilities _jsUtilities;
     private readonly AuthenticationStateProvider _microsoftProvider;
+    private readonly IDynamicConfigurationProvider _configProvider;
     private readonly ILogger<FastAuthenticationService>? _logger;
     private bool _isInitialized;
 
     public FastAuthenticationService(
         ILzJsUtilities jsUtilities,
         AuthenticationStateProvider microsoftProvider,
+        IDynamicConfigurationProvider configProvider,
         ILogger<FastAuthenticationService>? logger = null)
     {
         _jsUtilities = jsUtilities;
         _microsoftProvider = microsoftProvider;
+        _configProvider = configProvider;
         _logger = logger;
+    }
+
+    /// <summary>
+    /// Checks if fast auth caching should be used.
+    /// For providers with native remember-me, we skip local caching.
+    /// </summary>
+    private bool ShouldUseCaching()
+    {
+        return _configProvider.RequiresClientSideTokenStorage();
     }
 
     public async Task<bool> InitializeAsync()
     {
         try
         {
+            // Skip initialization for providers with native remember-me
+            if (!ShouldUseCaching())
+            {
+                _logger?.LogInformation("[FastAuth] Provider has native remember-me, skipping fast auth initialization");
+                return true;
+            }
+
             if (_isInitialized)
                 return true;
 
@@ -65,6 +85,17 @@ public class FastAuthenticationService : IFastAuthenticationService
     {
         try
         {
+            // For providers with native remember-me, skip our caching and use Microsoft provider directly
+            if (!ShouldUseCaching())
+            {
+                _logger?.LogInformation("[FastAuth] Provider has native remember-me, using Microsoft provider directly");
+                var msAuthState = await _microsoftProvider.GetAuthenticationStateAsync();
+                _logger?.LogInformation("[FastAuth] Microsoft provider returned: IsAuthenticated={IsAuth}, User={User}", 
+                    msAuthState.User?.Identity?.IsAuthenticated ?? false,
+                    msAuthState.User?.Identity?.Name ?? "anonymous");
+                return msAuthState;
+            }
+
             // Ensure we're initialized
             await InitializeAsync();
 
@@ -118,6 +149,13 @@ public class FastAuthenticationService : IFastAuthenticationService
 
     public async Task CacheAuthenticationStateAsync(AuthenticationState state, int cacheTimeoutMinutes = 5)
     {
+        // Skip caching for providers with native remember-me
+        if (!ShouldUseCaching())
+        {
+            _logger?.LogDebug("[FastAuth] Provider has native remember-me, skipping cache write");
+            return;
+        }
+
         try
         {
             var stateJson = SerializeAuthState(state);

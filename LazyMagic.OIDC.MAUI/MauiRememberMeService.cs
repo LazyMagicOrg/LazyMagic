@@ -6,12 +6,16 @@ namespace LazyMagic.OIDC.MAUI;
 public class MauiRememberMeService : IRememberMeService
 {
     private readonly ILogger<MauiRememberMeService> _logger;
+    private readonly ITokenStorageService _tokenStorage;
     private const string RememberMeKey = "rememberMe";
     private const string TokenKey = "authToken";
 
-    public MauiRememberMeService(ILogger<MauiRememberMeService> logger)
+    public MauiRememberMeService(
+        ILogger<MauiRememberMeService> logger,
+        ITokenStorageService tokenStorage)
     {
         _logger = logger;
+        _tokenStorage = tokenStorage;
     }
 
     public async Task<bool> GetRememberMeAsync()
@@ -93,6 +97,37 @@ public class MauiRememberMeService : IRememberMeService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error initializing authentication");
+        }
+    }
+
+    /// <summary>
+    /// Gets the ID token from secure storage if available.
+    /// Used for OIDC logout flows that require id_token_hint (e.g., Keycloak).
+    /// </summary>
+    /// <returns>The ID token string or null if not available</returns>
+    public async Task<string?> GetIdTokenAsync()
+    {
+        try
+        {
+            _logger.LogInformation("[GetIdTokenAsync] Attempting to retrieve ID token from secure storage");
+            
+            var (_, idToken, _) = await _tokenStorage.GetTokensAsync();
+            
+            if (!string.IsNullOrEmpty(idToken))
+            {
+                _logger.LogInformation("[GetIdTokenAsync] Successfully retrieved ID token (length: {Length})", idToken.Length);
+            }
+            else
+            {
+                _logger.LogWarning("[GetIdTokenAsync] No ID token found in secure storage");
+            }
+            
+            return idToken;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "[GetIdTokenAsync] Error retrieving ID token from secure storage");
+            return null;
         }
     }
 }

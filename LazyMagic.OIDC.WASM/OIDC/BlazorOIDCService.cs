@@ -73,7 +73,8 @@ public class BlazorOIDCService : IOIDCService, IDisposable
             }
             
             // Start or stop token refresh monitoring based on auth state
-            if (_tokenRefreshService != null)
+            // Skip for providers with native remember-me (e.g., Keycloak) - they handle refresh via server session
+            if (_tokenRefreshService != null && _configProvider.RequiresClientSideTokenStorage())
             {
                 if (state.IsAuthenticated && state.TokenExpiry.HasValue)
                 {
@@ -87,6 +88,12 @@ public class BlazorOIDCService : IOIDCService, IDisposable
                     _logger.LogInformation("[TokenRefresh] User not authenticated, stopping token monitoring");
                     _tokenRefreshService.StopMonitoring();
                 }
+            }
+            else if (_tokenRefreshService != null)
+            {
+                // For providers with native session management, stop any existing monitoring
+                _tokenRefreshService.StopMonitoring();
+                _logger.LogInformation("[TokenRefresh] Provider has native session management, skipping client-side token refresh");
             }
             
             AuthenticationStateChanged?.Invoke(this, new OIDCAuthenticationStateChangedEventArgs(state));
@@ -188,10 +195,19 @@ public class BlazorOIDCService : IOIDCService, IDisposable
 
     public async Task<bool> IsAuthenticatedAsync()
     {
+        _logger.LogInformation("[IsAuthenticatedAsync] Checking authentication state...");
+        
         var authState = _fastAuth != null 
             ? await _fastAuth.GetFastAuthenticationStateAsync()
             : await _authStateProvider.GetAuthenticationStateAsync();
-        return authState.User?.Identity?.IsAuthenticated ?? false;
+        
+        var isAuthenticated = authState.User?.Identity?.IsAuthenticated ?? false;
+        _logger.LogInformation("[IsAuthenticatedAsync] Result: IsAuthenticated={IsAuth}, Identity={Identity}, Name={Name}", 
+            isAuthenticated,
+            authState.User?.Identity?.AuthenticationType ?? "null",
+            authState.User?.Identity?.Name ?? "anonymous");
+        
+        return isAuthenticated;
     }
 
     public async Task<string?> GetAccessTokenAsync()
@@ -329,26 +345,34 @@ public class BlazorOIDCService : IOIDCService, IDisposable
                 _logger.LogInformation("[LogoutAsync][{Timestamp}] Fast auth cache cleared", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
             }
             
+            // Get ID token BEFORE clearing tokens (needed for Keycloak and other OIDC providers)
+            var idToken = await _rememberMeService.GetIdTokenAsync();
+            _logger.LogInformation("[LogoutAsync][{Timestamp}] ID token retrieved: {HasIdToken}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), !string.IsNullOrEmpty(idToken));
+            
             // Clear tokens from storage to prevent immediate re-login
             await _rememberMeService.ClearTokensAsync();
             _logger.LogInformation("[LogoutAsync][{Timestamp}] Tokens cleared from storage", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
             
-            // Build logout URL to clear Cognito session
+            // Build logout URL to clear OIDC provider session
+            // Use async version to ensure end_session_endpoint is fetched from discovery document
+            // Note: Keycloak requires the redirect URI to match EXACTLY what's configured.
+            // BaseUri includes the trailing slash which matches the Keycloak config.
             var postLogoutRedirectUri = _navigation.BaseUri;
             _logger.LogInformation("[LogoutAsync][{Timestamp}] PostLogoutRedirectUri: {PostLogoutRedirectUri}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), postLogoutRedirectUri);
             
-            var logoutUrl = _configProvider.BuildLogoutUrl(postLogoutRedirectUri);
+            // Pass the ID token hint for providers that require it (Keycloak, Okta, etc.)
+            var logoutUrl = await _configProvider.BuildLogoutUrlAsync(postLogoutRedirectUri, idToken);
             
             if (!string.IsNullOrEmpty(logoutUrl))
             {
-                _logger.LogInformation("[LogoutAsync][{Timestamp}] Navigating to Cognito logout: {LogoutUrl}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), logoutUrl);
+                _logger.LogInformation("[LogoutAsync][{Timestamp}] Navigating to OIDC logout (using end_session_endpoint from discovery): {LogoutUrl}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), logoutUrl);
                 _logger.LogInformation("[LogoutAsync][{Timestamp}] Navigation BaseUri: {BaseUri}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), _navigation.BaseUri);
                 _logger.LogInformation("[LogoutAsync][{Timestamp}] Navigation Uri: {Uri}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), _navigation.Uri);
                 
-                // Force a full page reload to ensure we hit the Cognito logout endpoint
+                // Force a full page reload to ensure we hit the OIDC provider's logout endpoint
                 _navigation.NavigateTo(logoutUrl, forceLoad: true);
                 
-                _logger.LogInformation("[LogoutAsync][{Timestamp}] Navigation to Cognito logout URL initiated", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
+                _logger.LogInformation("[LogoutAsync][{Timestamp}] Navigation to OIDC logout URL initiated", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
             }
             else
             {

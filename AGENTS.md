@@ -1,5 +1,13 @@
 # AGENTS.md
 
+## IMPORTANT: Screenshots Location
+**Screenshots are located at:** `C:\Users\TimothyMay\OneDrive - Insight Sciences Corporation\Pictures\Screenshots`
+
+When the user mentions a screenshot, ALWAYS check this directory for the most recent files:
+```bash
+ls -lt "/mnt/c/Users/TimothyMay/OneDrive - Insight Sciences Corporation/Pictures/Screenshots" | head -5
+```
+
 ## Build/Test Commands
 ```bash
 dotnet build                                    # Build entire solution

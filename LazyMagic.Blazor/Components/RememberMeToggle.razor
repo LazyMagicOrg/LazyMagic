@@ -1,9 +1,11 @@
 @namespace BlazorUI
 @inject IRememberMeService RememberMe
 @inject IOIDCService AuthService
+@inject IDynamicConfigurationProvider ConfigProvider
 @inject ILogger<RememberMeToggle> Logger
 
-@if (isAuthenticated)
+@* Only show the toggle if: user is authenticated AND provider requires client-side token storage *@
+@if (isAuthenticated && showToggle)
 {
     <div class="form-check form-switch d-inline-flex align-items-center me-3">
         <input class="form-check-input" type="checkbox" role="switch" id="rememberMeSwitch" 
@@ -20,11 +22,22 @@
     private bool isRemembered = false;
     private bool isInitialized = false;
     private bool isAuthenticated = false;
+    private bool showToggle = true;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
+            // Check if the provider requires client-side token storage
+            // If the provider has native remember-me (e.g., Keycloak), hide this toggle
+            showToggle = ConfigProvider.RequiresClientSideTokenStorage();
+            
+            if (!showToggle)
+            {
+                Logger.LogInformation("[OnInitializedAsync] Provider has native remember-me support, hiding toggle");
+                return;
+            }
+            
             // Check authentication status
             isAuthenticated = await AuthService.IsAuthenticatedAsync();
             

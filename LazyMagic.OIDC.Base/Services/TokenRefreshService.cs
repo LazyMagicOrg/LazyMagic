@@ -38,6 +38,7 @@ public abstract class TokenRefreshServiceBase : ITokenRefreshService
     private readonly TimeSpan _refreshBuffer = TimeSpan.FromMinutes(5); // Refresh 5 minutes before expiration
     private DateTime _tokenExpiration = DateTime.MinValue;
     private CancellationTokenSource? _cancellationTokenSource;
+    private bool _isRefreshing = false; // Guard against concurrent refresh attempts
     
     protected TokenRefreshServiceBase(ILogger logger)
     {
@@ -49,11 +50,18 @@ public abstract class TokenRefreshServiceBase : ITokenRefreshService
         _logger.LogInformation("[TokenRefresh] Starting token expiration monitoring");
         _cancellationTokenSource = new CancellationTokenSource();
         
-        // Check current token expiration
-        var currentExpiration = await GetCurrentTokenExpirationAsync();
-        if (currentExpiration.HasValue)
+        // Only fetch expiration if not already set (avoid triggering token requests)
+        if (_tokenExpiration == DateTime.MinValue)
         {
-            UpdateTokenExpiration(currentExpiration.Value);
+            var currentExpiration = await GetCurrentTokenExpirationAsync();
+            if (currentExpiration.HasValue)
+            {
+                UpdateTokenExpiration(currentExpiration.Value);
+            }
+        }
+        else
+        {
+            _logger.LogInformation("[TokenRefresh] Using already set expiration: {Expiry}", _tokenExpiration);
         }
     }
     
@@ -65,14 +73,24 @@ public abstract class TokenRefreshServiceBase : ITokenRefreshService
         _cancellationTokenSource?.Cancel();
         _cancellationTokenSource?.Dispose();
         _cancellationTokenSource = null;
+        _tokenExpiration = DateTime.MinValue; // Reset so StartMonitoring will fetch fresh expiration
+        _isRefreshing = false; // Reset refresh guard
     }
     
     public void UpdateTokenExpiration(DateTime expirationTime)
     {
+        // Skip if we're currently refreshing (prevents loops)
+        if (_isRefreshing)
+        {
+            _logger.LogDebug("[TokenRefresh] Skipping UpdateTokenExpiration during active refresh");
+            return;
+        }
+
         _tokenExpiration = expirationTime;
         
         // Cancel existing timer
         _refreshTimer?.Dispose();
+        _refreshTimer = null;
         
         // Calculate when to refresh (5 minutes before expiration)
         var refreshTime = expirationTime.Subtract(_refreshBuffer);
@@ -80,8 +98,11 @@ public abstract class TokenRefreshServiceBase : ITokenRefreshService
         
         if (delay <= TimeSpan.Zero)
         {
-            _logger.LogWarning("[TokenRefresh] Token expires in less than 5 minutes, refreshing immediately");
-            _ = Task.Run(async () => await RefreshTokensAsync());
+            // Token is already expired or expiring very soon
+            // Don't trigger immediate refresh here - let the normal auth flow handle it
+            // This prevents infinite loops when tokens can't be refreshed
+            _logger.LogWarning("[TokenRefresh] Token expires in less than 5 minutes (at {Expiry}), will refresh on next auth check", 
+                expirationTime);
         }
         else
         {
@@ -101,8 +122,16 @@ public abstract class TokenRefreshServiceBase : ITokenRefreshService
     
     public async Task<bool> RefreshTokensAsync()
     {
+        // Guard against concurrent refresh attempts (prevents loops)
+        if (_isRefreshing)
+        {
+            _logger.LogWarning("[TokenRefresh] Refresh already in progress, skipping");
+            return false;
+        }
+
         try
         {
+            _isRefreshing = true;
             _logger.LogInformation("[TokenRefresh] Starting token refresh");
             
             // Call platform-specific refresh implementation
@@ -113,6 +142,7 @@ public abstract class TokenRefreshServiceBase : ITokenRefreshService
                 _logger.LogInformation("[TokenRefresh] Token refresh successful");
                 
                 // Get the new expiration time and schedule next refresh
+                // Note: This may trigger another token request, but we're guarded by _isRefreshing
                 var newExpiration = await GetCurrentTokenExpirationAsync();
                 if (newExpiration.HasValue)
                 {
@@ -130,6 +160,10 @@ public abstract class TokenRefreshServiceBase : ITokenRefreshService
         {
             _logger.LogError(ex, "[TokenRefresh] Exception during token refresh");
             return false;
+        }
+        finally
+        {
+            _isRefreshing = false;
         }
     }
     

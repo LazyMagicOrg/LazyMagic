@@ -1,4 +1,4 @@
-﻿namespace LazyMagic.OIDC.Base;
+namespace LazyMagic.OIDC.Base;
 
 public static class ConfigureLazyMagicOIDCBase
 {
@@ -6,6 +6,7 @@ public static class ConfigureLazyMagicOIDCBase
     {
         services.TryAddScoped<DynamicOidcConfigurationService>();
         services.TryAddScoped<IAuthenticationHandler, BearerTokenHandler>();
+        services.TryAddSingleton<IOpenIdDiscoveryService, OpenIdDiscoveryService>();
         Console.WriteLine("Added LazyMagic.OIDC.Base services");
         return services;
     }

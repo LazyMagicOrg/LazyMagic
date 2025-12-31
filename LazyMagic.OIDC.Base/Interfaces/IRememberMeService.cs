@@ -30,4 +30,11 @@ public interface IRememberMeService
     /// Ensures tokens are available to Blazor while maintaining persistence
     /// </summary>
     Task InitializeAuthenticationAsync();
+
+    /// <summary>
+    /// Gets the ID token from storage if available.
+    /// Used for OIDC logout flows that require id_token_hint (e.g., Keycloak).
+    /// </summary>
+    /// <returns>The ID token string or null if not available</returns>
+    Task<string?> GetIdTokenAsync();
 }

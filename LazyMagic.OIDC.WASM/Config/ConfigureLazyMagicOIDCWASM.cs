@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 using LazyMagic.OIDC.Base.Services;
 using LazyMagic.OIDC.WASM.Services;
 
@@ -34,11 +34,15 @@ public static class ConfigureLazyMagicOIDCWASM
         services.TryAddScoped<DynamicOidcConfigHolder>();
 
         // Register a service to provide configuration values from dynamic config
+        // Note: IOpenIdDiscoveryService is registered by AddLazyMagicOIDCBase() but we call it after,
+        // so we register it here first to ensure it's available
+        services.TryAddSingleton<IOpenIdDiscoveryService, OpenIdDiscoveryService>();
         services.TryAddScoped<IDynamicConfigurationProvider>(provider =>
         {
             var oidcConfig = provider.GetRequiredService<IOidcConfig>();
             var logger = provider.GetRequiredService<ILogger<DynamicConfigurationProvider>>();
-            return new DynamicConfigurationProvider(oidcConfig, logger);
+            var discoveryService = provider.GetRequiredService<IOpenIdDiscoveryService>();
+            return new DynamicConfigurationProvider(oidcConfig, logger, discoveryService);
         });
 
         // Register profile management service
