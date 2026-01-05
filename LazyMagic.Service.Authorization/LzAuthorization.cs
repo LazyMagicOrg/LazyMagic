@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Primitives;
 namespace LazyMagic.Service.Authorization;
 /// <summary>
 /// This abstract class performs common housekeeping tasks for 
@@ -153,13 +153,16 @@ public abstract class LzAuthorization : ILzAuthorization
         if (!authenticate)
             return ("", "");
 
+        if (request?.Headers == null)
+            throw new Exception("Request or Headers is null");
+
         var foundAuthHeader = request.Headers.TryGetValue("Authorization", out Microsoft.Extensions.Primitives.StringValues authHeader);
         // When the Authorization header doesn't contain an identity token, we look for the lz-config-identity header.
         // You can add a lz-config-identity header in the client code, in a reverse proxy, or in the container depending 
         // on your deployment platform strategy.
-        if (!foundAuthHeader || authHeader[0]!.ToString().StartsWith("AWS4-HMAC-SHA256 Credential="))
+        if (!foundAuthHeader || authHeader.Count == 0 || string.IsNullOrEmpty(authHeader[0]) || authHeader[0]!.ToString().StartsWith("AWS4-HMAC-SHA256 Credential="))
             foundAuthHeader = request.Headers.TryGetValue("lz-config-identity", out authHeader);
-        if (foundAuthHeader)
+        if (foundAuthHeader && authHeader.Count > 0 && !string.IsNullOrEmpty(authHeader[0]))
             return GetUserInfo(authHeader);
 
         throw new Exception("No Authorization or lz-config-identity header");
