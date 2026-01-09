@@ -103,7 +103,7 @@ export async function reload() {
     //    console.log("reload appPath:" + appPath);
     //    location.href = new URL(appPath, self.location.origin);
     //}
-    window.reload();
+    window.location.reload();
 }
 export async function getMemory() {
     return [performance.memory.jsHeapSizeLimit, performance.memory.usedJSHeapSize]
