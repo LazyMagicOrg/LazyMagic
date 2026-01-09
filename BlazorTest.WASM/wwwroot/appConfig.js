@@ -5,5 +5,5 @@
     localApiUrl: "https://localhost:5001/",
     assetsUrl: "https://localhost:5001/",
     useLocalHostApi: true,
-    authConfigName: "patientsauth"
+    authConfigName: "usersauth"
 }
