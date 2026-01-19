@@ -40,7 +40,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\LazyMagic.Client.Base\LazyMagic.Client.Base.csproj" />
-		<ProjectReference Include="..\LazyMagic.Client.ViewModels\LazyMagic.Client.ViewModels.csproj" />
+		<!--<ProjectReference Include="..\LazyMagic.Client.ViewModels\LazyMagic.Client.ViewModels.csproj" />-->
 		<ProjectReference Include="..\LazyMagic.OIDC.Base\LazyMagic.OIDC.Base.csproj" />
 	</ItemGroup>
 

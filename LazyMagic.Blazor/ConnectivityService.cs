@@ -5,6 +5,7 @@ public class ConnectivityService : NotifyBase, IConnectivityService, IAsyncDispo
     private IJSRuntime? _jsRuntime;
     private DotNetObjectReference<ConnectivityService>? _objRef;
     private bool _isOnline = true;
+    private bool _isPollingEnabled = true;
     private bool _isInitialized = false;
     private bool _disposed = false;
     private ILzHost _host;
@@ -20,6 +21,11 @@ public class ConnectivityService : NotifyBase, IConnectivityService, IAsyncDispo
     {
         get => _isOnline;
         protected set => SetProperty(ref _isOnline, value);
+    }
+    public bool IsPollingEnabled
+    {
+        get => _isPollingEnabled;
+        protected set => SetProperty(ref _isPollingEnabled, value);
     }
     public async Task InitializeAsync(IJSRuntime jsRuntime)
     {
@@ -90,6 +96,32 @@ public class ConnectivityService : NotifyBase, IConnectivityService, IAsyncDispo
     {
         IsOnline = isOnline;
         await Task.CompletedTask;
+    }
+    public async Task SetPollingEnabledAsync(bool enabled)
+    {
+        if (!_isInitialized || _jsRuntime == null)
+        {
+            throw new InvalidOperationException("Service must be initialized before calling this method.");
+        }
+
+        if (_disposed)
+        {
+            throw new ObjectDisposedException(nameof(ConnectivityService));
+        }
+
+        try
+        {
+            await _jsRuntime.InvokeVoidAsync("setConnectivityPolling", enabled);
+            IsPollingEnabled = enabled;
+            _logger?.LogInformation("[SetPollingEnabledAsync][{Timestamp}] Connectivity polling {Status}",
+                DateTime.UtcNow.ToString("HH:mm:ss.fff"), enabled ? "enabled" : "disabled");
+        }
+        catch (Exception ex)
+        {
+            _logger?.LogError(ex, "[SetPollingEnabledAsync][{Timestamp}] Failed to set polling state: {ErrorMessage}",
+                DateTime.UtcNow.ToString("HH:mm:ss.fff"), ex.Message);
+            throw;
+        }
     }
     public void Dispose()
     {

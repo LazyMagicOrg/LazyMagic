@@ -19,6 +19,7 @@
 	<ItemGroup>
 	  <Content Remove="ClientConfig\IOidcConfig.cs" />
 	  <Content Remove="ClientConfig\OidcConfig.cs" />
+	  <Content Remove="IConnectivityService.cs" />
 	  <Content Remove="IOidcConfig.cs" />
 	  <Content Remove="IRememberMeService.cs" />
 	  <Content Remove="OidcConfig.cs" />

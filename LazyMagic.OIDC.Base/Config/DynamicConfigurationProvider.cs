@@ -8,17 +8,20 @@ namespace LazyMagic.OIDC.Base;
 public class DynamicConfigurationProvider : IDynamicConfigurationProvider
 {
     private readonly IOidcConfig _oidcConfig;
+    private readonly ILzHost _lzHost;
     private readonly ILogger<DynamicConfigurationProvider> _logger;
     private readonly IOpenIdDiscoveryService _discoveryService;
     private string? _cachedEndSessionEndpoint;
     private bool _discoveryInitialized;
 
     public DynamicConfigurationProvider(
-        IOidcConfig oidcConfig, 
+        IOidcConfig oidcConfig,
+        ILzHost lzHost,
         ILogger<DynamicConfigurationProvider> logger,
         IOpenIdDiscoveryService discoveryService)
     {
         _oidcConfig = oidcConfig;
+        _lzHost = lzHost;
         _logger = logger;
         _discoveryService = discoveryService;
     }
@@ -219,18 +222,26 @@ public class DynamicConfigurationProvider : IDynamicConfigurationProvider
     }
 
     /// <summary>
-    /// Gets the Cognito Client ID from the dynamic configuration
+    /// Gets the OIDC Client ID. First checks for client-specified override in ILzHost,
+    /// then falls back to the server-provided configuration.
     /// </summary>
     public string? GetClientId()
     {
         try
         {
             _logger.LogInformation("[GetClientId][{Timestamp}] Getting ClientId for SelectedAuthConfig: {SelectedAuthConfig}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), _oidcConfig.SelectedAuthConfig);
-            
+
+            // First check for client-specified override
+            if (!string.IsNullOrEmpty(_lzHost.ClientId))
+            {
+                _logger.LogInformation("[GetClientId][{Timestamp}] Using client-specified ClientId from ILzHost: {ClientId}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), _lzHost.ClientId);
+                return _lzHost.ClientId;
+            }
+
             if (_oidcConfig.AuthConfigs.TryGetValue(_oidcConfig.SelectedAuthConfig, out var authConfig))
             {
                 _logger.LogInformation("[GetClientId][{Timestamp}] Found authConfig for {SelectedAuthConfig}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), _oidcConfig.SelectedAuthConfig);
-                
+
                 // Try ClientId first (new config format)
                 var clientId = authConfig["ClientId"]?.ToString();
                 _logger.LogInformation("[GetClientId][{Timestamp}] Checking ClientId: '{ClientId}'", DateTime.UtcNow.ToString("HH:mm:ss.fff"), clientId);
@@ -257,7 +268,7 @@ public class DynamicConfigurationProvider : IDynamicConfigurationProvider
                     _logger.LogInformation("[GetClientId][{Timestamp}] Using clientId: {GenericClientId}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), clientId);
                     return clientId;
                 }
-                
+
                 _logger.LogWarning("[GetClientId][{Timestamp}] No ClientId found in any format", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
             }
             else

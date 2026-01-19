@@ -29,6 +29,7 @@ if (window.location.origin.includes("localhost")) {
             localApiUrl: appConfig.localApiUrl,
             assetsUrl: appConfig.assetsUrl,
             authConfigName: appConfig.authConfigName,
+            clientId: appConfig.clientId, // Optional: client-specified OIDC client ID override
         };
 
     } catch (error) {
@@ -53,6 +54,7 @@ if (window.location.origin.includes("localhost")) {
         assetsUrl: window.location.origin + "/",
         wsUrl: window.location.origin.replace(/^http/, 'ws') + "/",
         authConfigName: appConfig.authConfigName,
+        clientId: appConfig.clientId, // Optional: client-specified OIDC client ID override
     };
 
     if (navigator.serviceWorker) {
