@@ -78,11 +78,19 @@ a, .btn-link {
         content: "An error has occurred."
     }
 
+#main:has(.loading-progress) {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
 .loading-progress {
     z-index: 9999;
-    position: relative; /* Add this to create positioning context */
+    position: relative;
     background-color: transparent;
     pointer-events: none;
+    margin: 0 !important;
 }
 
     .loading-progress svg {
@@ -146,7 +154,7 @@ a, .btn-link {
     85% { content: "85%"; }
     90% { content: "90%"; }
     95% { content: "95%"; }
-    100% { content: "100%"; }
+    100% { content: "Finalizing..."; }
 }
 .loading-message-text {
     position: absolute;
