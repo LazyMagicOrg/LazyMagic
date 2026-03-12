@@ -12,7 +12,7 @@
 
 @code {
     private IJSObjectReference? module;
-    private string ProgressText => _percentage < 100 ? $"{Math.Round(_percentage)}%" : "Complete";
+    private string ProgressText => _percentage < 100 ? $"{Math.Round(_percentage)}%" : "Finalizing...";
     private double _percentage;
     private bool _isAnimating;
     private bool _isDisposed;
