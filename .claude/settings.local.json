@@ -20,7 +20,11 @@
       "Bash(node -e:*)",
       "Bash(node run-tests.js:*)",
       "Bash(git rev-list:*)",
-      "Bash(git fetch:*)"
+      "Bash(git fetch:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(dotnet restore:*)",
+      "Bash(powershell.exe -Command \"dotnet build LazyMagic.Client.Base/LazyMagic.Client.Base.csproj\":*)",
+      "Bash(powershell.exe:*)"
     ],
     "deny": []
   }

@@ -101,12 +101,12 @@ a, .btn-link {
 
     .loading-progress circle {
         fill: none;
-        stroke: #e0e0e0;
+        stroke: rgba(255,255,255,0.3);
         stroke-width: 0.4rem;
     }
 
         .loading-progress circle:last-child {
-            stroke: #1b6ec2;
+            stroke: #FFFFFF;
             stroke-width: 0.4rem;
             stroke-dasharray: 0 251.2;
             animation: draw-circle 3s linear forwards;
@@ -125,7 +125,7 @@ a, .btn-link {
     left: 50%;
     transform: translate(-50%, -50%);
     font-weight: bold;
-    color: #1a1a1a;
+    color: #FFFFFF;
     text-align: center;
 }
     .loading-progress-text:after {
@@ -161,7 +161,7 @@ a, .btn-link {
     width: 100%;
     text-align: center;
     top: calc(100% + 1rem);
-    color: #1b6ec2;
+    color: #FFFFFF;
 }
 
 .action-tile-divider {

@@ -40,9 +40,10 @@ public static class ConfigureLazyMagicOIDCWASM
         services.TryAddScoped<IDynamicConfigurationProvider>(provider =>
         {
             var oidcConfig = provider.GetRequiredService<IOidcConfig>();
+            var lzHost = provider.GetRequiredService<ILzHost>();
             var logger = provider.GetRequiredService<ILogger<DynamicConfigurationProvider>>();
             var discoveryService = provider.GetRequiredService<IOpenIdDiscoveryService>();
-            return new DynamicConfigurationProvider(oidcConfig, logger, discoveryService);
+            return new DynamicConfigurationProvider(oidcConfig, lzHost, logger, discoveryService);
         });
 
         // Register profile management service
@@ -108,7 +109,12 @@ public static class ConfigureLazyMagicOIDCWASM
                     // Combine AppUrl and AppPath to get the complete base URL
                     var completeAppUrl = lzHost.AppUrl.TrimEnd('/') + lzHost.AppPath;
                     Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Using complete app URL for redirect URI: {completeAppUrl} (AppUrl: {lzHost.AppUrl}, AppPath: {lzHost.AppPath})");
-                    configHolder.SetConfigurationFromAuthConfig(authConfig, completeAppUrl);
+                    Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] lzHost.ClientId value: '{lzHost.ClientId}' (null: {lzHost.ClientId == null}, empty: {string.IsNullOrEmpty(lzHost.ClientId)})");
+                    if (!string.IsNullOrEmpty(lzHost.ClientId))
+                        Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Using client-specified ClientId override: {lzHost.ClientId}");
+                    else
+                        Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] No client-specified ClientId, will use server config value");
+                    configHolder.SetConfigurationFromAuthConfig(authConfig, completeAppUrl, lzHost.ClientId);
 
                     // Force OIDC post-configuration to happen NOW instead of waiting for first authentication
                     try
@@ -139,11 +145,13 @@ public static class ConfigureLazyMagicOIDCWASM
                     if (matchingKey != null)
                     {
                         Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Found case-insensitive match: '{matchingKey}'");
-                        
+
                         // Combine AppUrl and AppPath to get the complete base URL
                         var completeAppUrl = lzHost.AppUrl.TrimEnd('/') + lzHost.AppPath;
                         Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Using complete app URL for redirect URI: {completeAppUrl} (AppUrl: {lzHost.AppUrl}, AppPath: {lzHost.AppPath})");
-                        configHolder.SetConfigurationFromAuthConfig(authConfigs[matchingKey], completeAppUrl);
+                        if (!string.IsNullOrEmpty(lzHost.ClientId))
+                            Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Using client-specified ClientId: {lzHost.ClientId}");
+                        configHolder.SetConfigurationFromAuthConfig(authConfigs[matchingKey], completeAppUrl, lzHost.ClientId);
                     }
                     else
                     {

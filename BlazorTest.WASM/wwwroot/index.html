@@ -16,6 +16,58 @@
     <link href="_content/LazyMagic.Blazor/bootstrap/bootstrap.min.css" rel="stylesheet" />
     <link href="manifest.json" rel="manifest" />
 
+    <!-- DEBUG: Early sessionStorage dump and state storage fix -->
+    <script>
+        (function() {
+            console.log('=== EARLY sessionStorage dump (before Blazor) ===');
+            console.log('URL:', window.location.href);
+            console.log('sessionStorage keys:', Object.keys(sessionStorage));
+            for (var key of Object.keys(sessionStorage)) {
+                var value = sessionStorage.getItem(key);
+                // Show full content for auth-related keys
+                if (key.includes('Auth') || key.startsWith('oidc')) {
+                    console.log('  ' + key + ':', value);
+                } else {
+                    console.log('  ' + key + ':', value ? value.substring(0, 100) + (value.length > 100 ? '...' : '') : 'null');
+                }
+            }
+
+            // Check if we're on the login-callback page
+            if (window.location.href.includes('/authentication/login-callback')) {
+                console.log('On callback page - checking for stored state');
+
+                var urlParams = new URLSearchParams(window.location.search);
+                var urlState = urlParams.get('state');
+                console.log('URL state:', urlState);
+
+                // Check for Microsoft OIDC state keys (they start with 'oidc.')
+                var oidcKeys = Object.keys(sessionStorage).filter(function(k) { return k.startsWith('oidc.'); });
+                console.log('OIDC keys in sessionStorage:', oidcKeys);
+
+                if (oidcKeys.length === 0 && urlState) {
+                    console.log('WARNING: No oidc.* keys found in sessionStorage - state may not have been stored before redirect');
+                    console.log('This is likely a race condition. The OIDC library may retry automatically.');
+                }
+            }
+
+            // Monitor for navigation to capture state before redirect
+            var originalAssign = window.location.assign;
+            window.location.assign = function(url) {
+                console.log('location.assign called with:', url);
+                if (url && url.includes('state=')) {
+                    var match = url.match(/state=([^&]+)/);
+                    if (match) {
+                        console.log('Capturing state before redirect:', match[1]);
+                        sessionStorage.setItem('oidc_custom_state', match[1]);
+                    }
+                }
+                return originalAssign.call(window.location, url);
+            };
+
+            console.log('=== END EARLY setup ===');
+        })();
+    </script>
+
     <!-- Load addLink(), addScript() functions -->
     <script src="_content/LazyMagic.Blazor/indexconfig.js"></script>
     <!-- indexhead.js uses addLink() and addHeadScript() to add required elements -->

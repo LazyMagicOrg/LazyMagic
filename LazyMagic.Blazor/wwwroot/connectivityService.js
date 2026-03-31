@@ -178,7 +178,32 @@ export class ConnectivityService {
     async forceCheck() {
         return await this.checkConnectivity();
     }
-    
+
+    /**
+     * Enable or disable polling
+     * @param {boolean} enabled - Whether polling should be enabled
+     */
+    setPollingEnabled(enabled) {
+        if (enabled && !this.intervalId) {
+            // Start polling
+            this.intervalId = setInterval(() => this.checkConnectivity(), this.checkInterval);
+            this.log('setPollingEnabled', 'Polling enabled', 'info');
+        } else if (!enabled && this.intervalId) {
+            // Stop polling
+            clearInterval(this.intervalId);
+            this.intervalId = null;
+            this.log('setPollingEnabled', 'Polling disabled', 'info');
+        }
+    }
+
+    /**
+     * Check if polling is currently enabled
+     * @returns {boolean}
+     */
+    isPollingEnabled() {
+        return this.intervalId !== null;
+    }
+
     /**
      * Clean up resources
      */
