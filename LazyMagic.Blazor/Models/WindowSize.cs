@@ -8,6 +8,7 @@ public class WindowSize
     public bool IsLandscape => Width >= Height;
     public bool IsPortrait => Width < Height;
     public int HeaderHeight { get; set; } = 0;
+    public int FooterHeight { get; set; } = 0;  
     /// <summary>
     /// MaxWidth for layout 
     /// </summary>
@@ -16,5 +17,6 @@ public class WindowSize
     /// MinWidth for layout
     /// </summary>
     public int MinWidth { get; set; } = 0;
+    public int Refresh { get; set; } = 0;
 
 }

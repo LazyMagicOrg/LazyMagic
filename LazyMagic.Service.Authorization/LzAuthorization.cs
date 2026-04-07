@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Primitives;
+using Microsoft.Extensions.Primitives;
 namespace LazyMagic.Service.Authorization;
 /// <summary>
 /// This abstract class performs common housekeeping tasks for 
@@ -114,7 +114,8 @@ public abstract class LzAuthorization : ILzAuthorization
         // config information from the AWS CF KVS and added it as the value for the lz-config header.
         // The local WebApi request pipeline does the same.
         var configJson = request.Headers["lz-config"];
-        var tenantId = request.Headers["lz-tenantid"]; // usually the host: tenant.tld or subtenant.tenant.tld 
+        var tenantId = request.Headers["lz-tenantid"]; // usually the host: tenant.tld or subtenant.tenant.tld
+        var authname = request.Headers["lz-authname"].FirstOrDefault(); // Get first value to avoid comma-separated duplicates
         var tenancyConfig = new TenancyConfig(configJson!, tenantId!);
 
         // CallerInfo contains tenancy information potentially useful to the repository layer. For instance,
@@ -132,6 +133,7 @@ public abstract class LzAuthorization : ILzAuthorization
         callerInfo.DefaultTenant = tenancyConfig.DefaultTenant;
         callerInfo.DefaultDB = tenancyConfig.DefaultDB;
         callerInfo.DefaultAssets = tenancyConfig.DefaultAssets;
+        callerInfo.Authname = authname;
 
         return Task.CompletedTask;
     }
@@ -151,13 +153,16 @@ public abstract class LzAuthorization : ILzAuthorization
         if (!authenticate)
             return ("", "");
 
+        if (request?.Headers == null)
+            throw new Exception("Request or Headers is null");
+
         var foundAuthHeader = request.Headers.TryGetValue("Authorization", out Microsoft.Extensions.Primitives.StringValues authHeader);
         // When the Authorization header doesn't contain an identity token, we look for the lz-config-identity header.
         // You can add a lz-config-identity header in the client code, in a reverse proxy, or in the container depending 
         // on your deployment platform strategy.
-        if (!foundAuthHeader || authHeader[0]!.ToString().StartsWith("AWS4-HMAC-SHA256 Credential="))
+        if (!foundAuthHeader || authHeader.Count == 0 || string.IsNullOrEmpty(authHeader[0]) || authHeader[0]!.ToString().StartsWith("AWS4-HMAC-SHA256 Credential="))
             foundAuthHeader = request.Headers.TryGetValue("lz-config-identity", out authHeader);
-        if (foundAuthHeader)
+        if (foundAuthHeader && authHeader.Count > 0 && !string.IsNullOrEmpty(authHeader[0]))
             return GetUserInfo(authHeader);
 
         throw new Exception("No Authorization or lz-config-identity header");

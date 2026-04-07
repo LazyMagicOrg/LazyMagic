@@ -11,6 +11,11 @@ public class OidcOptionsConfiguration
     public string? MetadataUrl { get; set; }
     public string? RedirectUri { get; set; }
     public string? PostLogoutRedirectUri { get; set; }
+    /// <summary>
+    /// The end_session_endpoint from the OpenID discovery document.
+    /// This is populated by fetching the .well-known/openid-configuration.
+    /// </summary>
+    public string? EndSessionEndpoint { get; set; }
     public List<string> DefaultScopes { get; set; } = new();
     public string? NameClaim { get; set; } = "name";
     public string? RoleClaim { get; set; } = "cognito:groups";
@@ -18,22 +23,32 @@ public class OidcOptionsConfiguration
     /// <summary>
     /// Creates configuration from a JObject auth config
     /// </summary>
+    /// <param name="authConfig">The auth configuration from the server</param>
+    /// <param name="baseAddress">The base address for redirect URIs</param>
+    /// <param name="clientIdOverride">Optional client-specified ClientId that overrides the server value</param>
     public static OidcOptionsConfiguration FromAuthConfig(
         JObject authConfig,
-        string baseAddress)
+        string baseAddress,
+        string? clientIdOverride = null)
     {
         var options = new OidcOptionsConfiguration();
+
+        Console.WriteLine($"[OidcOptionsConfiguration.FromAuthConfig] clientIdOverride parameter: '{clientIdOverride}' (null: {clientIdOverride == null})");
 
         // New config format with explicit URLs
         var hostedUIDomain = authConfig["HostedUIDomain"]?.ToString();
         var metadataUrl = authConfig["MetadataUrl"]?.ToString();
         var issuerUrl = authConfig["IssuerUrl"]?.ToString();
         var configAuthorityDomain = authConfig["AuthorityDomain"]?.ToString();
-        
-        // ClientId might be under different field names
-        var clientId = authConfig["ClientId"]?.ToString() 
-                    ?? authConfig["clientId"]?.ToString() 
+
+        // Use client-specified clientId if provided, otherwise fall back to server config
+        var serverClientId = authConfig["ClientId"]?.ToString()
+                    ?? authConfig["clientId"]?.ToString()
                     ?? authConfig["userPoolClientId"]?.ToString();
+        Console.WriteLine($"[OidcOptionsConfiguration.FromAuthConfig] Server config clientId: '{serverClientId}'");
+
+        var clientId = !string.IsNullOrEmpty(clientIdOverride) ? clientIdOverride : serverClientId;
+        Console.WriteLine($"[OidcOptionsConfiguration.FromAuthConfig] Final clientId to use: '{clientId}'");
         
         // Check if new format is present
         if (!string.IsNullOrEmpty(hostedUIDomain) && !string.IsNullOrEmpty(metadataUrl))

@@ -166,7 +166,7 @@ public static MauiApp CreateMauiApp()
     var builder = MauiApp.CreateBuilder();
     
     // Register your custom UI
-    builder.Services.AddSingleton<IAuthenticationUI, MyCompanyAuthUI>();
+    builder.Services.TryAddScoped<IAuthenticationUI, MyCompanyAuthUI>();
     
     // Register the authentication provider (it will use your custom UI)
     // If you have not registered a custom UI, DefaultAuthenticationUI will be used

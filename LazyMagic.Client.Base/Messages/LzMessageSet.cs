@@ -209,10 +209,6 @@ public class LzMessageSet : NotifyBase
                 foreach (var msg in doc.Messages)
                 {
                     msgs[msg.Key] = GetMessage(key!, filePath, msg.Value.Msg);
-                    if (msg.Key == "snaps_intro")
-                    {
-                        Console.WriteLine($"snaps_intro: {msgs[msg.Key]}, {msg.Value.Msg}");
-                    }
                 }
             }
         }

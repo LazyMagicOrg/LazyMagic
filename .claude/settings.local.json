@@ -3,7 +3,28 @@
     "allow": [
       "Bash(ls:*)",
       "Bash(find:*)",
-      "WebSearch"
+      "WebSearch",
+      "Read(/mnt/c/Users/TimothyMay/OneDrive - Insight Sciences Corporation/Pictures/Screenshots/**)",
+      "Bash(for func in _createPathOverlaps _findAdjacentRegions _extendPathsIntoOverlaps _createOverlapSegments _mergeOverlappingPaths)",
+      "Bash(do echo \"=== $func ===\")",
+      "Bash(grep:*)",
+      "Bash(done)",
+      "Read(//mnt/c/Users/TimothyMay/OneDrive - Insight Sciences Corporation/Pictures/Screenshots/**)",
+      "Bash(sed:*)",
+      "Bash(cat:*)",
+      "Bash(node process-all.js:*)",
+      "Bash(npm install)",
+      "Bash(dotnet clean:*)",
+      "Bash(dotnet build:*)",
+      "Bash(node -c:*)",
+      "Bash(node -e:*)",
+      "Bash(node run-tests.js:*)",
+      "Bash(git rev-list:*)",
+      "Bash(git fetch:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(dotnet restore:*)",
+      "Bash(powershell.exe -Command \"dotnet build LazyMagic.Client.Base/LazyMagic.Client.Base.csproj\":*)",
+      "Bash(powershell.exe:*)"
     ],
     "deny": []
   }

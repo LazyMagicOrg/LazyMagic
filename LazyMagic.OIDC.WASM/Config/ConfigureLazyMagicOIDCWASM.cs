@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 using LazyMagic.OIDC.Base.Services;
 using LazyMagic.OIDC.WASM.Services;
 
@@ -16,33 +16,38 @@ public static class ConfigureLazyMagicOIDCWASM
         
         // Register OIDC service with fast auth dependency
         services.TryAddScoped<IOIDCService, BlazorOIDCService>();
-        services.TryAddSingleton<IRememberMeService, BlazorRememberMeService>();
+        services.TryAddScoped<IRememberMeService, BlazorRememberMeService>();
         services.TryAddTransient<UserProfileViewModel>();
 
-        services.TryAddSingleton<IPostConfigureOptions<RemoteAuthenticationOptions<OidcProviderOptions>>,
+        services.TryAddScoped<IPostConfigureOptions<RemoteAuthenticationOptions<OidcProviderOptions>>,
                                       DynamicOidcPostConfigureOptions>();
 
         // Register the lazy OIDC configuration as a singleton
-        services.TryAddSingleton<IOidcConfig>(provider =>
+        services.TryAddScoped<IOidcConfig>(provider =>
         {
             var lzHost = provider.GetRequiredService<ILzHost>();
-            var logger = provider.GetService<ILogger<LazyOidcConfig>>();
+            var logger = provider.GetRequiredService<ILogger<LazyOidcConfig>>();
             return new LazyOidcConfig(lzHost, logger);
         });
 
         // Register a configuration service that will hold the dynamic config once loaded
-        services.TryAddSingleton<DynamicOidcConfigHolder>();
+        services.TryAddScoped<DynamicOidcConfigHolder>();
 
         // Register a service to provide configuration values from dynamic config
-        services.TryAddSingleton<IDynamicConfigurationProvider>(provider =>
+        // Note: IOpenIdDiscoveryService is registered by AddLazyMagicOIDCBase() but we call it after,
+        // so we register it here first to ensure it's available
+        services.TryAddSingleton<IOpenIdDiscoveryService, OpenIdDiscoveryService>();
+        services.TryAddScoped<IDynamicConfigurationProvider>(provider =>
         {
             var oidcConfig = provider.GetRequiredService<IOidcConfig>();
+            var lzHost = provider.GetRequiredService<ILzHost>();
             var logger = provider.GetRequiredService<ILogger<DynamicConfigurationProvider>>();
-            return new DynamicConfigurationProvider(oidcConfig, logger);
+            var discoveryService = provider.GetRequiredService<IOpenIdDiscoveryService>();
+            return new DynamicConfigurationProvider(oidcConfig, lzHost, logger, discoveryService);
         });
 
         // Register profile management service
-        services.TryAddSingleton<IProfileManagementService, BlazorProfileManagementService>();
+        services.TryAddScoped<IProfileManagementService, BlazorProfileManagementService>();
 
         services.AddLazyMagicOIDCBase(); // Base OIDC services
 
@@ -104,7 +109,12 @@ public static class ConfigureLazyMagicOIDCWASM
                     // Combine AppUrl and AppPath to get the complete base URL
                     var completeAppUrl = lzHost.AppUrl.TrimEnd('/') + lzHost.AppPath;
                     Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Using complete app URL for redirect URI: {completeAppUrl} (AppUrl: {lzHost.AppUrl}, AppPath: {lzHost.AppPath})");
-                    configHolder.SetConfigurationFromAuthConfig(authConfig, completeAppUrl);
+                    Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] lzHost.ClientId value: '{lzHost.ClientId}' (null: {lzHost.ClientId == null}, empty: {string.IsNullOrEmpty(lzHost.ClientId)})");
+                    if (!string.IsNullOrEmpty(lzHost.ClientId))
+                        Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Using client-specified ClientId override: {lzHost.ClientId}");
+                    else
+                        Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] No client-specified ClientId, will use server config value");
+                    configHolder.SetConfigurationFromAuthConfig(authConfig, completeAppUrl, lzHost.ClientId);
 
                     // Force OIDC post-configuration to happen NOW instead of waiting for first authentication
                     try
@@ -135,11 +145,13 @@ public static class ConfigureLazyMagicOIDCWASM
                     if (matchingKey != null)
                     {
                         Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Found case-insensitive match: '{matchingKey}'");
-                        
+
                         // Combine AppUrl and AppPath to get the complete base URL
                         var completeAppUrl = lzHost.AppUrl.TrimEnd('/') + lzHost.AppPath;
                         Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Using complete app URL for redirect URI: {completeAppUrl} (AppUrl: {lzHost.AppUrl}, AppPath: {lzHost.AppPath})");
-                        configHolder.SetConfigurationFromAuthConfig(authConfigs[matchingKey], completeAppUrl);
+                        if (!string.IsNullOrEmpty(lzHost.ClientId))
+                            Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Using client-specified ClientId: {lzHost.ClientId}");
+                        configHolder.SetConfigurationFromAuthConfig(authConfigs[matchingKey], completeAppUrl, lzHost.ClientId);
                     }
                     else
                     {

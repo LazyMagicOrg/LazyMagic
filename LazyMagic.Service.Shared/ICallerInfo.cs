@@ -29,6 +29,8 @@ public interface ICallerInfo
     public string? DefaultDB { get; set; }
     public string? DefaultAssets { get; set; }
 
+    // Permissions
+    public string? Authname { get; set; }   
     public List<string> Permissions { get; set; }
 
     public Dictionary<string, string> Headers { get; set; } 

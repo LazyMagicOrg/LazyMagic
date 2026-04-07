@@ -1,0 +1,48 @@
+﻿@namespace BlazorUI
+@page "/SessionPage"
+@inherits LzComponentBaseInjectViewModel<ISessionViewModel>
+@inject NavigationManager NavigationManager
+@inject ILzHost Host
+@inject ILzClientConfig ClientConfig
+
+
+@if (ClientConfig.ConfigureError)
+{
+    <p>Could not read configuration </p>
+    <p>@ClientConfig.ConfigError</p>
+}
+
+<div style="width: 9rem; height: 9rem; margin-left: 1rem; margin-top: 1rem;">
+    <LzAppLoading AnimationDurationSeconds="1.0"
+                  LoadingMessage="Checking for updates." />
+</div>
+
+@code {
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!ClientConfig.Configured)
+        {
+            try
+            {
+                // TODO - should this been Host.AssetsUrl?
+                await ClientConfig.InitializeAsync(Host.RemoteApiUrl);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
+        await base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (ClientConfig.Configured)
+        {
+            NavigationManager.NavigateTo("HomePage");
+        }
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+}

@@ -48,9 +48,9 @@ public class DynamicOidcConfigHolder
         }
     }
 
-    public void SetConfigurationFromAuthConfig(JObject authConfig, string baseAddress)
+    public void SetConfigurationFromAuthConfig(JObject authConfig, string baseAddress, string? clientIdOverride = null)
     {
-        var configuration = OidcOptionsConfiguration.FromAuthConfig(authConfig, baseAddress);
+        var configuration = OidcOptionsConfiguration.FromAuthConfig(authConfig, baseAddress, clientIdOverride);
         SetConfiguration(configuration);
     }
 

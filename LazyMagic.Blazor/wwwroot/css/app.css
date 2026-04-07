@@ -78,11 +78,19 @@ a, .btn-link {
         content: "An error has occurred."
     }
 
+#main:has(.loading-progress) {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
 .loading-progress {
     z-index: 9999;
-    position: relative; /* Add this to create positioning context */
+    position: relative;
     background-color: transparent;
     pointer-events: none;
+    margin: 0 !important;
 }
 
     .loading-progress svg {
@@ -93,12 +101,12 @@ a, .btn-link {
 
     .loading-progress circle {
         fill: none;
-        stroke: #e0e0e0;
+        stroke: rgba(255,255,255,0.3);
         stroke-width: 0.4rem;
     }
 
         .loading-progress circle:last-child {
-            stroke: #1b6ec2;
+            stroke: #FFFFFF;
             stroke-width: 0.4rem;
             stroke-dasharray: 0 251.2;
             animation: draw-circle 3s linear forwards;
@@ -117,7 +125,7 @@ a, .btn-link {
     left: 50%;
     transform: translate(-50%, -50%);
     font-weight: bold;
-    color: #1a1a1a;
+    color: #FFFFFF;
     text-align: center;
 }
     .loading-progress-text:after {
@@ -146,14 +154,14 @@ a, .btn-link {
     85% { content: "85%"; }
     90% { content: "90%"; }
     95% { content: "95%"; }
-    100% { content: "100%"; }
+    100% { content: "Finalizing..."; }
 }
 .loading-message-text {
     position: absolute;
     width: 100%;
     text-align: center;
     top: calc(100% + 1rem);
-    color: #1b6ec2;
+    color: #FFFFFF;
 }
 
 .action-tile-divider {

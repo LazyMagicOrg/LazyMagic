@@ -1,0 +1,96 @@
+@namespace BlazorUI
+@page "/authentication/{action}"
+@using Microsoft.Extensions.Logging
+@using Microsoft.Extensions.Options
+@using Microsoft.AspNetCore.Components.WebAssembly.Authentication
+@inject ILogger<Authentication> Logger
+@inject NavigationManager Navigation
+@inject IOptionsSnapshot<RemoteAuthenticationOptions<OidcProviderOptions>> Options
+
+<RemoteAuthenticatorView Action="@Action" OnLogInSucceeded="@OnLogInSucceeded" OnLogOutSucceeded="@OnLogOutSucceeded">
+    <LogInFailed>
+        <div class="alert alert-danger" role="alert">
+            <h4>Login Failed</h4>
+            <p>There was an error trying to log you in.</p>
+            <p>@context</p>
+            <p><a href="/">Return to Home</a></p>
+        </div>
+    </LogInFailed>
+    <LogOutFailed>
+        <div class="alert alert-danger" role="alert">
+            <h4>Logout Failed</h4>
+            <p>There was an error trying to log you out.</p>
+            <p>@context</p>
+            <p><a href="/">Return to Home</a></p>
+        </div>
+    </LogOutFailed>
+    <CompletingLoggingIn>
+        <p>Completing login...</p>
+    </CompletingLoggingIn>
+    <CompletingLogOut>
+        <p>Completing logout...</p>
+    </CompletingLogOut>
+</RemoteAuthenticatorView>
+
+@code {
+    [Parameter] public string? Action { get; set; }
+    
+    protected override void OnInitialized()
+    {
+        Logger.LogInformation("=== Authentication Page Initialized ===");
+        Logger.LogInformation("Action: {Action}", Action);
+        Logger.LogInformation("Current URI: {Uri}", Navigation.Uri);
+        Logger.LogInformation("Base URI: {BaseUri}", Navigation.BaseUri);
+        
+        try
+        {
+            var oidcOptions = Options.Value;
+            Logger.LogInformation("OIDC Configuration:");
+            Logger.LogInformation("  Authority: {Authority}", oidcOptions.ProviderOptions.Authority);
+            Logger.LogInformation("  ClientId: {ClientId}", oidcOptions.ProviderOptions.ClientId);
+            Logger.LogInformation("  RedirectUri: {RedirectUri}", oidcOptions.ProviderOptions.RedirectUri);
+            Logger.LogInformation("  PostLogoutRedirectUri: {PostLogoutRedirectUri}", oidcOptions.ProviderOptions.PostLogoutRedirectUri);
+            Logger.LogInformation("  ResponseType: {ResponseType}", oidcOptions.ProviderOptions.ResponseType);
+            Logger.LogInformation("  MetadataUrl: {MetadataUrl}", oidcOptions.ProviderOptions.MetadataUrl);
+            
+            if (Action == "login")
+            {
+                // Log the authorization endpoint that will be used
+                var authEndpoint = BuildAuthorizationUrl(oidcOptions.ProviderOptions);
+                Logger.LogInformation("Expected Authorization URL (approx): {AuthUrl}", authEndpoint);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error logging OIDC configuration");
+        }
+    }
+    
+    private void OnLogInSucceeded(RemoteAuthenticationState state)
+    {
+        Logger.LogInformation("=== Login Succeeded ===");
+        Logger.LogInformation("ReturnUrl: {ReturnUrl}", state?.ReturnUrl);
+    }
+    
+    private void OnLogOutSucceeded(RemoteAuthenticationState state)
+    {
+        Logger.LogInformation("=== Logout Succeeded ===");
+        Logger.LogInformation("ReturnUrl: {ReturnUrl}", state?.ReturnUrl);
+    }
+    
+    private string BuildAuthorizationUrl(OidcProviderOptions options)
+    {
+        // This is an approximation of what the URL will look like
+        var baseUrl = options.Authority?.TrimEnd('/');
+        if (baseUrl?.Contains("amazoncognito.com") == true)
+        {
+            // For Cognito, use the /oauth2/authorize endpoint
+            return $"{baseUrl}/oauth2/authorize?client_id={options.ClientId}&redirect_uri={options.RedirectUri}&response_type={options.ResponseType}&scope=openid+profile+email";
+        }
+        else
+        {
+            // For other providers, use the standard /authorize endpoint
+            return $"{baseUrl}/authorize?client_id={options.ClientId}&redirect_uri={options.RedirectUri}&response_type={options.ResponseType}";
+        }
+    }
+}

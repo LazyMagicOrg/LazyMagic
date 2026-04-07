@@ -18,6 +18,12 @@ public interface ILzHost
     // Cognito configuration
     string? AuthConfigName { get; set; }
 
+    /// <summary>
+    /// Optional client-specified OIDC Client ID. When set, this overrides the
+    /// ClientId returned from the server's auth configuration.
+    /// </summary>
+    string? ClientId { get; set; }
+
     string GetApiUrl(string path);
     string GetAssetsUrl(string path);    
     
@@ -63,7 +69,8 @@ public class LzHost : ILzHost
         bool useLocalhostApi = false,
         string? cognitoRegion = null,
         string? cognitoUserPoolId = null,
-        string? authConfigName = null
+        string? authConfigName = null,
+        string? clientId = null
         )
     {
         AppPath = appPath ?? "";
@@ -80,6 +87,7 @@ public class LzHost : ILzHost
         CognitoRegion = cognitoRegion;
         CognitoUserPoolId = cognitoUserPoolId;
         AuthConfigName = authConfigName;
+        ClientId = clientId;
     }
 
     public string AppPath { get; set; } = string.Empty;
@@ -99,6 +107,7 @@ public class LzHost : ILzHost
     public string? CognitoRegion { get; set; }
     public string? CognitoUserPoolId { get; set; }
     public string? AuthConfigName { get; set; }
+    public string? ClientId { get; set; }
 
     public string GetApiUrl(string path) => UseLocalhostApi ? LocalApiUrl + path : RemoteApiUrl + path;
     public string GetAssetsUrl(string path) => AssetsUrl + path;

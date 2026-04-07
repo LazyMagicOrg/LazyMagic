@@ -109,4 +109,8 @@ window.disposeConnectivity = () => {
     connectivityManager.dispose();
 };
 
+window.setConnectivityPolling = (enabled) => {
+    connectivityService.setPollingEnabled(enabled);
+};
+
 export { connectivityManager };

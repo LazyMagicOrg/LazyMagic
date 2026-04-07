@@ -130,7 +130,7 @@ The new architecture separates UI from logic, making it much simpler to customiz
    In your MauiProgram.cs ConfigureServices method:
 
    // Register your custom UI implementation
-   services.AddSingleton<IAuthenticationUI, CustomAuthenticationUI>();
+   services.TryAddScoped<IAuthenticationUI, CustomAuthenticationUI>();
    
    // Register the authentication provider (it will use your custom UI)
    services.AddScoped<IWebViewAuthenticationProvider, MauiWebViewAuthenticationProvider>();
@@ -139,9 +139,9 @@ The new architecture separates UI from logic, making it much simpler to customiz
    You can create multiple UI implementations and inject them where needed:
 
    // Register multiple UI implementations
-   services.AddSingleton<IAuthenticationUI, CustomAuthenticationUI>();
-   services.AddSingleton<CustomAuthenticationUI>(); // Also register concrete type
-   services.AddSingleton<DefaultAuthenticationUI>();
+   services.TryAddScoped<IAuthenticationUI, CustomAuthenticationUI>();
+   services.TryAddScoped<CustomAuthenticationUI>(); // Also register concrete type
+   services.TryAddScoped<DefaultAuthenticationUI>();
    
    // Use specific UI in specific places
    services.AddScoped<IWebViewAuthenticationProvider>(provider => 

@@ -103,7 +103,7 @@ export async function reload() {
     //    console.log("reload appPath:" + appPath);
     //    location.href = new URL(appPath, self.location.origin);
     //}
-    window.reload();
+    window.location.reload();
 }
 export async function getMemory() {
     return [performance.memory.jsHeapSizeLimit, performance.memory.usedJSHeapSize]
@@ -143,21 +143,38 @@ export async function getBase64ImageDownsized(img) {
 }
 export async function sharePng(title, text, pngData, textData = null) {
     try {
-
         pngData = pngData.replace(/^data:image\/(png|jpeg|jpg);base64,/, '');
         const binaryData = Uint8Array.from(atob(pngData), c => c.charCodeAt(0));
-        const file = new File([binaryData], 'image.png', { type: 'image/png' });
-        const files = [file];
-        if (textData) { 
-            const textFile = new File([textData], 'report.txt', { type: 'text/plain' });
-            files.push(textFile);
+        const blob = new Blob([binaryData], { type: 'image/png' });
+        const file = new File([blob], 'snap.png', { type: 'image/png' });
+
+        // Try sharing with files first (works on mobile/tablets)
+        const canShareFiles = navigator.canShare && navigator.canShare({ files: [file] });
+        const isDesktop = !/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+        if (canShareFiles && !isDesktop) {
+            const files = [file];
+            if (textData) {
+                files.push(new File([textData], 'report.txt', { type: 'text/plain' }));
+            }
+            await navigator.share({ title, text, files });
+            return true;
         }
 
-        await navigator.share({
-            title: title,
-            text: text,
-            files: files
-        });
+        // Desktop fallback: download the PNG, then share text-only
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'snap.png';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        // Share text via share dialog (opens email client with location info)
+        if (navigator.share) {
+            await navigator.share({ title, text });
+        }
         return true;
 
     } catch (error) {

@@ -28,6 +28,7 @@ public class CallerInfo : ICallerInfo
     public string? DefaultAssets { get; set; }
 
     // Permissions
+    public string? Authname { get; set; }   
     public List<string> Permissions { get; set; } = new();
 
     // Headers

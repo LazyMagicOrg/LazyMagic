@@ -5,11 +5,13 @@ public class LzClientConfig : OidcConfig, ILzClientConfig
     public LzClientConfig(ILzHost host, HttpClient httpClient)
     {
         _host = host ?? throw new ArgumentNullException(nameof(host));
+        SelectedAuthConfig = host.AuthConfigName ?? SelectedAuthConfig;
         _httpClient = httpClient;
 
     }
- 
+
     public JObject TenancyConfig { get; set; } = JObject.Parse("{}");
+    // EventsApis is inherited from OidcConfig base class - do not redeclare
     public string TenantKey { get; set; } = "";
     public string Type { get; set; } = "";
     public string Region { get; set; } = "";
@@ -99,7 +101,10 @@ public class LzClientConfig : OidcConfig, ILzClientConfig
 
             Configured = true;
 
-            AuthConfigs = configDoc["authConfigs"]?.ToObject<Dictionary<string, JObject>>() 
+            AuthConfigs = configDoc["authConfigs"]?.ToObject<Dictionary<string, JObject>>()
+                ?? new Dictionary<string, JObject>();
+
+            EventsApis = configDoc["eventsApis"]?.ToObject<Dictionary<string, JObject>>()
                 ?? new Dictionary<string, JObject>();
 
         }

@@ -54,21 +54,24 @@ public class Program
         builder.Logging.AddFilter("Microsoft.AspNetCore",
             LogLevel.Warning); // Only show Warning and above for ASP.NET Core
 
-        builder.Services.AddSingleton(sp => new HttpClient { BaseAddress = new Uri((string)_appConfig!["assetsUrl"]!) });
+        builder.Services.TryAddScoped(sp => new HttpClient { BaseAddress = new Uri((string)_appConfig!["assetsUrl"]!) });
 
-        builder.Services.AddSingleton<IStaticAssets>(sp => new BlazorStaticAssets(
+        builder.Services.TryAddScoped<IStaticAssets>(sp => new BlazorStaticAssets(
                 sp.GetRequiredService<ILoggerFactory>(),
                 new HttpClient { BaseAddress = new Uri((string)_appConfig!["assetsUrl"]!) }));
 
-        builder.Services.AddSingleton<ILzHost>(sp => {
+        builder.Services.TryAddScoped<ILzHost>(sp => {
+            var clientIdValue = _appConfig?["clientId"]?.ToString();
+            Console.WriteLine($"[ILzHost Factory] Creating LzHost with clientId: '{clientIdValue}' (appConfig null: {_appConfig == null})");
             LzHost = new LzHost(
                 appPath: (string)_appConfig!["appPath"]!, // app path (e.g. /baseapp/)
                 appUrl: (string)_appConfig!["appUrl"]!, // web app url
-                androidAppUrl: (string)_appConfig!["androidAppUrl"]!, // android app url 
+                androidAppUrl: (string)_appConfig!["androidAppUrl"]!, // android app url
                 remoteApiUrl: (string)_appConfig!["remoteApiUrl"]!,  // api url
                 localApiUrl: (string)_appConfig!["localApiUrl"]!, // local api url
                 assetsUrl: (string)_appConfig!["assetsUrl"]!, // tenancy assets url
                 authConfigName: (string)_appConfig!["authConfigName"]!, // auth config name
+                clientId: clientIdValue, // optional client-specified OIDC client ID
                 isMAUI: false, // sets isWASM to true
                 isAndroid: false,
                 isLocal: isLocal,
