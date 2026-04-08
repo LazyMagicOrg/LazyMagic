@@ -202,10 +202,34 @@ public class LzMessages : NotifyBase, ILzMessages
         // Todo - add html clean
 
     }
+    /// <inheritdoc />
+    public async Task AddMessageFilesAsync(List<string> newFiles)
+    {
+        if (_staticAssets == null)
+            throw new InvalidOperationException("SetStaticAssets must be called before AddMessageFilesAsync");
+
+        // Filter out files already registered
+        var filesToAdd = newFiles.Where(f => !MessageFiles.Contains(f)).ToList();
+        if (filesToAdd.Count == 0) return;
+
+        // Add to the master list
+        MessageFiles.AddRange(filesToAdd);
+
+        // Add to each existing message set (culture-resolved)
+        foreach (var (culture, messageSet) in _MessageSets)
+        {
+            var resolvedFiles = filesToAdd
+                .Select(f => f.Replace("{culture}", culture))
+                .ToList();
+            await messageSet.AddMessageFilesAsync(resolvedFiles, _staticAssets);
+        }
+
+        Refresh();
+    }
+
     public async Task SaveMessageSetsAsync()
     {
-        foreach (var messageSet in _MessageSets.Values)
-            await messageSet.SaveMessageSetAsync();
+        await Task.WhenAll(_MessageSets.Values.Select(ms => ms.SaveMessageSetAsync()));
     }
     #endregion
 

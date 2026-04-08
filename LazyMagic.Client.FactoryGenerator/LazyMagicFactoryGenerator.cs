@@ -112,23 +112,59 @@ public class LazyMagicFactoryGenerator : IIncrementalGenerator
                 SyntaxFactory.Argument(SyntaxFactory.IdentifierName(p.Identifier)));
             var argumentsText = SyntaxFactory.SeparatedList(arguments).ToFullString();
 
+            // Check if the factory interface already exists in a referenced assembly
+            // (e.g., a contracts package). If so, skip generating the interface
+            // and match the existing interface's Create method signature.
+            var interfaceName = $"I{className}Factory";
+            var fullInterfaceName = $"{namespaceName}.{interfaceName}";
+            var existingInterface = model.Compilation.GetTypeByMetadataName(fullInterfaceName);
+            var interfaceExists = existingInterface != null && existingInterface.TypeKind == TypeKind.Interface;
+
+            // Determine the Create method return type and parameter list for the factory class.
+            // When the interface exists, use its signature so the implementation matches.
+            var createReturnType = className;
+            var createParametersText = nonInjectedParametersText;
+            if (existingInterface != null)
+            {
+                var createMethod = existingInterface.GetMembers("Create")
+                    .OfType<IMethodSymbol>()
+                    .FirstOrDefault();
+                if (createMethod != null)
+                {
+                    createReturnType = createMethod.ReturnType.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat);
+                    createParametersText = string.Join(", ",
+                        createMethod.Parameters.Select(p =>
+                            $"{p.Type.ToDisplayString(SymbolDisplayFormat.MinimallyQualifiedFormat)} {p.Name}" +
+                            (p.HasExplicitDefaultValue
+                                ? $" = {(p.ExplicitDefaultValue == null ? "null" : p.ExplicitDefaultValue.ToString())}"
+                                : "")));
+                }
+            }
+
             var sourceBuilder = new StringBuilder();
             sourceBuilder.Append(@$"
 using System.Linq;
 namespace {namespaceName}
-{{
+{{");
+
+            if (!interfaceExists)
+            {
+                sourceBuilder.Append(@$"
     public interface I{className}Factory
     {{
         {className} Create({nonInjectedParametersText});
-    }} 
+    }}");
+            }
+
+            sourceBuilder.Append(@$"
     public class {className}Factory : I{className}Factory
     {{
-        public {className}Factory({injectedParametersText}) 
-        {{ 
+        public {className}Factory({injectedParametersText})
+        {{
 {constructorAssignments}
         }}
 {privateVariables}
-        public {className} Create({nonInjectedParametersText}) 
+        public {createReturnType} Create({createParametersText})
         {{
             return new {className}({argumentsText});
         }}

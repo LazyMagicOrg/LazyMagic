@@ -117,6 +117,13 @@ public interface ILzMessages : INotifyPropertyChanged
     public void SetMsgItem(string culture, string key, MsgItem msgItem);
 
     /// <summary>
+    /// Adds new message files and loads them into all existing message sets.
+    /// File paths use {culture} placeholders (same format as MessageFiles).
+    /// Files already registered are skipped (idempotent).
+    /// </summary>
+    public Task AddMessageFilesAsync(List<string> newFiles);
+
+    /// <summary>
     /// Save any dirty message sets.
     /// </summary>
     public Task SaveMessageSetsAsync();

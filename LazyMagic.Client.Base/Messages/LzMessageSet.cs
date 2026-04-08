@@ -119,27 +119,77 @@ public class LzMessageSet : NotifyBase
         _keepDocs = keepDocs;
         _staticAssets = osAccess;
 
-        foreach (var filePath in _messageFiles)
+        // Load all message files in parallel
+        var tasks = _messageFiles.Select(async filePath =>
         {
             try
             {
-
                 var json = await _staticAssets.ReadContentAsync(filePath);
-                if (!string.IsNullOrEmpty(json))
-                {
-                    var doc = JsonConvert.DeserializeObject<MessageDoc>(json)!;
-                    MessageDocs[filePath] = doc;
-                    // todo: remove
-                    //Console.WriteLine($"Loaded messages file: {filePath}, Messages.Count: {doc.Messages.Count}");
-                }
+                return (filePath, json);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error loading messages file: {filePath} {ex.Message}");
+                return (filePath, (string?)null);
+            }
+        }).ToArray();
+
+        var results = await Task.WhenAll(tasks);
+
+        foreach (var (filePath, json) in results)
+        {
+            if (!string.IsNullOrEmpty(json))
+            {
+                var doc = JsonConvert.DeserializeObject<MessageDoc>(json)!;
+                MessageDocs[filePath] = doc;
             }
         }
+
         UpdateMsgs();
     }
+    /// <summary>
+    /// Adds new message files to this message set, loads them, and rebuilds
+    /// the processed message dictionaries. Files already present are skipped.
+    /// File paths should already have {culture} replaced with the actual culture.
+    /// </summary>
+    public async Task AddMessageFilesAsync(List<string> newFiles, IStaticAssets staticAssets)
+    {
+        // Filter out files already in the list
+        var filesToAdd = newFiles.Where(f => !_messageFiles.Contains(f)).ToList();
+        if (filesToAdd.Count == 0) return;
+
+        _staticAssets ??= staticAssets;
+        _messageFiles.AddRange(filesToAdd);
+
+        // Load only the new files in parallel
+        var tasks = filesToAdd.Select(async filePath =>
+        {
+            try
+            {
+                var json = await _staticAssets.ReadContentAsync(filePath);
+                return (filePath, json);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading messages file: {filePath} {ex.Message}");
+                return (filePath, (string?)null);
+            }
+        }).ToArray();
+
+        var results = await Task.WhenAll(tasks);
+
+        foreach (var (filePath, json) in results)
+        {
+            if (!string.IsNullOrEmpty(json))
+            {
+                var doc = JsonConvert.DeserializeObject<MessageDoc>(json)!;
+                MessageDocs[filePath] = doc;
+            }
+        }
+
+        UpdateMsgs();
+    }
+
     public void UpdateMsgs(LzMessageUnits? unitsArg = null, string? key = null)
     {
         foreach (LzMessageUnits units in Enum.GetValues(typeof(LzMessageUnits)))
