@@ -91,7 +91,7 @@ export class ConnectivityService {
         
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 100); 
+            const timeoutId = setTimeout(() => controller.abort(), 500); 
             
             await fetch(url, {
                 method: 'HEAD',
