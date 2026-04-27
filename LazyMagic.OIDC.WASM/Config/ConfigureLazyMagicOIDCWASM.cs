@@ -100,6 +100,29 @@ public static class ConfigureLazyMagicOIDCWASM
                 var selectedAuth = await lazyConfig.GetSelectedAuthConfigAsync();
                 Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Completed GetSelectedAuthConfigAsync");
 
+                // Per-host pool override: login.html does the path-aware lookup
+                // against /config.apps[] and persists the chosen pool name to
+                // sessionStorage as `auth-config-name`. Read it here so the
+                // WASM bundle's compiled-in defaultAuthConfigName doesn't
+                // clobber a per-subtenant override at /authentication/login-callback.
+                // Falls through silently if absent (direct navigation, no
+                // login.html in the flow) — defaultAuthConfigName then applies.
+                try
+                {
+                    var jsRuntime = host.Services.GetRequiredService<IJSRuntime>();
+                    var sessionAuth = await jsRuntime.InvokeAsync<string?>(
+                        "sessionStorage.getItem", "auth-config-name");
+                    if (!string.IsNullOrEmpty(sessionAuth) && sessionAuth != selectedAuth)
+                    {
+                        Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] sessionStorage 'auth-config-name'='{sessionAuth}' overrides default '{selectedAuth}'");
+                        selectedAuth = sessionAuth;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] sessionStorage check skipped: {ex.Message}");
+                }
+
                 Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Looking for selectedAuth '{selectedAuth}' in available configs: {string.Join(", ", authConfigs.Keys)}");
                 
                 if (authConfigs.TryGetValue(selectedAuth, out var authConfig))
