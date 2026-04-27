@@ -123,14 +123,49 @@ self.addEventListener('fetch', event => {
         const isOnline = await self.connectivityService.isReallyOnline();
         let request = event.request;
 
+        // Special paths the SW must NOT touch. These are server-side façades
+        // and framework routes whose responses (often cross-origin redirects
+        // or runtime-served Blazor assets) the SW cannot safely intermediate:
+        //   /authentication/  — Blazor's OIDC RemoteAuthenticatorView routes
+        //   /_framework/      — Blazor WASM runtime assets
+        //   /_content/        — Razor static-asset library content
+        //   /auth/            — host-rooted OIDC façade (CFAuth.js dispatcher
+        //                       for /authorize, /token, /userInfo, /logout, etc.;
+        //                       /authorize 302s cross-origin to Cognito Hosted UI)
+        //   /oauth2/          — apex OAuth callbacks (CFAuthCallback.js fans out
+        //                       to subtenant). The browser navigates here directly
+        //                       from Cognito with code+state in the querystring;
+        //                       SW must not rewrite to SPA root.
+        // Plus consumer-declared `appConfig.nonSpaPaths` (e.g. /explore/ for
+        // origin-served static sites under a WASM app whose appPath is "/").
+        // When appPath is "/", every path matches APP_CACHE_NAME inside
+        // getCacheName, so without this short-circuit the cache+fetch branch
+        // below would intercept these requests too — and `!response.ok` from
+        // a cross-origin 302 gets coerced to a 204, hanging the auth flow.
+        const consumerNonSpaPaths = Array.isArray(self.appConfig?.nonSpaPaths)
+            ? self.appConfig.nonSpaPaths
+            : [];
+        const isSpecialPath = path.includes('/authentication/') ||
+                             path.includes('/_framework/') ||
+                             path.includes('/_content/') ||
+                             path.startsWith('/auth/') ||
+                             path.startsWith('/oauth2/') ||
+                             consumerNonSpaPaths.some(p => path.startsWith(p));
+
+        if (isSpecialPath) {
+            // Pass through untouched — let the browser/CF handle redirects,
+            // cross-origin navigations, and framework asset delivery.
+            return fetch(event.request);
+        }
+
         // Handle navigation requests for Blazor/SPA applications
         if (request.mode === 'navigate') {
             console.debug('Handling navigation request for:', path);
-            
+
             // Check if we're at the exact app root path
-            const isAppRoot = path === self.appConfig.appPath || 
+            const isAppRoot = path === self.appConfig.appPath ||
                             path === self.appConfig.appPath + '/';
-            
+
             if (isAppRoot) {
                 // For the app root, we need to explicitly request index.html
                 // because that's how it's stored in the cache
@@ -147,15 +182,11 @@ self.addEventListener('fetch', event => {
             } else {
                 // For other paths, check if it's a client-side route that needs redirection
                 const hasFileExtension = /\.[a-zA-Z0-9]+$/.test(path);
-                
-                // Special paths that should not be redirected
-                const isSpecialPath = path.includes('/authentication/') || 
-                                     path.includes('/_framework/') || 
-                                     path.includes('/_content/');
-                
-                // If it's a navigation request without a file extension and not a special path,
-                // redirect to the app root (without index.html) so Blazor can handle client-side routing
-                if (!hasFileExtension && !isSpecialPath) {
+
+                // If it's a navigation request without a file extension,
+                // redirect to the app root (without index.html) so Blazor can handle client-side routing.
+                // (Special paths were already short-circuited above.)
+                if (!hasFileExtension) {
                     console.log('SPA route detected, redirecting to app root:', path);
                     url.pathname = self.appConfig.appPath;
                     request = new Request(url.toString(), {

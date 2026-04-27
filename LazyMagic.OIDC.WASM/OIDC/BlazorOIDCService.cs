@@ -16,6 +16,7 @@ public class BlazorOIDCService : IOIDCService, IDisposable
     private readonly ILogger<BlazorOIDCService> _logger;
     private readonly IRememberMeService _rememberMeService;
     private readonly IDynamicConfigurationProvider _configProvider;
+    private readonly DynamicOidcConfigHolder _dynamicConfigHolder;
     private readonly IFastAuthenticationService? _fastAuth;
     private readonly ITokenRefreshService? _tokenRefreshService;
 
@@ -30,6 +31,7 @@ public class BlazorOIDCService : IOIDCService, IDisposable
         ILogger<BlazorOIDCService> logger,
         IRememberMeService rememberMeService,
         IDynamicConfigurationProvider configProvider,
+        DynamicOidcConfigHolder dynamicConfigHolder,
         IFastAuthenticationService? fastAuth = null,
         ITokenRefreshService? tokenRefreshService = null)
     {
@@ -40,6 +42,7 @@ public class BlazorOIDCService : IOIDCService, IDisposable
         _logger = logger;
         _rememberMeService = rememberMeService;
         _configProvider = configProvider;
+        _dynamicConfigHolder = dynamicConfigHolder;
         _fastAuth = fastAuth;
         _tokenRefreshService = tokenRefreshService;
 
@@ -353,11 +356,22 @@ public class BlazorOIDCService : IOIDCService, IDisposable
             await _rememberMeService.ClearTokensAsync();
             _logger.LogInformation("[LogoutAsync][{Timestamp}] Tokens cleared from storage", DateTime.UtcNow.ToString("HH:mm:ss.fff"));
             
-            // Build logout URL to clear OIDC provider session
-            // Use async version to ensure end_session_endpoint is fetched from discovery document
-            // Note: Keycloak requires the redirect URI to match EXACTLY what's configured.
-            // BaseUri includes the trailing slash which matches the Keycloak config.
-            var postLogoutRedirectUri = _navigation.BaseUri;
+            // Build logout URL to clear OIDC provider session.
+            // Use async version to ensure end_session_endpoint is fetched from
+            // discovery document.
+            //
+            // Prefer the configured PostLogoutRedirectUri from the loaded OIDC
+            // config (e.g., a tenant-apex /oauth2/logout-callback that fans
+            // out to the originating subtenant via OAuth state — see
+            // OidcOptionsConfiguration.FromAuthConfig). Cognito requires
+            // exact-match registered logout URLs and doesn't support wildcards,
+            // so subtenant deployments must register the apex and route through
+            // it. Fall back to BaseUri for providers that allow per-host
+            // wildcards (Keycloak) or per-subdomain registration.
+            var holderConfig = _dynamicConfigHolder.GetConfiguration();
+            var postLogoutRedirectUri = !string.IsNullOrEmpty(holderConfig?.PostLogoutRedirectUri)
+                ? holderConfig.PostLogoutRedirectUri
+                : _navigation.BaseUri;
             _logger.LogInformation("[LogoutAsync][{Timestamp}] PostLogoutRedirectUri: {PostLogoutRedirectUri}", DateTime.UtcNow.ToString("HH:mm:ss.fff"), postLogoutRedirectUri);
             
             // Pass the ID token hint for providers that require it (Keycloak, Okta, etc.)

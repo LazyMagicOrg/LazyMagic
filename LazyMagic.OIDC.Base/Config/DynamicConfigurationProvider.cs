@@ -293,7 +293,11 @@ public class DynamicConfigurationProvider : IDynamicConfigurationProvider
         {
             if (_oidcConfig.AuthConfigs.TryGetValue(_oidcConfig.SelectedAuthConfig, out var authConfig))
             {
-                return authConfig["authority"]?.ToString();
+                // Both casings — server-side config emitters vary (CFAuthConfig
+                // uses PascalCase to match C# property names; older configs
+                // use lowercase).
+                return authConfig["authority"]?.ToString()
+                    ?? authConfig["Authority"]?.ToString();
             }
         }
         catch (Exception ex)

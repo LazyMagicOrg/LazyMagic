@@ -98,17 +98,40 @@ public class OidcOptionsConfiguration
             }
             else
             {
-                // Generic OIDC provider configuration
-                options.Authority = authConfig["authority"]?.ToString();
+                // Generic OIDC provider configuration. Read both casings —
+                // server-side config emitters vary (CFAuthConfig.js uses
+                // PascalCase to match the C# property names; older configs
+                // use lowercase). Without this, Authority silently lands as
+                // null and the WASM app's logout/silent-renew calls skip
+                // through (BuildLogoutUrlAsync returns null).
+                options.Authority = authConfig["authority"]?.ToString() ?? authConfig["Authority"]?.ToString();
                 options.ClientId = authConfig["clientId"]?.ToString() ?? authConfig["ClientId"]?.ToString();
-                options.ResponseType = authConfig["responseType"]?.ToString() ?? "code";
+                options.ResponseType = authConfig["responseType"]?.ToString() ?? authConfig["ResponseType"]?.ToString() ?? "code";
                 options.MetadataUrl = authConfig["metadataUrl"]?.ToString() ?? authConfig["MetadataUrl"]?.ToString();
             }
         }
         if(!baseAddress.EndsWith('/'))
-            baseAddress = baseAddress + '/';    
-        options.RedirectUri = $"{baseAddress}authentication/login-callback";
-        options.PostLogoutRedirectUri = baseAddress;
+            baseAddress = baseAddress + '/';
+
+        // RedirectUri / PostLogoutRedirectUri precedence:
+        //   1. authConfig.RedirectUri / PostLogoutRedirectUri (server-supplied) —
+        //      lets the deployment route the OIDC callback through a domain other
+        //      than the WASM app's origin (e.g., a tenant-apex callback that fans
+        //      out to the originating subtenant via OAuth state). Required when
+        //      the IdP only allows exact-match callback URLs (Cognito) and the
+        //      app runs on multiple subdomains under one tenant.
+        //   2. Fallback: baseAddress-derived (current behavior). Used when the
+        //      IdP allows wildcards (Keycloak) or per-subdomain registration.
+        var serverRedirectUri = authConfig["RedirectUri"]?.ToString()
+                                ?? authConfig["redirectUri"]?.ToString();
+        var serverPostLogoutRedirectUri = authConfig["PostLogoutRedirectUri"]?.ToString()
+                                          ?? authConfig["postLogoutRedirectUri"]?.ToString();
+        options.RedirectUri = !string.IsNullOrEmpty(serverRedirectUri)
+            ? serverRedirectUri
+            : $"{baseAddress}authentication/login-callback";
+        options.PostLogoutRedirectUri = !string.IsNullOrEmpty(serverPostLogoutRedirectUri)
+            ? serverPostLogoutRedirectUri
+            : baseAddress;
         
         options.DefaultScopes.Clear();
         options.DefaultScopes.Add("openid");
