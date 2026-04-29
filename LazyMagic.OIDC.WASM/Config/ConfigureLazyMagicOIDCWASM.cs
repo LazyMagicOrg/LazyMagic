@@ -95,7 +95,58 @@ public static class ConfigureLazyMagicOIDCWASM
                 Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Starting LoadAuthConfigsAsync");
                 var authConfigs = await lazyConfig.LoadAuthConfigsAsync();
                 Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Completed LoadAuthConfigsAsync");
-                
+
+                // Per-host public-app gate. /config.apps[] tells us, for the
+                // current host, which app at which path is gated by which
+                // pool — after the system→tenant→subtenant cascade resolved
+                // by the deploy plugin (e.g. BCPlugin). When the resolved
+                // AuthConfig is empty (the explicit-public marker emitted
+                // for WebApps[Path].AuthConfig = "" overrides), short-
+                // circuit OIDC entirely: SetAuthenticationDisabled() makes
+                // DynamicOidcPostConfigureOptions null out Authority +
+                // MetadataUrl, and Microsoft's RemoteAuthenticationService
+                // skips silent renewal against a null authority.
+                //
+                // Why bootstrap-time and not on-demand? RemoteAuthenticationService
+                // fires its first prompt=none probe as soon as anything
+                // queries auth state (AuthorizeView, FastAuthenticationService,
+                // etc.). Bundle-baked defaultAuthConfigName is a fallback
+                // for hosts whose /config doesn't list the path — NOT a
+                // floor that beats an explicit "this app is public" verdict.
+                //
+                // The lookup needs the current pathname; ILzHost.AppPath is
+                // the bundle's mount path ("/" for these WASM apps), not
+                // the request path, so we read location.pathname via JS.
+                // NoMatch falls through to the existing selectedAuth path
+                // (bundle default + sessionStorage override) — preserves
+                // legacy behaviour for hosts whose /config predates apps[].
+                try
+                {
+                    var jsRuntime = host.Services.GetRequiredService<IJSRuntime>();
+                    var pathname = await jsRuntime.InvokeAsync<string>("eval", "location.pathname");
+                    var resolution = lazyConfig.TryResolveAuthConfigForPath(pathname, out var poolName);
+                    Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] apps[] resolution for path '{pathname}': {resolution}{(resolution == AppAuthResolutionKind.Gated ? $" (pool={poolName})" : "")}");
+                    if (resolution == AppAuthResolutionKind.Public)
+                    {
+                        Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Path '{pathname}' is explicit-public; disabling OIDC and short-circuiting bootstrap");
+                        configHolder.SetAuthenticationDisabled();
+                        try
+                        {
+                            var oidcOptions = host.Services.GetRequiredService<IOptionsSnapshot<RemoteAuthenticationOptions<OidcProviderOptions>>>();
+                            _ = oidcOptions.Value; // trigger post-configure with disabled flag
+                        }
+                        catch { /* expected when auth is disabled */ }
+                        return;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // pathname read or resolution threw — fall through to the
+                    // legacy path. Worst case, we configure OIDC for an app
+                    // that's actually public, restoring the old behaviour.
+                    Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] apps[] gate skipped: {ex.Message}");
+                }
+
                 Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Starting GetSelectedAuthConfigAsync");
                 var selectedAuth = await lazyConfig.GetSelectedAuthConfigAsync();
                 Console.WriteLine($"[{DateTime.UtcNow:HH:mm:ss.fff}] Completed GetSelectedAuthConfigAsync");

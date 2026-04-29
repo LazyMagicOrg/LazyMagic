@@ -75,6 +75,28 @@ public class LazyOidcConfig : IOidcConfig
 
     public bool IsConfigured => _loadedConfig != null;
 
+    /// <summary>
+    /// Per-host, per-path app routing entries from <c>/config.apps[]</c>.
+    /// Returns an empty list pre-load (so callers don't need a null-check);
+    /// use <see cref="IsConfigured"/> to distinguish "still loading" from
+    /// "loaded but no entries."
+    /// </summary>
+    public virtual List<AppEntry> Apps
+        => _loadedConfig?.Apps ?? new List<AppEntry>();
+
+    /// <summary>
+    /// Delegates to <see cref="OidcConfig.TryResolveAuthConfigForPath"/>
+    /// once the config has loaded. Pre-load returns
+    /// <see cref="AppAuthResolutionKind.NoMatch"/> — the caller's natural
+    /// fall-through to a bundle default applies.
+    /// </summary>
+    public virtual AppAuthResolutionKind TryResolveAuthConfigForPath(string pathname, out string? poolName)
+    {
+        poolName = null;
+        return _loadedConfig?.TryResolveAuthConfigForPath(pathname, out poolName)
+               ?? AppAuthResolutionKind.NoMatch;
+    }
+
     public virtual JObject? GetCurrentAuthConfig()
     {
         var authConfigs = AuthConfigs;

@@ -40,4 +40,23 @@ public interface IOidcConfig
     /// Checks if configuration is loaded
     /// </summary>
     bool IsConfigured { get; }
+
+    /// <summary>
+    /// Per-host, per-path resolution of which auth pool gates which app.
+    /// Empty when configuration hasn't loaded yet OR when the deploy
+    /// plugin doesn't emit <c>apps[]</c>. Lazy implementations may return
+    /// an empty list pre-load; check <see cref="IsConfigured"/> first if
+    /// you need to distinguish "loading" from "no apps."
+    /// </summary>
+    List<AppEntry> Apps { get; }
+
+    /// <summary>
+    /// Tri-state lookup of the auth pool for a given pathname. See
+    /// <see cref="OidcConfig.TryResolveAuthConfigForPath"/> for the
+    /// match rule and the contract of the three outcomes. The WASM
+    /// bootstrap calls this before configuring OIDC so explicit-public
+    /// apps never wire up an authority (and thus never fire silent
+    /// renewal probes against Cognito).
+    /// </summary>
+    AppAuthResolutionKind TryResolveAuthConfigForPath(string pathname, out string? poolName);
 }

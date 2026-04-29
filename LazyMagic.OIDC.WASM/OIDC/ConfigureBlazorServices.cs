@@ -47,26 +47,22 @@ public static class ConfigureBlazorServices
             options.UserOptions.NameClaim = "name";
             options.UserOptions.RoleClaim = "cognito:groups";
             
-            // Try to disable automatic discovery and metadata loading that might cause delays
-            try
-            {
-                // Set metadata URL to prevent discovery document loading during placeholder phase
-                options.ProviderOptions.MetadataUrl = "https://placeholder.authority/.well-known/openid-configuration";
-                
-                // Additional OIDC client configuration to prevent network delays
-                options.ProviderOptions.AdditionalProviderParameters.Add("loadUserInfo", "false");
-                options.ProviderOptions.AdditionalProviderParameters.Add("automaticSilentRenew", "false");
-                options.ProviderOptions.AdditionalProviderParameters.Add("includeIdTokenInSilentRenew", "false");
-                
-                // Try to disable metadata discovery entirely during initialization
-                options.ProviderOptions.AdditionalProviderParameters.Add("skipDiscoveryDocumentValidation", "true");
-                options.ProviderOptions.AdditionalProviderParameters.Add("disableMetadataAutoRefresh", "true");
-                
-            }
-            catch (Exception configEx)
-            {
-            }
-            
+            // Set metadata URL to prevent discovery document loading during placeholder phase
+            options.ProviderOptions.MetadataUrl = "https://placeholder.authority/.well-known/openid-configuration";
+
+            // NOTE: AdditionalProviderParameters previously held oidc-client-ts
+            // SDK config flags (loadUserInfo, automaticSilentRenew,
+            // includeIdTokenInSilentRenew, skipDiscoveryDocumentValidation,
+            // disableMetadataAutoRefresh). That collection appends entries to
+            // the QUERY STRING of every /authorize request — it is not the
+            // right channel for SDK-internal config. The flags didn't take
+            // effect on the SDK side, AND they polluted OAuth requests with
+            // garbage params (visible as e.g. `…&automaticSilentRenew=false&
+            // skipDiscoveryDocumentValidation=true` on /authorize URLs).
+            // Removed. If those SDK behaviours need to change, configure them
+            // through the oidc-client-ts settings object directly, or via a
+            // post-init hook on the JS-side AuthenticationService.
+
         });
 
         // Add authorization services that AuthorizeView components need
