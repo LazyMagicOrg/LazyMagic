@@ -184,11 +184,23 @@ self.addEventListener('fetch', event => {
                 const hasFileExtension = /\.[a-zA-Z0-9]+$/.test(path);
 
                 // If it's a navigation request without a file extension,
-                // redirect to the app root (without index.html) so Blazor can handle client-side routing.
+                // serve the app root's index.html so Blazor can handle client-side routing.
+                // We rewrite to appPath + index.html (NOT just appPath) for two reasons:
+                //   1. The cache stores the document under /index.html, so a lookup
+                //      for /index.html hits; a lookup for / would miss and fall through
+                //      to a network fetch.
+                //   2. A network fetch for the app root may be 302-redirected by edge
+                //      logic (e.g. front-door gates that send fresh visits to a static
+                //      home page). fetch() follows that redirect, producing a Response
+                //      with `redirected: true`. Per the SW spec, returning a redirected
+                //      Response from a navigation fetch handler causes the browser to
+                //      fail the navigation (Chrome: net::ERR_FAILED). Fetching the
+                //      index.html file directly bypasses any directory-level redirects.
                 // (Special paths were already short-circuited above.)
                 if (!hasFileExtension) {
-                    console.log('SPA route detected, redirecting to app root:', path);
-                    url.pathname = self.appConfig.appPath;
+                    console.log('SPA route detected, rewriting to app root index.html:', path);
+                    const newPath = self.appConfig.appPath + (self.appConfig.appPath.endsWith('/') ? '' : '/') + 'index.html';
+                    url.pathname = newPath;
                     request = new Request(url.toString(), {
                         method: 'GET',
                         headers: event.request.headers,
