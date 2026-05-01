@@ -88,10 +88,28 @@ self.addEventListener('install', event => {
                         // Make sure to use the full absolute URL for the request,
                         //otherwise the request may fail when the service worker is not at the root.
                         if (!asset.url.startsWith('/') )
-                            asset.url = '/' + asset.url;  
+                            asset.url = '/' + asset.url;
+                        // cache: 'default' lets the browser reuse the
+                        // HTTP cache copy that the WASM cold-boot just
+                        // populated. This avoids the "double-fetch on
+                        // first visit" pattern: the runtime pulls every
+                        // asset fresh during boot, then the SW install
+                        // would refetch the same set with cache:'no-cache'
+                        // — round-tripping ~2-3 MB of non-wasm assets
+                        // post-TTI for nothing.
+                        //
+                        // Safety: server-side cache-control headers
+                        // already gate freshness correctly. Hashed
+                        // assets (/_framework/*.HASH.{js,wasm,dat}) are
+                        // public, max-age=1y, immutable — HTTP cache
+                        // hits are always correct. Unhashed assets
+                        // (index.html, service-worker-assets.js, /config,
+                        // etc.) are served with no-cache, must-revalidate
+                        // so the browser still revalidates them on
+                        // every install.
                         return new Request(asset.url, {
                             //integrity: asset.hash,
-                            cache: 'no-cache'
+                            cache: 'default'
                         });
                     });
 
