@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 	<Import Project="$(SolutionDir)CommonPackageHandling.targets" />
 	<PropertyGroup>
-		<TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+		<TargetFrameworks>net10.0</TargetFrameworks>
 		<Description>LazyMagic Notifications WebSocket Lambda</Description>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
 		<ImplicitUsings>enable</ImplicitUsings>
