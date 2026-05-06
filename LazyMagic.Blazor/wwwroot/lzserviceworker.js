@@ -268,15 +268,32 @@ self.addEventListener('fetch', event => {
                         console.debug('Cache miss for request:', request.url, JSON.stringify(request), 'cacheName:', cacheName);
                         return fetch(request)
                             .then(response => {
+                                // Pass real status through. Previously this branch
+                                // substituted a 204 'no content' for any non-2xx,
+                                // which lied about the failure: callers expecting
+                                // JSON would parse the empty body and crash with
+                                // confusing errors, and any 4xx looked the same
+                                // to any code reading response.status. Pass-through
+                                // is safe — the browser cache won't store 4xx
+                                // either way — and lets callers handle real
+                                // failure modes (e.g. an Images.json file that's
+                                // missing for one tenant in a sparse Tenancies/
+                                // tree should look like a 403 to the consumer,
+                                // not a phantom 204).
                                 if (!response.ok) {
-                                    console.error('Fetch error:', response.url);
-                                    return new Response(null, { status: 204, statusText: 'no content' });
+                                    console.error('Cache-miss fetch returned HTTP ' + response.status + ' for', response.url);
                                 }
                                 return response;
                             })
                             .catch(error => {
-                                console.error('Fetch error:', request.url, error);
-                                return new Response(null, { status: 204, statusText: 'no content' });
+                                // Genuine network failure (DNS, abort, opaque
+                                // CORS error). 504 'Gateway Timeout' is more
+                                // honest than 204 — the resource may exist;
+                                // we just couldn't reach it. Lets callers
+                                // distinguish "endpoint refused" from
+                                // "endpoint unreachable."
+                                console.error('Cache-miss network error for', request.url, error);
+                                return new Response(null, { status: 504, statusText: 'Gateway Timeout' });
                             })
                     }
                 }
@@ -285,8 +302,23 @@ self.addEventListener('fetch', event => {
                 }
             }
             catch (error) {
-                console.error('Error during fetch:', event.request.url, error);
-                return new Response('Error during fetch: ', { status: 500 });
+                // Defensive: if the cache logic above (getCacheName /
+                // lazyLoadAssetCache / getCachedResponse) throws — which
+                // can happen when staticContentSettings drifts out of
+                // sync with the actual deployed Tenancies/ tree — fall
+                // through to a plain network fetch instead of returning
+                // a synthetic 500. Returning 500 here for unrelated
+                // requests breaks the page; pass-through preserves the
+                // happy path even when our cache layer is degraded.
+                console.error('SW cache layer error; passing through to network for', event.request.url, error);
+                if (isOnline) {
+                    try { return await fetch(event.request); }
+                    catch (passthroughError) {
+                        console.error('Pass-through network error for', event.request.url, passthroughError);
+                        return new Response(null, { status: 504, statusText: 'Gateway Timeout' });
+                    }
+                }
+                return new Response(null, { status: 504, statusText: 'Gateway Timeout' });
             }
         }
         if (isOnline)

@@ -223,6 +223,19 @@ export async function readAssetCachesByType(cacheType) {
 }
 
 /**
+ * Sentinel written into assetCaches[cacheName].version when a manifest
+ * fetch returned a non-2xx response (e.g. 403 from S3+OAC because the
+ * object doesn't exist for this subtenant). Distinguishes "we haven't
+ * tried yet" ("") from "we tried, the manifest doesn't exist for this
+ * tenant — don't retry." Without this distinction lazyLoadAssetCache
+ * sees version === "" forever and re-runs the failing manifest fetch on
+ * every navigation handled by the SW. Cache groups can legitimately
+ * vary per subtenant — the global staticContentSettings declares the
+ * union, individual tenants may not ship every group.
+ */
+const MANIFEST_MISSING = '__missing__';
+
+/**
  * Reads asset cache and update the cache version.
  * @param {string} cacheName - The URL of the asset cache.
  */
@@ -230,7 +243,7 @@ export async function readAssetsCache(cacheName) {
     try {
         const intilized = await initializeModule();
         if (!intilized) return;
-        console.debug(`Reading cache ${cacheName}`);    
+        console.debug(`Reading cache ${cacheName}`);
         // Read the asset cache version
         //console.log(`Reading cache ${cacheName}`);
         const currentVersion = await readAssetsCacheVersionCached(cacheName); // the version currently in the cache
@@ -266,10 +279,23 @@ export async function readAssetsCache(cacheName) {
 
             try { await loadCache(assetsRequests, cacheName); }
             catch { throw new Error("loading cache"); }
+        } else {
+            // Manifest returned a non-2xx (typically 403 from S3+OAC when
+            // the object doesn't exist for this subtenant). Mark the cache
+            // missing so subsequent lazyLoadAssetCache calls skip instead
+            // of retrying on every fetch the SW handles.
+            console.warn(`Asset manifest unavailable (HTTP ${assetsManifestResponse.status}) for cache ${cacheName}; marking missing.`);
+            assetCaches[cacheName].version = MANIFEST_MISSING;
         }
 
     } catch (error) {
         console.error(`Error: reading cache ${cacheName} ${error}`);
+        // On unexpected errors, also mark missing — the alternative
+        // (leave version === "") drives a per-fetch retry loop that
+        // hammers the origin and slows every page load.
+        if (assetCaches[cacheName] && assetCaches[cacheName].version === '') {
+            assetCaches[cacheName].version = MANIFEST_MISSING;
+        }
     }
 }
 /**
@@ -375,15 +401,21 @@ export async function checkAssetCaches() {
  * @param {string} cacheName - The name of the asset cache to load.
  */
 export async function lazyLoadAssetCache(cacheName) {
-    // Load the cache if it is not already loaded 
+    // Load the cache if it is not already loaded
     try {
         const intilized = await initializeModule();
         if (!intilized) return;
         if (fetchingPrefetchCaches) return;
         if (cacheName === APP_CACHE_NAME) return;
-        console.debug(`Lazy loading cache ${cacheName}`);
         const cacheItem = assetCaches[cacheName];
+        if (!cacheItem) return; // unknown cache name — don't crash
+        // Only attempt the cache load when we haven't tried yet ("").
+        // Any non-empty value — a real version OR the MANIFEST_MISSING
+        // sentinel from a prior failed attempt — short-circuits. Without
+        // that, a 403'd manifest would re-run readAssetsCache on every
+        // SW fetch handled, hammering the origin.
         if (cacheItem.version === "") {
+            console.debug(`Lazy loading cache ${cacheName}`);
             await readAssetsCache(cacheName);
         }
     } catch {
