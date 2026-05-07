@@ -73,6 +73,40 @@ export async function activateApplicationCache() {
     if (!intilized) return;
     console.debug(`Activating application cache`);
     await copyCache(TEMP_APP_CACHE_NAME, APP_CACHE_NAME);
+    await evictOrphanCaches();
+}
+
+/**
+ * Delete cache entries that the current SW activation no longer
+ * recognises. Without this, when a prefix is removed from
+ * staticContentSettings.js (or appPrefix changes between deploys), the
+ * old cache stays put — never read, never refreshed, occupying quota.
+ *
+ * Owns the entire origin's cache namespace by assumption: this SW is
+ * the only one writing caches at this origin. EventIt's deployment
+ * model (one Blazor WASM app per subtenant subdomain) satisfies that.
+ * If multiple Blazor apps ever cohabit one origin, replace the broad
+ * sweep with a name-prefix filter (appPrefix-scoped).
+ */
+async function evictOrphanCaches() {
+    try {
+        const expectedNames = new Set([
+            APP_CACHE_NAME,
+            TEMP_APP_CACHE_NAME,
+            ...Object.keys(assetCaches),
+        ]);
+        const allCaches = await caches.keys();
+        const orphans = allCaches.filter(name => !expectedNames.has(name));
+        for (const orphan of orphans) {
+            console.debug(`Evicting orphan cache: ${orphan}`);
+            await caches.delete(orphan);
+        }
+        if (orphans.length > 0) {
+            console.log(`Evicted ${orphans.length} orphan cache(s): ${orphans.join(', ')}`);
+        }
+    } catch (error) {
+        console.error('Error evicting orphan caches:', error);
+    }
 }
 
 /**
@@ -170,13 +204,25 @@ export async function copyCache(sourceCache, targetCache) {
     await caches.delete(sourceCache);
 }
 /**
- * Loads requests/responses into cache. 
- * @param {Request[]} cacheRequests - Array of requests to be cached.
+ * Loads requests/responses into cache.
+ *
+ * @param {Request[]} cacheRequests - Array of asset requests to be cached.
  * @param {string} cacheName - The name of the cache to load assets into.
+ * @param {Request|null} versionRequest - Optional version.json request.
+ *   When provided, version.json is fetched and cached ONLY if every
+ *   asset request succeeded. Caching version.json on partial failure
+ *   would leave the cache stamped at the new version while serving an
+ *   incomplete payload — next readAssetsCache would short-circuit on
+ *   equal versions (server === cached) and never retry, leaving the
+ *   user permanently on a partial cache. Held back means the cache
+ *   stays at the OLD version, the next checkAssetCaches retries the
+ *   load, and a transient deploy-time failure self-heals.
+ *
+ * @returns {Promise<{successCount: number, failureCount: number}>}
  */
-export async function loadCache(cacheRequests, cacheName) {
+export async function loadCache(cacheRequests, cacheName, versionRequest) {
     const intilized = await initializeModule();
-    if (!intilized) return;
+    if (!intilized) return { successCount: 0, failureCount: 0 };
     const cache = await caches.open(cacheName);
 
     // Use Promise.allSettled to handle each request individually
@@ -198,7 +244,29 @@ export async function loadCache(cacheRequests, cacheName) {
             failureCount++;
         }
     }
+
+    // version.json gates "what version this cache thinks it has." Only
+    // write it once every asset succeeded — otherwise next readAssetsCache
+    // would see cached === server and never retry the partial load.
+    if (failureCount === 0 && versionRequest) {
+        try {
+            const versionResp = await fetch(versionRequest);
+            if (versionResp.ok) {
+                await cache.put(versionResp.url, versionResp);
+            } else {
+                console.warn(`Skipping version.json cache for ${cacheName} — fetch returned HTTP ${versionResp.status}`);
+            }
+        } catch (error) {
+            console.error(`Failed to fetch/cache version.json for ${cacheName}:`, error);
+        }
+    } else if (failureCount > 0 && versionRequest) {
+        console.warn(
+            `Cache ${cacheName} loaded with ${failureCount} failure(s); ` +
+            `holding back version.json so next checkAssetCaches retries.`);
+    }
+
     console.debug(`Loaded ${cacheName} cached: ${successCount} failed: ${failureCount}`);
+    return { successCount, failureCount };
 }
 /*
  * Fetches caches of type PreCache.
@@ -263,21 +331,25 @@ export async function readAssetsCache(cacheName) {
             assetCaches[cacheName].version = version;
 
             let assetsRequests;
+            let versionJsonRequest;
             try {
                 assetsRequests = assetsManifest.map(asset => {
                     const url = new URL(asset.url, assetsUrl).href;
                     //console.log(`asset.url: ${asset.url}, url: ${url}`);
                     return new Request(url, { cache: 'no-cache' });
                 });
-                // The version is not in the assets-manifest.json file because its value is calculated based on the
-                // content of the assets-manifest.json file. We need to add it to the list of requests so we have a persisent
-                // record of the version of the cache.
-                const versionJsonRequest = new Request(new URL(cacheName + "version.json", assetsUrl).href, { cache: 'no-cache' });
-                assetsRequests.push(new Request(versionJsonRequest, { cache: 'no-cache' }));
+                // version.json is passed separately so loadCache can hold
+                // it back on partial failure. The version stamp is what
+                // gates "this cache thinks it's at version X" — caching
+                // it alongside an incomplete asset payload would lock the
+                // cache into a permanent partial state. See loadCache.
+                versionJsonRequest = new Request(
+                    new URL(cacheName + "version.json", assetsUrl).href,
+                    { cache: 'no-cache' });
             }
             catch { throw new Error("mapping assets-manifest.json"); }
 
-            try { await loadCache(assetsRequests, cacheName); }
+            try { await loadCache(assetsRequests, cacheName, versionJsonRequest); }
             catch { throw new Error("loading cache"); }
         } else {
             // Manifest returned a non-2xx (typically 403 from S3+OAC when
