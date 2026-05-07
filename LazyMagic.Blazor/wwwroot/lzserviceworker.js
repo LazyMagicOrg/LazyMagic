@@ -34,7 +34,23 @@ async function sendMessage(action, info) {
     }
 }
 
-const offlineAssetsInclude = [/\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/];
+// Patterns the SW's install fan-out includes when populating the offline
+// app cache. Match against URLs in service-worker-assets.js. Anything
+// matching is fetched + put into APP_CACHE_NAME at install time so the
+// PWA can serve the file when the browser is offline.
+//
+// .wasm matters specifically for .NET 8+ Blazor: assemblies (including
+// lazy-loaded component assemblies like SetsCmp.HASH.wasm and
+// Snap3DCmp.HASH.wasm) ship with the .wasm extension, not .blat / .dll
+// as in earlier .NET versions. Without .wasm in this list the SW never
+// caches the framework, and "PWA offline" depends entirely on the
+// browser HTTP cache holding the right URLs — which is fragile under
+// storage pressure or after eviction. Including .wasm makes offline
+// support work reliably on first install.
+//
+// .blat and .dat preserved for backwards compatibility with
+// pre-.NET-8 consumers that may still use those extensions.
+const offlineAssetsInclude = [/\.html/, /\.js$/, /\.json$/, /\.css$/, /\.woff$/, /\.png$/, /\.jpe?g$/, /\.gif$/, /\.ico$/, /\.blat$/, /\.dat$/, /\.svg$/, /\.woff2$/, /\.wasm$/];
 const offlineAssetsExclude = [/GoogleTag\.js$/]; // Excluding GoogleTag.js because ad blockers block it and this will cause the caching to fail.
 
 self.addEventListener('message', async event => {
