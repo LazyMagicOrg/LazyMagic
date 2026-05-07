@@ -135,44 +135,70 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', event => {
+    // ────────────────────────────────────────────────────────────────
+    // Special-path early-return — runs BEFORE event.respondWith.
+    // ────────────────────────────────────────────────────────────────
+    // For paths we don't actually want to intermediate, the SW MUST
+    // return without calling event.respondWith. Letting the browser
+    // handle the fetch natively avoids two distinct failure modes
+    // that previously surfaced when we wrapped a pass-through
+    // `fetch(event.request)` in `event.respondWith`:
+    //
+    //   1. SRI + Content-Encoding interaction (the immediate trigger).
+    //      Blazor adds `integrity` to its `_framework/*` requests.
+    //      CFRequest.js rewrites `_framework/X.wasm` → `X.wasm.br`
+    //      based on Accept-Encoding, so the response carries
+    //      `Content-Encoding: br`. Per spec, integrity is checked
+    //      against the DECODED body. But `event.respondWith(fetch(req))`
+    //      hits a long-standing Chromium pipeline-ordering issue
+    //      where the SRI digest is computed against the *encoded*
+    //      body — failing the check even though server bytes are
+    //      correct. Symptom: "Failed to find a valid digest in the
+    //      'integrity' attribute … with computed SHA-256 integrity X.
+    //      The resource has been blocked." Native fetch (no SW
+    //      interception) decodes first, then checks SRI, and works.
+    //
+    //   2. Cross-origin redirect mishandling. Auth-related paths
+    //      (/auth/, /oauth2/, /authentication/) frequently 302 to
+    //      Cognito's Hosted UI. Returning a redirected Response
+    //      from event.respondWith fails the navigation per spec.
+    //
+    // Special paths the SW must NOT touch:
+    //   /authentication/  — Blazor's OIDC RemoteAuthenticatorView routes
+    //   /_framework/      — Blazor WASM runtime assets (SRI + br)
+    //   /_content/        — Razor static-asset library content
+    //   /auth/            — host-rooted OIDC façade (CFAuth.js)
+    //   /oauth2/          — apex OAuth callbacks (CFAuthCallback.js)
+    // Plus consumer-declared `appConfig.nonSpaPaths` (e.g. /explore/).
+    const reqPath = new URL(event.request.url).pathname;
+    const consumerNonSpaPaths = Array.isArray(self.appConfig?.nonSpaPaths)
+        ? self.appConfig.nonSpaPaths
+        : [];
+    const isSpecialPathEarly = reqPath.includes('/authentication/') ||
+                               reqPath.includes('/_framework/') ||
+                               reqPath.includes('/_content/') ||
+                               reqPath.startsWith('/auth/') ||
+                               reqPath.startsWith('/oauth2/') ||
+                               consumerNonSpaPaths.some(p => reqPath.startsWith(p));
+    if (isSpecialPathEarly) {
+        // Returning without calling event.respondWith hands control
+        // back to the browser's default fetch pipeline. The browser
+        // does its own network fetch + content decoding + SRI check.
+        return;
+    }
+
     event.respondWith((async () => {
         let url = new URL(event.request.url);
         let path = url.pathname;
         const isOnline = await self.connectivityService.isReallyOnline();
         let request = event.request;
 
-        // Special paths the SW must NOT touch. These are server-side façades
-        // and framework routes whose responses (often cross-origin redirects
-        // or runtime-served Blazor assets) the SW cannot safely intermediate:
-        //   /authentication/  — Blazor's OIDC RemoteAuthenticatorView routes
-        //   /_framework/      — Blazor WASM runtime assets
-        //   /_content/        — Razor static-asset library content
-        //   /auth/            — host-rooted OIDC façade (CFAuth.js dispatcher
-        //                       for /authorize, /token, /userInfo, /logout, etc.;
-        //                       /authorize 302s cross-origin to Cognito Hosted UI)
-        //   /oauth2/          — apex OAuth callbacks (CFAuthCallback.js fans out
-        //                       to subtenant). The browser navigates here directly
-        //                       from Cognito with code+state in the querystring;
-        //                       SW must not rewrite to SPA root.
-        // Plus consumer-declared `appConfig.nonSpaPaths` (e.g. /explore/ for
-        // origin-served static sites under a WASM app whose appPath is "/").
-        // When appPath is "/", every path matches APP_CACHE_NAME inside
-        // getCacheName, so without this short-circuit the cache+fetch branch
-        // below would intercept these requests too — and `!response.ok` from
-        // a cross-origin 302 gets coerced to a 204, hanging the auth flow.
-        const consumerNonSpaPaths = Array.isArray(self.appConfig?.nonSpaPaths)
-            ? self.appConfig.nonSpaPaths
-            : [];
-        const isSpecialPath = path.includes('/authentication/') ||
-                             path.includes('/_framework/') ||
-                             path.includes('/_content/') ||
-                             path.startsWith('/auth/') ||
-                             path.startsWith('/oauth2/') ||
-                             consumerNonSpaPaths.some(p => path.startsWith(p));
-
+        // Belt-and-suspenders: re-derive isSpecialPath inside the
+        // respondWith body in case future edits change the early
+        // exit condition. This branch is unreachable as long as the
+        // early return above stays in sync with this list.
+        const isSpecialPath = isSpecialPathEarly;
         if (isSpecialPath) {
-            // Pass through untouched — let the browser/CF handle redirects,
-            // cross-origin navigations, and framework asset delivery.
             return fetch(event.request);
         }
 
