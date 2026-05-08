@@ -152,44 +152,54 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', event => {
     // ────────────────────────────────────────────────────────────────
-    // Special-path early-return — runs BEFORE event.respondWith.
+    // Special-path handling — runs BEFORE the main event.respondWith.
     // ────────────────────────────────────────────────────────────────
-    // For requests we don't want to intermediate, the SW MUST return
-    // without calling event.respondWith. Letting the browser handle
-    // the fetch natively avoids two distinct failure modes that
-    // surface when we wrap them in event.respondWith:
+    // Two surfaces require special care:
     //
-    //   1. SRI + Content-Encoding interaction. Blazor adds `integrity`
-    //      to its hashed `_framework/*` requests (the WASM assemblies
-    //      listed in blazor.boot.json). When CloudFront serves them
-    //      with Content-Encoding (precompressed sibling OR edge auto-
-    //      compression), Chromium has a long-standing pipeline-
-    //      ordering bug where event.respondWith(fetch(req)) computes
-    //      the SRI digest against the ENCODED body instead of the
-    //      decoded one — failing the check even though server bytes
-    //      are correct. Native fetch decodes first, then checks SRI,
-    //      and works. See Platform/AssetDeliveryReview.md (BCProjects).
+    //   1. Auth + nonSpa paths. /auth/, /oauth2/, /authentication/
+    //      302 to Cognito's Hosted UI; returning a redirected
+    //      Response from event.respondWith fails navigation per
+    //      spec. Consumer-declared nonSpaPaths are similar (e.g.
+    //      bypassing SW for app-specific endpoints). For these, we
+    //      MUST early-return WITHOUT calling event.respondWith so
+    //      the browser handles the fetch natively.
     //
-    //   2. Cross-origin redirect mishandling. Auth-related paths
-    //      (/auth/, /oauth2/, /authentication/) 302 to Cognito's
-    //      Hosted UI. Returning a redirected Response from
-    //      event.respondWith fails navigation per spec.
+    //   2. SRI + Content-Encoding (Chromium pipeline bug). Blazor
+    //      adds `integrity` to its hashed `_framework/*` requests.
+    //      When CloudFront serves them with Content-Encoding
+    //      (precompressed sibling OR edge auto-compression),
+    //      Chromium has a pipeline-ordering bug where
+    //      event.respondWith(fetch(req)) computes the SRI digest
+    //      against the ENCODED body instead of the decoded one —
+    //      failing SRI even though server bytes are correct. See
+    //      Platform/AssetDeliveryReview.md (BCProjects).
     //
-    // SCOPING: the prior version excluded broad path prefixes
+    //      Prior fix (3.0.9): early-return on hasIntegrity to let
+    //      the browser fetch natively, which decodes first then
+    //      checks SRI. That worked online but BROKE PWA offline
+    //      because the browser's native fetch can't reach the
+    //      network when offline, and never consults the SW's cache.
+    //
+    //      Current fix: serve integrity'd requests from cache via
+    //      event.respondWith. cache.put stores the decoded Response
+    //      (Content-Encoding stripped per fetch spec), so a cached
+    //      Response has no Content-Encoding header and SRI computes
+    //      against the right (decoded) bytes — no pipeline bug.
+    //      Cache miss falls back to fetch(event.request); on miss
+    //      we accept the SRI-bug risk to keep the cache-hit path
+    //      offline-capable. Misses are rare (cache eviction or first
+    //      controller install) and on first install the SW isn't
+    //      controlling yet, so the browser handles boot fetches
+    //      natively without hitting this branch at all.
+    //
+    // SCOPING NOTE: the 3.0.7 version excluded broad path prefixes
     // (/_framework/, /_content/) from SW handling. That over-fired:
     //   - /_content/* files don't have integrity attributes — the
-    //     SRI bug doesn't apply. Skipping them broke PWA offline
-    //     because no-cache headers + no-SW-cache-fallback meant the
-    //     browser HTTP cache couldn't reliably serve stale offline.
+    //     SRI bug doesn't apply. Skipping them broke PWA offline.
     //   - Non-hashed /_framework/* files (blazor.webassembly.js,
     //     dotnet.js, blazor.boot.json) also lack integrity — same
     //     story.
-    //
-    // The narrower correct condition: skip the SW only for requests
-    // whose `integrity` attribute is set (the SRI-bug surface), plus
-    // auth paths (the redirect surface) and consumer nonSpaPaths.
-    // Everything else flows through the SW's cache-first pipeline,
-    // which is what makes PWA offline actually work.
+    // The narrower correct conditions are below.
     const reqPath = new URL(event.request.url).pathname;
     const consumerNonSpaPaths = Array.isArray(self.appConfig?.nonSpaPaths)
         ? self.appConfig.nonSpaPaths
@@ -199,11 +209,40 @@ self.addEventListener('fetch', event => {
                        reqPath.startsWith('/auth/') ||
                        reqPath.startsWith('/oauth2/');
     const isNonSpa = consumerNonSpaPaths.some(p => reqPath.startsWith(p));
-    const isSpecialPathEarly = hasIntegrity || isAuthPath || isNonSpa;
-    if (isSpecialPathEarly) {
-        // Returning without calling event.respondWith hands control
-        // back to the browser's default fetch pipeline. The browser
-        // does its own network fetch + content decoding + SRI check.
+
+    // Auth + nonSpa: bare return, browser handles natively (avoids the
+    // redirected-Response navigation-failure spec corner).
+    if (isAuthPath || isNonSpa) {
+        return;
+    }
+
+    // Integrity'd requests: cache-first via respondWith. Cache hits avoid
+    // the Chromium SRI/Content-Encoding pipeline bug because the cached
+    // Response has no Content-Encoding header (stripped at cache.put time).
+    // Cache misses fall back to fetch — accepts the SRI-bug risk on the
+    // rare miss path to gain offline support on the common hit path.
+    if (hasIntegrity) {
+        event.respondWith((async () => {
+            try {
+                const cached = await caches.match(event.request, {
+                    ignoreSearch: true,
+                    ignoreVary: true
+                });
+                if (cached) {
+                    console.debug('[SW] integrity cache hit:', event.request.url);
+                    return cached;
+                }
+            } catch (err) {
+                console.error('[SW] integrity cache lookup error:', event.request.url, err);
+            }
+            // Cache miss: bail to network. This path retains the SRI-bug
+            // risk if CloudFront serves Content-Encoding. In practice,
+            // misses occur on first-controller install (when the browser
+            // already has the asset in HTTP cache) or after eviction
+            // (where a stale-then-refresh is acceptable).
+            console.debug('[SW] integrity cache miss; fetching:', event.request.url);
+            return fetch(event.request);
+        })());
         return;
     }
 
@@ -213,12 +252,11 @@ self.addEventListener('fetch', event => {
         const isOnline = await self.connectivityService.isReallyOnline();
         let request = event.request;
 
-        // Belt-and-suspenders: re-derive isSpecialPath inside the
-        // respondWith body in case future edits change the early
-        // exit condition. This branch is unreachable as long as the
-        // early return above stays in sync with this list.
-        const isSpecialPath = isSpecialPathEarly;
-        if (isSpecialPath) {
+        // Belt-and-suspenders: integrity-bearing requests are routed above.
+        // This branch should be unreachable; if reached, fall through to
+        // network rather than risking the cache-first pipeline misbehaving
+        // for an SRI-attributed request.
+        if (event.request.integrity) {
             return fetch(event.request);
         }
 
