@@ -154,48 +154,52 @@ self.addEventListener('fetch', event => {
     // ────────────────────────────────────────────────────────────────
     // Special-path early-return — runs BEFORE event.respondWith.
     // ────────────────────────────────────────────────────────────────
-    // For paths we don't actually want to intermediate, the SW MUST
-    // return without calling event.respondWith. Letting the browser
-    // handle the fetch natively avoids two distinct failure modes
-    // that previously surfaced when we wrapped a pass-through
-    // `fetch(event.request)` in `event.respondWith`:
+    // For requests we don't want to intermediate, the SW MUST return
+    // without calling event.respondWith. Letting the browser handle
+    // the fetch natively avoids two distinct failure modes that
+    // surface when we wrap them in event.respondWith:
     //
-    //   1. SRI + Content-Encoding interaction (the immediate trigger).
-    //      Blazor adds `integrity` to its `_framework/*` requests.
-    //      CFRequest.js rewrites `_framework/X.wasm` → `X.wasm.br`
-    //      based on Accept-Encoding, so the response carries
-    //      `Content-Encoding: br`. Per spec, integrity is checked
-    //      against the DECODED body. But `event.respondWith(fetch(req))`
-    //      hits a long-standing Chromium pipeline-ordering issue
-    //      where the SRI digest is computed against the *encoded*
-    //      body — failing the check even though server bytes are
-    //      correct. Symptom: "Failed to find a valid digest in the
-    //      'integrity' attribute … with computed SHA-256 integrity X.
-    //      The resource has been blocked." Native fetch (no SW
-    //      interception) decodes first, then checks SRI, and works.
+    //   1. SRI + Content-Encoding interaction. Blazor adds `integrity`
+    //      to its hashed `_framework/*` requests (the WASM assemblies
+    //      listed in blazor.boot.json). When CloudFront serves them
+    //      with Content-Encoding (precompressed sibling OR edge auto-
+    //      compression), Chromium has a long-standing pipeline-
+    //      ordering bug where event.respondWith(fetch(req)) computes
+    //      the SRI digest against the ENCODED body instead of the
+    //      decoded one — failing the check even though server bytes
+    //      are correct. Native fetch decodes first, then checks SRI,
+    //      and works. See Platform/AssetDeliveryReview.md (BCProjects).
     //
     //   2. Cross-origin redirect mishandling. Auth-related paths
-    //      (/auth/, /oauth2/, /authentication/) frequently 302 to
-    //      Cognito's Hosted UI. Returning a redirected Response
-    //      from event.respondWith fails the navigation per spec.
+    //      (/auth/, /oauth2/, /authentication/) 302 to Cognito's
+    //      Hosted UI. Returning a redirected Response from
+    //      event.respondWith fails navigation per spec.
     //
-    // Special paths the SW must NOT touch:
-    //   /authentication/  — Blazor's OIDC RemoteAuthenticatorView routes
-    //   /_framework/      — Blazor WASM runtime assets (SRI + br)
-    //   /_content/        — Razor static-asset library content
-    //   /auth/            — host-rooted OIDC façade (CFAuth.js)
-    //   /oauth2/          — apex OAuth callbacks (CFAuthCallback.js)
-    // Plus consumer-declared `appConfig.nonSpaPaths` (e.g. /explore/).
+    // SCOPING: the prior version excluded broad path prefixes
+    // (/_framework/, /_content/) from SW handling. That over-fired:
+    //   - /_content/* files don't have integrity attributes — the
+    //     SRI bug doesn't apply. Skipping them broke PWA offline
+    //     because no-cache headers + no-SW-cache-fallback meant the
+    //     browser HTTP cache couldn't reliably serve stale offline.
+    //   - Non-hashed /_framework/* files (blazor.webassembly.js,
+    //     dotnet.js, blazor.boot.json) also lack integrity — same
+    //     story.
+    //
+    // The narrower correct condition: skip the SW only for requests
+    // whose `integrity` attribute is set (the SRI-bug surface), plus
+    // auth paths (the redirect surface) and consumer nonSpaPaths.
+    // Everything else flows through the SW's cache-first pipeline,
+    // which is what makes PWA offline actually work.
     const reqPath = new URL(event.request.url).pathname;
     const consumerNonSpaPaths = Array.isArray(self.appConfig?.nonSpaPaths)
         ? self.appConfig.nonSpaPaths
         : [];
-    const isSpecialPathEarly = reqPath.includes('/authentication/') ||
-                               reqPath.includes('/_framework/') ||
-                               reqPath.includes('/_content/') ||
-                               reqPath.startsWith('/auth/') ||
-                               reqPath.startsWith('/oauth2/') ||
-                               consumerNonSpaPaths.some(p => reqPath.startsWith(p));
+    const hasIntegrity = !!event.request.integrity;
+    const isAuthPath = reqPath.includes('/authentication/') ||
+                       reqPath.startsWith('/auth/') ||
+                       reqPath.startsWith('/oauth2/');
+    const isNonSpa = consumerNonSpaPaths.some(p => reqPath.startsWith(p));
+    const isSpecialPathEarly = hasIntegrity || isAuthPath || isNonSpa;
     if (isSpecialPathEarly) {
         // Returning without calling event.respondWith hands control
         // back to the browser's default fetch pipeline. The browser
