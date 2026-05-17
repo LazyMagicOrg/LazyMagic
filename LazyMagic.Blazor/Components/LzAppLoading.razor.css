@@ -11,12 +11,12 @@
 
 .lz-blazor-loading-progress circle {
     fill: none;
-    stroke: rgba(255,255,255,0.3);
+    stroke: #FFFFFF;
     stroke-width: 0.4rem;
 }
 
 .lz-blazor-loading-progress circle:last-child {
-    stroke: #FFFFFF;
+    stroke: #000000;
     transition: stroke-dashoffset 0.5s ease-in-out;
     transform-origin: 50% 50%;
 }
@@ -27,7 +27,7 @@
     left: 50%;
     transform: translate(-50%, -50%);
     font-weight: bold;
-    color: #FFFFFF;
+    color: #000000;
     text-align: center;
 }
 
@@ -40,5 +40,5 @@
     width: 100%;
     text-align: center;
     top: calc(100% + 1rem);
-    color: #FFFFFF;
+    color: #000000;
 }
