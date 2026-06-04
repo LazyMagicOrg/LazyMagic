@@ -212,19 +212,44 @@ public class BlazorOIDCService : IOIDCService, IDisposable
 
     public async Task<string?> GetAccessTokenAsync()
     {
-        try
+        // Retry a few times before reporting the token as unavailable.
+        //
+        // RequestAccessToken() can TRANSIENTLY fail to hand back a token during
+        // the post-login settling window — the token was just provisioned by the
+        // OIDC callback, or a silent refresh is in flight — even though the
+        // session is perfectly valid. Callers treat a null return as a hard
+        // "session expired" signal (e.g. AuthExpiredHandler's pre-request check
+        // and MainLayout.OnLocationChanged), so a single transient null produces
+        // a spurious "Your session has expired" snackbar on a cold first login
+        // (and only then — on a warm token provider the window never opens).
+        //
+        // A short bounded retry closes that race without masking a real expiry:
+        // a genuinely absent/expired token (or one that needs an interactive
+        // redirect) stays unavailable across all attempts and still returns null.
+        const int maxAttempts = 3;
+        const int retryDelayMs = 250;
+
+        for (int attempt = 1; attempt <= maxAttempts; attempt++)
         {
-            var tokenResult = await _tokenProvider.RequestAccessToken();
-            if (tokenResult.TryGetToken(out var token))
+            try
             {
-                return token.Value;
+                var tokenResult = await _tokenProvider.RequestAccessToken();
+                if (tokenResult.TryGetToken(out var token))
+                {
+                    return token.Value;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error getting access token (attempt {Attempt}/{Max})", attempt, maxAttempts);
+            }
+
+            if (attempt < maxAttempts)
+            {
+                await Task.Delay(retryDelayMs);
             }
         }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error getting access token");
-        }
-        
+
         return null;
     }
 
