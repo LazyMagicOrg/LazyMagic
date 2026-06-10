@@ -6,7 +6,7 @@ public class LzComponentBaseAssignViewModel<T> : LzComponentBase<T>
     protected override async Task OnInitializedAsync()
     {
         var derivedClassName = this.GetType().Name;
-        if (ViewModel == null) throw new Exception($"{derivedClassName}, LzComponentBaseAssignViewModel: ViewModel is null. Assign it in the OnIntializedAsync method.");
+        if (ViewModel == null) throw new Exception($"{derivedClassName}, LzComponentBaseAssignViewModel: ViewModel is null. Assign it in the OnInitializedAsync method.");
         await base.OnInitializedAsync();
     }
 }

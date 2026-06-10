@@ -1,10 +1,15 @@
-﻿// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
+// Copyright (c) 2022 .NET Foundation and Contributors. All rights reserved.
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for full license information.
 
-// LazyMagic modified to include handling for OnInitializedAsync() missing 
-// from ReactiveUI implementation.
+// LazyMagic adaptation of ReactiveUI.Blazor's ReactiveComponentBase<T>.
+// The original LazyMagic fork added an OnInitializedAsync() override (upstream
+// only signaled activation from the sync OnInitialized). The 2026 refresh
+// extracts the duplicated reactive plumbing into LzComponentState<T> and fixes
+// the Activated double-fire (both OnInitialized AND OnInitializedAsync used to
+// call _initSubject.OnNext, so subscribers saw two events per component init).
+
 namespace LazyMagic.Blazor;
 
 public class LzComponentBase : ComponentBase
@@ -19,16 +24,13 @@ public class LzComponentBase : ComponentBase
 
 
 /// <summary>
-/// A base component for handling property changes and updating the blazer view appropriately.
+/// A base component for handling property changes and updating the Blazor view appropriately.
 /// </summary>
 /// <typeparam name="T">The type of view model. Must support INotifyPropertyChanged.</typeparam>
 public class LzComponentBase<T> : LzComponentBase, IViewFor<T>, INotifyPropertyChanged, ICanActivate, IDisposable
     where T : class, INotifyPropertyChanged
 {
-    private readonly Subject<Unit> _initSubject = new();
-    [SuppressMessage("Design", "CA2213: Dispose object", Justification = "Used for deactivation.")]
-    private readonly Subject<Unit> _deactivateSubject = new();
-    private readonly CompositeDisposable _compositeDisposable = new();
+    private readonly LzComponentState<T> _state = new();
 
     protected T? _viewModel;
 
@@ -62,10 +64,10 @@ public class LzComponentBase<T> : LzComponentBase, IViewFor<T>, INotifyPropertyC
     }
 
     /// <inheritdoc />
-    public IObservable<Unit> Activated => _initSubject.AsObservable();
+    public IObservable<Unit> Activated => _state.Activated;
 
     /// <inheritdoc />
-    public IObservable<Unit> Deactivated => _deactivateSubject.AsObservable();
+    public IObservable<Unit> Deactivated => _state.Deactivated;
 
     /// <inheritdoc />
     public void Dispose()
@@ -78,13 +80,20 @@ public class LzComponentBase<T> : LzComponentBase, IViewFor<T>, INotifyPropertyC
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _initSubject.OnNext(Unit.Default);
+        _state.SignalInitialized();
         base.OnInitialized();
     }
 
+    /// <summary>
+    /// Override of Blazor's async init hook. Like OnInitialized, signals the
+    /// Activated observable — the call is idempotent so Activated still fires
+    /// exactly once per component lifetime even though Blazor invokes both
+    /// methods. (Upstream ReactiveUI.Blazor only signals from the sync hook,
+    /// which leaves async-init consumers without an activation event.)
+    /// </summary>
     protected override async Task OnInitializedAsync()
     {
-        _initSubject.OnNext(Unit.Default);
+        _state.SignalInitialized();
         await base.OnInitializedAsync();
     }
 
@@ -93,62 +102,14 @@ public class LzComponentBase<T> : LzComponentBase, IViewFor<T>, INotifyPropertyC
     {
         if (firstRender)
         {
-            // The following subscriptions are here because if they are done in OnInitialized, they conflict with certain JavaScript frameworks.
-            var viewModelChanged =
-                this.WhenAnyValue(x => x.ViewModel)
-                    .Where(x => x is not null)
-                    .Publish()
-                    .RefCount(2);
-
-            viewModelChanged
-                .Subscribe(_ => InvokeAsync(StateHasChanged))
-                .DisposeWith(_compositeDisposable);
-
-            viewModelChanged
-                .WhereNotNull()
-                .Select(x =>
-                            Observable
-                                .FromEvent<PropertyChangedEventHandler?, Unit>(
-                                                                               eventHandler =>
-                                                                               {
-                                                                                   void Handler(object? sender, PropertyChangedEventArgs e) => eventHandler(Unit.Default);
-                                                                                   return Handler;
-                                                                               },
-                                                                               eh => x.PropertyChanged += eh,
-                                                                               eh => x.PropertyChanged -= eh))
-                .Switch()
-                .Subscribe(_ => InvokeAsync(StateHasChanged))
-                .DisposeWith(_compositeDisposable);
-
-            // Here we are subscribing to the Messages property to know when it changes and to update the view accordingly.
-            // Messages is responsible for providing custom text messages to the view.
-			var messagesModelChanged =
-				this.WhenAnyValue(x => x.Messages)
-					.Where(x => x is not null)
-					.Publish()
-					.RefCount(2);
-
-			messagesModelChanged
-				.Subscribe(_ => InvokeAsync(StateHasChanged))
-				.DisposeWith(_compositeDisposable);
-
-			messagesModelChanged
-				.WhereNotNull()
-				.Select(x =>
-							Observable
-								.FromEvent<PropertyChangedEventHandler?, Unit>(
-																			   eventHandler =>
-																			   {
-																				   void Handler(object? sender, PropertyChangedEventArgs e) => eventHandler(Unit.Default);
-																				   return Handler;
-																			   },
-																			   eh => x.PropertyChanged += eh,
-																			   eh => x.PropertyChanged -= eh))
-				.Switch()
-				.Subscribe(_ => InvokeAsync(StateHasChanged))
-				.DisposeWith(_compositeDisposable);
-
-		}
+            // Wire up subscriptions on first render rather than in OnInitialized
+            // because some JavaScript frameworks conflict with reactive
+            // subscriptions established during the initial sync init path.
+            _state.WireUpSubscriptions(
+                viewModelChanges: this.WhenAnyValue(x => x.ViewModel),
+                messagesChanges: this.WhenAnyValue(x => x.Messages),
+                triggerStateHasChanged: () => InvokeAsync(StateHasChanged));
+        }
 
         base.OnAfterRender(firstRender);
     }
@@ -169,9 +130,7 @@ public class LzComponentBase<T> : LzComponentBase, IViewFor<T>, INotifyPropertyC
         {
             if (disposing)
             {
-                _initSubject.Dispose();
-                _compositeDisposable.Dispose();
-                _deactivateSubject.OnNext(Unit.Default);
+                _state.Dispose();
             }
 
             _disposedValue = true;

@@ -1,17 +1,24 @@
 ﻿namespace LazyMagic.Client.ViewModels;
 
-public abstract class LzSessionsViewModel<T> : LzViewModel, ILzSessionsViewModel<T>
+public abstract partial class LzSessionsViewModel<T> : LzViewModel, ILzSessionsViewModel<T>
     where T : ILzSessionViewModel
 {
-    [Reactive] public virtual T? SessionViewModel { get; set; }
+    [Reactive] public virtual partial T? SessionViewModel { get; set; }
     private Dictionary<string, T> _sessions = new();
-    [Reactive] public bool IsInitialized { get; protected set; }
-    [ObservableAsProperty] public bool IsOnline { get; }
+    [Reactive] public partial bool IsInitialized { get; protected set; }
+    // IsOnline OAPH — historically wired by derived classes via Fody.
+    // UseProtected=true exposes the generated _isOnlineHelper field so
+    // subclasses can assign it (e.g. _isOnlineHelper = connectivity.WhenAnyValue(...).ToProperty(this, nameof(IsOnline));).
+    [ObservableAsProperty(UseProtected = true)] public partial bool IsOnline { get; }
     protected readonly CompositeDisposable sessionDisposables = new();
     //public virtual async Task InitAsync(IOSAccess osAccess, ILzClientConfig clientConfig, IConnectivityService internetConnectivitySvc)
 
     public LzSessionsViewModel(ILoggerFactory loggerFactory) : base(loggerFactory)
     {
+        // Default OAPH initialization — derived classes are expected to
+        // overwrite _isOnlineHelper with a real connectivity stream.
+        // The base initialization keeps the non-null contract intact.
+        _isOnlineHelper = Observable.Return(false).ToProperty(this, nameof(IsOnline));
     }
 
     public virtual async Task<bool> CreateSessionAsync()

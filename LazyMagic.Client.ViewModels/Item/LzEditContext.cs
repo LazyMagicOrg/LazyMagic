@@ -1,5 +1,5 @@
 ﻿namespace LazyMagic.Client.ViewModels;
-public class LzEditContext<T1,T2>
+public partial class LzEditContext<T1,T2>
     : ReactiveObject, IDisposable
     where T1 : class, new()
     where T2 : class, T1, IRegisterObservables, new()
@@ -38,9 +38,9 @@ public class LzEditContext<T1,T2>
     private bool disposedValue;
 
     public EditContext EditContext { get; init; }
-    [Reactive] public bool CanUpdate { get; private set; }
-    [Reactive] public bool CanCreate { get; private set; }
-    [Reactive] public bool IsNew { get; private set; }
+    [Reactive] public partial bool CanUpdate { get; private set; }
+    [Reactive] public partial bool CanCreate { get; private set; }
+    [Reactive] public partial bool IsNew { get; private set; }
 
     ValidationMessageStore ValidationMessageStore { get; init; } 
 

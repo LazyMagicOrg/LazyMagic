@@ -1,9 +1,9 @@
-﻿
+
 namespace LazyMagic.Blazor;
 
 public abstract class LzBaseJSModule : ILzBaseJSModule, INotifyPropertyChanged, IAsyncDisposable
 {
-    protected IJSRuntime jsRuntime;
+    protected IJSRuntime? jsRuntime;
     private Task<IJSObjectReference>? moduleTask;
     protected ILogger? _logger;
 
@@ -28,13 +28,17 @@ public abstract class LzBaseJSModule : ILzBaseJSModule, INotifyPropertyChanged, 
     /// <summary>
     /// Gets the JavaScript runtime instance.
     /// </summary>
-    public IJSRuntime JSRuntime => jsRuntime;
+    public IJSRuntime? JSRuntime => jsRuntime;
 
     public virtual void SetJSRuntime(object jsRuntime)
     {
-        this.jsRuntime = (JSRuntime)jsRuntime;
+        // Cast to the interface (IJSRuntime), not the concrete JSRuntime sealed
+        // class. The previous (JSRuntime) cast was too narrow — it would fail
+        // for test doubles, WebAssembly remote-rendering shims, and any other
+        // IJSRuntime implementation that isn't the default Blazor runtime.
+        this.jsRuntime = (IJSRuntime)jsRuntime;
     }
-    
+
     public virtual void SetLogger(ILogger logger)
     {
         _logger = logger;
@@ -75,6 +79,7 @@ public abstract class LzBaseJSModule : ILzBaseJSModule, INotifyPropertyChanged, 
     public virtual async ValueTask DisposeAsync()
     {
         await DisposeAsync(true);
+        GC.SuppressFinalize(this);
     }
 
     /// <summary>
@@ -83,50 +88,47 @@ public abstract class LzBaseJSModule : ILzBaseJSModule, INotifyPropertyChanged, 
     /// <param name="disposing">True if the component is in the disposing process.</param>
     protected virtual async ValueTask DisposeAsync(bool disposing)
     {
+        if (AsyncDisposed) return;
+        AsyncDisposed = true;
+
+        if (!disposing) return;
+
+        var taskToDispose = moduleTask;
+        moduleTask = null;
+        if (taskToDispose is null) return;
+
         try
         {
-            if (!AsyncDisposed)
-            {
-                AsyncDisposed = true;
-
-                if (disposing)
-                {
-                    if (moduleTask is not null)
-                    {
-                        var moduleInstance = await moduleTask;
-
-
-                        var disposeModule = async (IAsyncDisposable disposable) =>
-                        {
-                            var disposableTask = disposable.DisposeAsync();
-                            try
-                            {
-                                await disposableTask;
-                            }
-                            catch when (disposableTask.IsCanceled)
-                            {
-                            }
-                            catch (Microsoft.JSInterop.JSDisconnectedException)
-                            {
-                            }
-
-                            moduleTask = null;
-                        };
-
-                        await disposeModule(moduleInstance);
-                    }
-                }
-            }
+            var moduleInstance = await taskToDispose;
+            await DisposeModuleAsync(moduleInstance);
         }
-        catch (Exception exc)
+        catch (JSDisconnectedException)
         {
-            await Task.FromException(exc);
+            // JS interop already torn down (circuit closed) — nothing to release.
+        }
+        catch (TaskCanceledException)
+        {
+            // Initialization was cancelled — no module reference to release.
         }
     }
 
+    private static async ValueTask DisposeModuleAsync(IAsyncDisposable disposable)
+    {
+        var disposableTask = disposable.DisposeAsync();
+        try
+        {
+            await disposableTask;
+        }
+        catch when (disposableTask.IsCanceled)
+        {
+        }
+        catch (JSDisconnectedException)
+        {
+        }
+    }
 
     /// <summary>
-    /// Save invocation on the JavaScript <see cref="Module"/>.
+    /// Safe invocation on the JavaScript <see cref="Module"/>.
     /// </summary>
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>someScope.someFunction</c> on the target instance.</param>
     /// <param name="args">JSON-serializable arguments.</param>
@@ -155,12 +157,17 @@ public abstract class LzBaseJSModule : ILzBaseJSModule, INotifyPropertyChanged, 
     }
 
     /// <summary>
-    /// Save invocation on the JavaScript <see cref="Module"/>.
+    /// Safe invocation on the JavaScript <see cref="Module"/>. Returns
+    /// <c>default(TValue)</c> when the call is suppressed due to a disconnected
+    /// circuit, a disposed object, or a cancelled task — callers should treat
+    /// the result as possibly null on error paths even though the return type
+    /// is non-nullable (kept this way to preserve the public API contract).
     /// </summary>
     /// <typeparam name="TValue">The JSON-serializable return type.</typeparam>
     /// <param name="identifier">An identifier for the function to invoke. For example, the value <c>"someScope.someFunction"</c> will invoke the function <c>someScope.someFunction</c> on the target instance.</param>
     /// <param name="args">JSON-serializable arguments.</param>
     /// <returns>An instance of <typeparamref name="TValue"/> obtained by JSON-deserializing the return value.</returns>
+    [return: MaybeNull]
     protected async ValueTask<TValue> InvokeSafeAsync<TValue>(string identifier, params object[] args)
     {
         try
@@ -169,14 +176,14 @@ public abstract class LzBaseJSModule : ILzBaseJSModule, INotifyPropertyChanged, 
 
             if (AsyncDisposed)
             {
-                return default;
+                return default!;
             }
 
             return await module.InvokeAsync<TValue>(identifier, args);
         }
         catch (Exception exc) when (exc is JSDisconnectedException or ObjectDisposedException or TaskCanceledException)
         {
-            return default;
+            return default!;
         }
     }
 

@@ -3,7 +3,7 @@
 /// <summary>
 /// Orchestrates the connection to services.
 /// </summary>
-public abstract class LzSessionViewModel : LzViewModel, ILzSessionViewModel
+public abstract partial class LzSessionViewModel : LzViewModel, ILzSessionViewModel
 {
     public LzSessionViewModel(
         ILoggerFactory loggerFactory,
@@ -17,8 +17,10 @@ public abstract class LzSessionViewModel : LzViewModel, ILzSessionViewModel
         // to update the current MessageSetSelector in Messages.
         MessageSetSelector = new LzMessageSetSelector(Messages.MessageSet.Culture, Messages.MessageSet.Units);
 
-        this.WhenAnyValue(x => x.ConnectivityService.IsOnline)
-            .ToPropertyEx(this, x => x.IsOnline);
+        // Wire the IsOnline OAPH. Was ToPropertyEx (Fody); SourceGenerators
+        // requires assigning the generated _isOnlineHelper field directly.
+        _isOnlineHelper = this.WhenAnyValue(x => x.ConnectivityService.IsOnline)
+            .ToProperty(this, nameof(IsOnline));
 
         this.WhenAnyValue(x => x.MessageSetSelector)
             .Skip(1) // Skip the initial value assignment to avoid load timing issues.
@@ -36,11 +38,10 @@ public abstract class LzSessionViewModel : LzViewModel, ILzSessionViewModel
     public ILzMessages Messages { get; set; }
     public string SessionName { get; set; } = "Session";
 
-    // The ObservableAsProperty annotation is defined in ReactiveUI.Fody
-    [ObservableAsProperty] public bool IsOnline { get; }
-    [Reactive] public bool IsLoading { get; set; }
-    [Reactive] public bool IsLoaded { get; set; }
-    [Reactive] public LzMessageSetSelector MessageSetSelector { get; set; }
+    [ObservableAsProperty] public partial bool IsOnline { get; }
+    [Reactive] public partial bool IsLoading { get; set; }
+    [Reactive] public partial bool IsLoaded { get; set; }
+    [Reactive] public partial LzMessageSetSelector MessageSetSelector { get; set; }
     public Task<bool> CheckInternetConnectivityAsync()
         => ConnectivityService.CheckInternetConnectivityAsync();
 

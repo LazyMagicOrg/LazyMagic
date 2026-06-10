@@ -9,7 +9,7 @@ public interface ITenantConfigViewModel
     Task ReadAsync(string url);
 }
 
-public class TenantConfigViewModel : LzViewModel, ITenantConfigViewModel
+public partial class TenantConfigViewModel : LzViewModel, ITenantConfigViewModel
 {
     public TenantConfigViewModel(
         ILoggerFactory loggerFactory,
@@ -19,7 +19,7 @@ public class TenantConfigViewModel : LzViewModel, ITenantConfigViewModel
         this.staticAssets = staticAssets;
     }
     public TenantConfig? TenantConfig { get; set; }  // DTO
-    [Reactive] public bool IsLoaded { get; set; } 
+    [Reactive] public partial bool IsLoaded { get; set; }
     private IStaticAssets staticAssets { get; set; }    
 
     public virtual async Task ReadAsync(string url)

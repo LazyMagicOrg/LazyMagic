@@ -27,7 +27,6 @@
 	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="ReactiveUI" />
-		<PackageReference Include="ReactiveUI.Fody" />
 		<PackageReference Include="Microsoft.Extensions.Logging" />
 	</ItemGroup>
 	<ItemGroup>

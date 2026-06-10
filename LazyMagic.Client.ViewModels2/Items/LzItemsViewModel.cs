@@ -1,6 +1,6 @@
 namespace LazyMagic.Client.ViewModels;
 
-public abstract class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewModel,
+public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewModel,
     ILzItemsViewModel<TId, TVM, TDTO, TModel> where TDTO : class, new()
     where TModel : class, TDTO, IRegisterObservables, new()
     where TVM : class, ILzItemViewModel<TId, TModel>
@@ -33,7 +33,7 @@ public abstract class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewModel,
     /// <inheritdoc/>
     public TVM? EditViewModel { get; set; }
     /// <inheritdoc/>
-    [Reactive] public TVM? LastViewModel { get; set; }
+    [Reactive] public partial TVM? LastViewModel { get; set; }
     protected int changeCount;
     /// <inheritdoc/>
     public event NotifyCollectionChangedEventHandler? CollectionChanged;
@@ -46,11 +46,11 @@ public abstract class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewModel,
     /// <inheritdoc/>
     public bool AutoReadChildren { get; set; } = true;
     /// <inheritdoc/>
-    [Reactive] public bool IsLoaded { get; set; }
+    [Reactive] public partial bool IsLoaded { get; set; }
     /// <inheritdoc/>
-    [Reactive] public bool IsLoading { get; set; }
+    [Reactive] public partial bool IsLoading { get; set; }
     /// <inheritdoc/>
-    [Reactive] public long LastLoadTick { get; set; }
+    [Reactive] public partial long LastLoadTick { get; set; }
     /// <inheritdoc/>
     public IDictionary<TId, TDTO>? DTOs { get; set; }
     // Storage Access

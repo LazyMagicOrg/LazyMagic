@@ -16,8 +16,8 @@
 /// </summary>
 /// <typeparam name="TDTO">DTO Type</typeparam>
 /// <typeparam name="TModel">Model Type (extended model off of TDTO)</typeparam>
-public abstract class LzItemViewModel<TDTO, TModel> 
-    : LzViewModel, 
+public abstract partial class LzItemViewModel<TDTO, TModel>
+    : LzViewModel,
     ILzItemViewModel<TModel>
     where TDTO : class, new()
     where TModel : class, TDTO, IRegisterObservables, new()
@@ -36,17 +36,19 @@ public abstract class LzItemViewModel<TDTO, TModel>
         IsBusy = false;
 
 
-        this.WhenAnyValue(x => x.State, (x) => x == LzItemViewModelState.New)
-            .ToPropertyEx(this, x => x.IsNew);
+        // OAPH wiring — SourceGenerators replaces Fody's ToPropertyEx with
+        // ToProperty + an explicit assignment to the generated helper field.
+        _isNewHelper = this.WhenAnyValue(x => x.State, (x) => x == LzItemViewModelState.New)
+            .ToProperty(this, nameof(IsNew));
 
-        this.WhenAnyValue(x => x.State, (x) => x == LzItemViewModelState.Edit)
-            .ToPropertyEx(this, x => x.IsEdit);
+        _isEditHelper = this.WhenAnyValue(x => x.State, (x) => x == LzItemViewModelState.Edit)
+            .ToProperty(this, nameof(IsEdit));
 
-        this.WhenAnyValue(x => x.State, (x) => x == LzItemViewModelState.Current)
-            .ToPropertyEx(this, x => x.IsCurrent);
+        _isCurrentHelper = this.WhenAnyValue(x => x.State, (x) => x == LzItemViewModelState.Current)
+            .ToProperty(this, nameof(IsCurrent));
 
-        this.WhenAnyValue(x => x.State, (x) => x == LzItemViewModelState.Deleted)
-            .ToPropertyEx(this, x => x.IsDeleted);
+        _isDeletedHelper = this.WhenAnyValue(x => x.State, (x) => x == LzItemViewModelState.Deleted)
+            .ToProperty(this, nameof(IsDeleted));
 
         if (model is not null && dto is not null)
             throw new Exception("itemModel and itemDTO cannot both be assigned.");
@@ -76,20 +78,20 @@ public abstract class LzItemViewModel<TDTO, TModel>
     public abstract string? Id { get; }
     public abstract long UpdatedAt { get; }
     
-    [Reactive] public TModel? Data { get; set; }
-    [Reactive] public LzItemViewModelState State { get; set; }
-    [Reactive] public bool CanCreate { get; set; }
-    [Reactive] public bool CanRead { get; set; }
-    [Reactive] public bool CanUpdate { get; set; }
-    [Reactive] public bool CanDelete { get; set; }
-    [Reactive] public bool IsLoaded { get; set; }
-    [Reactive] public virtual long UpdateCount { get; set; }
-    [ObservableAsProperty] public bool IsNew { get; }
-    [ObservableAsProperty] public bool IsEdit { get; }
-    [ObservableAsProperty] public bool IsCurrent { get; }
-    [ObservableAsProperty] public bool IsDeleted { get; }
-    [Reactive] public bool IsDirty { get; set; }
-    [Reactive] public bool IsBusy { get; set; } 
+    [Reactive] public partial TModel? Data { get; set; }
+    [Reactive] public partial LzItemViewModelState State { get; set; }
+    [Reactive] public partial bool CanCreate { get; set; }
+    [Reactive] public partial bool CanRead { get; set; }
+    [Reactive] public partial bool CanUpdate { get; set; }
+    [Reactive] public partial bool CanDelete { get; set; }
+    [Reactive] public partial bool IsLoaded { get; set; }
+    [Reactive] public virtual partial long UpdateCount { get; set; }
+    [ObservableAsProperty] public partial bool IsNew { get; }
+    [ObservableAsProperty] public partial bool IsEdit { get; }
+    [ObservableAsProperty] public partial bool IsCurrent { get; }
+    [ObservableAsProperty] public partial bool IsDeleted { get; }
+    [Reactive] public partial bool IsDirty { get; set; }
+    [Reactive] public partial bool IsBusy { get; set; }
     public ILzParentViewModel? ParentViewModel { get; set; } 
 
 
