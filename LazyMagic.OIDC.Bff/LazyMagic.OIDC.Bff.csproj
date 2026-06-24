@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<Import Project="$(SolutionDir)CommonPackageHandling.targets" />
+	<PropertyGroup>
+		<!-- Override the solution-wide 3.0.6 from CommonPackageHandling so a content
+		     change re-resolves cleanly through the NuGet cache AND the Docker build
+		     layer cache (same-version repacks otherwise serve stale code). Bump on
+		     each BFF content change until this lands in the normal release train. -->
+		<Version>3.0.8</Version>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<RootNamespace>LazyMagic.OIDC.Bff</RootNamespace>
+		<ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+	</PropertyGroup>
+
+	<!-- Needed for MVC controllers, ASP.NET Core authentication, Data Protection,
+	     IStartupFilter / IHostingStartup and the HTTP pipeline types. -->
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" />
+		<PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
+		<PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+		<PackageReference Include="AWSSDK.DynamoDBv2" />
+		<PackageReference Include="AWSSDK.SecretsManager" />
+		<PackageReference Include="Amazon.AspNetCore.DataProtection.SSM" />
+	</ItemGroup>
+
+</Project>

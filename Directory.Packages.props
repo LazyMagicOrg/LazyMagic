@@ -1,5 +1,6 @@
 <Project>
 	<ItemGroup>
+		<PackageVersion Include="Amazon.AspNetCore.DataProtection.SSM" Version="4.0.3" />
 		<PackageVersion Include="Amazon.Extensions.CognitoAuthentication" Version="3.1.4" />
 		<PackageVersion Include="Amazon.Lambda.APIGatewayEvents" Version="2.7.3" />
 		<PackageVersion Include="Amazon.Lambda.AspNetCoreServer" Version="9.2.1" />
@@ -16,6 +17,7 @@
 		<PackageVersion Include="AWSSDK.DynamoDBv2" Version="4.0.18" />
 		<PackageVersion Include="AWSSDK.Extensions.CrtIntegration" Version="4.0.0.36" />
 		<PackageVersion Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.35" />
+		<PackageVersion Include="AWSSDK.SecretsManager" Version="4.0.5.8" />
 		<PackageVersion Include="AWSSDK.SecurityToken" Version="4.0.6.2" />
 		<PackageVersion Include="AWSSDK.SSO" Version="4.0.2.26" />
 		<PackageVersion Include="AWSSDK.SSOOIDC" Version="4.0.3.27" />
@@ -40,18 +42,21 @@
 			 LazyMagic.Blazor as a package, it will resolve the LazyMagic.OIDC.Base as version 
 			 1.0.0 if we don't put the current version here. -->
 		<PackageVersion Include="LazyMagic.OIDC.Base" Version="3.0.6" />
+		<PackageVersion Include="LazyMagic.OIDC.WASM.Bff" Version="3.0.6" />
 		<PackageVersion Include="LazyMagic.Client.FactoryGenerator" Version="3.0.6" />
 		<PackageVersion Include="Microsoft.AspNetCore.Components.Forms" Version="10.0.5" />
 		<PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="10.0.5" />
 		<PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.5" />
 		<PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="10.0.5" />
 		<PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.5" />
+		<PackageVersion Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.5" />
 		<PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.5" />
 		<PackageVersion Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
 		<PackageVersion Include="Microsoft.CodeAnalysis" Version="4.13.0" />
 		<PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.13.0" />
 		<PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
 		<PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0" />
+		<PackageVersion Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="8.14.0" />
 		<PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.5" />
 		<PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.5" />
 		<PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
