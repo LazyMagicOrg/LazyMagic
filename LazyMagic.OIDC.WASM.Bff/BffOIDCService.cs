@@ -15,8 +15,13 @@ namespace LazyMagic.OIDC.WASM.Bff;
 /// </summary>
 public sealed class BffOIDCService : IOIDCService, IDisposable
 {
-    private const string LoginPath = "bff/login";
-    private const string LogoutPath = "bff/logout";
+    // HOST-ABSOLUTE (leading slash): the /bff/* endpoints live at the host ROOT, but the
+    // WASM may be mounted under a sub-path (e.g. <base href="/store/">). A base-relative
+    // "bff/login" would resolve to "/store/bff/login" (NavigateTo against the base) or
+    // "/store/bff/login" (HttpClient against a /store/ BaseAddress) — i.e. the app itself,
+    // not the BFF. The leading slash pins them to the host root regardless of the mount.
+    private const string LoginPath = "/bff/login";
+    private const string LogoutPath = "/bff/logout";
 
     private readonly AuthenticationStateProvider _authStateProvider;
     private readonly NavigationManager _navigation;
@@ -98,7 +103,7 @@ public sealed class BffOIDCService : IOIDCService, IDisposable
         try
         {
             // returnUrl = the app-relative path the user is on, so the BFF returns them here.
-            var returnUrl = GetRelativePath();
+            var returnUrl = GetReturnUrl();
             var loginUrl = $"{LoginPath}?returnUrl={Uri.EscapeDataString(returnUrl)}";
             _logger.LogInformation("[BFF] Navigating to login: {LoginUrl}", loginUrl);
 
@@ -120,7 +125,7 @@ public sealed class BffOIDCService : IOIDCService, IDisposable
     {
         OnAuthenticationRequested?.Invoke("logout");
 
-        var returnUrl = GetRelativePath();
+        var returnUrl = GetReturnUrl();
         var logoutEndpoint = $"{LogoutPath}?returnUrl={Uri.EscapeDataString(returnUrl)}";
 
         try
@@ -167,11 +172,13 @@ public sealed class BffOIDCService : IOIDCService, IDisposable
         public string? LogoutUrl { get; set; }
     }
 
-    private string GetRelativePath()
-    {
-        var relative = _navigation.ToBaseRelativePath(_navigation.Uri);
-        return "/" + relative.TrimStart('/');
-    }
+    /// <summary>
+    /// The HOST-ABSOLUTE path (incl. any app base like <c>/store/</c>) of the current page,
+    /// used as the BFF <c>returnUrl</c> so the callback returns the user to where they were.
+    /// ToBaseRelativePath would STRIP the <c>/store/</c> base and yield <c>"/"</c>, which the
+    /// BFF callback would honor by redirecting to the SITE ROOT instead of back into the app.
+    /// </summary>
+    private string GetReturnUrl() => new Uri(_navigation.Uri).PathAndQuery;
 
     private static OIDCAuthenticationState ToOidcState(ClaimsPrincipal? user)
     {

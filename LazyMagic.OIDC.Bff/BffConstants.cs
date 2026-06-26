@@ -18,6 +18,10 @@ public static class BffConstants
     /// <summary>The short-lived login transaction cookie name.</summary>
     public const string TransactionCookieName = "__bff_txn";
 
+    /// <summary>Short-lived cookie carrying the app's post-logout destination across the IdP
+    /// sign-out round-trip (the IdP only redirects back to the registered logout-callback URL).</summary>
+    public const string LogoutReturnCookieName = "__bff_logout";
+
     /// <summary>Cookie auth scheme name registered for the BFF.</summary>
     public const string CookieScheme = "BffCookie";
 

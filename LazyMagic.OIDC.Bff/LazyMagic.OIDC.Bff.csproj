@@ -5,7 +5,7 @@
 		     change re-resolves cleanly through the NuGet cache AND the Docker build
 		     layer cache (same-version repacks otherwise serve stale code). Bump on
 		     each BFF content change until this lands in the normal release train. -->
-		<Version>3.0.8</Version>
+		<Version>3.0.9</Version>
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>

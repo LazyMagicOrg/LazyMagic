@@ -14,6 +14,9 @@ namespace LazyMagic.OIDC.Bff;
 [Route("bff")]
 public sealed class BffAuthController : ControllerBase
 {
+    /// <summary>The IdP-registered sign-out URL the logout round-trip returns to (sibling of CallbackPath).</summary>
+    private const string LogoutCallbackPath = "/bff/logout-callback";
+
     private readonly BffOptions _options;
     private readonly IBffTokenClient _tokenClient;
     private readonly IBffSessionStore _store;
@@ -194,7 +197,19 @@ public sealed class BffAuthController : ControllerBase
         // Clear the session cookie (Max-Age=0).
         Response.Cookies.Append(_options.CookieName, string.Empty, BffCookieBuilder.Delete(_options));
 
-        var postLogoutRedirect = BuildAbsoluteUrl(SanitizeReturnUrl(returnUrl));
+        // The IdP (Cognito/Keycloak) only redirects back to a REGISTERED sign-out URL — the apex
+        // /bff/logout-callback — NOT arbitrary app paths like /store/ (passing the raw returnUrl as
+        // logout_uri makes Cognito bounce to its login page). Stash the app's post-logout
+        // destination in a short-lived cookie so the callback can fan back to it.
+        // APEX-ONLY (same constraint as the login /bff/callback): BuildAbsoluteUrl derives the host
+        // from the request, so on a SUBTENANT host this yields an UNREGISTERED logout-callback URL
+        // and Cognito bounces to its login page. Subtenant BFF needs the central-auth fan-out
+        // (register the apex callback + fan back) — the same future workstream as the login callback.
+        var finalDest = SanitizeReturnUrl(returnUrl);
+        Response.Cookies.Append(BffConstants.LogoutReturnCookieName, Uri.EscapeDataString(finalDest),
+            BffCookieBuilder.Transaction(_options));
+
+        var postLogoutRedirect = BuildAbsoluteUrl(LogoutCallbackPath);
         string logoutUrl;
         try
         {
@@ -202,12 +217,31 @@ public sealed class BffAuthController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(ex, "BFF logout URL build failed; returning returnUrl.");
-            logoutUrl = postLogoutRedirect;
+            _logger.LogDebug(ex, "BFF logout URL build failed; returning the post-logout destination.");
+            logoutUrl = BuildAbsoluteUrl(finalDest);
         }
 
         // Return the provider logout URL for the SPA to navigate to (credentialed POST flow).
         return Ok(new { logoutUrl });
+    }
+
+    /// <summary>
+    /// GET /bff/logout-callback — the IdP's REGISTERED sign-out URL. The IdP redirects here after
+    /// clearing its own session; we fan the user back to the app's post-logout destination stashed
+    /// at /bff/logout. A plain top-level GET that mutates no server state (the session was already
+    /// deleted at /bff/logout), so it needs no CSRF guard.
+    /// </summary>
+    [HttpGet("logout-callback")]
+    public IActionResult LogoutCallback()
+    {
+        var dest = "/";
+        if (Request.Cookies.TryGetValue(BffConstants.LogoutReturnCookieName, out var c) && !string.IsNullOrEmpty(c))
+        {
+            try { dest = Uri.UnescapeDataString(c); } catch { dest = "/"; }
+            Response.Cookies.Append(BffConstants.LogoutReturnCookieName, string.Empty, BffCookieBuilder.Delete(_options));
+        }
+        // Re-sanitize at the sink — the cookie could be tampered — to close the open-redirect path.
+        return Redirect(SanitizeReturnUrl(dest));
     }
 
     /// <summary>GET /bff/ws-token → mint a short-lived token for the AppSync WebSocket.</summary>
@@ -260,6 +294,11 @@ public sealed class BffAuthController : ControllerBase
     private string SanitizeReturnUrl(string? returnUrl)
     {
         if (string.IsNullOrWhiteSpace(returnUrl))
+            return "/";
+
+        // Reject control chars on BOTH paths (parity with SanitizeReturnUrlCore) — defense in depth
+        // against CR/LF response-splitting, even though the header writer would also reject it.
+        if (returnUrl.Any(char.IsControl))
             return "/";
 
         // IsLocalUrl is null only outside an MVC request context (e.g. unit tests); guard for it.

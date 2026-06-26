@@ -82,6 +82,14 @@ public static class ConfigureLazyMagicOIDCWASMBff
             return new BffOIDCService(authStateProvider, navigation, http, logger);
         });
 
+        // The shared LoginDisplay also injects IRememberMeService + IProfileManagementService.
+        // In BFF mode the browser holds no tokens (nothing to persist/clear client-side) and
+        // password/profile management is a server/IdP concern — register minimal BFF impls so
+        // the UI resolves these dependencies and renders. (The SPA impls depend on the
+        // client-side dynamic-config / token-storage stack, which BFF mode does not wire.)
+        services.TryAddScoped<IRememberMeService, BffRememberMeService>();
+        services.TryAddScoped<IProfileManagementService, BffProfileManagementService>();
+
         return services;
     }
 }
