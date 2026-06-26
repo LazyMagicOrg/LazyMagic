@@ -1,6 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<Import Project="$(SolutionDir)CommonPackageHandling.targets" />
 	<PropertyGroup>
+		<!-- Override the solution-wide 3.0.6 from CommonPackageHandling so the
+		     TenancyConfig.Unpack "staticsite" fix re-resolves cleanly through both
+		     the NuGet cache AND the container's Docker build layer cache (a same-
+		     version repack otherwise serves the stale parser). Same trap/remedy as
+		     LazyMagic.OIDC.Bff — bump on each content change until the normal
+		     release train picks it up. -->
+		<Version>3.0.7</Version>
 		<TargetFramework>net10.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>

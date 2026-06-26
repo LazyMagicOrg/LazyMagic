@@ -263,6 +263,15 @@ public class TenancyConfig : TenancyConfigBase, IItem, ITenancyConfig
                     };
                     WebApps.Add(webapp);
                     break;
+                case "staticsite":
+                    // Edge-only landing behavior (served by the CDN's CFExplore function, never
+                    // routed to the container). The server resolves tenancy from the keys plus the
+                    // asset/api behaviors only, so a staticsite tuple carries nothing the caller-info
+                    // path needs — skip it. Before this case existed, the default branch threw
+                    // "Unknown behavior type: staticsite", which the authorization layer surfaced as
+                    // a fatal "Could not get caller info." on EVERY API call once /explore static
+                    // landing pages were added to the tenancy config.
+                    break;
                 default:
                     throw new Exception($"Unknown behavior type: {behaviorType}");
             }
