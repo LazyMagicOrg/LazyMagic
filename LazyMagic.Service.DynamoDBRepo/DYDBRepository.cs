@@ -500,20 +500,22 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
 
             return new ObjectResult(list) { StatusCode = statusCode };
         }
-        catch (AmazonDynamoDBException ex) 
-        { 
-            if(debug) Console.WriteLine($"ListEAndSizeAsync() AmazonDynamoDBException. {ex.Message}");
-            return new ObjectResult(null) { StatusCode = 500 }; 
-        }
-        catch (AmazonServiceException ex) 
+        catch (AmazonDynamoDBException ex)
         {
-            if (debug) Console.WriteLine($"ListEAndSizeAsync() AmazonServiceException. {ex.Message}");
-            return new ObjectResult(null) { StatusCode = 503 }; 
+            // Always log (NOT if(debug)) — this swallowed exception is the only signal that a
+            // query failed (e.g. a key-schema/table mismatch). Include the table name.
+            Console.WriteLine($"ListAndSizeAsync({table}) AmazonDynamoDBException: {ex.Message}");
+            return new ObjectResult(null) { StatusCode = 500 };
+        }
+        catch (AmazonServiceException ex)
+        {
+            Console.WriteLine($"ListAndSizeAsync({table}) AmazonServiceException: {ex.Message}");
+            return new ObjectResult(null) { StatusCode = 503 };
         }
         catch (Exception ex)
         {
-            if (debug) Console.WriteLine($"ListEAndSizeAsync() catch all. {ex.Message}");
-            return new ObjectResult(null) { StatusCode = 500 }; 
+            Console.WriteLine($"ListAndSizeAsync({table}) error: {ex.Message}");
+            return new ObjectResult(null) { StatusCode = 500 };
         }
     }
 

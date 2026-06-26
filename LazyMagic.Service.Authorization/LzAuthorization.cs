@@ -83,9 +83,12 @@ public abstract class LzAuthorization : ILzAuthorization
 
             return callerInfo;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
-            throw new Exception("Could not get caller info.");
+            // Chain the inner exception — the original (e.g. a DynamoDB ValidationException,
+            // a TenancyConfig parse error, or a missing Authorization header) IS the actual
+            // cause and must not be discarded, or it masks every failure as a generic 500.
+            throw new Exception("Could not get caller info.", ex);
         }
     }
 

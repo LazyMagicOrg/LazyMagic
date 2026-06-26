@@ -250,15 +250,17 @@ public class TenancyConfig : TenancyConfigBase, IItem, ITenancyConfig
 
                     var webapp = new WebApp
                     {
-                        //  0    1         2         3      4      5
-                        // [path,assetType,assetname,suffix,region,level]
-                        // ==> [systemKey]-[tenantKey]-[subtenantKey]-[assetType]-[appName]-[suffix].s3.[region].amazonaws.com
+                        //  0    1       2       3         4     5
+                        // [path,webapp, appName, suffixTok,level,gated]   (gated is edge-only)
+                        // Unlike the asset tuple, webapp carries NO region: index 4 is the level
+                        // and index 5 is the CFRequest auth-gate flag. Use the deployment Region
+                        // for the bucket host. (Previously mislabeled level→Region, gated→Level.)
                         Path = behaviorArray[0],
                         BehaviorType = behaviorArray[1],
                         AppName = behaviorArray[2],
                         Suffix = behaviorArray[3],
-                        Region = behaviorArray[4],
-                        Level = int.Parse(behaviorArray[5] ?? "0"),
+                        Region = this.Region,
+                        Level = int.Parse(behaviorArray[4] ?? "0"),
                         Name = GetWebAppName(behaviorArray)
                     };
                     WebApps.Add(webapp);
@@ -319,11 +321,13 @@ public class TenancyConfig : TenancyConfigBase, IItem, ITenancyConfig
     /// <returns></returns>
     protected virtual string GetWebAppName(string[] behaviorArray)
     {
-        var webappLevel = int.Parse(behaviorArray[5]);
+        // webapp tuple: [path,webapp,appName,suffixTok,level,gated] — level at [4]; no region in
+        // the tuple, so the bucket host uses the deployment Region (NOT behaviorArray[4]/[5]).
+        var webappLevel = int.Parse(behaviorArray[4]);
         return ($"{SystemKey}-"
             + (webappLevel > 0 ? $"{TenantKey}-" : "-")
             + (webappLevel > 1 ? $"{SubtenantKey}-" : "-")
-            + $"{behaviorArray[1]}-{behaviorArray[2]}-{behaviorArray[3]}.s3.{behaviorArray[4]}.amazonaws.com")
+            + $"{behaviorArray[1]}-{behaviorArray[2]}-{behaviorArray[3]}.s3.{Region}.amazonaws.com")
             .Replace("{sts}", Sts)
             .Replace("{ts}", Ts)
             .Replace("{ss}", Ss);
