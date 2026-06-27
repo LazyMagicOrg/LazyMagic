@@ -1,9 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<Import Project="$(SolutionDir)CommonPackageHandling.targets" />
 	<PropertyGroup>
-		<!-- Override 3.0.6 so the ListAndSizeAsync error-logging fix (always-log the
-		     swallowed exception) re-resolves through the NuGet + container Docker layer caches. -->
-		<Version>3.0.7</Version>
 		<TargetFrameworks>net10.0</TargetFrameworks>
 		<Description>DynamoDB Helper Library</Description>
 		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
