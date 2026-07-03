@@ -17,9 +17,19 @@ public sealed class BffCredentialsHandler : DelegatingHandler, IAuthenticationHa
 {
     private const string CsrfHeaderName = "X-CSRF";
     private const string CsrfHeaderValue = "1";
+    private const string PoolMarkerHeaderName = "lz-bff-pool";
 
-    public BffCredentialsHandler()
+    private readonly string? _poolMarker;
+
+    /// <param name="poolMarker">
+    /// Multi-pool BFF instance marker (e.g. <c>cbff</c> for consumerauth). When set, every request
+    /// carries <c>lz-bff-pool: {marker}</c> so the apphost cookie→Bearer bridge selects THIS pool's
+    /// cookie/Bearer. Null (the default) ⇒ no marker ⇒ the tenantauth instance, keeping StoreApp/
+    /// AdminApp wire-identical.
+    /// </param>
+    public BffCredentialsHandler(string? poolMarker = null)
     {
+        _poolMarker = string.IsNullOrWhiteSpace(poolMarker) ? null : poolMarker;
     }
 
     protected override Task<HttpResponseMessage> SendAsync(
@@ -33,6 +43,11 @@ public sealed class BffCredentialsHandler : DelegatingHandler, IAuthenticationHa
         if (!request.Headers.Contains(CsrfHeaderName))
             request.Headers.Add(CsrfHeaderName, CsrfHeaderValue);
 
+        // Multi-pool: tell the apphost cookie→Bearer bridge which BFF instance's cookie to use.
+        // Omitted for the default tenantauth instance (StoreApp/AdminApp stay wire-identical).
+        if (_poolMarker is not null && !request.Headers.Contains(PoolMarkerHeaderName))
+            request.Headers.Add(PoolMarkerHeaderName, _poolMarker);
+
         return base.SendAsync(request, cancellationToken);
     }
 
@@ -43,7 +58,7 @@ public sealed class BffCredentialsHandler : DelegatingHandler, IAuthenticationHa
     /// </summary>
     public HttpMessageHandler CreateHandler()
     {
-        return new BffCredentialsHandler
+        return new BffCredentialsHandler(_poolMarker)
         {
             InnerHandler = new HttpClientHandler()
         };

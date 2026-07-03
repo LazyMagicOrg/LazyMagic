@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 
 [assembly: HostingStartup(typeof(LazyMagic.OIDC.Bff.BffHostingStartup))]
 
@@ -17,6 +18,15 @@ public sealed class BffHostingStartup : IHostingStartup
     {
         builder.ConfigureServices((ctx, services) =>
         {
+            // Origin verification is INDEPENDENT of the BFF switch — it protects every
+            // route (incl. /*Api/*) whenever the deployer set LZ_ORIGIN_VERIFY (public
+            // CDN-fronted origins, e.g. the Lambda Function URL topology). Inert when
+            // the variable is absent.
+            if (OriginVerifyMiddleware.IsConfigured(ctx.Configuration))
+            {
+                services.AddSingleton<Microsoft.AspNetCore.Hosting.IStartupFilter, OriginVerifyStartupFilter>();
+            }
+
             if (BffOptions.IsEnabled(ctx.Configuration))
             {
                 services.AddLazyMagicBff(ctx.Configuration);

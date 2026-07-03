@@ -99,11 +99,16 @@ public abstract class LzAuthorization : ILzAuthorization
         // are required by deployment platform specific code in the repository layer.
         // These headers are usually added by the Container,  a reverse proxy like a
         // CloudFront function, or in the dev WebApi request pipeline.
+        // Build a CASE-INSENSITIVE dictionary: HTTP header names are case-insensitive and proxies
+        // (CloudFront/ALB) may title-case them (e.g. "Lz-Tenantid"), so a case-sensitive dict would
+        // make callerInfo.Headers["lz-tenantid"]-style lookups miss. (StringComparer.OrdinalIgnoreCase.)
         return request.Headers
-            .Where(header => header.Key.StartsWith("lz-", StringComparison.OrdinalIgnoreCase) && !header.Key.StartsWith("lz-config"))
+            .Where(header => header.Key.StartsWith("lz-", StringComparison.OrdinalIgnoreCase)
+                          && !header.Key.StartsWith("lz-config", StringComparison.OrdinalIgnoreCase))
             .ToDictionary(
                 header => header.Key,
-                header => header.Value.ToString()
+                header => header.Value.ToString(),
+                StringComparer.OrdinalIgnoreCase
             );
     }
 

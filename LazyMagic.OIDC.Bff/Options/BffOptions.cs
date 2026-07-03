@@ -36,7 +36,23 @@ public sealed class BffOptions
     /// </summary>
     public string? Scopes { get; set; }
 
-    /// <summary>The redirect_uri path registered with the IdP (LZ_BFF_CALLBACK_PATH). Default <c>/bff/callback</c>.</summary>
+    /// <summary>
+    /// Route prefix this BFF instance is mounted at (LZ_BFF_ROUTE_PREFIX). Default <c>/bff</c>
+    /// (tenantauth). A second instance (e.g. consumerauth) mounts at <c>/cbff</c>. The endpoints
+    /// are <c>{RoutePrefix}/login|callback|user|logout|logout-callback</c> and the per-instance
+    /// cookie/DP-purpose names are derived from it, so two instances never collide. (§ multi-pool)
+    /// </summary>
+    public string RoutePrefix { get; set; } = "/bff";
+
+    /// <summary>
+    /// The instance marker the WASM client sends in the <c>lz-bff-pool</c> header so the
+    /// cookie→Bearer middleware picks THIS instance's cookie/Bearer/authname when multiple
+    /// parent-domain BFF cookies are present. Derived from <see cref="RoutePrefix"/> (e.g.
+    /// <c>cbff</c>). The default (tenantauth) instance is selected when the header is absent.
+    /// </summary>
+    public string InstanceKey => RoutePrefix.Trim('/');
+
+    /// <summary>The redirect_uri path registered with the IdP (LZ_BFF_CALLBACK_PATH). Default <c>{RoutePrefix}/callback</c>.</summary>
     public string CallbackPath { get; set; } = "/bff/callback";
 
     /// <summary>Session cookie name (LZ_BFF_COOKIE_NAME). Default <c>__bff</c>.</summary>
@@ -106,42 +122,50 @@ public sealed class BffOptions
     /// section ("LzBff"). Environment variables take precedence so deploy tooling can
     /// override config without rebuilding.
     /// </summary>
-    public static BffOptions FromConfiguration(IConfiguration configuration)
+    /// <param name="envPrefix">
+    /// Env-var prefix for this instance. Default <c>LZ_BFF_</c> (tenantauth). A second pool
+    /// (consumerauth) passes <c>LZ_CBFF_</c> so the two instances read disjoint env without
+    /// colliding. The <c>LzBff</c> IConfiguration section is only bound for the default prefix.
+    /// </param>
+    public static BffOptions FromConfiguration(IConfiguration configuration, string envPrefix = "LZ_BFF_")
     {
         var o = new BffOptions();
 
-        // 1) IConfiguration section (lowest precedence). Tolerant of absence.
-        configuration.GetSection("LzBff").Bind(o);
+        // 1) IConfiguration section (lowest precedence; default instance only). Tolerant of absence.
+        if (envPrefix == "LZ_BFF_")
+            configuration.GetSection("LzBff").Bind(o);
 
-        // 2) Environment variables (highest precedence).
-        o.Enabled = ReadBool("LZ_BFF_ENABLED", o.Enabled);
-        o.Provider = ReadProvider("LZ_BFF_PROVIDER", o.Provider);
-        o.Authority = ReadString("LZ_BFF_AUTHORITY", o.Authority);
-        o.MetadataUrl = ReadStringOrNull("LZ_BFF_METADATA_URL", o.MetadataUrl);
-        o.ClientId = ReadString("LZ_BFF_CLIENT_ID", o.ClientId);
-        o.ClientSecret = ReadString("LZ_BFF_CLIENT_SECRET", o.ClientSecret);
-        o.Scopes = ReadStringOrNull("LZ_BFF_SCOPES", o.Scopes);
-        o.CallbackPath = ReadString("LZ_BFF_CALLBACK_PATH", o.CallbackPath);
-        o.CookieName = ReadString("LZ_BFF_COOKIE_NAME", o.CookieName);
-        o.CookieDomain = ReadStringOrNull("LZ_BFF_COOKIE_DOMAIN", o.CookieDomain);
-        o.AccessTokenSkewSeconds = ReadInt("LZ_BFF_ACCESS_TOKEN_SKEW_SECONDS", o.AccessTokenSkewSeconds);
-        o.SessionTableName = ReadString("LZ_BFF_SESSION_TABLE", o.SessionTableName);
-        o.SessionTtlHours = ReadInt("LZ_BFF_SESSION_TTL_HOURS", o.SessionTtlHours);
-        o.DataProtectionSsmParam = ReadStringOrNull("LZ_BFF_DP_PARAM", o.DataProtectionSsmParam);
-        o.DataProtectionAppName = ReadStringOrNull("LZ_BFF_DP_APPNAME", o.DataProtectionAppName);
-        o.AwsRegion = ReadStringOrNull("LZ_BFF_AWS_REGION", o.AwsRegion);
-        o.AuthName = ReadStringOrNull("LZ_BFF_AUTHNAME", o.AuthName);
+        // 2) Environment variables (highest precedence), keyed by the instance prefix.
+        o.Enabled = ReadBool(envPrefix + "ENABLED", o.Enabled);
+        o.Provider = ReadProvider(envPrefix + "PROVIDER", o.Provider);
+        o.Authority = ReadString(envPrefix + "AUTHORITY", o.Authority);
+        o.MetadataUrl = ReadStringOrNull(envPrefix + "METADATA_URL", o.MetadataUrl);
+        o.ClientId = ReadString(envPrefix + "CLIENT_ID", o.ClientId);
+        o.ClientSecret = ReadString(envPrefix + "CLIENT_SECRET", o.ClientSecret);
+        o.Scopes = ReadStringOrNull(envPrefix + "SCOPES", o.Scopes);
+        o.RoutePrefix = ReadString(envPrefix + "ROUTE_PREFIX", o.RoutePrefix);
+        // CallbackPath defaults to {RoutePrefix}/callback unless explicitly overridden.
+        o.CallbackPath = ReadString(envPrefix + "CALLBACK_PATH", o.RoutePrefix.TrimEnd('/') + "/callback");
+        o.CookieName = ReadString(envPrefix + "COOKIE_NAME", o.CookieName);
+        o.CookieDomain = ReadStringOrNull(envPrefix + "COOKIE_DOMAIN", o.CookieDomain);
+        o.AccessTokenSkewSeconds = ReadInt(envPrefix + "ACCESS_TOKEN_SKEW_SECONDS", o.AccessTokenSkewSeconds);
+        o.SessionTableName = ReadString(envPrefix + "SESSION_TABLE", o.SessionTableName);
+        o.SessionTtlHours = ReadInt(envPrefix + "SESSION_TTL_HOURS", o.SessionTtlHours);
+        o.DataProtectionSsmParam = ReadStringOrNull(envPrefix + "DP_PARAM", o.DataProtectionSsmParam);
+        o.DataProtectionAppName = ReadStringOrNull(envPrefix + "DP_APPNAME", o.DataProtectionAppName);
+        o.AwsRegion = ReadStringOrNull(envPrefix + "AWS_REGION", o.AwsRegion);
+        o.AuthName = ReadStringOrNull(envPrefix + "AUTHNAME", o.AuthName);
 
         return o;
     }
 
-    /// <summary>True if LZ_BFF_ENABLED resolves to true via env var OR IConfiguration. Used by the hosting startup.</summary>
-    public static bool IsEnabled(IConfiguration configuration)
+    /// <summary>True if {envPrefix}ENABLED resolves to true via env var OR (default instance) IConfiguration.</summary>
+    public static bool IsEnabled(IConfiguration configuration, string envPrefix = "LZ_BFF_")
     {
-        var env = Environment.GetEnvironmentVariable("LZ_BFF_ENABLED");
+        var env = Environment.GetEnvironmentVariable(envPrefix + "ENABLED");
         if (!string.IsNullOrWhiteSpace(env))
             return env.Trim().Equals("true", StringComparison.OrdinalIgnoreCase) || env.Trim() == "1";
-        return configuration.GetValue<bool>("LzBff:Enabled");
+        return envPrefix == "LZ_BFF_" && configuration.GetValue<bool>("LzBff:Enabled");
     }
 
     private static string ReadString(string key, string fallback)

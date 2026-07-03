@@ -21,11 +21,12 @@ namespace LazyMagic.OIDC.WASM.Bff;
 /// </summary>
 public sealed class BffAuthenticationStateProvider : AuthenticationStateProvider, IDisposable
 {
-    // HOST-ABSOLUTE (leading slash): /bff/user lives at the host root, but the WASM may be
+    // HOST-ABSOLUTE (leading slash): {prefix}/user lives at the host root, but the WASM may be
     // mounted under a sub-path (e.g. <base href="/store/">) and the HttpClient's BaseAddress
     // is that sub-path. A relative "bff/user" would resolve to "/store/bff/user" (the app's
     // own HTML), so the provider would never see the real session and always read anonymous.
-    private const string UserEndpoint = "/bff/user";
+    // {prefix} = /bff (tenantauth) or /cbff (consumerauth), supplied by AddLazyMagicOIDCWASMBff.
+    private readonly string _userEndpoint;
 
     // Claim types that, when present in the returned claims, are treated as ROLE claims.
     // The server already maps roles into these; we tag the ClaimsIdentity's RoleClaimType
@@ -53,19 +54,21 @@ public sealed class BffAuthenticationStateProvider : AuthenticationStateProvider
     public BffAuthenticationStateProvider(
         HttpClient http,
         ILogger<BffAuthenticationStateProvider> logger,
-        TimeSpan pollInterval)
+        TimeSpan pollInterval,
+        string routePrefix = "/bff")
     {
         _http = http;
         _logger = logger;
         _pollInterval = pollInterval;
+        _userEndpoint = "/" + routePrefix.Trim('/') + "/user";
 
         // Push the auth state to subscribers EARLY and repeatedly through the first ~20s, then
-        // settle to _pollInterval. This is essential, not an optimization: the bar-style
-        // LoginDisplay updates its UI ONLY on the AuthenticationStateChanged event — its initial
-        // GetAuthenticationStateAsync call is commented out (BaseAppLib LoginDisplay / punch-list
-        // P1-3) — and it only subscribes AFTER the (slow) WASM boot. A single early notify would
-        // race that subscription, so we re-notify every couple seconds until the boot window
-        // closes, then settle. With polling disabled we still push during the window, then stop.
+        // settle to _pollInterval. Components subscribe only AFTER the (slow) WASM boot, so a
+        // single early notify would race their subscriptions; re-notify every couple seconds
+        // until the boot window closes, then settle. (BaseApp.BlazorUI 1.0.1's LoginDisplay
+        // now also does its own initial GetAuthenticationStateAsync — fixed 2026-07-03 — but
+        // this window still covers older packages and any other late subscriber.) With polling
+        // disabled we still push during the window, then stop.
         _pollTimer = new Timer(OnPollTick, null, InitialNotifyDelay, EarlyPollPeriod);
     }
 
@@ -78,7 +81,7 @@ public sealed class BffAuthenticationStateProvider : AuthenticationStateProvider
     {
         try
         {
-            using var request = new HttpRequestMessage(HttpMethod.Get, UserEndpoint);
+            using var request = new HttpRequestMessage(HttpMethod.Get, _userEndpoint);
             // Send the HttpOnly BFF session cookie on this same-origin request.
             request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
 
@@ -115,31 +118,44 @@ public sealed class BffAuthenticationStateProvider : AuthenticationStateProvider
     /// Force an immediate re-check of the BFF session and notify subscribers. Useful right
     /// after a navigation returns from /bff/login (the cookie should now exist).
     /// </summary>
-    public void NotifyStateChanged()
+    public void NotifyStateChanged() => _ = PublishResolvedStateAsync();
+
+    /// <summary>
+    /// Re-check the session, then publish it as a COMPLETED task.
+    ///
+    /// CRITICAL: publishing the PENDING task returned by <see cref="GetAuthenticationStateAsync"/>
+    /// (as the old code did) makes <c>&lt;AuthorizeView&gt;</c> fall back to its authorizing/empty
+    /// state until the <c>/bff/user</c> fetch completes — so on EVERY poll the authed-only UI (e.g.
+    /// the Pets nav link) blinks out and back. Resolving first and handing AuthorizeView a completed
+    /// task flips it straight to the new state with no intermediate "authorizing" render. We still
+    /// re-notify on every early tick so a late subscriber (e.g. the bar LoginDisplay) catches up.
+    /// </summary>
+    private async Task PublishResolvedStateAsync()
     {
-        NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
+        try
+        {
+            var newState = await GetAuthenticationStateAsync().ConfigureAwait(false);
+            NotifyAuthenticationStateChanged(Task.FromResult(newState));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "[BFF] Auth state publish failed");
+        }
     }
 
     private void OnPollTick(object? state)
     {
-        try
-        {
-            // Re-evaluate the session and push the new state to the UI. If the server
-            // killed the session, this flips authenticated → anonymous.
-            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "[BFF] Poll tick failed");
-        }
-
-        // Once the early re-notify window closes, settle to the configured poll interval
-        // (or stop entirely if polling is disabled).
+        // Settle the timer to the long interval once the boot re-notify window closes (synchronous,
+        // independent of the async re-check below).
         if (++_earlyTicks == MaxEarlyTicks)
         {
             var settled = _pollInterval > TimeSpan.Zero ? _pollInterval : Timeout.InfiniteTimeSpan;
             try { _pollTimer?.Change(settled, settled); } catch { /* timer disposed */ }
         }
+
+        // Re-evaluate the session and push the result as a COMPLETED task (see PublishResolvedStateAsync).
+        // If the server killed the session, this flips authenticated → anonymous.
+        _ = PublishResolvedStateAsync();
     }
 
     private ClaimsPrincipal BuildPrincipal(string json)

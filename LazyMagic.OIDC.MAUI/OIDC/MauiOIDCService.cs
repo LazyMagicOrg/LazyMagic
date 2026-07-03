@@ -22,6 +22,9 @@ public class MauiOIDCService : IOIDCService, IDisposable
     private string? _idToken;
     private string? _pendingAuthUrl;
     private bool _forceLogin = false;
+    private readonly Task _startupSessionCheck;
+    private readonly object _loginSync = new();
+    private Task<bool>? _inFlightLogin;
 
     public event EventHandler<OIDCAuthenticationStateChangedEventArgs>? AuthenticationStateChanged;
     public event Action<string>? OnAuthenticationRequested;
@@ -48,27 +51,35 @@ public class MauiOIDCService : IOIDCService, IDisposable
             IsAuthenticated = false
         };
         
-        // Check for stored tokens on startup
-        _ = Task.Run(async () => 
+        // Check for stored tokens on startup. LoginAsync gates on this task so an
+        // interactive login never interleaves with the boot-time restore/refresh.
+        _startupSessionCheck = Task.Run(async () =>
         {
-            _logger.LogInformation("=== STARTUP SESSION CHECK ===");
-            
-            // Check if user explicitly logged out
-            _forceLogin = await _tokenStorage.HasLoggedOutAsync();
-            _logger.LogInformation("Logout flag on startup: {ForceLogin}", _forceLogin);
-            
-            if (!_forceLogin)
+            try
             {
-                _logger.LogInformation("No logout flag - attempting session restore");
-                var restored = await TryRestoreSessionAsync();
-                _logger.LogInformation("Session restore result: {Restored}", restored);
+                _logger.LogInformation("=== STARTUP SESSION CHECK ===");
+
+                // Check if user explicitly logged out
+                _forceLogin = await _tokenStorage.HasLoggedOutAsync();
+                _logger.LogInformation("Logout flag on startup: {ForceLogin}", _forceLogin);
+
+                if (!_forceLogin)
+                {
+                    _logger.LogInformation("No logout flag - attempting session restore");
+                    var restored = await TryRestoreSessionAsync();
+                    _logger.LogInformation("Session restore result: {Restored}", restored);
+                }
+                else
+                {
+                    _logger.LogInformation("User had logged out - will require fresh login");
+                }
+
+                _logger.LogInformation("=== STARTUP SESSION CHECK COMPLETE ===");
             }
-            else
+            catch (Exception ex)
             {
-                _logger.LogInformation("User had logged out - will require fresh login");
+                _logger.LogError(ex, "Startup session check failed");
             }
-            
-            _logger.LogInformation("=== STARTUP SESSION CHECK COMPLETE ===");
         });
     }
     
@@ -89,6 +100,14 @@ public class MauiOIDCService : IOIDCService, IDisposable
                 var userInfo = ParseIdToken(idToken);
                 if (userInfo != null && userInfo.TokenExpiry > DateTime.UtcNow)
                 {
+                    // An interactive login (OS deep-link callback) may have completed while we
+                    // were reading storage; its tokens are newer than the ones read above.
+                    if (_currentState?.IsAuthenticated == true)
+                    {
+                        _logger.LogInformation("Interactive login completed during session restore - keeping its session");
+                        return true;
+                    }
+
                     _accessToken = accessToken;
                     _idToken = idToken;
                     _currentState = userInfo;
@@ -174,14 +193,48 @@ public class MauiOIDCService : IOIDCService, IDisposable
     }
 
     /// <summary>
-    /// Initiates login using system browser
+    /// Initiates login using system browser.
+    /// Single-flight: a call made while a login is already in progress joins the in-flight
+    /// login instead of starting another one. Concurrent logins (e.g. an auto-login on an
+    /// authorize-gated page racing the app-bar Login button during startup) each pushed
+    /// their own authentication modal; the OAuth callback then completed one waiter while
+    /// popping the other's modal, so the exchange result was discarded and the user was
+    /// shown a fresh login form.
     /// </summary>
-    public async Task<bool> LoginAsync()
+    public Task<bool> LoginAsync()
+    {
+        lock (_loginSync)
+        {
+            if (_inFlightLogin is { IsCompleted: false })
+            {
+                _logger.LogInformation("Login already in progress - joining the in-flight login instead of opening another authentication modal");
+                return _inFlightLogin;
+            }
+            _inFlightLogin = LoginCoreAsync();
+            return _inFlightLogin;
+        }
+    }
+
+    private async Task<bool> LoginCoreAsync()
     {
         try
         {
             _logger.LogInformation("🚀 Starting LoginAsync...");
-            
+
+            // Let the boot-time restore/refresh finish before going interactive, so it can't
+            // race the login (bounded in case token storage hangs). Even if the restore
+            // succeeded, still open the auth modal: UI that subscribed after the restore
+            // event relies on the login round-trip (a silent one when the IdP session is
+            // still live) to re-publish the authenticated state.
+            try
+            {
+                await _startupSessionCheck.WaitAsync(TimeSpan.FromSeconds(10));
+            }
+            catch (TimeoutException)
+            {
+                _logger.LogWarning("Startup session check still running after 10s - proceeding with interactive login");
+            }
+
             // Get the authentication URL (will include prompt=login if _forceLogin is true)
             _logger.LogInformation("📝 Getting authentication URL...");
             var authUrl = await GetAuthenticationUrlAsync();
@@ -276,11 +329,19 @@ public class MauiOIDCService : IOIDCService, IDisposable
             _logger.LogInformation("  awsRegion: {Region}", awsRegion ?? "null");
             
             // Use the configured Cognito domain for OAuth operations
-            var authority = authConfig["HostedUIDomain"]?.ToString() 
+            var authority = authConfig["HostedUIDomain"]?.ToString()
                 ?? authConfig["cognitoDomain"]?.ToString()
                 ?? (!string.IsNullOrEmpty(awsRegion) && !string.IsNullOrEmpty(authConfig["cognitoDomainPrefix"]?.ToString())
                     ? $"https://{authConfig["cognitoDomainPrefix"]}.auth.{awsRegion}.amazoncognito.com"
-                    : null);
+                    : null)
+                // LazyMagic /config (CFAuthConfig.js) serves the host-rooted OIDC façade in
+                // "Authority" (e.g. https://{host}/auth/tenantauth) and does NOT emit the
+                // HostedUIDomain/cognitoDomain/cognitoDomainPrefix fields above. Fall back to it
+                // so MAUI hits {Authority}/oauth2/{authorize,token}: CFAuth's /auth/{pool}/...
+                // dispatcher 302s authorize → the Cognito Hosted UI and proxies token upstream
+                // (the same façade the WASM OIDC client uses). Without this, authority resolves
+                // null and login (and token exchange) abort silently — no auth WebView opens.
+                ?? authConfig["Authority"]?.ToString();
             var clientId = userPoolClientId;
             
             _logger.LogInformation("Authority Resolution:");
@@ -385,11 +446,19 @@ public class MauiOIDCService : IOIDCService, IDisposable
             var awsRegion = authConfig["awsRegion"]?.ToString();
             
             // Use the configured Cognito domain for OAuth operations
-            var authority = authConfig["HostedUIDomain"]?.ToString() 
+            var authority = authConfig["HostedUIDomain"]?.ToString()
                 ?? authConfig["cognitoDomain"]?.ToString()
                 ?? (!string.IsNullOrEmpty(awsRegion) && !string.IsNullOrEmpty(authConfig["cognitoDomainPrefix"]?.ToString())
                     ? $"https://{authConfig["cognitoDomainPrefix"]}.auth.{awsRegion}.amazoncognito.com"
-                    : null);
+                    : null)
+                // LazyMagic /config (CFAuthConfig.js) serves the host-rooted OIDC façade in
+                // "Authority" (e.g. https://{host}/auth/tenantauth) and does NOT emit the
+                // HostedUIDomain/cognitoDomain/cognitoDomainPrefix fields above. Fall back to it
+                // so MAUI hits {Authority}/oauth2/{authorize,token}: CFAuth's /auth/{pool}/...
+                // dispatcher 302s authorize → the Cognito Hosted UI and proxies token upstream
+                // (the same façade the WASM OIDC client uses). Without this, authority resolves
+                // null and login (and token exchange) abort silently — no auth WebView opens.
+                ?? authConfig["Authority"]?.ToString();
             var clientId = userPoolClientId;
             
             if (string.IsNullOrEmpty(authority) || string.IsNullOrEmpty(clientId))

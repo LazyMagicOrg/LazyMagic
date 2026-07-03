@@ -77,13 +77,14 @@ public static class BffServiceCollectionExtensions
                 ? options.DataProtectionAppName!
                 : "LazyMagic.OIDC.Bff");
 
-        // BFF building blocks.
+        // BFF building blocks. The cookie codecs are SHARED across pool instances (see BffRegistry).
         services.TryAddSingleton<IBffCookieCodec, BffCookieCodec>();
         services.TryAddSingleton<IBffTransactionCodec, BffTransactionCodec>();
-        services.TryAddSingleton<IBffSessionStore, DynamoBffSessionStore>();
 
-        // Token client uses a typed HttpClient for discovery/JWKS/token calls.
-        services.AddHttpClient<IBffTokenClient, BffTokenClient>();
+        // Session store + token client are PER-INSTANCE (each pool has its own session table and
+        // OIDC authority/client) — built in the BffRegistry below, not registered as singletons.
+        // Register the HttpClient FACTORY so the registry can create a named client per token client.
+        services.AddHttpClient();
 
         // Cookie auth scheme (present so [Authorize] flows / sign-in plumbing can resolve a
         // scheme if the host opts to use it; the cookie itself is codec-managed on the hot path).
@@ -104,6 +105,36 @@ public static class BffServiceCollectionExtensions
 
         // Insert the cookie->Bearer middleware at the FRONT of the host pipeline.
         services.AddSingleton<Microsoft.AspNetCore.Hosting.IStartupFilter, BffStartupFilter>();
+
+        // ── BFF instances (multi-pool) ────────────────────────────────────
+        // #0 = tenantauth (LZ_BFF_*, /bff) — the DEFAULT instance, selected when no lz-bff-pool
+        // marker is present (preserves legacy single-pool behavior). #1 = consumerauth (LZ_CBFF_*,
+        // /cbff), added only when LZ_CBFF_ENABLED. Each instance gets its own session store (its
+        // table) + token client (its authority/client); the cookie codecs are shared.
+        services.AddSingleton<BffRegistry>(sp =>
+        {
+            var cookie = sp.GetRequiredService<IBffCookieCodec>();
+            var txn = sp.GetRequiredService<IBffTransactionCodec>();
+            var ddb = sp.GetRequiredService<IAmazonDynamoDB>();
+            var httpFactory = sp.GetRequiredService<System.Net.Http.IHttpClientFactory>();
+            var lf = sp.GetRequiredService<ILoggerFactory>();
+
+            BffInstance Build(BffOptions o) => new()
+            {
+                Options = o,
+                Cookie = cookie,
+                Txn = txn,
+                Store = new DynamoBffSessionStore(ddb,
+                    Microsoft.Extensions.Options.Options.Create(o), lf.CreateLogger<DynamoBffSessionStore>()),
+                Tokens = new BffTokenClient(httpFactory.CreateClient($"bff-{o.InstanceKey}"),
+                    Microsoft.Extensions.Options.Options.Create(o), lf.CreateLogger<BffTokenClient>()),
+            };
+
+            var instances = new List<BffInstance> { Build(options) }; // #0 tenantauth (default)
+            if (BffOptions.IsEnabled(configuration, "LZ_CBFF_"))
+                instances.Add(Build(BffOptions.FromConfiguration(configuration, "LZ_CBFF_")));
+            return new BffRegistry(instances);
+        });
 
         return services;
     }

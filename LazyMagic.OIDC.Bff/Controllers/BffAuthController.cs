@@ -10,42 +10,48 @@ namespace LazyMagic.OIDC.Bff;
 /// BFF auth endpoints (§8.3). Auto-discovered as an MVC ApplicationPart when the host
 /// references this package; otherwise registered explicitly in <c>AddLazyMagicBff</c>.
 /// </summary>
+// One route, two pools: the {bffSeg} segment ("bff"=tenantauth, "cbff"=consumerauth) selects the
+// BFF instance from the registry per request. Endpoints: /{bff|cbff}/login|callback|user|logout|logout-callback.
 [ApiController]
-[Route("bff")]
+[Route("{bffSeg:regex(^(bff|cbff)$)}")]
 public sealed class BffAuthController : ControllerBase
 {
-    /// <summary>The IdP-registered sign-out URL the logout round-trip returns to (sibling of CallbackPath).</summary>
-    private const string LogoutCallbackPath = "/bff/logout-callback";
-
-    private readonly BffOptions _options;
-    private readonly IBffTokenClient _tokenClient;
-    private readonly IBffSessionStore _store;
-    private readonly IBffCookieCodec _cookieCodec;
-    private readonly IBffTransactionCodec _txnCodec;
+    private readonly BffRegistry _registry;
     private readonly ILogger<BffAuthController> _logger;
 
-    public BffAuthController(
-        IOptions<BffOptions> options,
-        IBffTokenClient tokenClient,
-        IBffSessionStore store,
-        IBffCookieCodec cookieCodec,
-        IBffTransactionCodec txnCodec,
-        ILogger<BffAuthController> logger)
+    public BffAuthController(BffRegistry registry, ILogger<BffAuthController> logger)
     {
-        _options = options.Value;
-        _tokenClient = tokenClient;
-        _store = store;
-        _cookieCodec = cookieCodec;
-        _txnCodec = txnCodec;
+        _registry = registry;
         _logger = logger;
     }
+
+    // Resolve the BFF instance for THIS request from the route segment. The same-named per-request
+    // accessors below mean the action bodies don't change vs the single-pool version.
+    private BffInstance Inst => _registry.ResolveByKey(
+        RouteData.Values.TryGetValue("bffSeg", out var v) ? v?.ToString() : null);
+    private BffOptions _options => Inst.Options;
+    private IBffTokenClient _tokenClient => Inst.Tokens;
+    private IBffSessionStore _store => Inst.Store;
+    private IBffCookieCodec _cookieCodec => Inst.Cookie;
+    private IBffTransactionCodec _txnCodec => Inst.Txn;
+
+    // Per-instance cookie names + the IdP-registered sign-out path. Derived from the instance's
+    // options so the two pools never collide; for tenantauth these equal the historical
+    // __bff_txn / __bff_logout / __bff_logout_host / /bff/logout-callback values.
+    private string TxnCookieName => _options.CookieName + "_txn";
+    private string LogoutReturnCookieName => _options.CookieName + "_logout";
+    private string LogoutOriginCookieName => _options.CookieName + "_logout_host";
+    private string LogoutCallbackPath => _options.RoutePrefix.TrimEnd('/') + "/logout-callback";
 
     /// <summary>GET /bff/login?returnUrl=… → 302 to the IdP authorize endpoint.</summary>
     [HttpGet("login")]
     public async Task<IActionResult> Login([FromQuery] string? returnUrl, CancellationToken ct)
     {
         var safeReturn = SanitizeReturnUrl(returnUrl);
-        var redirectUri = BuildAbsoluteUrl(_options.CallbackPath);
+        // Pin the redirect_uri to the APEX /bff/callback — the only one registered with the IdP.
+        // The originating (possibly subtenant) host is stashed in the transaction and fanned back
+        // after the apex callback completes the exchange (see the subtenant fan-out note below).
+        var redirectUri = BuildCallbackUrl(_options.CallbackPath);
 
         var authorize = await _tokenClient.BuildAuthorizeUrlAsync(redirectUri, ct).ConfigureAwait(false);
 
@@ -55,9 +61,10 @@ public sealed class BffAuthController : ControllerBase
             State = authorize.State,
             Nonce = authorize.Nonce,
             ReturnUrl = safeReturn,
+            OriginHost = ViewerHost,
             IssuedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
         };
-        Response.Cookies.Append(BffConstants.TransactionCookieName, _txnCodec.Protect(txn), BffCookieBuilder.Transaction(_options));
+        Response.Cookies.Append(TxnCookieName, _txnCodec.Protect(txn), BffCookieBuilder.Transaction(_options));
 
         return Redirect(authorize.AuthorizeUrl);
     }
@@ -76,9 +83,9 @@ public sealed class BffAuthController : ControllerBase
             return BadRequest(new { error = "missing_code_or_state" });
 
         // Recover and immediately clear the transaction cookie.
-        if (!Request.Cookies.TryGetValue(BffConstants.TransactionCookieName, out var txnCookie) || string.IsNullOrEmpty(txnCookie))
+        if (!Request.Cookies.TryGetValue(TxnCookieName, out var txnCookie) || string.IsNullOrEmpty(txnCookie))
             return BadRequest(new { error = "missing_transaction" });
-        Response.Cookies.Append(BffConstants.TransactionCookieName, string.Empty, BffCookieBuilder.Delete(_options));
+        Response.Cookies.Append(TxnCookieName, string.Empty, BffCookieBuilder.Delete(_options));
 
         var txn = _txnCodec.Unprotect(txnCookie);
         if (txn is null)
@@ -88,7 +95,9 @@ public sealed class BffAuthController : ControllerBase
         if (!FixedTimeEquals(state, txn.State))
             return BadRequest(new { error = "state_mismatch" });
 
-        var redirectUri = BuildAbsoluteUrl(_options.CallbackPath);
+        // Must EXACTLY match the redirect_uri sent at /bff/login (apex), independent of which host
+        // this callback landed on. BuildCallbackUrl is deterministic from the parent CookieDomain.
+        var redirectUri = BuildCallbackUrl(_options.CallbackPath);
 
         BffTokenResult tokens;
         try
@@ -143,7 +152,10 @@ public sealed class BffAuthController : ControllerBase
 
         // Re-sanitize at the sink: the value was sanitized at /bff/login time, but never
         // hand a stashed value straight to Redirect — close the open-redirect path defensively.
-        return Redirect(SanitizeReturnUrl(txn.ReturnUrl));
+        // Then fan back to the originating (subtenant) host so the user lands where they started,
+        // not on the apex where the callback ran. The session cookie carries Domain=.{root}, so it
+        // is already valid on the subtenant host after this hop.
+        return Redirect(BuildFanBackUrl(txn.OriginHost, SanitizeReturnUrl(txn.ReturnUrl)));
     }
 
     /// <summary>GET /bff/user → 200 {claims} from the session cookie, or 401.</summary>
@@ -201,15 +213,16 @@ public sealed class BffAuthController : ControllerBase
         // /bff/logout-callback — NOT arbitrary app paths like /store/ (passing the raw returnUrl as
         // logout_uri makes Cognito bounce to its login page). Stash the app's post-logout
         // destination in a short-lived cookie so the callback can fan back to it.
-        // APEX-ONLY (same constraint as the login /bff/callback): BuildAbsoluteUrl derives the host
-        // from the request, so on a SUBTENANT host this yields an UNREGISTERED logout-callback URL
-        // and Cognito bounces to its login page. Subtenant BFF needs the central-auth fan-out
-        // (register the apex callback + fan back) — the same future workstream as the login callback.
+        // SUBTENANT FAN-OUT: BuildCallbackUrl pins logout_uri to the apex logout-callback (the only
+        // one registered with the IdP). We also stash the originating host so the apex callback can
+        // fan the user back to the subtenant — the mirror of the login /bff/callback flow.
         var finalDest = SanitizeReturnUrl(returnUrl);
-        Response.Cookies.Append(BffConstants.LogoutReturnCookieName, Uri.EscapeDataString(finalDest),
+        Response.Cookies.Append(LogoutReturnCookieName, Uri.EscapeDataString(finalDest),
+            BffCookieBuilder.Transaction(_options));
+        Response.Cookies.Append(LogoutOriginCookieName, Uri.EscapeDataString(ViewerHost),
             BffCookieBuilder.Transaction(_options));
 
-        var postLogoutRedirect = BuildAbsoluteUrl(LogoutCallbackPath);
+        var postLogoutRedirect = BuildCallbackUrl(LogoutCallbackPath);
         string logoutUrl;
         try
         {
@@ -235,13 +248,22 @@ public sealed class BffAuthController : ControllerBase
     public IActionResult LogoutCallback()
     {
         var dest = "/";
-        if (Request.Cookies.TryGetValue(BffConstants.LogoutReturnCookieName, out var c) && !string.IsNullOrEmpty(c))
+        if (Request.Cookies.TryGetValue(LogoutReturnCookieName, out var c) && !string.IsNullOrEmpty(c))
         {
             try { dest = Uri.UnescapeDataString(c); } catch { dest = "/"; }
-            Response.Cookies.Append(BffConstants.LogoutReturnCookieName, string.Empty, BffCookieBuilder.Delete(_options));
+            Response.Cookies.Append(LogoutReturnCookieName, string.Empty, BffCookieBuilder.Delete(_options));
         }
-        // Re-sanitize at the sink — the cookie could be tampered — to close the open-redirect path.
-        return Redirect(SanitizeReturnUrl(dest));
+
+        string? originHost = null;
+        if (Request.Cookies.TryGetValue(LogoutOriginCookieName, out var oh) && !string.IsNullOrEmpty(oh))
+        {
+            try { originHost = Uri.UnescapeDataString(oh); } catch { originHost = null; }
+            Response.Cookies.Append(LogoutOriginCookieName, string.Empty, BffCookieBuilder.Delete(_options));
+        }
+
+        // Re-sanitize at the sink — the cookie could be tampered — to close the open-redirect path,
+        // then fan back to the originating (subtenant) host (guarded to the system root domain).
+        return Redirect(BuildFanBackUrl(originHost, SanitizeReturnUrl(dest)));
     }
 
     /// <summary>GET /bff/ws-token → mint a short-lived token for the AppSync WebSocket.</summary>
@@ -262,6 +284,79 @@ public sealed class BffAuthController : ControllerBase
 
     private string? ResolveTenant() =>
         Request.Headers.TryGetValue("lz-tenantid", out var t) ? t.ToString() : null;
+
+    /// <summary>
+    /// The apex host derived from the parent <see cref="BffOptions.CookieDomain"/> (".root" → "root"),
+    /// or <c>null</c> when no parent domain is configured. When null the BFF keeps the legacy
+    /// per-request-host callback behavior (single-host deploys, localhost dev).
+    /// </summary>
+    private string? ApexHost
+    {
+        get
+        {
+            var d = _options.CookieDomain;
+            return string.IsNullOrWhiteSpace(d) ? null : d.TrimStart('.');
+        }
+    }
+
+    /// <summary>
+    /// The public viewer host of the current request. Behind CloudFront's AllViewerExceptHostHeader
+    /// policy the origin sees the ALB host in <see cref="HttpRequest.Host"/>, so prefer the
+    /// <c>lz-tenantid</c> header (CFRequest injects the original viewer Host).
+    /// </summary>
+    private string ViewerHost
+    {
+        get
+        {
+            var host = ResolveTenant();
+            return string.IsNullOrWhiteSpace(host) ? Request.Host.Value : host!;
+        }
+    }
+
+    /// <summary>
+    /// Build the OIDC callback/redirect URL. When a parent <see cref="BffOptions.CookieDomain"/> is
+    /// configured the URL is pinned to the APEX host — the only <c>/bff/callback</c> +
+    /// <c>/bff/logout-callback</c> registered with the IdP — so a login/logout initiated on any
+    /// subtenant host still presents a registered redirect_uri (no <c>redirect_mismatch</c>). The
+    /// originating host is carried in the transaction/logout cookie and fanned back afterwards.
+    /// Without a parent domain, falls back to the per-request-host URL (<see cref="BuildAbsoluteUrl"/>).
+    /// </summary>
+    private string BuildCallbackUrl(string path)
+    {
+        var apex = ApexHost;
+        if (apex is null)
+            return BuildAbsoluteUrl(path);
+        var p = path.StartsWith('/') ? path : "/" + path;
+        return $"https://{apex}{p}";
+    }
+
+    /// <summary>
+    /// Resolve the absolute post-flow redirect. When the originating host is a member of the system
+    /// root domain, fan back to it (<c>https://{originHost}{safePath}</c>); otherwise stay relative on
+    /// the callback host. <paramref name="safePath"/> MUST already be an open-redirect-guarded
+    /// same-site relative path (i.e. the output of <see cref="SanitizeReturnUrl"/>).
+    /// </summary>
+    private string BuildFanBackUrl(string? originHost, string safePath)
+    {
+        var apex = ApexHost;
+        if (apex is null || string.IsNullOrWhiteSpace(originHost) || !IsHostWithinRoot(originHost!, apex))
+            return safePath;
+        return $"https://{originHost}{safePath}";
+    }
+
+    /// <summary>
+    /// True when <paramref name="host"/> equals the apex or is a subdomain of it. Also rejects hosts
+    /// containing characters outside the DNS label set (letters/digits/'.'/'-') — including ':' (port),
+    /// '/' and '@' — to close header-injection / open-redirect tricks on the absolute fan-back hop.
+    /// </summary>
+    private static bool IsHostWithinRoot(string host, string apex)
+    {
+        foreach (var ch in host)
+            if (!(char.IsAsciiLetterOrDigit(ch) || ch == '.' || ch == '-'))
+                return false;
+        return host.Equals(apex, StringComparison.OrdinalIgnoreCase)
+            || host.EndsWith("." + apex, StringComparison.OrdinalIgnoreCase);
+    }
 
     /// <summary>Build an absolute URL on the current host for a server-relative path.</summary>
     private string BuildAbsoluteUrl(string pathOrUrl)

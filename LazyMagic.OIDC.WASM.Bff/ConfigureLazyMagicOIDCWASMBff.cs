@@ -32,10 +32,18 @@ public static class ConfigureLazyMagicOIDCWASMBff
     /// Re-poll interval for <c>/bff/user</c>. Defaults to 5 minutes. Pass
     /// <see cref="TimeSpan.Zero"/> (or negative) to disable background re-polling.
     /// </param>
+    /// <param name="postLogoutRedirectPath">
+    /// Optional fixed app-relative path to land on AFTER logout (the BFF server fans it back to the
+    /// originating host). E.g. employee-gated apps pass <c>/explore/home/</c> so logout returns to the
+    /// public landing instead of bouncing back through the gated app to the login. Null = the page the
+    /// user logged out from.
+    /// </param>
     public static IServiceCollection AddLazyMagicOIDCWASMBff(
         this IServiceCollection services,
         string bffBaseAddress,
-        TimeSpan? pollInterval = null)
+        string routePrefix = "/bff",
+        TimeSpan? pollInterval = null,
+        string? postLogoutRedirectPath = null)
     {
         if (string.IsNullOrWhiteSpace(bffBaseAddress))
             throw new ArgumentException("A same-origin BFF base address is required.", nameof(bffBaseAddress));
@@ -43,24 +51,31 @@ public static class ConfigureLazyMagicOIDCWASMBff
         var interval = pollInterval ?? DefaultPollInterval;
         var baseUri = new Uri(bffBaseAddress, UriKind.Absolute);
 
+        // Multi-pool marker the credentials handler stamps on /AppApi calls so the apphost
+        // cookie→Bearer bridge picks THIS pool's cookie. Null for the default tenantauth (/bff)
+        // instance so StoreApp/AdminApp stay wire-identical; "cbff" for ConsumerApp.
+        var poolMarker = routePrefix.Trim('/').Equals("bff", StringComparison.OrdinalIgnoreCase)
+            ? null
+            : routePrefix.Trim('/');
+
         // Authorization core so AuthorizeView / [Authorize] / role policies work.
         services.AddAuthorizationCore();
 
         // The cookie-credentialed handler. Registered as IAuthenticationHandler so the existing
         // LazyMagic API-client registration (IAuthenticationHandler.CreateHandler()) uses it in
         // BFF mode in place of the bearer handler.
-        services.TryAddTransient<BffCredentialsHandler>();
-        services.TryAddTransient<IAuthenticationHandler>(sp => new BffCredentialsHandler());
+        services.TryAddTransient<BffCredentialsHandler>(sp => new BffCredentialsHandler(poolMarker));
+        services.TryAddTransient<IAuthenticationHandler>(sp => new BffCredentialsHandler(poolMarker));
 
-        // Same-origin HttpClient the provider/service use to reach /bff/*.
+        // Same-origin HttpClient the provider/service use to reach {prefix}/*.
         services.TryAddScoped<BffAuthenticationStateProvider>(sp =>
         {
-            var http = new HttpClient(new BffCredentialsHandler { InnerHandler = new HttpClientHandler() })
+            var http = new HttpClient(new BffCredentialsHandler(poolMarker) { InnerHandler = new HttpClientHandler() })
             {
                 BaseAddress = baseUri
             };
             var logger = sp.GetRequiredService<ILogger<BffAuthenticationStateProvider>>();
-            return new BffAuthenticationStateProvider(http, logger, interval);
+            return new BffAuthenticationStateProvider(http, logger, interval, routePrefix);
         });
 
         // Surface the BFF provider as THE AuthenticationStateProvider.
@@ -72,14 +87,14 @@ public static class ConfigureLazyMagicOIDCWASMBff
         // logout is CSRF-protected and no longer reachable by a bare GET navigation).
         services.TryAddScoped<IOIDCService>(sp =>
         {
-            var http = new HttpClient(new BffCredentialsHandler { InnerHandler = new HttpClientHandler() })
+            var http = new HttpClient(new BffCredentialsHandler(poolMarker) { InnerHandler = new HttpClientHandler() })
             {
                 BaseAddress = baseUri
             };
             var authStateProvider = sp.GetRequiredService<AuthenticationStateProvider>();
             var navigation = sp.GetRequiredService<NavigationManager>();
             var logger = sp.GetRequiredService<ILogger<BffOIDCService>>();
-            return new BffOIDCService(authStateProvider, navigation, http, logger);
+            return new BffOIDCService(authStateProvider, navigation, http, logger, routePrefix, postLogoutRedirectPath);
         });
 
         // The shared LoginDisplay also injects IRememberMeService + IProfileManagementService.

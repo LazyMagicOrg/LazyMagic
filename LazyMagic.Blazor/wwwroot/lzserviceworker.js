@@ -69,6 +69,35 @@ self.addEventListener('message', async event => {
 });
 
 
+// Pre-compile the .NET WASM runtime (dotnet.native.*.wasm — the multi-MB module) into the browser's
+// persistent WebAssembly code cache. The IL assemblies are interpreted, so the runtime wasm is the
+// only meaningful compile cost. Requires the asset served as application/wasm (it is). Per-module
+// try/catch — a MIME/abort/unsupported-browser failure must NEVER break the SW install.
+async function precompileWasmRuntime() {
+    try {
+        if (typeof WebAssembly === 'undefined' || typeof WebAssembly.compileStreaming !== 'function') return;
+        const urls = (self.assetsManifest && self.assetsManifest.assets ? self.assetsManifest.assets : [])
+            .map(a => a.url)
+            .filter(u => /dotnet\.native\.[^/]*\.wasm$/i.test(u))
+            .map(u => (u.startsWith('/') ? u : '/' + u));
+        if (!urls.length) return;
+        const t0 = Date.now();
+        await Promise.all(urls.map(async u => {
+            try {
+                // fetch() inside the SW hits the network/HTTP cache (already warmed by the landing's
+                // prefetch), NOT this SW's fetch handler. compileStreaming populates the V8 wasm
+                // code cache keyed by URL, which the app's instantiateStreaming later reuses.
+                await WebAssembly.compileStreaming(fetch(u, { cache: 'default' }));
+            } catch (e) {
+                /* best-effort per module — MIME, abort, or unsupported */
+            }
+        }));
+        logSW('install', 'pre-compiled ' + urls.length + ' wasm runtime module(s) in ' + (Date.now() - t0) + 'ms');
+    } catch (e) {
+        /* never block install */
+    }
+}
+
 self.addEventListener('install', event => {
     logSW('install', 'Service worker installing...');
     event.waitUntil(
@@ -114,6 +143,13 @@ self.addEventListener('install', event => {
                     });
 
                 await self.staticContentModule.cacheApplicationAssets(assetsRequests);
+
+                // Pre-compile the WASM runtime into the browser's persistent code cache so the app's
+                // later instantiateStreaming() skips compilation (~300-800ms). Best-effort; never
+                // blocks/fails the install. When a static landing page registers this SW EARLY (the
+                // /app/ warm-up), this runs BEFORE the user navigates into the app.
+                await precompileWasmRuntime();
+
                 self.skipWaiting(); // Activate the new service worker immediately
             } catch (error) {
                 console.error('Error during service worker install:', error);
@@ -163,11 +199,19 @@ self.addEventListener('fetch', event => {
         const consumerNonSpaPaths = Array.isArray(self.appConfig?.nonSpaPaths)
             ? self.appConfig.nonSpaPaths
             : [];
+        //   /bff/             — BFF (Backend-For-Frontend) auth/session endpoints.
+        //                       Dynamic, credentialed, never cacheable. The auth-state
+        //                       provider polls /bff/user frequently; routing it through
+        //                       the cache branch produced a "No cache available" log per
+        //                       poll (console spam) and risked coercing a 401 to a 204.
+        //   /config           — runtime auth/app config; dynamic, never cached.
         const isSpecialPath = path.includes('/authentication/') ||
                              path.includes('/_framework/') ||
                              path.includes('/_content/') ||
                              path.startsWith('/auth/') ||
                              path.startsWith('/oauth2/') ||
+                             path.startsWith('/bff/') ||
+                             path === '/config' ||
                              consumerNonSpaPaths.some(p => path.startsWith(p));
 
         if (isSpecialPath) {
@@ -269,19 +313,25 @@ self.addEventListener('fetch', event => {
                         return fetch(request)
                             .then(response => {
                                 if (!response.ok) {
-                                    console.error('Fetch error:', response.url);
+                                    // Cache-miss asset fetch returned non-2xx; handled (204). Debug only.
+                                    console.debug('Fetch non-ok (cache miss):', response.url, response.status);
                                     return new Response(null, { status: 204, statusText: 'no content' });
                                 }
                                 return response;
                             })
                             .catch(error => {
-                                console.error('Fetch error:', request.url, error);
+                                // Transient/handled fetch failure (e.g. an in-flight request during a
+                                // service-worker controller swap on update). Returns 204; debug only.
+                                console.debug('Fetch failed (cache miss):', request.url, error && error.message);
                                 return new Response(null, { status: 204, statusText: 'no content' });
                             })
                     }
                 }
                 else {
-                    console.warn('No cache associated/available for url:' + request.url);
+                    // Not a cacheable app asset (e.g. an /AppApi data call). Expected — fall
+                    // through to the network fetch below. Debug-level only: this used to warn
+                    // on every API/dynamic request and flooded the console.
+                    console.debug('No cache associated/available for url:' + request.url);
                 }
             }
             catch (error) {
@@ -293,8 +343,10 @@ self.addEventListener('fetch', event => {
             return fetch(request)
                 .then(response => {
                     if (!response.ok) {
-                        console.error('HTTP error:', response.url, response.status);
-                        // Return the original response to preserve status code
+                        // Non-2xx from a passthrough fetch (e.g. /bff/user 401, an API 4xx/5xx).
+                        // These are application-level outcomes the app + browser already surface —
+                        // not service-worker errors. Debug only; preserve the original status.
+                        console.debug('Passthrough non-ok:', response.url, response.status);
                         return response;
                     }
                     return response;

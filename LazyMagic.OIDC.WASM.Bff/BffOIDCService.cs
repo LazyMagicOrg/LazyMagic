@@ -20,13 +20,21 @@ public sealed class BffOIDCService : IOIDCService, IDisposable
     // "bff/login" would resolve to "/store/bff/login" (NavigateTo against the base) or
     // "/store/bff/login" (HttpClient against a /store/ BaseAddress) — i.e. the app itself,
     // not the BFF. The leading slash pins them to the host root regardless of the mount.
-    private const string LoginPath = "/bff/login";
-    private const string LogoutPath = "/bff/logout";
+    // Mount-point-pinned (leading slash, see note above). {prefix} = /bff (tenantauth) or /cbff
+    // (consumerauth), supplied by AddLazyMagicOIDCWASMBff.
+    private readonly string _loginPath;
+    private readonly string _logoutPath;
 
     private readonly AuthenticationStateProvider _authStateProvider;
     private readonly NavigationManager _navigation;
     private readonly HttpClient _http;
     private readonly ILogger<BffOIDCService> _logger;
+
+    // Optional fixed post-logout destination (app-relative path). When set, logout returns the user
+    // HERE instead of the page they logged out from — e.g. "/explore/home/" so an employee-gated app
+    // lands on the public landing instead of bouncing back through the gated app to the login. The
+    // BFF server fans this path back to the ORIGINATING host (subtenant-aware). Null = current page.
+    private readonly string? _postLogoutRedirectPath;
 
     public event EventHandler<OIDCAuthenticationStateChangedEventArgs>? AuthenticationStateChanged;
     public event Action<string>? OnAuthenticationRequested;
@@ -35,12 +43,19 @@ public sealed class BffOIDCService : IOIDCService, IDisposable
         AuthenticationStateProvider authStateProvider,
         NavigationManager navigation,
         HttpClient http,
-        ILogger<BffOIDCService> logger)
+        ILogger<BffOIDCService> logger,
+        string routePrefix = "/bff",
+        string? postLogoutRedirectPath = null)
     {
         _authStateProvider = authStateProvider;
         _navigation = navigation;
         _http = http;
         _logger = logger;
+        _postLogoutRedirectPath = string.IsNullOrWhiteSpace(postLogoutRedirectPath) ? null : postLogoutRedirectPath;
+
+        var prefix = "/" + routePrefix.Trim('/');
+        _loginPath = prefix + "/login";
+        _logoutPath = prefix + "/logout";
 
         _authStateProvider.AuthenticationStateChanged += OnProviderStateChanged;
     }
@@ -104,7 +119,7 @@ public sealed class BffOIDCService : IOIDCService, IDisposable
         {
             // returnUrl = the app-relative path the user is on, so the BFF returns them here.
             var returnUrl = GetReturnUrl();
-            var loginUrl = $"{LoginPath}?returnUrl={Uri.EscapeDataString(returnUrl)}";
+            var loginUrl = $"{_loginPath}?returnUrl={Uri.EscapeDataString(returnUrl)}";
             _logger.LogInformation("[BFF] Navigating to login: {LoginUrl}", loginUrl);
 
             OnAuthenticationRequested?.Invoke("login");
@@ -125,8 +140,10 @@ public sealed class BffOIDCService : IOIDCService, IDisposable
     {
         OnAuthenticationRequested?.Invoke("logout");
 
-        var returnUrl = GetReturnUrl();
-        var logoutEndpoint = $"{LogoutPath}?returnUrl={Uri.EscapeDataString(returnUrl)}";
+        // Post-logout destination: the configured fixed path (e.g. /explore/home/) when set, else the
+        // page we logged out from. The BFF server fans this back to the originating (subtenant) host.
+        var returnUrl = _postLogoutRedirectPath ?? GetReturnUrl();
+        var logoutEndpoint = $"{_logoutPath}?returnUrl={Uri.EscapeDataString(returnUrl)}";
 
         try
         {
