@@ -4,10 +4,10 @@
 		<!-- Note that this .targets file lives in the solution folder, so MSBuildThisFileDirectory is the solution folder,
 		     regardless of which project the CommonPackageHandling.targets file is used in. -->
 		<PackageRepoFolder>$(SolutionDir)Packages\</PackageRepoFolder>
-		<Copyright>Copyright (c) 2021 - 2025 Insight Sciences Corporation. All rights reserved.</Copyright>
+		<Copyright>Copyright (c) 2021 - 2026 Insight Sciences Corporation. All rights reserved.</Copyright>
 		<PackageProjectUrl>https://LazyMagic.org</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/LazyMagicOrg/LazyMagicClient</RepositoryUrl>
-		<RepositoryType>GitHub</RepositoryType>
+		<RepositoryUrl>https://github.com/LazyMagicOrg/LazyMagic</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
 		<Company>Insight Sciences Corporation</Company>
 		<Authors>Tim May, Thomas May</Authors>
 		<Version>3.0.17</Version>
