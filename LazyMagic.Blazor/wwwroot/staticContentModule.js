@@ -17,6 +17,13 @@ let assetsUrl;
 let fetchingPrefetchCaches = false;
 let TEMP_APP_CACHE_NAME;
 let APP_CACHE_NAME;
+// Per-tier asset catalogs, keyed by tier ("system" | "tenancy" | "subtenancy").
+//   object -> authoritative { "<lang>/<Group>/": "<version>" } map of the groups
+//             that actually exist for this tenant. A declared group absent from
+//             it is simply not deployed — not an error.
+//   null   -> that tier publishes no catalog (a deployment predating
+//             asset-groups.json). Fall back to the per-group version.json probe.
+let assetCatalogs = {};
 const isRunningInServiceWorker = 'ServiceWorkerGlobalScope' in self && self instanceof ServiceWorkerGlobalScope;
 const cacheOptions = {
     ignoreSearch: true,    // Ignore query string
@@ -40,6 +47,7 @@ async function initializeModule() {
             ? self.location.origin.endsWith('/') ? self.location.origin.slice(0, -1) : self.location.origin
             : appConfig.assetsUrl.endsWith('/') ? appConfig.assetsUrl.slice(0, -1) : appConfig.assetsUrl;
         console.warn(`staticContentModule: assetsUrl: ${assetsUrl}`);
+        await loadAssetCatalogs(); // Learn which asset groups actually exist BEFORE registering any
         makeAssetCaches(); // Initialize the asset caches dictionary
 
     } catch (error) {
@@ -234,7 +242,14 @@ export async function readAssetsCache(cacheName) {
         // Read the asset cache version
         //console.log(`Reading cache ${cacheName}`);
         const currentVersion = await readAssetsCacheVersionCached(cacheName); // the version currently in the cache
-        const version = await readAssetsCacheVersionNoCache(cacheName); // the version on the server
+        // Server-side version. Prefer the tier catalog fetched once during init: it already
+        // carries every group's version, so this collapses N per-group version.json probes
+        // into a single request per tier. Falls back to the original probe when the tier
+        // publishes no catalog (older deployment).
+        const catalogVersion = assetCaches[cacheName] ? assetCaches[cacheName].serverVersion : undefined;
+        const version = catalogVersion !== undefined
+            ? catalogVersion
+            : await readAssetsCacheVersionNoCache(cacheName); // the version on the server
         assetCaches[cacheName].version = currentVersion;  // set the current version for use by the lazyLoadAssetCache function
         if (currentVersion === version) return; // nothing to do
 
@@ -393,6 +408,85 @@ export async function lazyLoadAssetCache(cacheName) {
 
 /* PRIVATE FUNCTIONS */
 /**
+ * Normalize one staticContentSettings entry. TWO declaration formats exist in the wild:
+ *
+ *   legacy: { "/system/base/System/": "PreCache" }             key IS the path
+ *   object: { path: "...", cacheType: "...", shared: true }    named fields
+ *
+ * The original implementation did `Object.entries(entry)[0]` unconditionally. Against the
+ * object form that yields ["path", "<the path>"] — so EVERY entry collapsed onto a single
+ * key literally named "path", whose cacheType was the last entry's path string. Effects,
+ * all silent: readAssetCachesByType("PreCache") matched nothing so PreCache never ran;
+ * getCacheName() never matched a real URL so every asset fell through to network forever;
+ * and checkAssetCaches probed a nonexistent "{assetsUrl}/pathversion.json". Nothing threw,
+ * so the entire asset cache was inert with no error anywhere.
+ *
+ * Detect the object form explicitly rather than by shape-guessing.
+ */
+function normalizeAssetEntry(entry) {
+    if (entry && typeof entry.path === 'string')
+        return { path: entry.path, cacheType: entry.cacheType || 'LazyCache' };
+    const [key, value] = Object.entries(entry)[0];
+    return { path: key, cacheType: value };
+}
+
+/** Declared entries, normalized. Tolerates a missing/!array staticAssets. */
+function declaredAssetEntries() {
+    if (!settings || !Array.isArray(settings.staticAssets)) return [];
+    return settings.staticAssets
+        .map(e => { try { return normalizeAssetEntry(e); } catch { return null; } })
+        .filter(e => e && typeof e.path === 'string' && e.path.length > 0);
+}
+
+/** Leading path segment — the tier. "system" | "tenancy" | "subtenancy". */
+function tierOf(path) {
+    const p = path.startsWith('/') ? path.slice(1) : path;
+    const i = p.indexOf('/');
+    return i < 0 ? p : p.substring(0, i);
+}
+
+/** Path with the tier stripped — the catalog key. e.g. "base/System/". */
+function groupKeyOf(path) {
+    const p = path.startsWith('/') ? path.slice(1) : path;
+    const i = p.indexOf('/');
+    return i < 0 ? '' : p.substring(i + 1);
+}
+
+/**
+ * Fetch the per-tier asset catalogs (`/{tier}/asset-groups.json`) that declare which
+ * asset groups actually exist for this tenant, and at what version.
+ *
+ * Why this exists: a group declared by the app but absent for this tenant used to be
+ * discovered by REQUESTING its version.json and getting a 403/404. That request is
+ * issued by the service worker itself, so it bypasses the SW's own fetch handler and
+ * all of its noise suppression — the browser logs the failure directly, and no amount
+ * of try/catch in JS can silence it. The only fix is to not issue the request. The
+ * catalog is what makes absence knowable without asking.
+ */
+async function loadAssetCatalogs() {
+    assetCatalogs = {};
+    const tiers = [...new Set(declaredAssetEntries().map(e => tierOf(e.path)))];
+    const host = isRunningInServiceWorker ? self.location.hostname : window.location.hostname;
+    const isSubtenantHost = host.split('.').length > 2;
+
+    for (const tier of tiers) {
+        // /subtenancy/ only routes on a subtenant host; on the apex it is guaranteed to
+        // fail (verified: apex 403, {clinic}.host 200). Mirrors the hostParts.Length > 2
+        // rule in LzClientConfig.InitializeAsync. Treat as "no groups" without asking.
+        if (tier === 'subtenancy' && !isSubtenantHost) { assetCatalogs[tier] = {}; continue; }
+        try {
+            const url = new URL(`${tier}/asset-groups.json`, assetsUrl + '/').href;
+            const resp = await fetch(url, { cache: 'no-cache' });
+            if (!resp.ok) { assetCatalogs[tier] = null; continue; } // pre-catalog deployment
+            const doc = await resp.json();
+            assetCatalogs[tier] = (doc && typeof doc.groups === 'object' && doc.groups) ? doc.groups : {};
+        } catch {
+            assetCatalogs[tier] = null; // network/parse failure -> fall back, don't disable caching
+        }
+    }
+}
+
+/**
  * Convert the list of static asset urls from the settings into a dictionary.
  * The key of the dictionary is the cacheName and the value is the cacheType.
  * Note that the cacheName is the path to the cache as well.
@@ -401,16 +495,26 @@ function makeAssetCaches() {
     try {
         console.debug("makeAssetCaches(), Creating AssetCaches dictionary");
         if (Object.keys(assetCaches).length > 0) return;
-        //const _appPrefix = appPrefix.endsWith('/') ? appPrefix.slice(0,-1) : appPrefix;
-        if (settings.staticAssets)
-            for (const cacheName of settings.staticAssets) {
-                const [key, value] = Object.entries(cacheName)[0];
-                assetCaches[key] = {
-                    cacheType: value,
-                    version: ""
-                };
-            }
-        console.log("AssetCaches dictionary created: ", JSON.stringify(assetCaches));
+        const notDeployed = [];
+        for (const entry of declaredAssetEntries()) {
+            const tier = tierOf(entry.path);
+            const catalog = assetCatalogs[tier];
+            const groupKey = groupKeyOf(entry.path);
+            // catalog === null  -> tier publishes no catalog: register everything and let
+            //                      the per-group probe decide, exactly as before.
+            // catalog is object -> authoritative. A declared group that is absent is not
+            //                      deployed for this tenant; skipping it is the point.
+            if (catalog && !(groupKey in catalog)) { notDeployed.push(entry.path); continue; }
+            assetCaches[entry.path] = {
+                cacheType: entry.cacheType,
+                version: "",
+                // undefined when there is no catalog -> readAssetsCache falls back to the probe.
+                serverVersion: catalog ? catalog[groupKey] : undefined
+            };
+        }
+        console.log(`AssetCaches dictionary created (${Object.keys(assetCaches).length} active, ${notDeployed.length} declared but not deployed): `, JSON.stringify(assetCaches));
+        if (notDeployed.length)
+            console.debug("Asset groups declared but not deployed for this tenant (no request issued): ", notDeployed);
     } catch (error) {
         console.error(`Error creating AssetCaches dictionary `, error);
     }
