@@ -32,6 +32,18 @@ public sealed class OriginVerifyMiddleware
     /// <summary>Header CloudFront injects on the api origin (origin custom header).</summary>
     public const string HeaderName = "x-origin-verify";
 
+    /// <summary>
+    /// Response header echoed on the exempt /health path: "true"/"false" for whether
+    /// the REQUEST carried a matching secret. Lets an edge probe (`lz verify`
+    /// api-health) prove the CloudFront-injected header actually matches
+    /// LZ_ORIGIN_VERIFY — without it, edge/origin secret drift is invisible: /health
+    /// is the one path the gate never rejects, yet it is the only unauthenticated
+    /// path a smoke check can safely exercise, so drift would 403 every real route
+    /// while the probe stayed green. Leaks only a boolean the reject path already
+    /// reveals on every other route.
+    /// </summary>
+    public const string VerifiedHeaderName = "x-origin-verified";
+
     private readonly RequestDelegate _next;
     private readonly byte[] _secretUtf8;
     private readonly ILogger<OriginVerifyMiddleware> _logger;
@@ -47,17 +59,22 @@ public sealed class OriginVerifyMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        // LWA readiness / infra probes hit the origin directly (no CloudFront hop).
+        var presented = context.Request.Headers[HeaderName].FirstOrDefault() ?? string.Empty;
+        var presentedUtf8 = System.Text.Encoding.UTF8.GetBytes(presented);
+        var verified = _secretUtf8.Length > 0 &&
+            System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(presentedUtf8, _secretUtf8);
+
+        // LWA readiness / infra probes hit the origin directly (no CloudFront hop),
+        // so /health passes without the header — but the verdict is echoed (see
+        // VerifiedHeaderName) so the edge smoke probe can assert the accept path.
         if (context.Request.Path.StartsWithSegments("/health"))
         {
+            context.Response.Headers[VerifiedHeaderName] = verified ? "true" : "false";
             await _next(context).ConfigureAwait(false);
             return;
         }
 
-        var presented = context.Request.Headers[HeaderName].FirstOrDefault() ?? string.Empty;
-        var presentedUtf8 = System.Text.Encoding.UTF8.GetBytes(presented);
-        if (_secretUtf8.Length == 0 ||
-            !System.Security.Cryptography.CryptographicOperations.FixedTimeEquals(presentedUtf8, _secretUtf8))
+        if (!verified)
         {
             _logger.LogWarning("origin-verify rejected {Method} {Path} (header {State})",
                 context.Request.Method, context.Request.Path,
