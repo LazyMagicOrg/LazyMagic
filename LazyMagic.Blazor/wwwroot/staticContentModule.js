@@ -254,8 +254,20 @@ export async function readAssetsCache(cacheName) {
         if (currentVersion === version) return; // nothing to do
 
         let assetsManifestResponse;
-        try { assetsManifestResponse = await fetch(new Request(cacheName + "assets-manifest.json", { cache: 'no-cache' })); }
-        catch { throw new Error(`fetching ${cacheName}assets-manifest.json for version: ${version}`); }
+        // MUST resolve against assetsUrl, exactly like the version.json reads below and the
+        // asset requests above. A bare relative Request resolves against the DOCUMENT base
+        // (page) or the SW SCRIPT url (service worker) instead:
+        //   page  /explore/home/  ->  /explore/home/system/en-US/System/assets-manifest.json  403
+        //   SW    /admin/         ->  /admin/system/en-US/System/assets-manifest.json         403
+        //   correct                  /system/en-US/System/assets-manifest.json                200
+        // A 403 leaves assetsManifestResponse.ok false, so the whole population block below is
+        // skipped and readAssetsCache returns having cached nothing — no throw, no log. This is
+        // why the static-asset caches were created but always stayed empty.
+        const manifestUrl = new URL(cacheName + "assets-manifest.json", assetsUrl).href;
+        try { assetsManifestResponse = await fetch(new Request(manifestUrl, { cache: 'no-cache' })); }
+        catch { throw new Error(`fetching ${manifestUrl} for version: ${version}`); }
+        if (!assetsManifestResponse.ok)
+            throw new Error(`fetching ${manifestUrl} for version ${version}: HTTP ${assetsManifestResponse.status}`);
 
         if (assetsManifestResponse.ok) {
             let assetsManifest;
