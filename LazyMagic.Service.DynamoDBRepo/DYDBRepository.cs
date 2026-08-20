@@ -478,12 +478,16 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         {
             var list = new List<T>();
             var responseSize = 0;
+            // True when the 5MB response cap cut the result short — data remains that was never read.
+            var sizeTruncated = false;
             do
             {
-                if (lastEvaluatedKey is not null)
+                if (lastEvaluatedKey is not null && lastEvaluatedKey.Count > 0)
                     queryRequest.ExclusiveStartKey = lastEvaluatedKey;
                 if (limit != 0)
-                    queryRequest.Limit = limit;
+                    // Budget the REMAINING record count, not the full limit: after page one the
+                    // original assignment over-fetched limit items per page.
+                    queryRequest.Limit = limit - list.Count;
 
                 var response = await client.QueryAsync(queryRequest);
                 foreach (Dictionary<string, AttributeValue> item in response?.Items)
@@ -491,12 +495,28 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
                     var jsonData = item["Data"].S;
                     responseSize += jsonData.Length;
                     if (responseSize > maxResponseSize)
+                    {
+                        sizeTruncated = true;
                         break;
+                    }
 
                     list.Add(DeserializeJsonData(jsonData));
                 }
-            } while (responseSize <= maxResponseSize && lastEvaluatedKey != null && list.Count < limit);
-            var statusCode = lastEvaluatedKey == null ? 200 : 206;
+                // THE pagination fix: lastEvaluatedKey was declared but never assigned, so the loop
+                // always exited after one DynamoDB page (<=1MB) and reported it as a complete 200.
+                // The SDK signals "no more pages" with a null OR EMPTY key — treat both as done.
+                lastEvaluatedKey = response?.LastEvaluatedKey;
+            } while (!sizeTruncated
+                     && lastEvaluatedKey is not null && lastEvaluatedKey.Count > 0
+                     && (limit == 0 || list.Count < limit));
+
+            // 206 = the caller did NOT get everything the query matches: the size cap hit, or DynamoDB
+            // reports more pages remain (limit reached mid-stream). A limit satisfied exactly at the end
+            // of the data may still carry a non-empty key and yield a spurious 206 — the documented
+            // contract ("use status 200, not record count, to recognize end of list") already covers it.
+            var statusCode = sizeTruncated || (lastEvaluatedKey is not null && lastEvaluatedKey.Count > 0)
+                ? 206
+                : 200;
 
             return new ObjectResult(list) { StatusCode = statusCode };
         }
