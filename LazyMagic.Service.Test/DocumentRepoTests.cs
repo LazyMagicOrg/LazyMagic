@@ -13,97 +13,37 @@ public class DocumentRepoFixture : IAsyncLifetime
     {
     }
 
+    // THIS CONSTRUCTOR PATH MUST BE TOTAL. xUnit v2 builds an ICollectionFixture even when every
+    // test in the collection is skipped, so throwing here turns a clean skip into a
+    // collection-wide error — which is exactly what used to happen: an absent systemconfig raised
+    // FileNotFoundException and took all 17 tests down with it. The probe records unavailability
+    // instead (see DynamoAvailability), and [DynamoFact] skips each test with that reason.
     public async Task InitializeAsync()
     {
         CallerInfo = new CallerInfo()
         {
-            DefaultDB = "lzm_mp", // Use a dynamodb table defined and published by LazyMagic 
+            DefaultDB = DynamoAvailability.TableName, // LazyMagic's own table
             SessionId = "test-session",
             UserName = "test-user",
             LzUserId = "test-user-id",
             TenantId = "test-tenant"
         };
 
-        string? profile = null;
-        string region = "us-east-1"; // Default region
-        
-        // Search up the directory hierarchy for systemconfig.yaml
-        string? configPath = null;
-        var currentDir = new DirectoryInfo(Directory.GetCurrentDirectory());
-        
-        while (currentDir != null)
+        if (!DynamoAvailability.IsAvailable)
         {
-            var potentialPath = Path.Combine(currentDir.FullName, "systemconfig.yaml");
-            if (File.Exists(potentialPath))
-            {
-                configPath = potentialPath;
-                Console.WriteLine($"Found systemconfig.yaml at: {configPath}");
-                break;
-            }
-            currentDir = currentDir.Parent;
+            // Leave Repository null and return. Every test is skipped, so nothing dereferences it.
+            Console.WriteLine($"DynamoDB tests unavailable: {DynamoAvailability.Reason}");
+            return;
         }
-        
-        if (string.IsNullOrEmpty(configPath))
-        {
-            throw new FileNotFoundException(
-                "systemconfig.yaml not found. Searched up the directory hierarchy from: " + 
-                Directory.GetCurrentDirectory() + 
-                "\nPlease create a systemconfig.yaml file with 'Profile' and optionally 'Region' settings.");
-        }
-        
-        try
-        {
-            using (var reader = new StreamReader(configPath))
-            {
-                var yaml = new YamlStream();
-                yaml.Load(reader);
 
-                if (yaml.Documents.Count == 0)
-                {
-                    throw new InvalidOperationException("systemconfig.yaml is empty or invalid.");
-                }
-                
-                var mapping = yaml.Documents[0].RootNode as YamlMappingNode;
-                if (mapping == null)
-                {
-                    throw new InvalidOperationException("systemconfig.yaml does not contain a valid YAML mapping.");
-                }
-                
-                if (mapping.Children.TryGetValue(new YamlScalarNode("Profile"), out var profileNode))
-                {
-                    profile = ((YamlScalarNode)profileNode).Value;
-                }
-                else
-                {
-                    throw new InvalidOperationException("'Profile' not found in systemconfig.yaml. This field is required.");
-                }
+        Console.WriteLine($"Using systemconfig: {DynamoAvailability.ConfigPath}");
+        Console.WriteLine($"Using AWS Profile: {DynamoAvailability.Profile}, Region: {DynamoAvailability.Region}");
 
-                if (mapping.Children.TryGetValue(new YamlScalarNode("Region"), out var regionNode))
-                {
-                    region = ((YamlScalarNode)regionNode).Value ?? "us-east-1";
-                }
-                
-                Console.WriteLine($"Using AWS Profile: {profile}, Region: {region}");
-            }
-            
-            // Create DynamoDB client with credentials from the specified profile
-            var chain = new CredentialProfileStoreChain();
-            if (chain.TryGetAWSCredentials(profile, out var credentials))
-            {
-                _dynamoDbClient = new AmazonDynamoDBClient(credentials, RegionEndpoint.GetBySystemName(region));
-                Console.WriteLine($"Successfully configured AWS credentials for profile: {profile}");
-            }
-            else
-            {
-                throw new InvalidOperationException($"AWS Profile '{profile}' not found in credential store. " +
-                    "Please ensure the profile exists in your AWS credentials file or use 'aws configure' to set it up.");
-            }
-        }
-        catch (Exception ex) when (!(ex is FileNotFoundException || ex is InvalidOperationException))
-        {
-            throw new InvalidOperationException($"Failed to load or parse systemconfig.yaml: {ex.Message}", ex);
-        }
-        
+        var chain = new CredentialProfileStoreChain();
+        chain.TryGetAWSCredentials(DynamoAvailability.Profile, out var credentials);
+        _dynamoDbClient = new AmazonDynamoDBClient(
+            credentials, RegionEndpoint.GetBySystemName(DynamoAvailability.Region));
+
         Repository = new TestItemRepo(_dynamoDbClient);
 
         // Clean up any existing items in DynamoDB
@@ -119,13 +59,17 @@ public class DocumentRepoFixture : IAsyncLifetime
 
     public Task DisposeAsync()
     {
-        // Clean up any remaining items
-        var result = Repository.ListAsync(CallerInfo).GetAwaiter().GetResult();
-        if (result.Value is IEnumerable<TestItem> existingItems)
+        // Teardown must be total for the same reason as setup: when the dependency was absent there
+        // is no Repository to clean up, and throwing here surfaces as a collection cleanup failure.
+        if (Repository is not null)
         {
-            foreach (var item in existingItems)
+            var result = Repository.ListAsync(CallerInfo).GetAwaiter().GetResult();
+            if (result.Value is IEnumerable<TestItem> existingItems)
             {
-                Repository.DeleteAsync(CallerInfo, item.Id).GetAwaiter().GetResult();
+                foreach (var item in existingItems)
+                {
+                    Repository.DeleteAsync(CallerInfo, item.Id).GetAwaiter().GetResult();
+                }
             }
         }
 
@@ -165,7 +109,7 @@ public abstract class DocumentRepoTestsBase
 
     }
 
-    [Fact]
+    [DynamoFact]
     public async Task CreateAsync_WithValidData_ShouldCreateItem()
     {
         // Arrange
@@ -188,7 +132,7 @@ public abstract class DocumentRepoTestsBase
         await _repo.DeleteAsync(_callerInfo, result.Value.Id);
     }
 
-    [Fact]
+    [DynamoFact]
     public async Task CreateAsync_WithExistingId_ShouldReturnBadRequest()
     {
         // Arrange
@@ -213,7 +157,7 @@ public abstract class DocumentRepoTestsBase
         await _repo.DeleteAsync(_callerInfo, "test-id");
     }
 
-    [Fact]
+    [DynamoFact]
     public async Task ReadAsync_WithExistingId_ShouldReturnItem()
     {
         // Arrange
@@ -237,7 +181,7 @@ public abstract class DocumentRepoTestsBase
         await _repo.DeleteAsync(_callerInfo, "test-id");
     }
 
-    [Fact]
+    [DynamoFact]
     public async Task ReadAsync_WithNonExistingId_ShouldReturnNotFound()
     {
         // Act
@@ -250,7 +194,7 @@ public abstract class DocumentRepoTestsBase
         Assert.IsType<NotFoundResult>(result.Result);
     }
 
-    [Fact]
+    [DynamoFact]
     public async Task UpdateAsync_WithValidData_ShouldUpdateItem()
     {
         // Arrange
@@ -277,7 +221,7 @@ public abstract class DocumentRepoTestsBase
         await _repo.DeleteAsync(_callerInfo, "test-id");
     }
 
-    [Fact]
+    [DynamoFact]
     public async Task UpdateAsync_WithConcurrentModification_ShouldReturnConflict()
     {
         // Arrange
@@ -319,7 +263,7 @@ public abstract class DocumentRepoTestsBase
         await _repo.DeleteAsync(_callerInfo, "test-id");
     }
 
-    [Fact]
+    [DynamoFact]
     public async Task DeleteAsync_WithExistingId_ShouldDeleteItem()
     {
         // Arrange
@@ -339,7 +283,7 @@ public abstract class DocumentRepoTestsBase
         Assert.IsType<NotFoundResult>(readResult.Result);
     }
 
-    [Fact]
+    [DynamoFact]
     public async Task DeleteAsync_WithNonExistingId_ShouldReturnOkResult()
     {
         // Act
@@ -350,7 +294,7 @@ public abstract class DocumentRepoTestsBase
         Assert.IsType<OkResult>(result);
     }
 
-    [Fact]
+    [DynamoFact]
     public async Task ListAsync_ShouldReturnAllItems()
     {
         // Arrange
@@ -383,7 +327,7 @@ public abstract class DocumentRepoTestsBase
         }
     }
 
-    [Fact]
+    [DynamoFact]
     public async Task ListAsync_WithLimit_ShouldReturnLimitedItems()
     {
         // Arrange
@@ -416,7 +360,7 @@ public abstract class DocumentRepoTestsBase
         }
     }
 
-    [Fact]
+    [DynamoFact]
     public async Task ListAsync_WithSK1Index_ShouldReturnItemsByExactName()
     {
         // Arrange
@@ -451,7 +395,7 @@ public abstract class DocumentRepoTestsBase
         }
     }
 
-    [Fact]
+    [DynamoFact]
     public async Task ListBeginsWithAsync_WithSK1Index_ShouldReturnItemsByNamePrefix()
     {
         // Arrange
@@ -486,7 +430,7 @@ public abstract class DocumentRepoTestsBase
         }
     }
 
-    [Fact]
+    [DynamoFact]
     public async Task ListBetweenAsync_WithSK1Index_ShouldReturnItemsInNameRange()
     {
         // Arrange
@@ -523,7 +467,7 @@ public abstract class DocumentRepoTestsBase
         }
     }
 
-    [Fact]
+    [DynamoFact]
     public async Task ListGreaterThanAsync_WithSK1Index_ShouldReturnItemsAfterName()
     {
         // Arrange
@@ -561,7 +505,7 @@ public abstract class DocumentRepoTestsBase
         }
     }
 
-    [Fact]
+    [DynamoFact]
     public async Task ListLessThanAsync_WithSK1Index_ShouldReturnItemsBeforeName()
     {
         // Arrange
@@ -599,7 +543,7 @@ public abstract class DocumentRepoTestsBase
         }
     }
 
-    [Fact]
+    [DynamoFact]
     public  Task UpdateCreateAsync_WithNewId_ShouldCreateItem()
     {
         return Task.CompletedTask; // Skip this test for now
@@ -622,7 +566,7 @@ public abstract class DocumentRepoTestsBase
         //await _repo.DeleteAsync(_callerInfo, "test-id");
     }
 
-    [Fact]
+    [DynamoFact]
     public Task UpdateCreateAsync_WithExistingId_ShouldUpdateItem()
     {
         return Task.CompletedTask; // Skip this test for now
