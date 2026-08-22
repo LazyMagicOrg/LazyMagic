@@ -72,26 +72,54 @@ public class AwsLocalWebApiRoutingMiddleware
         var defaultTenancy = "";
         var defaultAuthname = "tenantauth"; // Default value if not specified
 
-        // Read systemconfig.yaml
-        using (var reader = new StreamReader("../../systemconfig.yaml"))
+        // DISCOVER the systemconfig rather than reading a fixed "../../systemconfig.yaml".
+        // That hardcoded path assumed both a filename and a fixed depth below the workspace
+        // root; neither holds. Walk UP from the working directory and take the first ancestor
+        // holding one — the same rule the lz CLI applies.
+        var systemConfigPath = FindConfigUpward("systemconfig.*.yaml") ?? FindConfigUpward("systemconfig.yaml");
+        if (systemConfigPath == null)
+            throw new FileNotFoundException(
+                "No systemconfig found in the working directory or any ancestor (looked for " +
+                $"systemconfig.*.yaml then systemconfig.yaml, upward from '{Directory.GetCurrentDirectory()}').");
+
+        using (var reader = new StreamReader(systemConfigPath))
         {
             var yaml = new YamlStream();
             yaml.Load(reader);
             var mapping = (YamlMappingNode)yaml.Documents[0].RootNode;
 
-            // Get SystemKey
+            // SystemKey: an inline key when present (the original single-file schema), otherwise
+            // the second dotted segment of the filename — lz names these
+            // systemconfig.{systemkey}.{env}.yaml and carries no SystemKey key inside.
             if (mapping.Children.TryGetValue(new YamlScalarNode("SystemKey"), out var systemKeyNode))
-            {
                 systemKey = ((YamlScalarNode)systemKeyNode).Value!;
-            }
-            else throw new Exception("SystemKey not found in systemconfig.yaml");
+            else
+                systemKey = KeyFromFilename(systemConfigPath, 1)
+                    ?? throw new Exception(
+                        $"SystemKey not found in {systemConfigPath} and not derivable from its name " +
+                        "(expected systemconfig.{systemkey}.{env}.yaml).");
 
-            // Get Default Tenancy
+            // DefaultTenant: likewise inline when present, otherwise the tenant key from a sibling
+            // tenantconfig.{systemkey}.{tenantkey}.{env}.yaml. With several tenants the first by
+            // ordinal name wins — deterministic, and a local dev host only needs one.
             if (mapping.Children.TryGetValue(new YamlScalarNode("DefaultTenant"), out var tenantNode))
-            {
                 defaultTenancy = ((YamlScalarNode)tenantNode).Value!;
+            else
+            {
+                var dir = Path.GetDirectoryName(systemConfigPath)!;
+                var tenantConfig = new DirectoryInfo(dir)
+                    .GetFiles($"tenantconfig.{systemKey}.*.yaml")
+                    .OrderBy(f => f.Name, StringComparer.Ordinal)
+                    .FirstOrDefault();
+                defaultTenancy = tenantConfig == null
+                    ? throw new Exception(
+                        $"No default tenant: {systemConfigPath} has no DefaultTenant key and no " +
+                        $"tenantconfig.{systemKey}.*.yaml sits beside it.")
+                    : KeyFromFilename(tenantConfig.FullName, 2)
+                        ?? throw new Exception(
+                            $"Could not derive the tenant key from {tenantConfig.Name} " +
+                            "(expected tenantconfig.{systemkey}.{tenantkey}.{env}.yaml).");
             }
-            else throw new Exception("No default tenant found in systemconfig.yaml");
 
             // Get Default Authname (optional - defaults to "tenantauth" if not specified)
             if (mapping.Children.TryGetValue(new YamlScalarNode("DefaultAuthname"), out var authnameNode))
@@ -100,6 +128,29 @@ public class AwsLocalWebApiRoutingMiddleware
             }
         }
         return Task.FromResult((systemKey, defaultTenancy, defaultAuthname));
+    }
+
+    /// <summary>First ancestor of the working directory holding a file matching
+    /// <paramref name="pattern"/>, or null. Ties break on ordinal filename.</summary>
+    private static string? FindConfigUpward(string pattern)
+    {
+        for (var probe = new DirectoryInfo(Directory.GetCurrentDirectory()); probe != null; probe = probe.Parent)
+        {
+            var matches = probe.GetFiles(pattern);
+            if (matches.Length > 0)
+                return matches.OrderBy(f => f.Name, StringComparer.Ordinal).First().FullName;
+        }
+        return null;
+    }
+
+    /// <summary>The dotted segment at <paramref name="index"/> of a config filename
+    /// (systemconfig.{sk}.{env}.yaml, tenantconfig.{sk}.{tk}.{env}.yaml), or null when the
+    /// name does not have that shape.</summary>
+    private static string? KeyFromFilename(string path, int index)
+    {
+        var parts = Path.GetFileName(path).Split('.');
+        // parts = [kind, key…, env, "yaml"] — need a segment at index that is not the env or extension.
+        return parts.Length >= index + 3 ? parts[index] : null;
     }
     public async Task<string> GetTenancyConfigJsonAsync(string key)
     {
