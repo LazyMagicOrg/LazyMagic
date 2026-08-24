@@ -109,8 +109,15 @@ public static class BffServiceCollectionExtensions
         // ── BFF instances (multi-pool) ────────────────────────────────────
         // #0 = tenantauth (LZ_BFF_*, /bff) — the DEFAULT instance, selected when no lz-bff-pool
         // marker is present (preserves legacy single-pool behavior). #1 = consumerauth (LZ_CBFF_*,
-        // /cbff), added only when LZ_CBFF_ENABLED. Each instance gets its own session store (its
-        // table) + token client (its authority/client); the cookie codecs are shared.
+        // /cbff), added only when LZ_CBFF_ENABLED. #2 = a THIRD pool (LZ_ABFF_*, /abff), added only
+        // when LZ_ABFF_ENABLED — used for a platform-staff console signing in against a pool that is
+        // not the tenants'. Each instance gets its own session store (its table) + token client
+        // (its authority/client); the cookie codecs are shared.
+        //
+        // The instances are independent by construction: separate cookie NAME, separate session
+        // TABLE and separate confidential CLIENT, so a session on one is not a session on another.
+        // That is the property that lets a staff console and a merchant console share one apphost
+        // without either being able to present the other's session.
         services.AddSingleton<BffRegistry>(sp =>
         {
             var cookie = sp.GetRequiredService<IBffCookieCodec>();
@@ -133,6 +140,8 @@ public static class BffServiceCollectionExtensions
             var instances = new List<BffInstance> { Build(options) }; // #0 tenantauth (default)
             if (BffOptions.IsEnabled(configuration, "LZ_CBFF_"))
                 instances.Add(Build(BffOptions.FromConfiguration(configuration, "LZ_CBFF_")));
+            if (BffOptions.IsEnabled(configuration, "LZ_ABFF_"))
+                instances.Add(Build(BffOptions.FromConfiguration(configuration, "LZ_ABFF_")));
             return new BffRegistry(instances);
         });
 

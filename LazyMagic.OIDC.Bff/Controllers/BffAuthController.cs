@@ -10,10 +10,15 @@ namespace LazyMagic.OIDC.Bff;
 /// BFF auth endpoints (§8.3). Auto-discovered as an MVC ApplicationPart when the host
 /// references this package; otherwise registered explicitly in <c>AddLazyMagicBff</c>.
 /// </summary>
-// One route, two pools: the {bffSeg} segment ("bff"=tenantauth, "cbff"=consumerauth) selects the
-// BFF instance from the registry per request. Endpoints: /{bff|cbff}/login|callback|user|logout|logout-callback.
+// One route, N pools: the {bffSeg} segment selects the BFF instance from the registry per request —
+// "bff"=tenantauth (default), "cbff"=consumerauth, "abff"=a third pool (platform staff).
+// Endpoints: /{bff|cbff|abff}/login|callback|user|logout|logout-callback.
+//
+// The regex is an ALLOWLIST and must be kept in step with the instances registered in
+// AddLazyMagicBff. A segment that is registered but missing here 404s before any handler runs — the
+// failure looks like a broken app rather than a routing gap, so it is worth stating plainly.
 [ApiController]
-[Route("{bffSeg:regex(^(bff|cbff)$)}")]
+[Route("{bffSeg:regex(^(bff|cbff|abff)$)}")]
 public sealed class BffAuthController : ControllerBase
 {
     private readonly BffRegistry _registry;
