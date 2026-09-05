@@ -31,30 +31,6 @@
 		<None Include="LICENSE.txt" Pack="True" PackagePath=""/>
 	</ItemGroup>
 
-	<!-- Remove this project's OLD packages from the feed before packing, so the feed holds one version
-	     per id. Under a fixed version the new package overwrites the old file in place and this deletes
-	     nothing; under a derived version every commit is a new file name, and this is the only thing that
-	     stops the feed growing without bound (MigrationPlan section 2).
-
-	     ANCHORED ON THE VERSION, deliberately. A bare "$(PackageId).*.nupkg" glob also matches every
-	     package whose id merely EXTENDS this one - LazyMagic.Shared.*.nupkg swept
-	     LazyMagic.Shared.Notifications.3.0.17.nupkg - so the more general package deleted its neighbours'
-	     packages on every build, and they came back only when their own project next built. The glob
-	     narrows the candidates; the regex then requires "<id>." followed by a digit-led version. -->
-	<Target Name="CleanExistingPackages" BeforeTargets="Pack">
-		<PropertyGroup>
-			<_CleanId>$(PackageId)</_CleanId>
-			<_CleanId Condition=" '$(_CleanId)' == '' ">$(AssemblyName)</_CleanId>
-			<_OwnPackagePattern>(?i)^$([System.Text.RegularExpressions.Regex]::Escape('$(_CleanId)'))\.\d+(\.\d+){1,3}(-[0-9a-z][0-9a-z.-]*)?(\+[0-9a-z][0-9a-z.-]*)?\.s?nupkg$</_OwnPackagePattern>
-		</PropertyGroup>
-		<ItemGroup>
-			<_FeedCandidates Include="$(PackageRepoFolder)\$(_CleanId).*.nupkg;$(PackageRepoFolder)\$(_CleanId).*.snupkg" />
-			<_OwnPackages Include="@(_FeedCandidates)" Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('%(_FeedCandidates.Filename)%(_FeedCandidates.Extension)', '$(_OwnPackagePattern)'))" />
-		</ItemGroup>
-		<Message Condition="'@(_OwnPackages)' != ''" Importance="high" Text="Removing superseded $(_CleanId) packages from the feed: @(_OwnPackages->'%(Filename)%(Extension)', ', ')" />
-		<Delete Files="@(_OwnPackages)" />
-	</Target>
-
 	<!-- Copy Package Target -->
 	<Target Name="CopyPackage" AfterTargets="Pack">
 		
@@ -69,6 +45,43 @@
 			  SourceFiles="$(ProjectDir)bin\$(Configuration)\$(AssemblyName).$(Version).snupkg"
 			  DestinationFiles="$(PackageRepoFolder)$(AssemblyName).$(Version).snupkg" />
 		
+	</Target>
+
+	<!-- Once the new package is in the feed, remove this id's SUPERSEDED packages, so the feed holds one
+	     version per id. It runs after CopyPackage on purpose: if the copy fails, the previous version stays
+	     in the feed instead of leaving the id with nothing. The version just produced is excluded, so a
+	     same-version rebuild - the ordinary edit-and-build loop, under fixed and derived versions alike -
+	     deletes nothing. Under a derived version every commit is a new file name, and this is the only
+	     thing that stops the feed growing without bound (MigrationPlan section 2).
+
+	     ANCHORED ON THE VERSION, deliberately. A bare "$(PackageId).*.nupkg" glob would also match every
+	     package whose id merely EXTENDS this one - LazyMagic.Shared.*.nupkg would sweep
+	     LazyMagic.Shared.Notifications.3.0.17.nupkg the moment such a glob reached the LazyMagic feed - so
+	     the glob only narrows the candidates and a regex then requires "<id>." followed by a digit-led
+	     version. The regexes use character classes and never a backslash: MSBuild on Linux/macOS rewrites
+	     literal backslashes in property values to slashes, which silently turned an earlier draft of this
+	     target into a no-op there. -->
+	<Target Name="CleanExistingPackages" AfterTargets="CopyPackage">
+		<PropertyGroup>
+			<_CleanId>$(PackageId)</_CleanId>
+			<_CleanId Condition=" '$(_CleanId)' == '' ">$(AssemblyName)</_CleanId>
+			<!-- The file pack just wrote is named with the NORMALIZED PackageVersion: no build metadata,
+			     no .0 fourth part, case preserved. -->
+			<_ProducedVersion>$(PackageVersion)</_ProducedVersion>
+			<_ProducedVersion Condition=" '$(_ProducedVersion)' == '' ">$(Version)</_ProducedVersion>
+			<_ProducedVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(_ProducedVersion)', '[+].*$', ''))</_ProducedVersion>
+			<_ProducedVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(_ProducedVersion)', '^([0-9]+[.][0-9]+[.][0-9]+)[.]0(?=$|-)', '$1'))</_ProducedVersion>
+			<_OwnPackagePattern>(?i)^$([System.Text.RegularExpressions.Regex]::Escape('$(_CleanId)'))[.][0-9]+([.][0-9]+){1,3}(-[0-9a-z][0-9a-z.-]*)?([+][0-9a-z][0-9a-z.-]*)?[.]s?nupkg$</_OwnPackagePattern>
+		</PropertyGroup>
+		<ItemGroup>
+			<_FeedCandidates Include="$(PackageRepoFolder)\$(_CleanId).*.nupkg;$(PackageRepoFolder)\$(_CleanId).*.snupkg"
+			                 Exclude="$(PackageRepoFolder)\$(_CleanId).$(_ProducedVersion).nupkg;$(PackageRepoFolder)\$(_CleanId).$(_ProducedVersion).snupkg" />
+			<_OwnPackages Include="@(_FeedCandidates)" Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('%(_FeedCandidates.Filename)%(_FeedCandidates.Extension)', '$(_OwnPackagePattern)'))" />
+		</ItemGroup>
+		<Message Condition="'@(_OwnPackages)' != ''" Importance="high" Text="Removing superseded $(_CleanId) packages from the feed: @(_OwnPackages->'%(Filename)%(Extension)', ', ')" />
+		<!-- A superseded file another process still has open is not worth failing the build over; it is
+		     swept on the next build. -->
+		<Delete Files="@(_OwnPackages)" TreatErrorsAsWarnings="true" Retries="2" RetryDelayMilliseconds="250" />
 	</Target>
 	
 	<!-- Evict this project's package from the NuGet global-packages folder after every build, so the
@@ -106,16 +119,21 @@
 			<_EvictId Condition=" '$(_EvictId)' == '' ">$(AssemblyName)</_EvictId>
 			<_EvictVersion>$(PackageVersion)</_EvictVersion>
 			<_EvictVersion Condition=" '$(_EvictVersion)' == '' ">$(Version)</_EvictVersion>
-			<_EvictVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(_EvictVersion)', '\+.*$', ''))</_EvictVersion>
-			<_EvictVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(_EvictVersion)', '^(\d+\.\d+\.\d+)\.0(?=$|-)', '$1'))</_EvictVersion>
+			<_EvictVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(_EvictVersion)', '[+].*$', ''))</_EvictVersion>
+			<_EvictVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(_EvictVersion)', '^([0-9]+[.][0-9]+[.][0-9]+)[.]0(?=$|-)', '$1'))</_EvictVersion>
 			<_EvictVersion>$(_EvictVersion.ToLowerInvariant())</_EvictVersion>
 			<PackageCacheFolder Condition=" '$(OS)' == 'Windows_NT' ">$(_PackageRoot)$(_EvictId.ToLowerInvariant())\$(_EvictVersion)</PackageCacheFolder>
 			<PackageCacheFolder Condition=" '$(OS)' != 'Windows_NT' ">$(_PackageRoot)$(_EvictId.ToLowerInvariant())/$(_EvictVersion)</PackageCacheFolder>
 		</PropertyGroup>
-		<!-- Three honest outcomes. The old pair of messages reported "Failed to delete package. Error
-		     code: " on the SUCCESS path, because when the folder was absent the Exec never ran, the exit
-		     code stayed empty, and '' != '0' is true. -->
-		<Message Condition="!Exists('$(PackageCacheFolder)')" Importance="normal" Text="No cached $(_EvictId) $(_EvictVersion) under $(_PackageRoot) - nothing to evict." />
+		<!-- Three honest outcomes, decided by STATE rather than by exit code. On Windows `rmdir /s /q`
+		     exits 0 when a file inside is in use and it deleted only what it could (the review's probe:
+		     exit 0, .nupkg.metadata gone, the locked dll and the folder left), so an exit-code test
+		     reported that as "Evicted". Exists() in a task condition is evaluated when the task runs,
+		     after the Exec, and sees the post-deletion state. The exit-code guard only tells "the Exec
+		     ran" from the nothing-to-evict case above. (The pre-2026-09-05 pair reported "Failed to
+		     delete package. Error code: " on the NOTHING-TO-EVICT path: the Exec never ran, the exit
+		     code stayed empty, and '' != '0' is true.) -->
+		<Message Condition="!Exists('$(PackageCacheFolder)')" Importance="high" Text="No cached $(_EvictId) $(_EvictVersion) under $(_PackageRoot) - nothing to evict." />
 		<Exec Condition=" '$(OS)' == 'Windows_NT' AND Exists('$(PackageCacheFolder)')"
 			  Command="cmd.exe /c &quot;if exist &quot;$(PackageCacheFolder)&quot; rmdir /s /q &quot;$(PackageCacheFolder)&quot;&quot;"
 			  ContinueOnError="true">
@@ -126,7 +144,7 @@
 			  ContinueOnError="true">
 			<Output TaskParameter="ExitCode" PropertyName="_EvictExitCode"/>
 		</Exec>
-		<Message Condition="'$(_EvictExitCode)' == '0'" Importance="high" Text="Evicted $(PackageCacheFolder); the next restore re-extracts $(_EvictId) $(_EvictVersion) from the feed." />
-		<Warning Condition="'$(_EvictExitCode)' != '' AND '$(_EvictExitCode)' != '0'" Text="Could not evict $(PackageCacheFolder) (exit $(_EvictExitCode)); a consumer may restore a STALE $(_EvictId) $(_EvictVersion)." />
+		<Message Condition="'$(_EvictExitCode)' != '' AND !Exists('$(PackageCacheFolder)')" Importance="high" Text="Evicted $(PackageCacheFolder); the next restore re-extracts $(_EvictId) $(_EvictVersion) from the feed." />
+		<Warning Condition="'$(_EvictExitCode)' != '' AND Exists('$(PackageCacheFolder)')" Text="Could not evict $(PackageCacheFolder) (exit $(_EvictExitCode); a file inside is probably in use) - a consumer may restore a STALE $(_EvictId) $(_EvictVersion). Close whatever holds it and rebuild." />
 	</Target>
 </Project>
