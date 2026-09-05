@@ -31,6 +31,30 @@
 		<None Include="LICENSE.txt" Pack="True" PackagePath=""/>
 	</ItemGroup>
 
+	<!-- Remove this project's OLD packages from the feed before packing, so the feed holds one version
+	     per id. Under a fixed version the new package overwrites the old file in place and this deletes
+	     nothing; under a derived version every commit is a new file name, and this is the only thing that
+	     stops the feed growing without bound (MigrationPlan section 2).
+
+	     ANCHORED ON THE VERSION, deliberately. A bare "$(PackageId).*.nupkg" glob also matches every
+	     package whose id merely EXTENDS this one - LazyMagic.Shared.*.nupkg swept
+	     LazyMagic.Shared.Notifications.3.0.17.nupkg - so the more general package deleted its neighbours'
+	     packages on every build, and they came back only when their own project next built. The glob
+	     narrows the candidates; the regex then requires "<id>." followed by a digit-led version. -->
+	<Target Name="CleanExistingPackages" BeforeTargets="Pack">
+		<PropertyGroup>
+			<_CleanId>$(PackageId)</_CleanId>
+			<_CleanId Condition=" '$(_CleanId)' == '' ">$(AssemblyName)</_CleanId>
+			<_OwnPackagePattern>(?i)^$([System.Text.RegularExpressions.Regex]::Escape('$(_CleanId)'))\.\d+(\.\d+){1,3}(-[0-9a-z][0-9a-z.-]*)?(\+[0-9a-z][0-9a-z.-]*)?\.s?nupkg$</_OwnPackagePattern>
+		</PropertyGroup>
+		<ItemGroup>
+			<_FeedCandidates Include="$(PackageRepoFolder)\$(_CleanId).*.nupkg;$(PackageRepoFolder)\$(_CleanId).*.snupkg" />
+			<_OwnPackages Include="@(_FeedCandidates)" Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('%(_FeedCandidates.Filename)%(_FeedCandidates.Extension)', '$(_OwnPackagePattern)'))" />
+		</ItemGroup>
+		<Message Condition="'@(_OwnPackages)' != ''" Importance="high" Text="Removing superseded $(_CleanId) packages from the feed: @(_OwnPackages->'%(Filename)%(Extension)', ', ')" />
+		<Delete Files="@(_OwnPackages)" />
+	</Target>
+
 	<!-- Copy Package Target -->
 	<Target Name="CopyPackage" AfterTargets="Pack">
 		
@@ -47,42 +71,62 @@
 		
 	</Target>
 	
-	<Target Name="DeletePackage" AfterTargets="Build">
-		<MSBuild Projects="$(MSBuildProjectFile)" Targets="DeleteSpecificPackage" Properties="Configuration=$(Configuration)" />
-	</Target>
+	<!-- Evict this project's package from the NuGet global-packages folder after every build, so the
+	     next restore in a consumer re-extracts it from the feed instead of serving the cached copy.
+	     A same-version repack is the ORDINARY case, not a legacy one: a derived version is a function
+	     of git state, and the edit-and-rebuild loop does not advance the commit, so it recomputes the
+	     same version and rewrites the same package with different bytes. Without eviction a consumer
+	     keeps building against the stale bytes.
 
-
+	     DeleteSpecificPackage runs in THIS project instance (DependsOnTargets), never through a child
+	     <MSBuild> call. The child call re-evaluated the project from scratch, where $(Version) was the
+	     STATIC value: a version tool (Nerdbank.GitVersioning) sets the version inside a target, which a
+	     child evaluation never runs, so it would have evicted <id>/1.0.0 - the SDK default - while
+	     never touching the version actually built (MigrationPlan section 2). -->
+	<Target Name="DeletePackage" AfterTargets="Build" DependsOnTargets="DeleteSpecificPackage" />
 	<Target Name="DeleteSpecificPackage">
 		<PropertyGroup>
 			<!-- Evict from the global-packages folder the restore ACTUALLY used, not a hardcoded
 			     ~/.nuget/packages. $(NuGetPackageRoot) comes from the restore-generated nuget.g.props
-			     and follows a per-workspace globalPackagesFolder set in the workspace NuGet.Config;
-			     the old hardcoded path did not, so with a relocated cache this target evicted nothing
-			     and the fixed-version republish it exists for silently stopped working. Falls back to
-			     the NuGet default only when no restore has run. NuGet lowercases package ids on disk. -->
+			     and follows a per-workspace globalPackagesFolder set in the workspace NuGet.Config.
+			     NuGet writes a RELOCATED root WITHOUT a trailing separator (the default has one), so
+			     it is ensured, or the path collapses to "...\.nuget-packagesbaseapp.viewmodels\1.0.1"
+			     and eviction silently no-ops (seen 2026-09-02). Falls back to the NuGet default only
+			     when no restore has run. -->
 			<_PackageRoot>$(NuGetPackageRoot)</_PackageRoot>
 			<_PackageRoot Condition=" '$(_PackageRoot)' == '' AND '$(OS)' == 'Windows_NT' ">$(UserProfile)\.nuget\packages\</_PackageRoot>
 			<_PackageRoot Condition=" '$(_PackageRoot)' == '' AND '$(OS)' != 'Windows_NT' ">$(Home)/.nuget/packages/</_PackageRoot>
 			<_PackageRoot>$([MSBuild]::EnsureTrailingSlash('$(_PackageRoot)'))</_PackageRoot>
-			<PackageCacheFolder Condition=" '$(OS)' == 'Windows_NT' ">$(_PackageRoot)$(AssemblyName.ToLowerInvariant())\$(Version)</PackageCacheFolder>
-			<PackageCacheFolder Condition=" '$(OS)' != 'Windows_NT' ">$(_PackageRoot)$(AssemblyName.ToLowerInvariant())/$(Version)</PackageCacheFolder>
+			<!-- The id and version the package was ACTUALLY built with, read here after any version tool
+			     has run: PackageVersion is what pack stamps, Version is its default. NuGet names the cache
+			     folder by the lower-cased id and the NORMALIZED, lower-cased version - build metadata
+			     (+g1a2b3c) is not part of it and a fourth part of 0 is dropped - so the same
+			     normalization is applied here. -->
+			<_EvictId>$(PackageId)</_EvictId>
+			<_EvictId Condition=" '$(_EvictId)' == '' ">$(AssemblyName)</_EvictId>
+			<_EvictVersion>$(PackageVersion)</_EvictVersion>
+			<_EvictVersion Condition=" '$(_EvictVersion)' == '' ">$(Version)</_EvictVersion>
+			<_EvictVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(_EvictVersion)', '\+.*$', ''))</_EvictVersion>
+			<_EvictVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(_EvictVersion)', '^(\d+\.\d+\.\d+)\.0(?=$|-)', '$1'))</_EvictVersion>
+			<_EvictVersion>$(_EvictVersion.ToLowerInvariant())</_EvictVersion>
+			<PackageCacheFolder Condition=" '$(OS)' == 'Windows_NT' ">$(_PackageRoot)$(_EvictId.ToLowerInvariant())\$(_EvictVersion)</PackageCacheFolder>
+			<PackageCacheFolder Condition=" '$(OS)' != 'Windows_NT' ">$(_PackageRoot)$(_EvictId.ToLowerInvariant())/$(_EvictVersion)</PackageCacheFolder>
 		</PropertyGroup>
-		
-		<Message Importance="high" Text="Attempting to delete package $(AssemblyName) version $(Version) from cache folder $(PackageCacheFolder)" />
-		<!-- Windows-specific delete command -->
+		<!-- Three honest outcomes. The old pair of messages reported "Failed to delete package. Error
+		     code: " on the SUCCESS path, because when the folder was absent the Exec never ran, the exit
+		     code stayed empty, and '' != '0' is true. -->
+		<Message Condition="!Exists('$(PackageCacheFolder)')" Importance="normal" Text="No cached $(_EvictId) $(_EvictVersion) under $(_PackageRoot) - nothing to evict." />
 		<Exec Condition=" '$(OS)' == 'Windows_NT' AND Exists('$(PackageCacheFolder)')"
 			  Command="cmd.exe /c &quot;if exist &quot;$(PackageCacheFolder)&quot; rmdir /s /q &quot;$(PackageCacheFolder)&quot;&quot;"
 			  ContinueOnError="true">
-			<Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
+			<Output TaskParameter="ExitCode" PropertyName="_EvictExitCode"/>
 		</Exec>
-		
-		<!-- Unix/Linux/Mac-specific delete command -->
 		<Exec Condition=" '$(OS)' != 'Windows_NT' AND Exists('$(PackageCacheFolder)')"
 			  Command="rm -rf &quot;$(PackageCacheFolder)&quot;"
 			  ContinueOnError="true">
-			<Output TaskParameter="ExitCode" PropertyName="ErrorCode"/>
+			<Output TaskParameter="ExitCode" PropertyName="_EvictExitCode"/>
 		</Exec>
-		<Message Condition="'$(ErrorCode)' != '0'" Importance="high" Text="Failed to delete package. Error code: $(ErrorCode)" />
-		<Message Condition="'$(ErrorCode)' == '0'" Importance="high" Text="Successfully deleted package from $(PackageCacheFolder)" />
+		<Message Condition="'$(_EvictExitCode)' == '0'" Importance="high" Text="Evicted $(PackageCacheFolder); the next restore re-extracts $(_EvictId) $(_EvictVersion) from the feed." />
+		<Warning Condition="'$(_EvictExitCode)' != '' AND '$(_EvictExitCode)' != '0'" Text="Could not evict $(PackageCacheFolder) (exit $(_EvictExitCode)); a consumer may restore a STALE $(_EvictId) $(_EvictVersion)." />
 	</Target>
 </Project>
