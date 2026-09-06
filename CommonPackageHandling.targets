@@ -80,14 +80,18 @@
 		<Copy Condition="'@(_ProducedPackages)' != ''" SourceFiles="@(_ProducedPackages)" DestinationFolder="$(PackageRepoFolder)" />
 	</Target>
 
-	<!-- Once the new package is in the feed, remove this id's SUPERSEDED packages, so the feed holds one
-	     version per id. It runs after CopyPackage on purpose: if the copy fails, the previous version stays
-	     in the feed instead of leaving the id with nothing. The version just produced is excluded, so a
-	     same-version rebuild - the ordinary edit-and-build loop, under fixed and derived versions alike -
-	     deletes nothing, because the exclusion is the set of files CopyPackage just wrote rather than a
-	     second reimplementation of pack's naming rules. The target does not run at all when pack
-	     produced nothing, so a feed can never be emptied for an id this build did not replace. Under a derived version every commit is a new file name, and this is the only
-	     thing that stops the feed growing without bound (MigrationPlan section 2).
+	<!-- Once the new package is in the feed, remove this id's SUPERSEDED packages from BOTH the feed and
+	     the build output directory, so each holds one version per id. It runs after CopyPackage on
+	     purpose: if the copy fails, the previous version stays in the feed instead of leaving the id with
+	     nothing. The files just produced are excluded in both places, so a same-version rebuild - the
+	     ordinary edit-and-build loop, under fixed and derived versions alike - deletes nothing, and this
+	     can never remove what the build is about to publish. The target does not run at all when pack
+	     produced nothing, so a feed can never be emptied for an id this build did not replace.
+
+	     Under a derived version every commit produces a new file name, and this is the only thing that
+	     stops either directory growing without bound (MigrationPlan section 2). $(PackageOutputPath) had
+	     never been swept at all: pack leaves a nupkg/snupkg pair there per version, and during the
+	     2026-09-05 NBGV spike one project accumulated four pairs in an hour.
 
 	     ANCHORED ON THE VERSION, deliberately. A bare "$(PackageId).*.nupkg" glob would also match every
 	     package whose id merely EXTENDS this one - LazyMagic.Shared.*.nupkg would sweep
@@ -103,11 +107,11 @@
 			<_OwnPackagePattern>(?i)^$([System.Text.RegularExpressions.Regex]::Escape('$(_CleanId)'))[.][0-9]+([.][0-9]+){1,3}(-[0-9a-z][0-9a-z.-]*)?([+][0-9a-z][0-9a-z.-]*)?[.]s?nupkg$</_OwnPackagePattern>
 		</PropertyGroup>
 		<ItemGroup>
-			<_FeedCandidates Include="$(PackageRepoFolder)\$(_CleanId).*.nupkg;$(PackageRepoFolder)\$(_CleanId).*.snupkg"
-			                 Exclude="@(_ProducedPackages->'$(PackageRepoFolder)\%(Filename)%(Extension)')" />
+			<_FeedCandidates Include="$(PackageRepoFolder)\$(_CleanId).*.nupkg;$(PackageRepoFolder)\$(_CleanId).*.snupkg;$(_PkgDir)$(_CleanId).*.nupkg;$(_PkgDir)$(_CleanId).*.snupkg"
+			                 Exclude="@(_ProducedPackages);@(_ProducedPackages->'$(PackageRepoFolder)\%(Filename)%(Extension)')" />
 			<_OwnPackages Include="@(_FeedCandidates)" Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('%(_FeedCandidates.Filename)%(_FeedCandidates.Extension)', '$(_OwnPackagePattern)'))" />
 		</ItemGroup>
-		<Message Condition="'@(_OwnPackages)' != ''" Importance="high" Text="Removing superseded $(_CleanId) packages from the feed: @(_OwnPackages->'%(Filename)%(Extension)', ', ')" />
+		<Message Condition="'@(_OwnPackages)' != ''" Importance="high" Text="Removing superseded $(_CleanId) packages: @(_OwnPackages->'%(Filename)%(Extension)', ', ')" />
 		<!-- A superseded file another process still has open is not worth failing the build over; it is
 		     swept on the next build. -->
 		<Delete Files="@(_OwnPackages)" TreatErrorsAsWarnings="true" Retries="2" RetryDelayMilliseconds="250" />
