@@ -101,16 +101,21 @@
 	     single-entry list - nine LazyMagic projects are exactly that) builds in two passes: an outer
 	     pass that dispatches to one inner build per framework, then the inner builds. A version tool
 	     sets the version inside a TARGET, and the outer pass runs none of those targets, so there
-	     $(Version) is whatever static evaluation left - with the <Version> lines removed that is the
-	     SDK default 1.0.0, and this target would evict <id>/1.0.0, possibly a real published package.
-	     That is the same failure the child <MSBuild> re-entry used to cause, reached by a different
-	     route (observed in the 2026-09-05 NBGV spike: seven "No cached ... 1.0.0" lines per build).
-	     The inner builds evict the version actually built, so skipping the outer pass loses nothing.
-	     IsCrossTargetingBuild is the SDK's own flag for that pass (Sdks/Microsoft.NET.Sdk/Sdk/Sdk.targets:
-	     TargetFrameworks set and TargetFramework empty), and a target Condition is evaluated when the
-	     target RUNS, so it sees the SDK's value even though this file is imported before the SDK's
-	     targets. Single-framework projects - every project in this repo today - are unaffected.
-	     Invoking -t:DeleteSpecificPackage by hand is deliberately not guarded. -->
+	     $(Version) is whatever STATIC evaluation left. Three states, verified 2026-09-05 against these
+	     targets: with no version tool installed both passes agree and this target is merely redundant
+	     (today); with a tool installed and the static <Version> lines still present the outer pass
+	     evicts the STATIC version while the build produces the derived one - it took out a cached
+	     0.11.1 in the probe, which for a producer is a real published version; and once those lines
+	     are deleted it evicts the SDK default <id>/1.0.0 (the 2026-09-05 NBGV spike logged seven
+	     "No cached ... 1.0.0" lines per build). All three are the same failure the child <MSBuild>
+	     re-entry used to cause, reached by another route. The inner builds evict the version actually
+	     built, so skipping the outer pass loses nothing. IsCrossTargetingBuild is set, with this exact
+	     condition, by both Sdks/Microsoft.NET.Sdk/Sdk/Sdk.targets and MSBuild's own
+	     Microsoft.Managed.Before.targets (TargetFrameworks set and TargetFramework empty), so the
+	     guard holds for non-SDK-style managed projects too; a target Condition is evaluated when the
+	     target RUNS, so it sees that value even though this file is imported before the SDK's targets.
+	     Single-framework projects are unaffected. Invoking -t:DeleteSpecificPackage by hand is
+	     deliberately not guarded. -->
 	<Target Name="DeletePackage" AfterTargets="Build" DependsOnTargets="DeleteSpecificPackage"
 	        Condition="'$(IsCrossTargetingBuild)' != 'true'" />
 	<Target Name="DeleteSpecificPackage">
@@ -149,13 +154,23 @@
 		     ran" from the nothing-to-evict case above. (The pre-2026-09-05 pair reported "Failed to
 		     delete package. Error code: " on the NOTHING-TO-EVICT path: the Exec never ran, the exit
 		     code stayed empty, and '' != '0' is true.) -->
-		<Message Condition="!Exists('$(PackageCacheFolder)')" Importance="high" Text="No cached $(_EvictId) $(_EvictVersion) under $(_PackageRoot) - nothing to evict." />
-		<Exec Condition=" '$(OS)' == 'Windows_NT' AND Exists('$(PackageCacheFolder)')"
+		<!-- A destructive delete NEVER runs on a version we could not determine. With $(_EvictVersion)
+		     empty the path collapses to the id root and rmdir takes EVERY cached version of the package:
+		     verified 2026-09-05 on an unguarded copy, where four seeded versions and the id folder
+		     itself were reported as one "Evicted ...\lz.scratch.multi\" and were gone. Nothing upstream
+		     should ever produce an empty version - the SDK defaults it, and the two fallbacks above
+		     cover an unset PackageId - so this is a bug detector, not a fallback path, and it warns
+		     rather than passing silently. It does not depend on the caller: the cross-targeting guard on
+		     DeletePackage happens to close the only route found so far, but a destructive target must be
+		     safe on its own. -->
+		<Warning Condition=" '$(_EvictVersion)' == '' " Text="No version could be determined for $(_EvictId); skipping the package-cache eviction rather than deleting every cached version of it. The build is producing a package whose version this target cannot see - check the version tool and any &lt;Version&gt; override." />
+		<Message Condition=" '$(_EvictVersion)' != '' AND !Exists('$(PackageCacheFolder)')" Importance="high" Text="No cached $(_EvictId) $(_EvictVersion) under $(_PackageRoot) - nothing to evict." />
+		<Exec Condition=" '$(OS)' == 'Windows_NT' AND '$(_EvictVersion)' != '' AND Exists('$(PackageCacheFolder)')"
 			  Command="cmd.exe /c &quot;if exist &quot;$(PackageCacheFolder)&quot; rmdir /s /q &quot;$(PackageCacheFolder)&quot;&quot;"
 			  ContinueOnError="true">
 			<Output TaskParameter="ExitCode" PropertyName="_EvictExitCode"/>
 		</Exec>
-		<Exec Condition=" '$(OS)' != 'Windows_NT' AND Exists('$(PackageCacheFolder)')"
+		<Exec Condition=" '$(OS)' != 'Windows_NT' AND '$(_EvictVersion)' != '' AND Exists('$(PackageCacheFolder)')"
 			  Command="rm -rf &quot;$(PackageCacheFolder)&quot;"
 			  ContinueOnError="true">
 			<Output TaskParameter="ExitCode" PropertyName="_EvictExitCode"/>
