@@ -54,7 +54,10 @@ dotnet run --project MudBlazorTest.WASM/MudBlazorTest.WASM.csproj
 ```
 
 ### Package Management
-- Version is managed in CommonPackageHandling.targets (currently 3.0.1)
+- Version is DERIVED, not written down: `version.json` (`3.0-alpha` plus a height offset) and the
+  number of commits since that file last changed. Nerdbank.GitVersioning computes it at build time
+  for all 37 projects at once. There is no `<Version>` to edit, and adding one back would be
+  silently overridden at target time - to move the version, edit `version.json`.
 - Packages auto-build to ./Packages/ folder
 - All projects use Central Package Management via Directory.Packages.props
 
