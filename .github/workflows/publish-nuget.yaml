@@ -16,8 +16,11 @@ jobs:
     - uses: actions/checkout@v4
       with:
         # Full history, not a shallow clone. Nerdbank.GitVersioning derives the version from commit
-        # HEIGHT, so a depth-1 checkout computes the wrong one - silently, because there is nothing
-        # for it to fail on. Set before NBGV lands rather than after (MigrationPlan M1).
+        # HEIGHT, and a depth-1 checkout has no history to count. Measured on a real depth-1 clone
+        # against the pinned 3.10.94: NBGV throws "Shallow clone lacks the objects required to
+        # calculate version height" and fails the build with MSB4018. So this is a hard stop rather
+        # than a silent wrong number - an earlier version of this comment claimed the opposite.
+        # Set before NBGV landed rather than after (MigrationPlan M1).
         fetch-depth: 0
 
     - name: Setup .NET
