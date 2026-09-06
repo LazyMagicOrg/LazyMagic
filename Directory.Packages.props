@@ -41,9 +41,9 @@
 			 LazyMagic.Blazor references the LazyMagic.OIDC.Base project but when we reference 
 			 LazyMagic.Blazor as a package, it will resolve the LazyMagic.OIDC.Base as version 
 			 1.0.0 if we don't put the current version here. -->
-		<PackageVersion Include="LazyMagic.OIDC.Base" Version="3.0.17" />
-		<PackageVersion Include="LazyMagic.OIDC.WASM.Bff" Version="3.0.17" />
-		<PackageVersion Include="LazyMagic.Client.FactoryGenerator" Version="3.0.17" />
+		<PackageVersion Include="LazyMagic.OIDC.Base" Version="3.0.18" />
+		<PackageVersion Include="LazyMagic.OIDC.WASM.Bff" Version="3.0.18" />
+		<PackageVersion Include="LazyMagic.Client.FactoryGenerator" Version="3.0.18" />
 		<PackageVersion Include="Microsoft.AspNetCore.Components.Forms" Version="10.0.5" />
 		<PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="10.0.5" />
 		<PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.5" />
