@@ -33,25 +33,50 @@
 
 	<!-- Copy Package Target -->
 	<Target Name="CopyPackage" AfterTargets="Pack">
-		
-		<Message Importance="high" Text="Copying $(AssemblyName).$(Version).nupkg to $(PackageRepoFolder)" />
-		
-		<MakeDir Directories="$(PackageRepoFolder)" />
-		
-		<Copy SourceFiles="$(ProjectDir)bin\$(Configuration)\$(AssemblyName).$(Version).nupkg"
-			  DestinationFiles="$(PackageRepoFolder)$(AssemblyName).$(Version).nupkg" />
-		
-		<Copy Condition="Exists('$(ProjectDir)bin\$(Configuration)\$(AssemblyName).$(Version).snupkg')"
-			  SourceFiles="$(ProjectDir)bin\$(Configuration)\$(AssemblyName).$(Version).snupkg"
-			  DestinationFiles="$(PackageRepoFolder)$(AssemblyName).$(Version).snupkg" />
-		
+		<PropertyGroup>
+			<!-- Pack names its output <PackageId>.<normalized PackageVersion>, which is NOT
+			     $(AssemblyName).$(Version): PackageId need not equal AssemblyName, build metadata
+			     (+g1a2b3c) is dropped from the file name though not from $(Version), and a fourth part of
+			     .0 is dropped. Each made the old Copy fail with MSB3030 and leave the feed with no package
+			     for this id. The rules are applied HERE, in a target that runs after Pack, because that is
+			     when a version tool has had its say.
+
+			     @(NuGetPackOutput) looks like the authoritative list and is not: it comes from
+			     _GetOutputItemsFromPack, whose only DependsOnTargets is _GetAbsoluteOutputPathsForPack
+			     (NuGet.Build.Tasks.Pack.targets), so it never waits for $(GetPackageVersionDependsOn) and
+			     can predict a name pack does not write - observed 2026-09-05: predicted <id>.1.0.0 while
+			     pack wrote <id>.8.8.8-alpha.2. The version is read late instead, and only files that
+			     actually exist are copied.
+
+			     $(PackageOutputPath) rather than a hardcoded bin\$(Configuration)\, so `dotnet pack -o`
+			     no longer breaks the copy. -->
+			<_PkgId>$(PackageId)</_PkgId>
+			<_PkgId Condition=" '$(_PkgId)' == '' ">$(AssemblyName)</_PkgId>
+			<_PkgVersion>$(PackageVersion)</_PkgVersion>
+			<_PkgVersion Condition=" '$(_PkgVersion)' == '' ">$(Version)</_PkgVersion>
+			<_PkgVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(_PkgVersion)', '[+].*$', ''))</_PkgVersion>
+			<_PkgVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(_PkgVersion)', '^([0-9]+[.][0-9]+[.][0-9]+)[.]0(?=$|-)', '$1'))</_PkgVersion>
+			<_PkgDir>$(PackageOutputPath)</_PkgDir>
+			<_PkgDir Condition=" '$(_PkgDir)' == '' ">$(BaseOutputPath)$(Configuration)\</_PkgDir>
+			<_PkgDir>$([MSBuild]::EnsureTrailingSlash('$(_PkgDir)'))</_PkgDir>
+		</PropertyGroup>
+		<ItemGroup>
+			<_ProducedPackages Include="$(_PkgDir)$(_PkgId).$(_PkgVersion).nupkg" Condition="Exists('$(_PkgDir)$(_PkgId).$(_PkgVersion).nupkg')" />
+			<_ProducedPackages Include="$(_PkgDir)$(_PkgId).$(_PkgVersion).snupkg" Condition="Exists('$(_PkgDir)$(_PkgId).$(_PkgVersion).snupkg')" />
+		</ItemGroup>
+		<Warning Condition="'@(_ProducedPackages)' == '' AND '$(IsPackable)' != 'false'" Text="Pack produced no $(_PkgId).$(_PkgVersion).nupkg in $(_PkgDir); nothing was published to $(PackageRepoFolder)." />
+		<Message Condition="'@(_ProducedPackages)' != ''" Importance="high" Text="Copying @(_ProducedPackages->'%(Filename)%(Extension)', ', ') to $(PackageRepoFolder)" />
+		<MakeDir Condition="'@(_ProducedPackages)' != ''" Directories="$(PackageRepoFolder)" />
+		<Copy Condition="'@(_ProducedPackages)' != ''" SourceFiles="@(_ProducedPackages)" DestinationFolder="$(PackageRepoFolder)" />
 	</Target>
 
 	<!-- Once the new package is in the feed, remove this id's SUPERSEDED packages, so the feed holds one
 	     version per id. It runs after CopyPackage on purpose: if the copy fails, the previous version stays
 	     in the feed instead of leaving the id with nothing. The version just produced is excluded, so a
 	     same-version rebuild - the ordinary edit-and-build loop, under fixed and derived versions alike -
-	     deletes nothing. Under a derived version every commit is a new file name, and this is the only
+	     deletes nothing, because the exclusion is the set of files CopyPackage just wrote rather than a
+	     second reimplementation of pack's naming rules. The target does not run at all when pack
+	     produced nothing, so a feed can never be emptied for an id this build did not replace. Under a derived version every commit is a new file name, and this is the only
 	     thing that stops the feed growing without bound (MigrationPlan section 2).
 
 	     ANCHORED ON THE VERSION, deliberately. A bare "$(PackageId).*.nupkg" glob would also match every
@@ -61,21 +86,15 @@
 	     version. The regexes use character classes and never a backslash: MSBuild on Linux/macOS rewrites
 	     literal backslashes in property values to slashes, which silently turned an earlier draft of this
 	     target into a no-op there. -->
-	<Target Name="CleanExistingPackages" AfterTargets="CopyPackage">
+	<Target Name="CleanExistingPackages" AfterTargets="CopyPackage" Condition="'@(_ProducedPackages)' != ''">
 		<PropertyGroup>
 			<_CleanId>$(PackageId)</_CleanId>
 			<_CleanId Condition=" '$(_CleanId)' == '' ">$(AssemblyName)</_CleanId>
-			<!-- The file pack just wrote is named with the NORMALIZED PackageVersion: no build metadata,
-			     no .0 fourth part, case preserved. -->
-			<_ProducedVersion>$(PackageVersion)</_ProducedVersion>
-			<_ProducedVersion Condition=" '$(_ProducedVersion)' == '' ">$(Version)</_ProducedVersion>
-			<_ProducedVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(_ProducedVersion)', '[+].*$', ''))</_ProducedVersion>
-			<_ProducedVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(_ProducedVersion)', '^([0-9]+[.][0-9]+[.][0-9]+)[.]0(?=$|-)', '$1'))</_ProducedVersion>
 			<_OwnPackagePattern>(?i)^$([System.Text.RegularExpressions.Regex]::Escape('$(_CleanId)'))[.][0-9]+([.][0-9]+){1,3}(-[0-9a-z][0-9a-z.-]*)?([+][0-9a-z][0-9a-z.-]*)?[.]s?nupkg$</_OwnPackagePattern>
 		</PropertyGroup>
 		<ItemGroup>
 			<_FeedCandidates Include="$(PackageRepoFolder)\$(_CleanId).*.nupkg;$(PackageRepoFolder)\$(_CleanId).*.snupkg"
-			                 Exclude="$(PackageRepoFolder)\$(_CleanId).$(_ProducedVersion).nupkg;$(PackageRepoFolder)\$(_CleanId).$(_ProducedVersion).snupkg" />
+			                 Exclude="@(_ProducedPackages->'$(PackageRepoFolder)\%(Filename)%(Extension)')" />
 			<_OwnPackages Include="@(_FeedCandidates)" Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('%(_FeedCandidates.Filename)%(_FeedCandidates.Extension)', '$(_OwnPackagePattern)'))" />
 		</ItemGroup>
 		<Message Condition="'@(_OwnPackages)' != ''" Importance="high" Text="Removing superseded $(_CleanId) packages from the feed: @(_OwnPackages->'%(Filename)%(Extension)', ', ')" />
