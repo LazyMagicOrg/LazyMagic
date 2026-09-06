@@ -38,7 +38,7 @@
 			     $(AssemblyName).$(Version): PackageId need not equal AssemblyName, build metadata
 			     (+g1a2b3c) is dropped from the file name though not from $(Version), and a fourth part of
 			     .0 is dropped, and a two-part version is padded to three. Each made the old Copy fail with
-			     MSB3030 and leave the feed with no package for this id. The rules are applied HERE, in a
+			     MSB3030, so the feed kept the previous version and never received the one just built. The rules are applied HERE, in a
 			     target that runs after Pack, because that is when a version tool has had its say.
 
 			     This reconstructs pack's name rather than reading it, so it models NuGet's normalization
@@ -46,12 +46,16 @@
 			     miss is an Error and not a warning: nothing in the build gates on warnings, so a silent
 			     miss would leave every consumer restoring stale bytes from the feed.
 
-			     @(NuGetPackOutput) looks like the authoritative list and is not: it comes from
-			     _GetOutputItemsFromPack, whose only DependsOnTargets is _GetAbsoluteOutputPathsForPack
-			     (NuGet.Build.Tasks.Pack.targets), so it never waits for $(GetPackageVersionDependsOn) and
-			     can predict a name pack does not write - observed 2026-09-05: predicted <id>.1.0.0 while
-			     pack wrote <id>.8.8.8-alpha.2. The version is read late instead, and only files that
-			     actually exist are copied.
+			     Why not @(NuGetPackOutput), which looks like the authoritative list: it is computed by
+			     _GetOutputItemsFromPack from $(PackageId)/$(PackageVersion), and its only DependsOnTargets
+			     is _GetAbsoluteOutputPathsForPack, so it is a PREDICTION rather than a record of what pack
+			     wrote. Whether the prediction is right depends on which hook a version tool uses:
+			     GenerateNuspec depends on $(GenerateNuspecDependsOn) BEFORE _CalculateInputsOutputsForPack
+			     (NuGet.Build.Tasks.Pack.targets), and Nerdbank.GitVersioning registers there, so under NBGV
+			     the item would in fact be correct - while a tool using BeforeTargets="GenerateNuspec", or
+			     only $(GetPackageVersionDependsOn), runs too late and the item names a file pack never
+			     writes (measured: predicted <id>.1.0.0 while pack wrote <id>.8.8.8-alpha.2). Reconstructing
+			     here does not depend on that choice, and unlike the item it is checked against the disk.
 
 			     $(PackageOutputPath) rather than a hardcoded bin\$(Configuration)\, so `dotnet pack -o`
 			     no longer breaks the copy. -->
