@@ -37,9 +37,14 @@
 			<!-- Pack names its output <PackageId>.<normalized PackageVersion>, which is NOT
 			     $(AssemblyName).$(Version): PackageId need not equal AssemblyName, build metadata
 			     (+g1a2b3c) is dropped from the file name though not from $(Version), and a fourth part of
-			     .0 is dropped. Each made the old Copy fail with MSB3030 and leave the feed with no package
-			     for this id. The rules are applied HERE, in a target that runs after Pack, because that is
-			     when a version tool has had its say.
+			     .0 is dropped, and a two-part version is padded to three. Each made the old Copy fail with
+			     MSB3030 and leave the feed with no package for this id. The rules are applied HERE, in a
+			     target that runs after Pack, because that is when a version tool has had its say.
+
+			     This reconstructs pack's name rather than reading it, so it models NuGet's normalization
+			     and can be incomplete - leading zeros (1.0.010 -> 1.0.10) are NOT modelled. That is why a
+			     miss is an Error and not a warning: nothing in the build gates on warnings, so a silent
+			     miss would leave every consumer restoring stale bytes from the feed.
 
 			     @(NuGetPackOutput) looks like the authoritative list and is not: it comes from
 			     _GetOutputItemsFromPack, whose only DependsOnTargets is _GetAbsoluteOutputPathsForPack
@@ -55,6 +60,7 @@
 			<_PkgVersion>$(PackageVersion)</_PkgVersion>
 			<_PkgVersion Condition=" '$(_PkgVersion)' == '' ">$(Version)</_PkgVersion>
 			<_PkgVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(_PkgVersion)', '[+].*$', ''))</_PkgVersion>
+			<_PkgVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(_PkgVersion)', '^([0-9]+[.][0-9]+)(?=$|[-])', '$1.0'))</_PkgVersion>
 			<_PkgVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(_PkgVersion)', '^([0-9]+[.][0-9]+[.][0-9]+)[.]0(?=$|-)', '$1'))</_PkgVersion>
 			<_PkgDir>$(PackageOutputPath)</_PkgDir>
 			<_PkgDir Condition=" '$(_PkgDir)' == '' ">$(BaseOutputPath)$(Configuration)\</_PkgDir>
@@ -64,7 +70,7 @@
 			<_ProducedPackages Include="$(_PkgDir)$(_PkgId).$(_PkgVersion).nupkg" Condition="Exists('$(_PkgDir)$(_PkgId).$(_PkgVersion).nupkg')" />
 			<_ProducedPackages Include="$(_PkgDir)$(_PkgId).$(_PkgVersion).snupkg" Condition="Exists('$(_PkgDir)$(_PkgId).$(_PkgVersion).snupkg')" />
 		</ItemGroup>
-		<Warning Condition="'@(_ProducedPackages)' == '' AND '$(IsPackable)' != 'false'" Text="Pack produced no $(_PkgId).$(_PkgVersion).nupkg in $(_PkgDir); nothing was published to $(PackageRepoFolder)." />
+		<Error Condition="'@(_ProducedPackages)' == '' AND '$(IsPackable)' != 'false'" Text="Pack produced no $(_PkgId).$(_PkgVersion).nupkg in $(_PkgDir), so nothing was published to $(PackageRepoFolder). The name above is this target's reconstruction of pack's: PackageId, then PackageVersion with build metadata stripped, a two-part version padded to three, and a fourth part of .0 dropped. NuGet normalizes leading zeros too, which this does not model - if that is what differs, look at the file pack actually wrote in $(_PkgDir)." />
 		<Message Condition="'@(_ProducedPackages)' != ''" Importance="high" Text="Copying @(_ProducedPackages->'%(Filename)%(Extension)', ', ') to $(PackageRepoFolder)" />
 		<MakeDir Condition="'@(_ProducedPackages)' != ''" Directories="$(PackageRepoFolder)" />
 		<Copy Condition="'@(_ProducedPackages)' != ''" SourceFiles="@(_ProducedPackages)" DestinationFolder="$(PackageRepoFolder)" />
@@ -160,6 +166,7 @@
 			<_EvictVersion>$(PackageVersion)</_EvictVersion>
 			<_EvictVersion Condition=" '$(_EvictVersion)' == '' ">$(Version)</_EvictVersion>
 			<_EvictVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(_EvictVersion)', '[+].*$', ''))</_EvictVersion>
+			<_EvictVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(_EvictVersion)', '^([0-9]+[.][0-9]+)(?=$|[-])', '$1.0'))</_EvictVersion>
 			<_EvictVersion>$([System.Text.RegularExpressions.Regex]::Replace('$(_EvictVersion)', '^([0-9]+[.][0-9]+[.][0-9]+)[.]0(?=$|-)', '$1'))</_EvictVersion>
 			<_EvictVersion>$(_EvictVersion.ToLowerInvariant())</_EvictVersion>
 			<PackageCacheFolder Condition=" '$(OS)' == 'Windows_NT' ">$(_PackageRoot)$(_EvictId.ToLowerInvariant())\$(_EvictVersion)</PackageCacheFolder>
