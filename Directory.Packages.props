@@ -36,15 +36,17 @@
 		<PackageVersion Include="FluentValidation.DependencyInjectionExtensions" Version="11.11.0" />
 		<PackageVersion Include="JsonSubTypes" Version="2.0.1" />
 		<PackageVersion Include="MailKit" Version="4.13.0" />
-		<!-- Remember to update the LazyMagic package versions here for transitive depdenencies
-		     introduced when we reference a package as a project in a package. For instance,
-			 LazyMagic.Blazor references the LazyMagic.OIDC.Base project but when we reference 
-			 LazyMagic.Blazor as a package, it will resolve the LazyMagic.OIDC.Base as version 
-			 1.0.0 if we don't put the current version here. -->
-		<PackageVersion Include="LazyMagic.OIDC.Base" Version="3.0.18" />
-		<PackageVersion Include="LazyMagic.OIDC.WASM.Bff" Version="3.0.18" />
-		<PackageVersion Include="LazyMagic.Client.FactoryGenerator" Version="3.0.18" />
-		<PackageVersion Include="Microsoft.AspNetCore.Components.Forms" Version="10.0.5" />
+		<!-- No LazyMagic.* entries belong in this file. Three used to sit here (OIDC.Base,
+		     OIDC.WASM.Bff, Client.FactoryGenerator), added on the belief that without them a
+		     ProjectReference packed as a nuspec dependency at 1.0.0. That is not how pack behaves:
+		     _GetProjectReferenceVersions asks each referenced project for its own $(PackageVersion),
+		     which CommonPackageHandling.targets already supplies to every project in the repo.
+		     The proof was sitting here all along - LazyMagic.Client.Base never had an entry and has
+		     always packed correctly. Removing all three on 2026-09-06 left all 23 sibling dependency
+		     edges across 14 packages byte-identical. Re-adding them would also block the move to
+		     derived versioning, where a computed version can never equal a hand-written literal
+		     (MigrationPlan M1). -->
+	<PackageVersion Include="Microsoft.AspNetCore.Components.Forms" Version="10.0.5" />
 		<PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="10.0.5" />
 		<PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.5" />
 		<PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly.Authentication" Version="10.0.5" />
