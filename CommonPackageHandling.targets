@@ -10,7 +10,9 @@
 		<RepositoryType>git</RepositoryType>
 		<Company>Insight Sciences Corporation</Company>
 		<Authors>Tim May, Thomas May</Authors>
-		<Version>3.0.18</Version>
+		<!-- No <Version> here. Nerdbank.GitVersioning computes it from version.json plus commit
+		     height; a literal would be silently overridden at target time anyway (measured: NBGV
+		     wins with no warning at any verbosity), which is worse than not having one. -->
 		<SignAssembly>false</SignAssembly>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<IncludeSymbols>true</IncludeSymbols>

@@ -8,4 +8,23 @@ when you run a build from the project level.
   <PropertyGroup>
     <SolutionDir Condition="'$(SolutionDir)'==''">$(MSBuildThisFileDirectory)</SolutionDir>
   </PropertyGroup>
+
+  <!--
+    Derived versioning. Every package in this repo takes its version from version.json plus the
+    number of commits since that file last changed - there is no version literal anywhere.
+
+    GitVersionBaseDirectory pins the height to the REPO ROOT, so all 37 projects compute one
+    version. The alternative, per-project pathFilters, is unsound as shipped: pack asks each
+    referenced project for its own PackageVersion, so a commit touching only Client.Base moves
+    Blazor's nuspec DEPENDENCY on it while leaving Blazor's own version alone - the same version
+    then names two different packages, which a registry either rejects or silently overwrites.
+
+    PrivateAssets=all: this is a build-time tool, not something consumers should acquire.
+  -->
+  <PropertyGroup>
+    <GitVersionBaseDirectory>$(MSBuildThisFileDirectory)</GitVersionBaseDirectory>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Nerdbank.GitVersioning" PrivateAssets="all" />
+  </ItemGroup>
 </Project>

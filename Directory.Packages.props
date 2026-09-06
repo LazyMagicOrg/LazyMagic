@@ -46,6 +46,9 @@
 		     edges across 14 packages byte-identical. Re-adding them would also block the move to
 		     derived versioning, where a computed version can never equal a hand-written literal
 		     (MigrationPlan M1). -->
+	<!-- The versioning tool itself. Pinned exactly: the version it computes is an input to every
+	     package this repo publishes, so it must not float. -->
+	<PackageVersion Include="Nerdbank.GitVersioning" Version="3.10.94" />
 	<PackageVersion Include="Microsoft.AspNetCore.Components.Forms" Version="10.0.5" />
 		<PackageVersion Include="Microsoft.AspNetCore.Components.Web" Version="10.0.5" />
 		<PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.5" />
