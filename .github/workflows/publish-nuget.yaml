@@ -26,10 +26,14 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v3
       with:
-        # This repo is 29 projects on net10.0 (plus 7 on netstandard2.0, which any modern SDK
-        # builds). It carried 8.x/9.x, neither of which can build net10.0 - the workflow has run
-        # once, on 2025-09-25, long before the net10 conversion, so nothing caught it.
-        dotnet-version: 10.x
+        # global-json-file, not a floating dotnet-version. This repo now pins an exact SDK with
+        # rollForward: disable, so "10.x" would install whatever is newest and then be REJECTED by
+        # that pin. Reading the same file the build reads is the only way the two cannot disagree.
+        #
+        # History worth keeping: this carried 8.x/9.x, neither of which can build net10.0. The
+        # workflow had run once, on 2025-09-25, long before the net10 conversion, so nothing
+        # caught it - a floating version that is never exercised is not a safe default.
+        global-json-file: global.json
 
     - name: Configure NuGet
       run: |
