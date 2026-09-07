@@ -1,8 +1,20 @@
 name: Publish NuGet
 
+# TRIGGERS ON dev, NOT main, and that is the whole point of this file's current shape.
+#
+# `dev` is this repo's release line in practice - it is the branch every workspace consumes and the
+# one the ProjectTemplates are validated against; main and test lag it. What it publishes is an
+# ALPHA line (`3.0.N-alpha`, from version.json's label), because code on dev may never reach main.
+# Promotion is then a merge plus two edits to version.json on main: drop the `-alpha` and point
+# publicReleaseRefSpec at main. Neither renumbers anything - measured 2026-09-07, a label-only
+# change to the version field preserves commit height (5 -> 6 -> 7 across two probe commits), so
+# `3.0.24-alpha` promotes to a `3.0.25`-and-upward stable line rather than resetting.
+#
+# workflow_dispatch as well, so a publish can be re-run without a commit.
 on:
   push:
-    branches: [ main ]
+    branches: [ dev ]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -62,14 +74,42 @@ jobs:
         </configuration>
         EOF
 
-        cat NuGet.Config
-
     - name: Restore dependencies
       run: |
         dotnet restore
 
     - name: Build # Build solution
       run: dotnet build --no-restore
+
+    # THE TWO PUBLISH GUARDS (SdlcVersioning 4.6), between build and push. This is the step that
+    # makes `dev` publishing safe: it refuses anything NBGV did not stamp as a public release - i.e.
+    # anything carrying the `-g<hex>` commit-id discriminator - and anything not built from the
+    # commit being published.
+    #
+    # Run from SOURCE rather than as an installed `lz`: the runner has no Lz feed for the lz runner
+    # to resolve Lz.Cli from. That is safe here despite this repo coming FIRST in the publish order,
+    # because no Lz project references a LazyMagic package - checked, not assumed - so building the
+    # guard cannot depend on what this job is about to publish.
+    #
+    # fetch-depth: 0 on the Lz checkout is REQUIRED, not tidiness: Lz derives its own version with
+    # NBGV, which throws MSB4018 on a shallow clone rather than guessing a height. A default depth-1
+    # checkout would fail this step and block every publish.
+    - uses: actions/checkout@v4
+      with:
+        repository: LazyMagicOrg/Lz
+        ref: main
+        fetch-depth: 0
+        path: _lz
+
+    # --source is deliberately NOT passed, so guard one (already-published) does not run yet.
+    # Measured 2026-09-07: GitHub Packages answers 403 for the flat container's version list even
+    # with a token that restores fine, so the lookup can only return "undeterminable" - which
+    # refuses, and would therefore block every publish. Until that lookup goes through NuGet's own
+    # client, the registry's own duplicate rejection is the backstop, which is exactly why
+    # --skip-duplicate stays off on the push below.
+    - name: publish guards
+      run: |
+        dotnet run --project _lz/Lz.Cli/Lz.Cli.csproj -c Debug           -p:SolutionDir=${{ github.workspace }}/_lz/           -- packages check --packages ./Packages --commit ${{ github.sha }}
 
     - name: Publish
       run: |
