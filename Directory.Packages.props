@@ -77,8 +77,8 @@
 		<PackageVersion Include="MSTest.TestAdapter" Version="3.10.2" />
 		<PackageVersion Include="MSTest.TestFramework" Version="3.10.2" />
 		<PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageVersion Include="ReactiveUI" Version="23.2.19" />
-		<PackageVersion Include="ReactiveUI.Blazor" Version="23.2.19" />
+		<PackageVersion Include="ReactiveUI" Version="23.2.28" />
+		<PackageVersion Include="ReactiveUI.Blazor" Version="23.2.28" />
 		<PackageVersion Include="ReactiveUI.SourceGenerators" Version="2.6.1" />
 		<PackageVersion Include="System.ComponentModel.Annotations" Version="5.0.0" />
 		<PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.14.0" />
