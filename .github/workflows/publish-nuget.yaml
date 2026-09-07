@@ -101,6 +101,33 @@ jobs:
         fetch-depth: 0
         path: _lz
 
+    # FENCE THE NESTED CHECKOUT. MSBuild's Directory.Build.props / Directory.Packages.props search
+    # walks UP the filesystem and knows nothing about repository boundaries, so `_lz` sitting inside
+    # this repo silently inherits THIS repo's build configuration.
+    #
+    # Measured on this workflow's first run (34158549035): Lz has no Directory.Build.props of its
+    # own - deliberately, which is why it must be built through Lz.slnx - so the walk reached
+    # LazyMagic's, which adds a VERSION-LESS Nerdbank.GitVersioning PackageReference because this
+    # repo uses central package management. Lz's own LzVersioning.props adds the same package WITH a
+    # version, which gave NU1504 (duplicate) and then NU1015, and the guard step failed to BUILD
+    # rather than reaching a verdict. Nothing was published, correctly - but for the wrong reason.
+    #
+    # These two files restore exactly the configuration Lz would have standalone: stop the walk, and
+    # turn CPM off, since Lz pins its versions inline. Written here rather than committed to Lz,
+    # because they exist only to fence a nested checkout that only this workflow creates.
+    - name: fence the Lz checkout from this repo's MSBuild directory files
+      run: |
+        cat > _lz/Directory.Build.props <<'XML'
+        <Project />
+        XML
+        cat > _lz/Directory.Packages.props <<'XML'
+        <Project>
+          <PropertyGroup>
+            <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
+          </PropertyGroup>
+        </Project>
+        XML
+
     # --source is deliberately NOT passed, so guard one (already-published) does not run yet.
     # Measured 2026-09-07: GitHub Packages answers 403 for the flat container's version list even
     # with a token that restores fine, so the lookup can only return "undeterminable" - which
