@@ -362,9 +362,16 @@ MigrationBackup/
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
 
-# We need the git clone process to create the Packages folder
-# so we keep the .gitkeep file. Note that everyhting else in 
-# the folder will be ignored.
+# THE Packages FOLDER MUST SURVIVE A FRESH CLONE. The root Nuget.Config names it as a
+# packageSource, and NuGet fails a restore OUTRIGHT - NU1301, "the local source ... doesn't
+# exist" - when a configured local source directory is missing. It does not treat it as an
+# empty feed. So the first build of a fresh clone fails before any target can create the
+# folder, because restore runs first.
+#
+# git tracks files, not directories, so the folder needs one tracked file inside it. That is
+# Packages/README.md, which also explains itself to whoever finds it. Everything else in the
+# folder is build output and stays ignored.
+!**/[Pp]ackages/README.md
 !**/[Pp]ackages/.gitkeep
 /LazyMagic.BlazorSvg/test-harness/nul
 /LazyMagic.FloorMat/FloorMat/nul
