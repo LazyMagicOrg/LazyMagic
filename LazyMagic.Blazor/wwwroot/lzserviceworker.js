@@ -174,7 +174,12 @@ self.addEventListener('fetch', event => {
     event.respondWith((async () => {
         let url = new URL(event.request.url);
         let path = url.pathname;
-        const isOnline = await self.connectivityService.isReallyOnline();
+        // The connectivity service's last verdict - never a probe per request. Awaiting
+        // isReallyOnline() here sent one HEAD /config for every request this worker handled:
+        // ~190 for one console load, then one per API call, enough on its own to push a single
+        // browser past CloudFront's per-IP WAF rate cap. The service re-probes on its own 30 s
+        // cadence, and a request whose network fetch fails re-checks below.
+        const isOnline = navigator.onLine && self.connectivityService.isOnline;
         let request = event.request;
 
         // Special paths the SW must NOT touch. These are server-side façades
@@ -301,10 +306,9 @@ self.addEventListener('fetch', event => {
                         return cachedResponse;
                     } else {
 
-                        if (!isOnline) {
-                            return new Response(null, { status: 204, statusText: 'offline' });
-                        }
-
+                        // Fetch even when the last verdict was offline: it can be a check interval
+                        // old, and a reachable request must not get a fake 204. A fetch that really
+                        // fails still gets one below.
                         // Item is not in cache so just fetch it. We don't add it to the cache here because of
                         // thread safety issues. This is not a performance issue becuase the browser's native
                         // cache will have the item, for the cache load to use, when the cache load catches up.
@@ -339,30 +343,37 @@ self.addEventListener('fetch', event => {
                 return new Response('Error during fetch: ', { status: 500 });
             }
         }
-        if (isOnline)
-            return fetch(request)
-                .then(response => {
-                    if (!response.ok) {
-                        // Non-2xx from a passthrough fetch (e.g. /bff/user 401, an API 4xx/5xx).
-                        // These are application-level outcomes the app + browser already surface —
-                        // not service-worker errors. Debug only; preserve the original status.
-                        console.debug('Passthrough non-ok:', response.url, response.status);
-                        return response;
-                    }
+        // Try the network even when the last verdict was offline. That verdict can be a check
+        // interval old, and answering a reachable request with the offline 204 would silently
+        // drop it - a chat POST the app then treats as sent. A fetch that really fails re-checks
+        // now, and gets the offline 204 only if the network is actually down.
+        return fetch(request)
+            .then(response => {
+                if (!response.ok) {
+                    // Non-2xx from a passthrough fetch (e.g. /bff/user 401, an API 4xx/5xx).
+                    // These are application-level outcomes the app + browser already surface —
+                    // not service-worker errors. Debug only; preserve the original status.
+                    console.debug('Passthrough non-ok:', response.url, response.status);
                     return response;
-                })
-                .catch(error => {
-                    console.error('Network error:', request.url, error.message);
-                    // Return a proper error response
-                    return new Response('Network error occurred', {
-                        status: 503,
-                        statusText: 'Service Unavailable'
-                    });
+                }
+                return response;
+            })
+            .catch(async error => {
+                // An abort is the page cancelling, not the network failing - don't probe for it.
+                const online = error.name === 'AbortError'
+                    ? isOnline
+                    : await self.connectivityService.checkConnectivity(true);
+                if (!online) {
+                    console.warn('Offline fetch request failure for url:' + request.url);
+                    return new Response(null, { status: 204, statusText: 'offline' });
+                }
+                console.error('Network error:', request.url, error.message);
+                // Return a proper error response
+                return new Response('Network error occurred', {
+                    status: 503,
+                    statusText: 'Service Unavailable'
                 });
-        else {
-            console.warn('Offline fetch request failure for url:' + request.url);
-            return new Response(null, { status: 204, statusText: 'offline' });
-        }
+            });
     })()
     );
 });

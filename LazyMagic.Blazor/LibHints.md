@@ -177,6 +177,14 @@ Task OnConnectivityChanged(bool isOnline)  // Called from JS
 - `connectivityService.js` - Core connectivity detection logic
 - `connectivityManager.js` - Blazor bridge with global functions
 
+**Probe cadence:** each context that loads `connectivityService.js` — the page, and the service
+worker while it runs — sends one `HEAD /config` every 30 s. Between those, `ShouldMakeNetworkRequestAsync`
+and a tab becoming visible get the last verdict instead of a new request, and concurrent callers share
+one in-flight probe. Only `CheckInternetConnectivityAsync`, the browser's `online`/`offline` events and a
+failed service-worker fetch probe immediately. The service worker's fetch handler reads the last verdict
+and never probes per request (it once did: ~190 probes per console load), and it tries the network even
+when that verdict is offline — its offline `204` is only for a fetch that actually fails.
+
 ### LzJsUtilities
 **Location:** `LzJsUtilities.cs`
 

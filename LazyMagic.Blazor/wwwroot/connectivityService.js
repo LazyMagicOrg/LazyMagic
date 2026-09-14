@@ -9,6 +9,8 @@ export class ConnectivityService {
         this.isOnline = navigator.onLine;
         this.lastCheckTime = Date.now();
         this.checkInterval = 30000; // 30 seconds
+        this.lastProbeTime = 0; // when the last HEAD probe was sent
+        this.probeInFlight = null; // the pending probe, shared by concurrent callers
         this.listeners = new Set();
         this.intervalId = null;
         this.eventHandlers = new Map();
@@ -66,21 +68,53 @@ export class ConnectivityService {
             }
         }
         
-        // Periodic connectivity check (works in both contexts) - store interval ID
-        this.intervalId = setInterval(() => this.checkConnectivity(), this.checkInterval);
+        // Periodic connectivity check (works in both contexts) - store interval ID.
+        // The interval is the cadence, so it always probes (see isReallyOnline).
+        this.intervalId = setInterval(() => this.checkConnectivity(true), this.checkInterval);
     }
 
     /**
-     * Primary method to check if truly online
+     * Primary method to check if truly online.
+     *
+     * Sends at most one probe per checkInterval from this context unless forced: a caller
+     * that arrives while a probe is in flight shares it, and one that arrives within
+     * checkInterval of the last probe gets that probe's verdict without a request. The
+     * service worker's fetch handler used to call this for every request it handled - one
+     * HEAD /config per request, about 190 for a single console load.
+     * @param {boolean} force - Probe even if the last probe is recent (still shares one in flight)
      * @returns {Promise<boolean>}
      */
-    async isReallyOnline() {
+    async isReallyOnline(force = false) {
         // First check navigator.onLine
         if (!navigator.onLine) {
             this.log('isReallyOnline', 'navigator.onLine is false', 'debug');
+            this.recordVerdict(false);
             return false;
         }
 
+        if (this.probeInFlight) {
+            return await this.probeInFlight;
+        }
+        if (!force && Date.now() - this.lastProbeTime < this.checkInterval) {
+            return this.isOnline;
+        }
+
+        this.lastProbeTime = Date.now();
+        this.probeInFlight = this.probe();
+        try {
+            const isOnline = await this.probeInFlight;
+            this.recordVerdict(isOnline);
+            return isOnline;
+        } finally {
+            this.probeInFlight = null;
+        }
+    }
+
+    /**
+     * Send one HEAD request and report whether anything answered it
+     * @returns {Promise<boolean>}
+     */
+    async probe() {
         // Use HEAD request with no-cors mode to avoid CORS issues
         // HEAD is lightweight and doesn't retrieve body content
         const baseUrl = this.assetsUrl || '';
@@ -113,26 +147,34 @@ export class ConnectivityService {
     }
 
     /**
-     * Check connectivity and notify listeners if changed
+     * Record a verdict and notify listeners if it changed. Every verdict lands here, so a
+     * direct isReallyOnline() caller updates the state that later callers are answered from.
+     * @param {boolean} isOnline
      */
-    async checkConnectivity() {
+    recordVerdict(isOnline) {
         const wasOnline = this.isOnline;
-        this.isOnline = await this.isReallyOnline();
-        
-        if (wasOnline !== this.isOnline) {
-            this.notifyListeners(this.isOnline);
-        }
-        
+        this.isOnline = isOnline;
         this.lastCheckTime = Date.now();
-        return this.isOnline;
+
+        if (wasOnline !== isOnline) {
+            this.notifyListeners(isOnline);
+        }
+    }
+
+    /**
+     * Check connectivity and notify listeners if changed
+     * @param {boolean} force - Probe even if the last probe is recent
+     */
+    async checkConnectivity(force = false) {
+        return await this.isReallyOnline(force);
     }
 
     /**
      * Handle browser online/offline events
      */
     handleConnectivityChange(isOnline) {
-        // Browser events are not always reliable, so we verify
-        this.checkConnectivity();
+        // Browser events are not always reliable, so we verify - now, since the network changed
+        this.checkConnectivity(true);
     }
 
     /**
@@ -176,7 +218,7 @@ export class ConnectivityService {
      * Force an immediate connectivity check
      */
     async forceCheck() {
-        return await this.checkConnectivity();
+        return await this.checkConnectivity(true);
     }
 
     /**
@@ -186,7 +228,7 @@ export class ConnectivityService {
     setPollingEnabled(enabled) {
         if (enabled && !this.intervalId) {
             // Start polling
-            this.intervalId = setInterval(() => this.checkConnectivity(), this.checkInterval);
+            this.intervalId = setInterval(() => this.checkConnectivity(true), this.checkInterval);
             this.log('setPollingEnabled', 'Polling enabled', 'info');
         } else if (!enabled && this.intervalId) {
             // Stop polling
