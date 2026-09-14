@@ -18,6 +18,15 @@ namespace LazyMagic.OIDC.WASM.Bff;
 /// A configurable re-poll timer (default 5 min, per MultiTenantAuth.md §8.14) periodically
 /// re-fetches <c>/bff/user</c> and raises <see cref="NotifyAuthenticationStateChanged"/> so a
 /// server-side session kill (logout elsewhere / revocation) flips the UI without a reload.
+///
+/// ONE REQUEST SERVES EVERY CALLER. A console asks for the auth state from several places at once
+/// (CascadingAuthenticationState, each LoginDisplay, its layout), and some subscribers ask again on
+/// every notification. When each ask was its own request, one SellerApp load sent 34 of them in
+/// its first 20 seconds (measured 2026-09-14), all counting against the edge's per-IP rate limit.
+/// So a caller joins the request already in flight, or takes a definitive answer (a 200 envelope
+/// or a 401) younger than <see cref="DefinitiveAnswerReuse"/>, and only otherwise is a request
+/// sent. A failed check is never reused, and the session poll and <see cref="NotifyStateChanged"/>
+/// always ask the server.
 /// </summary>
 public sealed class BffAuthenticationStateProvider : AuthenticationStateProvider, IDisposable
 {
@@ -46,7 +55,7 @@ public sealed class BffAuthenticationStateProvider : AuthenticationStateProvider
     private readonly HttpClient _http;
     private readonly ILogger<BffAuthenticationStateProvider> _logger;
     private readonly TimeSpan _pollInterval;
-    private readonly Timer? _pollTimer;
+    private readonly ITimer _pollTimer;
 
     private static readonly AuthenticationState Anonymous =
         new(new ClaimsPrincipal(new ClaimsIdentity()));
@@ -56,10 +65,22 @@ public sealed class BffAuthenticationStateProvider : AuthenticationStateProvider
         ILogger<BffAuthenticationStateProvider> logger,
         TimeSpan pollInterval,
         string routePrefix = "/bff")
+        : this(http, logger, pollInterval, routePrefix, TimeProvider.System)
+    {
+    }
+
+    // The clock is a parameter only so tests can drive the timer; the app always gets TimeProvider.System.
+    internal BffAuthenticationStateProvider(
+        HttpClient http,
+        ILogger<BffAuthenticationStateProvider> logger,
+        TimeSpan pollInterval,
+        string routePrefix,
+        TimeProvider timeProvider)
     {
         _http = http;
         _logger = logger;
         _pollInterval = pollInterval;
+        _time = timeProvider;
         _userEndpoint = "/" + routePrefix.Trim('/') + "/user";
 
         // Push the auth state to subscribers EARLY and repeatedly through the first ~20s, then
@@ -68,16 +89,63 @@ public sealed class BffAuthenticationStateProvider : AuthenticationStateProvider
         // until the boot window closes, then settle. (BaseApp.BlazorUI 1.0.1's LoginDisplay
         // now also does its own initial GetAuthenticationStateAsync — fixed 2026-07-03 — but
         // this window still covers older packages and any other late subscriber.) With polling
-        // disabled we still push during the window, then stop.
-        _pollTimer = new Timer(OnPollTick, null, InitialNotifyDelay, EarlyPollPeriod);
+        // disabled we still push during the window, then stop. A re-notify sends no request
+        // while the boot answer is still reusable (DefinitiveAnswerReuse outlasts the window).
+        _pollTimer = timeProvider.CreateTimer(OnPollTick, null, InitialNotifyDelay, EarlyPollPeriod);
     }
 
     private static readonly TimeSpan InitialNotifyDelay = TimeSpan.FromSeconds(1);
     private static readonly TimeSpan EarlyPollPeriod = TimeSpan.FromSeconds(2);
-    private const int MaxEarlyTicks = 10; // ~1s + 10×2s ≈ 21s of early re-notify
-    private int _earlyTicks;
+    private const int MaxEarlyTicks = 10; // early ticks at 1s, 3s, ... 19s; every later tick is the poll
+    private int _ticks;
 
-    public override async Task<AuthenticationState> GetAuthenticationStateAsync()
+    // How long a definitive answer (a 200 envelope or a 401) serves later callers without a new
+    // request. It must outlast the boot window, whose last tick fires 19s after construction: some
+    // subscribers answer every notification by asking again (BaseApp.BlazorUI's LoginDisplay does,
+    // through BffOIDCService), so a shorter window turns each re-notify back into requests. Within
+    // one page nothing but the server changes the session (login and logout are full navigations),
+    // and the poll that detects a server-side kill never reuses an answer.
+    private static readonly TimeSpan DefinitiveAnswerReuse = TimeSpan.FromSeconds(30);
+
+    private readonly TimeProvider _time;
+    private readonly object _gate = new();
+    private Task<AuthenticationState>? _inFlight; // the /bff/user request on the wire, shared by every caller
+    private Answer? _lastAnswer;                  // the last completed check
+
+    private sealed record Answer(AuthenticationState State, bool Definitive, long CompletedAt);
+
+    /// <summary>
+    /// The current auth state: the <c>/bff/user</c> request already in flight, or a definitive answer
+    /// younger than <see cref="DefinitiveAnswerReuse"/>; otherwise a new request.
+    /// </summary>
+    public override Task<AuthenticationState> GetAuthenticationStateAsync() => CheckSessionAsync(allowReuse: true);
+
+    private Task<AuthenticationState> CheckSessionAsync(bool allowReuse)
+    {
+        lock (_gate)
+        {
+            if (_inFlight is { IsCompleted: false })
+                return _inFlight;
+
+            if (allowReuse && _lastAnswer is { Definitive: true } last
+                && _time.GetElapsedTime(last.CompletedAt) < DefinitiveAnswerReuse)
+                return Task.FromResult(last.State);
+
+            return _inFlight = FetchAndRememberAsync();
+        }
+    }
+
+    private async Task<AuthenticationState> FetchAndRememberAsync()
+    {
+        var (state, definitive) = await FetchAsync().ConfigureAwait(false);
+        lock (_gate)
+            _lastAnswer = new Answer(state, definitive, _time.GetTimestamp());
+        return state;
+    }
+
+    // One GET {prefix}/user. Definitive means the server answered the question (a 200 envelope or a
+    // 401); every other outcome fails closed to anonymous without being definitive, so it is not reused.
+    private async Task<(AuthenticationState State, bool Definitive)> FetchAsync()
     {
         try
         {
@@ -90,38 +158,39 @@ public sealed class BffAuthenticationStateProvider : AuthenticationStateProvider
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
                 _logger.LogDebug("[BFF] /bff/user returned 401; user is anonymous");
-                return Anonymous;
+                return (Anonymous, true);
             }
 
             if (!response.IsSuccessStatusCode)
             {
                 _logger.LogWarning("[BFF] /bff/user returned {Status}; treating as anonymous", response.StatusCode);
-                return Anonymous;
+                return (Anonymous, false);
             }
 
             var json = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             if (string.IsNullOrWhiteSpace(json))
-                return Anonymous;
+                return (Anonymous, false);
 
             var principal = BuildPrincipal(json);
-            return new AuthenticationState(principal);
+            return (new AuthenticationState(principal), true);
         }
         catch (Exception ex)
         {
-            // Network/transient errors → anonymous (fail closed). The next poll re-checks.
+            // Network/transient errors → anonymous (fail closed). The next caller or tick re-checks.
             _logger.LogWarning(ex, "[BFF] Error fetching /bff/user; treating as anonymous");
-            return Anonymous;
+            return (Anonymous, false);
         }
     }
 
     /// <summary>
-    /// Force an immediate re-check of the BFF session and notify subscribers. Useful right
-    /// after a navigation returns from /bff/login (the cookie should now exist).
+    /// Re-check the BFF session now (joining a check already on the wire) and notify subscribers.
+    /// Useful right after a navigation returns from /bff/login (the cookie should now exist).
     /// </summary>
-    public void NotifyStateChanged() => _ = PublishResolvedStateAsync();
+    public void NotifyStateChanged() => _ = PublishResolvedStateAsync(recheck: true);
 
     /// <summary>
-    /// Re-check the session, then publish it as a COMPLETED task.
+    /// Resolve the session, then publish it as a COMPLETED task. <paramref name="recheck"/> asks the
+    /// server even when a recent definitive answer exists.
     ///
     /// CRITICAL: publishing the PENDING task returned by <see cref="GetAuthenticationStateAsync"/>
     /// (as the old code did) makes <c>&lt;AuthorizeView&gt;</c> fall back to its authorizing/empty
@@ -130,11 +199,11 @@ public sealed class BffAuthenticationStateProvider : AuthenticationStateProvider
     /// task flips it straight to the new state with no intermediate "authorizing" render. We still
     /// re-notify on every early tick so a late subscriber (e.g. the bar LoginDisplay) catches up.
     /// </summary>
-    private async Task PublishResolvedStateAsync()
+    private async Task PublishResolvedStateAsync(bool recheck)
     {
         try
         {
-            var newState = await GetAuthenticationStateAsync().ConfigureAwait(false);
+            var newState = await CheckSessionAsync(allowReuse: !recheck).ConfigureAwait(false);
             NotifyAuthenticationStateChanged(Task.FromResult(newState));
         }
         catch (Exception ex)
@@ -146,16 +215,19 @@ public sealed class BffAuthenticationStateProvider : AuthenticationStateProvider
     private void OnPollTick(object? state)
     {
         // Settle the timer to the long interval once the boot re-notify window closes (synchronous,
-        // independent of the async re-check below).
-        if (++_earlyTicks == MaxEarlyTicks)
+        // independent of the async publish below).
+        var tick = ++_ticks;
+        if (tick == MaxEarlyTicks)
         {
             var settled = _pollInterval > TimeSpan.Zero ? _pollInterval : Timeout.InfiniteTimeSpan;
             try { _pollTimer?.Change(settled, settled); } catch { /* timer disposed */ }
         }
 
-        // Re-evaluate the session and push the result as a COMPLETED task (see PublishResolvedStateAsync).
-        // If the server killed the session, this flips authenticated → anonymous.
-        _ = PublishResolvedStateAsync();
+        // Push the result as a COMPLETED task (see PublishResolvedStateAsync). An early tick re-announces
+        // the state to late subscribers, asking the server only when no reusable answer exists. Every
+        // later tick is the session poll, which always asks: if the server killed the session, this
+        // flips authenticated → anonymous.
+        _ = PublishResolvedStateAsync(recheck: tick > MaxEarlyTicks);
     }
 
     private ClaimsPrincipal BuildPrincipal(string json)

@@ -68,6 +68,7 @@
 		<PackageVersion Include="Microsoft.Extensions.Logging" Version="10.0.5" />
 		<PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
 		<PackageVersion Include="Microsoft.Extensions.Logging.Configuration" Version="10.0.5" />
+		<PackageVersion Include="Microsoft.Extensions.TimeProvider.Testing" Version="10.4.0" />
 		<PackageVersion Include="Microsoft.JSInterop" Version="10.0.5" />
 		<PackageVersion Include="Microsoft.Maui.Controls" Version="10.0.10" />
 		<PackageVersion Include="Microsoft.Maui.Essentials" Version="10.0.10" />

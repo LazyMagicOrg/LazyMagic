@@ -19,4 +19,8 @@
 		<ProjectReference Include="..\LazyMagic.OIDC.Base\LazyMagic.OIDC.Base.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<InternalsVisibleTo Include="LazyMagic.OIDC.WASM.Bff.Test" />
+	</ItemGroup>
+
 </Project>
