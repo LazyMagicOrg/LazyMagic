@@ -375,3 +375,6 @@ FodyWeavers.xsd
 !**/[Pp]ackages/.gitkeep
 /LazyMagic.BlazorSvg/test-harness/nul
 /LazyMagic.FloorMat/FloorMat/nul
+
+# NuGet restore diagnostic output, never a source file
+*.diag
