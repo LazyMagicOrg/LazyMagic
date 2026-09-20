@@ -235,8 +235,17 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         }
         catch (Exception ex)
         {
-            if (debug) Console.WriteLine($"ReadAsync() catch all. {ex.Message}");
-            return new NotFoundResult();
+            // FAIL CLOSED. An exception this method does not recognise is a failure to READ. It is
+            // never proof that the row is absent, and this clause used to say it was: a refused TCP
+            // connection throws HttpRequestException, which is neither of the two clauses above
+            // (measured against a dead loopback, not inferred), so an unreachable store reached
+            // every caller in every consuming system as "no such row". A person holding a genuine
+            // record is then told it does not exist, and does not try again. 500 says "we could not
+            // tell", which is both true and retryable.
+            // Always log, NOT if(debug), for the same reason ListAndSizeAsync does: a swallowed
+            // unrecognised exception leaves no other trace, and its TYPE is what identifies it.
+            Console.WriteLine($"ReadAsync() catch all. {ex.GetType().Name}: {ex.Message}");
+            return new StatusCodeResult(500);
         }
     }
     public virtual Task<ActionResult<T>> UpdateCreateAsync(ICallerInfo callerInfo, T data)
@@ -354,8 +363,20 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
                     if (debug) Console.WriteLine($"ReadEAsync() GetItemAsync called");
                     var response = await client.GetItemAsync(request); // doesn't throw error if item doesn't exist
                     var item = response.Item;
-                    if (item == null)
+                    // Absence is decided HERE, where it is actually known. ReadAsync above tests
+                    // both shapes - null AND empty - and this one tested only null, so an absent row
+                    // fell through to the attribute writes below, those threw, and the catch-all
+                    // laundered the throw into the 404 that belongs here. That made this path read
+                    // correct only for as long as the catch-all stayed open; it fails closed now, so
+                    // the check has to be right rather than lucky.
+                    if (item is null || item.Count == 0)
                         return new NotFoundResult();
+                    // NOTE, deliberately left alone: DYDBDataEnvelope no longer writes IsDeleted or
+                    // UseTTL into the record (both are commented out there), so the two indexers
+                    // below throw KeyNotFoundException on a row that IS present. Soft delete is
+                    // therefore broken in this build and now answers 500 instead of the 404 the
+                    // catch-all used to invent. 500 is the honest answer; making soft delete work
+                    // again is a separate change, and no consumer in this workspace enables it.
                     if (UseSoftDelete && item != null)
                     {
                         item["IsDeleted"].BOOL = true;
@@ -391,8 +412,10 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
                 }
                 catch (Exception ex)
                 {
-                    if (debug) Console.WriteLine($"ReadAsync() catch all. {ex.Message}");
-                    return new NotFoundResult();
+                    // FAIL CLOSED, as in ReadAsync: an unrecognised exception is a failed read of
+                    // the record being deleted, not proof it was never there.
+                    Console.WriteLine($"DeleteAsync() read-before-delete catch all. {ex.GetType().Name}: {ex.Message}");
+                    return new StatusCodeResult(500);
                 }
             } 
             
@@ -420,8 +443,11 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         }
         catch (Exception ex)
         {
-            if (debug) Console.WriteLine($"DeleteAsync() catch all. {ex.Message}");
-            return new NotFoundResult();
+            // FAIL CLOSED, as in ReadAsync: a delete that threw for a reason we do not recognise
+            // may well have left the record in place, so reporting 404 ("there was nothing there")
+            // tells the caller the opposite of what we actually know.
+            Console.WriteLine($"DeleteAsync() catch all. {ex.GetType().Name}: {ex.Message}");
+            return new StatusCodeResult(500);
         }
     }
     public virtual async Task<ObjectResult> ListAsync(ICallerInfo callerInfo, int limit = 0)
