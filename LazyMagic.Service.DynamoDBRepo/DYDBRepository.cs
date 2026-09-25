@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
+using System.Text;
 
 namespace LazyMagic.Service.DynamoDBRepo;
 
@@ -10,6 +11,33 @@ public enum TableLevel
     Subtenant,  // Use SubtenantDB passed in CallerInfo
     Default,    // Use DefaultDB passed in CallerInfo
     Local       // Use tablename (usually set in constructor)
+}
+
+/// <summary>
+/// Which of its level's two tables an entity lives in. The schema declares it (x-lz-tablekind) and the
+/// generated repo overrides <c>TableKind</c> with it, as it does <c>TableLevel</c> from x-lz-tablelevel.
+/// </summary>
+public enum TableKind
+{
+    Lsi,        // The level's table: five ALL-projection LSIs, PK-SK1-Index..PK-SK5-Index. A type is capped at 10 GB.
+    Gsi         // The level's "_gsi" twin: five KEYS_ONLY GSIs, same names and keys (PK, SKn), no 10 GB cap.
+                // An index list reads keys from the GSI, then fetches the items from the table.
+}
+
+/// <summary>
+/// A BatchGetItem read that DynamoDB kept answering with UnprocessedKeys, without progress, until the retries ran
+/// out. Those keys are unknown, not gone, so the read has no answer: the list and batched reads report 503.
+/// </summary>
+public sealed class BatchReadIncompleteException : Exception
+{
+    public BatchReadIncompleteException(string table, int unprocessedKeys)
+        : base($"BatchGetItem on {table} left {unprocessedKeys} keys unprocessed when its retries ran out.")
+    {
+        Table = table;
+        UnprocessedKeys = unprocessedKeys;
+    }
+    public string Table { get; }
+    public int UnprocessedKeys { get; }
 }
 
 
@@ -56,14 +84,31 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
     protected virtual void ConstructorExtensions() { } 
 
     #region Fields
-    protected string tablename; // Set this in constructor and set tableLevel to Local to use it
-    protected TableLevel tableLevel = TableLevel.Default; // Default to use DefaultDB in CallerInfo
+    protected string tablename; // Set this in constructor and override TableLevel to return Local to use it
     protected bool debug = false; // Set to true to see debug output in logs
     protected IAmazonDynamoDB client;
     protected JsonSerializer serializer;
     #endregion
 
-    #region Properties 
+    #region Properties
+    /// <summary>
+    /// The level whose table holds this entity; Default uses DefaultDB in CallerInfo. Get-only on purpose: the
+    /// generated repo overrides it from the schema's x-lz-tablelevel, so the schema is the one place it is set.
+    /// Code that still assigns the old tableLevel field fails to compile instead of reading another table.
+    /// </summary>
+    protected virtual TableLevel TableLevel => TableLevel.Default;
+    /// <summary>
+    /// Which of the level's two tables holds this entity; the generated repo overrides it from x-lz-tablekind.
+    /// Gsi adds "_gsi" to the table's name (GetTableName) and lists its indexes keys-then-fetch (ListAndSizeAsync).
+    /// </summary>
+    protected virtual TableKind TableKind => TableKind.Lsi;
+    /// <summary>
+    /// After this many BatchGetItem responses in a row that settle none of the keys asked, a batched read gives up
+    /// with <see cref="BatchReadIncompleteException"/>. Each retry waits first (BackoffFor).
+    /// </summary>
+    protected const int BatchReadAttemptsWithoutProgress = 6;
+    /// <summary>BatchGetItem's documented ceiling on keys per call.</summary>
+    protected const int BatchGetItemMaxKeys = 100;
     private bool _UpdateReturnOkResults = true;
     protected bool UpdateReturnsOkResult
     {
@@ -191,6 +236,14 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         }
     }
     public virtual async Task<ActionResult<T>> ReadAsync(ICallerInfo callerInfo, string id)
+        => await ReadAsync(callerInfo, id, consistentRead: false);
+
+    /// <summary>
+    /// ReadAsync with its consistency chosen: consistent when the read must see a write or a delete that has just
+    /// happened. Protected on purpose, as are the batched reads: some repos gate the public ReadAsync with an
+    /// access check, and a public overload would let a caller read around it.
+    /// </summary>
+    protected async Task<ActionResult<T>> ReadAsync(ICallerInfo callerInfo, string id, bool consistentRead)
     {
         if (debug) Console.WriteLine("ReadAsync() called");
         callerInfo ??= new CallerInfo();
@@ -209,6 +262,9 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
                     {"SK", new AttributeValue {S = sK } }
                 }
             };
+            // Set only when asked, so the default read's request is unchanged.
+            if (consistentRead)
+                request.ConsistentRead = true;
             if (debug) Console.WriteLine($"ReadEAsync() GetItemAsync called");
             var response = await client.GetItemAsync(request);
             if(response.Item == null || response.Item.Count == 0)
@@ -455,6 +511,18 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         var queryRequest = QueryEquals(EntityType, callerInfo: callerInfo);
         return await ListAndSizeAsync(queryRequest, limit);
     }
+    /// <summary>
+    /// The whole-type list with its consistency chosen. It queries the base table, which can read consistently in
+    /// either table kind; an index cannot in a Gsi table. A subclass that builds its own base-table query sets
+    /// ConsistentRead on the request the same way.
+    /// </summary>
+    protected async Task<ObjectResult> ListAsync(ICallerInfo callerInfo, int limit, bool consistentRead)
+    {
+        var queryRequest = QueryEquals(EntityType, callerInfo: callerInfo);
+        if (consistentRead)
+            queryRequest.ConsistentRead = true;
+        return await ListAndSizeAsync(queryRequest, limit);
+    }
     public virtual async Task<ObjectResult> ListAsync(ICallerInfo callerInfo, string indexName, string indexValue, int limit=0)
     {
         var queryRequest = QueryEquals(EntityType, indexName, indexValue, callerInfo: callerInfo);
@@ -478,7 +546,7 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
     public virtual async Task<ObjectResult> ListGreaterThanAsync(ICallerInfo callerInfo, string indexName, string indexValue, int limit=0)
     {
         var queryRequest = QueryGreaterThan(EntityType, indexName, indexValue, callerInfo: callerInfo);
-        return await ListAndSizeAsync(queryRequest);
+        return await ListAndSizeAsync(queryRequest, limit);
     }
     public virtual async Task<ObjectResult> ListGreaterThanOrEqualAsync(ICallerInfo callerInfo, string indexName, string indexValue, int limit=0)
     {
@@ -496,6 +564,11 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
     #region Protected Methods
     protected virtual async Task<ObjectResult> ListAndSizeAsync(QueryRequest queryRequest, int limit = 0)
     {
+        // A Gsi entity's indexes are keys-only GSIs with no Data to list, so an index query reads keys and then
+        // fetches the items. Its base-table queries, and every query of an Lsi entity, take the path below as before.
+        if (TableKind == TableKind.Gsi && !string.IsNullOrEmpty(queryRequest.IndexName))
+            return await ListFromGsiAsync(queryRequest, limit);
+
         if(debug) Console.WriteLine("ListEAndSizeAsync() called");
         var table = queryRequest.TableName;
         Dictionary<string, AttributeValue> lastEvaluatedKey = null;
@@ -562,6 +635,357 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         {
             Console.WriteLine($"ListAndSizeAsync({table}) error: {ex.Message}");
             return new ObjectResult(null) { StatusCode = 500 };
+        }
+    }
+
+    /// <summary>
+    /// The list path for an index of a Gsi entity. It queries the keys-only GSI for keys, fetches those items from
+    /// the table consistently, drops any that are gone or whose key no longer matches the query (the index lags
+    /// the table), and keeps the index's order. The limit, the 5MB cap and the 200/206 answer follow
+    /// ListAndSizeAsync. It never passes off a partial list as complete: a throttled query or fetch, or keys the
+    /// fetch could not read, is 503 with no body, and a request it cannot re-check is 500.
+    /// </summary>
+    private async Task<ObjectResult> ListFromGsiAsync(QueryRequest queryRequest, int limit)
+    {
+        var table = queryRequest.TableName;
+        var index = queryRequest.IndexName;
+        // A filter runs on the index's entries, which hold keys only, so IsDeleted would filter out every row.
+        if (UseIsDeleted)
+            throw new NotSupportedException($"UseIsDeleted cannot filter {index} on {table}: a keys-only index holds no IsDeleted.");
+        if (!IndexKeyCondition.TryParse(queryRequest, out var condition, out var reason))
+        {
+            Console.WriteLine($"ListAndSizeAsync({table}, {index}) cannot re-check this request: {reason}");
+            return new ObjectResult(null) { StatusCode = 500 };
+        }
+        if (queryRequest.ConsistentRead == true)
+        {
+            Console.WriteLine($"ListAndSizeAsync({table}, {index}) asked for a consistent read, which a GSI cannot give.");
+            return new ObjectResult(null) { StatusCode = 500 };
+        }
+        // The index holds the table's keys and its own, and refuses a projection of anything else, Data included.
+        queryRequest.ProjectionExpression = "PK, SK";
+        // Null, not empty: this SDK sends an empty map, and DynamoDB refuses one.
+        queryRequest.ExpressionAttributeNames = null;
+
+        Dictionary<string, AttributeValue> lastEvaluatedKey = null;
+        const int maxResponseSize = 5248000; // 5MB, as ListAndSizeAsync
+        int keysQueried = 0, duplicates = 0, fetched = 0, gone = 0, dropped = 0;
+        try
+        {
+            var list = new List<T>();
+            // An item whose key changed while the query paged can be listed on two pages; list it once.
+            var seen = new HashSet<(string PK, string SK)>();
+            var responseSize = 0;
+            var sizeTruncated = false;
+            do
+            {
+                if (lastEvaluatedKey is not null && lastEvaluatedKey.Count > 0)
+                    queryRequest.ExclusiveStartKey = lastEvaluatedKey;
+                if (limit != 0)
+                    queryRequest.Limit = limit - list.Count;
+
+                var response = await client.QueryAsync(queryRequest);
+                var keys = new List<(string PK, string SK)>();
+                foreach (var entry in response?.Items ?? [])
+                {
+                    keysQueried++;
+                    var key = (entry["PK"].S, entry["SK"].S);
+                    if (seen.Add(key))
+                        keys.Add(key);
+                    else
+                        duplicates++;
+                }
+
+                var items = await BatchReadAsync(table, keys, consistentRead: true);
+                fetched += items.Count;
+                foreach (var key in keys)
+                {
+                    // Gone as ReadAsync's 404 is: no item, or an item with no Data.
+                    if (!items.TryGetValue(key, out var item)
+                        || !item.TryGetValue("Data", out var data) || string.IsNullOrEmpty(data.S))
+                    {
+                        gone++;
+                        continue;
+                    }
+                    if (!condition.IsSatisfiedBy(item))
+                    {
+                        dropped++;
+                        continue;
+                    }
+                    responseSize += data.S.Length;
+                    if (responseSize > maxResponseSize)
+                    {
+                        sizeTruncated = true;
+                        break;
+                    }
+                    list.Add(DeserializeJsonData(data.S));
+                }
+                lastEvaluatedKey = response?.LastEvaluatedKey;
+            } while (!sizeTruncated
+                     && lastEvaluatedKey is not null && lastEvaluatedKey.Count > 0
+                     && (limit == 0 || list.Count < limit));
+
+            var statusCode = sizeTruncated || (lastEvaluatedKey is not null && lastEvaluatedKey.Count > 0)
+                ? 206
+                : 200;
+            // Always logged: gone and dropped are how the index's lag shows up in production.
+            Console.WriteLine($"ListAndSizeAsync({table}, {index}) keys {keysQueried}, duplicates {duplicates}, fetched {fetched}, gone {gone}, dropped by re-check {dropped}, listed {list.Count}, status {statusCode}");
+            return new ObjectResult(list) { StatusCode = statusCode };
+        }
+        catch (BatchReadIncompleteException ex)
+        {
+            Console.WriteLine($"ListAndSizeAsync({table}, {index}) retries exhausted after keys {keysQueried}, fetched {fetched}: {ex.Message}");
+            return new ObjectResult(null) { StatusCode = 503 };
+        }
+        catch (AmazonDynamoDBException ex) when (IsThrottling(ex))
+        {
+            Console.WriteLine($"ListAndSizeAsync({table}, {index}) throttled: {ex.GetType().Name}: {ex.Message}");
+            return new ObjectResult(null) { StatusCode = 503 };
+        }
+        catch (AmazonDynamoDBException ex)
+        {
+            Console.WriteLine($"ListAndSizeAsync({table}, {index}) AmazonDynamoDBException: {ex.Message}");
+            return new ObjectResult(null) { StatusCode = 500 };
+        }
+        catch (AmazonServiceException ex)
+        {
+            Console.WriteLine($"ListAndSizeAsync({table}, {index}) AmazonServiceException: {ex.Message}");
+            return new ObjectResult(null) { StatusCode = 503 };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ListAndSizeAsync({table}, {index}) error: {ex.GetType().Name}: {ex.Message}");
+            return new ObjectResult(null) { StatusCode = 500 };
+        }
+    }
+
+    /// <summary>
+    /// Reads this type's items by id with BatchGetItem: 100 keys a call, each id asked once, UnprocessedKeys retried
+    /// with backoff. Returns the items' attributes in the order of <paramref name="ids"/>, each once, with the ids
+    /// that are gone left out. Consistent unless asked otherwise, so a delete that just happened is seen. It throws
+    /// what the store throws, and <see cref="BatchReadIncompleteException"/> when keys stay unprocessed: a key it
+    /// could not read is never reported as gone.
+    /// </summary>
+    protected async Task<IReadOnlyList<Dictionary<string, AttributeValue>>> ReadItemsAsync(ICallerInfo callerInfo, IReadOnlyList<string> ids, bool consistentRead = true)
+    {
+        callerInfo ??= new CallerInfo();
+        var table = GetTableName(callerInfo);
+        var keys = ids.Select(id => (PK: EntityType, SK: $"{id}:")).Distinct().ToList();
+        var found = await BatchReadAsync(table, keys, consistentRead);
+        var items = new List<Dictionary<string, AttributeValue>>();
+        foreach (var key in keys)
+            if (found.TryGetValue(key, out var item))
+                items.Add(item);
+        return items;
+    }
+
+    /// <summary>
+    /// ReadItemsAsync, deserialised: 200 with the items in the order of <paramref name="ids"/>, leaving out the ids
+    /// that are gone and, as ReadAsync's 404 does, rows with no Data. 503 when the store throttled or keys stayed
+    /// unprocessed, 500 on any other failure. No size cap: the caller chose the ids.
+    /// </summary>
+    protected async Task<ObjectResult> ReadManyAsync(ICallerInfo callerInfo, IReadOnlyList<string> ids, bool consistentRead = true)
+    {
+        try
+        {
+            var list = new List<T>();
+            foreach (var item in await ReadItemsAsync(callerInfo, ids, consistentRead))
+                if (item.TryGetValue("Data", out var data) && !string.IsNullOrEmpty(data.S))
+                    list.Add(DeserializeJsonData(data.S));
+            return new ObjectResult(list) { StatusCode = 200 };
+        }
+        catch (BatchReadIncompleteException ex)
+        {
+            Console.WriteLine($"ReadManyAsync() {ex.Message}");
+            return new ObjectResult(null) { StatusCode = 503 };
+        }
+        catch (AmazonDynamoDBException ex) when (IsThrottling(ex))
+        {
+            Console.WriteLine($"ReadManyAsync() throttled: {ex.GetType().Name}: {ex.Message}");
+            return new ObjectResult(null) { StatusCode = 503 };
+        }
+        catch (AmazonDynamoDBException ex)
+        {
+            Console.WriteLine($"ReadManyAsync() AmazonDynamoDBException: {ex.Message}");
+            return new ObjectResult(null) { StatusCode = 500 };
+        }
+        catch (AmazonServiceException ex)
+        {
+            Console.WriteLine($"ReadManyAsync() AmazonServiceException: {ex.Message}");
+            return new ObjectResult(null) { StatusCode = 503 };
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"ReadManyAsync() error: {ex.GetType().Name}: {ex.Message}");
+            return new ObjectResult(null) { StatusCode = 500 };
+        }
+    }
+
+    /// <summary>
+    /// BatchGetItem over <paramref name="keys"/> in calls of at most 100, returning what it found by key; a key
+    /// missing from the result is gone. Keys left unprocessed are asked again after a wait; when
+    /// BatchReadAttemptsWithoutProgress responses in a row read none of them, it throws BatchReadIncompleteException.
+    /// </summary>
+    private async Task<Dictionary<(string PK, string SK), Dictionary<string, AttributeValue>>> BatchReadAsync(
+        string table, IReadOnlyList<(string PK, string SK)> keys, bool consistentRead)
+    {
+        var found = new Dictionary<(string PK, string SK), Dictionary<string, AttributeValue>>();
+        // DynamoDB refuses a call that names one key twice.
+        var distinct = keys.Distinct().ToList();
+        for (var start = 0; start < distinct.Count; start += BatchGetItemMaxKeys)
+        {
+            var pending = distinct.Skip(start).Take(BatchGetItemMaxKeys)
+                .Select(key => new Dictionary<string, AttributeValue>
+                {
+                    ["PK"] = new AttributeValue { S = key.PK },
+                    ["SK"] = new AttributeValue { S = key.SK }
+                })
+                .ToList();
+            var attemptsWithoutProgress = 0;
+            while (pending.Count > 0)
+            {
+                var request = new BatchGetItemRequest
+                {
+                    RequestItems = new Dictionary<string, KeysAndAttributes>
+                    {
+                        [table] = new KeysAndAttributes { Keys = pending, ConsistentRead = consistentRead }
+                    }
+                };
+                var response = await client.BatchGetItemAsync(request);
+                List<Dictionary<string, AttributeValue>> items = null;
+                response?.Responses?.TryGetValue(table, out items);
+                foreach (var item in items ?? [])
+                    found[(item["PK"].S, item["SK"].S)] = item;
+
+                KeysAndAttributes unprocessed = null;
+                response?.UnprocessedKeys?.TryGetValue(table, out unprocessed);
+                var remaining = unprocessed?.Keys ?? [];
+                if (remaining.Count == 0)
+                    break;
+                // Progress is a key settled, found or gone. A response that settles none is how throttling shows.
+                attemptsWithoutProgress = remaining.Count < pending.Count ? 0 : attemptsWithoutProgress + 1;
+                if (attemptsWithoutProgress >= BatchReadAttemptsWithoutProgress)
+                    throw new BatchReadIncompleteException(table, remaining.Count);
+                await DelayBeforeRetryAsync(BackoffFor(attemptsWithoutProgress));
+                pending = remaining;
+            }
+        }
+        return found;
+    }
+
+    /// <summary>
+    /// The wait before asking again for unprocessed keys: exponential in the responses in a row that settled
+    /// nothing, from 50 ms up to 1 s, with full jitter so concurrent readers do not retry in step.
+    /// </summary>
+    protected static TimeSpan BackoffFor(int attemptsWithoutProgress)
+    {
+        var ceilingMs = Math.Min(1000, 50 << Math.Min(attemptsWithoutProgress, 5));
+        return TimeSpan.FromMilliseconds(Random.Shared.Next(ceilingMs + 1));
+    }
+
+    /// <summary>The wait itself, overridable so a test can observe it without sleeping.</summary>
+    protected virtual Task DelayBeforeRetryAsync(TimeSpan delay) => Task.Delay(delay);
+
+    /// <summary>
+    /// A DynamoDB refusal that says "slow down" rather than "no": the store is up and the read may succeed later.
+    /// </summary>
+    protected static bool IsThrottling(AmazonDynamoDBException ex)
+        => ex is ProvisionedThroughputExceededException or RequestLimitExceededException or ThrottlingException
+           || ex.Retryable?.Throttling == true;
+
+    /// <summary>
+    /// What an index query asked of the index's sort key, recovered from the request the query builders make, so a
+    /// fetched item can be checked against it: the index lags the table, so an entry can outlive the key it was
+    /// written for. Only the builders' key conditions are recognised; a request in any other form is refused rather
+    /// than listed unchecked.
+    /// </summary>
+    private sealed class IndexKeyCondition
+    {
+        private string keyField;        // SKn, the sort key the index is named for
+        private string op;              // "" (any value), "=", "<", "<=", ">", ">=", "begins_with" or "between"
+        private byte[] value;
+        private byte[] upperValue;
+
+        public static bool TryParse(QueryRequest request, out IndexKeyCondition condition, out string reason)
+        {
+            condition = null;
+            var index = request.IndexName;
+            const string prefix = "PK-", suffix = "-Index";
+            if (!index.StartsWith(prefix, StringComparison.Ordinal) || !index.EndsWith(suffix, StringComparison.Ordinal)
+                || index.Length <= prefix.Length + suffix.Length)
+            {
+                reason = $"index {index} is not named PK-{{keyField}}-Index";
+                return false;
+            }
+            var keyField = index[prefix.Length..^suffix.Length];
+            if (!string.IsNullOrEmpty(request.FilterExpression))
+            {
+                reason = "a filter cannot run on a keys-only index";
+                return false;
+            }
+            var expression = string.Join(' ', (request.KeyConditionExpression ?? "")
+                .Split((char[])null, StringSplitOptions.RemoveEmptyEntries));
+            string op = null;
+            if (expression == "PK = :PKval")
+                op = "";
+            else if (expression == $"PK = :PKval and begins_with({keyField}, :SKval)")
+                op = "begins_with";
+            else if (expression == $"PK = :PKval and {keyField} between :SKStart and :SKEnd")
+                op = "between";
+            else
+                foreach (var candidate in new[] { "=", "<", "<=", ">", ">=" })
+                    if (expression == $"PK = :PKval and {keyField} {candidate} :SKval")
+                        op = candidate;
+            if (op is null)
+            {
+                reason = $"key condition \"{request.KeyConditionExpression}\" is not one the query builders make";
+                return false;
+            }
+            var values = request.ExpressionAttributeValues ?? new Dictionary<string, AttributeValue>();
+            string ValueOf(string name) => values.TryGetValue(name, out var v) ? v.S : null;
+            var (lower, upper) = op switch
+            {
+                "" => ("", ""),
+                "between" => (ValueOf(":SKStart"), ValueOf(":SKEnd")),
+                _ => (ValueOf(":SKval"), "")
+            };
+            if (lower is null || upper is null)
+            {
+                reason = $"key condition \"{request.KeyConditionExpression}\" has no string value to compare";
+                return false;
+            }
+            condition = new IndexKeyCondition
+            {
+                keyField = keyField,
+                op = op,
+                value = Encoding.UTF8.GetBytes(lower),
+                upperValue = Encoding.UTF8.GetBytes(upper)
+            };
+            reason = null;
+            return true;
+        }
+
+        public bool IsSatisfiedBy(Dictionary<string, AttributeValue> item)
+        {
+            // An item that no longer carries the key, or carries it as another type, has left the index.
+            if (!item.TryGetValue(keyField, out var attribute) || attribute.S is null)
+                return false;
+            if (op == "")
+                return true;
+            // DynamoDB compares strings by their UTF-8 bytes, which is not .NET's ordinal (UTF-16) order.
+            ReadOnlySpan<byte> actual = Encoding.UTF8.GetBytes(attribute.S);
+            var compared = actual.SequenceCompareTo(value);
+            return op switch
+            {
+                "=" => compared == 0,
+                "<" => compared < 0,
+                "<=" => compared <= 0,
+                ">" => compared > 0,
+                ">=" => compared >= 0,
+                "begins_with" => actual.StartsWith(value),
+                "between" => compared >= 0 && actual.SequenceCompareTo(upperValue) <= 0,
+                _ => false
+            };
         }
     }
 
@@ -844,6 +1268,10 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         }
         return query;
     }
+    /// <summary>
+    /// QueryRange against a table the caller names rather than CallerInfo. The name still goes through
+    /// GetTableName, so it is used only at the Default level, and a Gsi entity adds "_gsi" to it.
+    /// </summary>
     protected virtual QueryRequest QueryRange(
         string pK,
         string keyField,
@@ -908,7 +1336,7 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
     protected virtual string GetTableName(ICallerInfo callerInfo)
     {
         var table = "";
-        switch (tableLevel)
+        switch (TableLevel)
         {
             case TableLevel.System:
                 table = callerInfo.SystemDB;
@@ -929,6 +1357,10 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
                 table = callerInfo.DefaultDB;
                 break;
         }
+        // A Gsi entity lives in the level's twin, named for the level's table plus "_gsi". An empty name stays
+        // empty: "_gsi" alone would name a table nobody created and hide the missing configuration behind it.
+        if (TableKind == TableKind.Gsi && !string.IsNullOrEmpty(table))
+            table += "_gsi";
         if (debug) Console.WriteLine($"GetTableName() table: {table}");
         return table;
     }
