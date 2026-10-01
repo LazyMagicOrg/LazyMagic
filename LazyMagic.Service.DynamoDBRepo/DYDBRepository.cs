@@ -186,24 +186,13 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         try
         {
             var now = DateTime.UtcNow.Ticks;
-            var dbrecord = new Dictionary<string, AttributeValue>(); // create an empty record
-            var jobjectData = JObject.FromObject(data, serializer); // Create JObject from data
-
-            // You can override each of the Assign attribute methods to customize the attributes
-            AssignEntityAttributes(callerInfo, jobjectData, dbrecord, now); // Assigns attributes from JObject data
-            AssignCreateUtcTickAttribute(callerInfo, jobjectData, dbrecord, now); // Adds CreateUtcTickAttribute attribute
-            AssignOptionalAttributes(callerInfo, jobjectData, dbrecord, now); // Adds optional attributes
-            AssignTTLAttribute(callerInfo, jobjectData, dbrecord, now); // Adds TTL attribute when GetTTL() is not 0
-            AssignTopicsAttribute(callerInfo, jobjectData, dbrecord, now); // Adds Topics attribute
-            AssignUpdateUtcTickAttribute(callerInfo, jobjectData, dbrecord, now); // Adds UpdateUtcTickAttribute attribute
-            AssignDataAttribute(callerInfo, jobjectData, dbrecord, now); // Adds Data attribute containing JSON data
-            var json = jobjectData.ToString();
+            var (dbrecord, jobjectData, _) = BuildRecord(callerInfo, data, now);
 
             var request = new PutItemRequest()
             {
                 TableName = table,
                 Item = dbrecord,
-                ConditionExpression = "attribute_not_exists(PK)" // Technique to avoid replacing an existing record. EntityType refers to PartionKey + SortKey
+                ConditionExpression = CreateCondition // Technique to avoid replacing an existing record. EntityType refers to PartionKey + SortKey
             };
 
             if (debug) Console.WriteLine($"CreateEAsync() PutItemAsync called");
@@ -218,6 +207,12 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         {
             if (debug) Console.WriteLine($"CreateEAsync() ConditionalCheckFailedException. {ex.Message}");
             return new ConflictResult();
+        }
+        catch (TransactionConflictException ex)
+        {
+            // The item is in a transaction that has not finished: try again, not "bad request" (DYDBTransaction).
+            if (debug) Console.WriteLine($"CreateEAsync() TransactionConflictException. {ex.Message}");
+            return new StatusCodeResult(503);
         }
         catch (AmazonDynamoDBException ex)
         {
@@ -322,18 +317,7 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         try
         {
             var now = DateTime.UtcNow.Ticks;
-            var dbrecord = new Dictionary<string, AttributeValue>(); // create an empty record
-            var jobjectData = JObject.FromObject(data, serializer); // Create JObject from data
-
-            // You can override each of the Assign attribute methods to customize the attributes
-            AssignEntityAttributes(callerInfo, jobjectData, dbrecord, now); // Assigns attributes from JObject data
-            AssignCreateUtcTickAttribute(callerInfo, jobjectData, dbrecord, now); // Adds CreateUtcTickAttribute attribute
-            var OldUpdateUtcTick = GetUpdateUtcTick(jobjectData); // Get the previous UpdateUtcTick from the incomming data
-            AssignOptionalAttributes(callerInfo, jobjectData, dbrecord, now); // Adds optional attributes
-            AssignTTLAttribute(callerInfo, jobjectData, dbrecord, now); // Adds TTL attribute when GetTTL() is not 0
-            AssignTopicsAttribute(callerInfo, jobjectData, dbrecord, now); // Adds Topics attribute
-            AssignUpdateUtcTickAttribute(callerInfo, jobjectData, dbrecord, now); // Adds UpdateUtcTickAttribute attribute
-            AssignDataAttribute(callerInfo, jobjectData, dbrecord, now); // Adds Data attribute containing JSON data
+            var (dbrecord, jobjectData, OldUpdateUtcTick) = BuildRecord(callerInfo, data, now);
             //forceUpdate = true;
             if (forceUpdate)
             {
@@ -352,11 +336,8 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
                 {
                     TableName = table,
                     Item = dbrecord,
-                    ConditionExpression = "UpdateUtcTick = :OldUpdateUtcTick",
-                    ExpressionAttributeValues = new Dictionary<string, AttributeValue>
-                    {
-                        {":OldUpdateUtcTick", new AttributeValue() {N = OldUpdateUtcTick.ToString()} }
-                    }
+                    ConditionExpression = UpdateCondition,
+                    ExpressionAttributeValues = UpdateConditionValues(OldUpdateUtcTick)
                 };
 
                 await client.PutItemAsync(request2);
@@ -372,6 +353,11 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
             if (debug) Console.WriteLine($"UpdateEAsync() ConditionalCheckFailedException. {ex.Message}");
             return new ConflictResult();
         } // STatusCode 409
+        catch (TransactionConflictException ex)
+        {
+            if (debug) Console.WriteLine($"UpdateEAsync() TransactionConflictException. {ex.Message}");
+            return new StatusCodeResult(503);
+        }
         catch (AmazonDynamoDBException ex)
         {
             if (debug) Console.WriteLine($"UpdateEAsync() AmazonDynamoDBException. {ex.Message}");
@@ -486,6 +472,11 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
             };
             var deleteResponse = await client.DeleteItemAsync(request3);
             return new OkResult();
+        }
+        catch (TransactionConflictException ex)
+        {
+            if (debug) Console.WriteLine($"DeleteAsync() TransactionConflictException. {ex.Message}");
+            return new StatusCodeResult(503);
         }
         catch (AmazonDynamoDBException ex)
         {
@@ -1364,6 +1355,103 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         if (debug) Console.WriteLine($"GetTableName() table: {table}");
         return table;
     }
+    #region Writes, shared by the single-item calls and DYDBTransaction
+
+    /// <summary>The condition a create writes under: the item must not exist yet.</summary>
+    protected const string CreateCondition = "attribute_not_exists(PK)";
+
+    /// <summary>The condition an update writes under: nobody has written the item since the caller read it.</summary>
+    protected const string UpdateCondition = "UpdateUtcTick = :OldUpdateUtcTick";
+
+    protected static Dictionary<string, AttributeValue> UpdateConditionValues(long oldUpdateUtcTick)
+        => new() { { ":OldUpdateUtcTick", new AttributeValue { N = oldUpdateUtcTick.ToString() } } };
+
+    /// <summary>
+    /// THE ITEM A WRITE STORES, built by every Assign step in their one order. CreateAsync, UpdateAsync and
+    /// DYDBTransaction all build through here, so an item written in a transaction is byte for byte the item a
+    /// single-item write would store - the overrides (index keys, TTL, data) included. Returns the record, the data
+    /// as written (with its new ticks), and the UpdateUtcTick the caller read, which an update conditions on.
+    /// </summary>
+    protected (Dictionary<string, AttributeValue> Record, JObject Data, long OldUpdateUtcTick) BuildRecord(
+        ICallerInfo callerInfo, T data, long now)
+    {
+        var dbrecord = new Dictionary<string, AttributeValue>(); // create an empty record
+        var jobjectData = JObject.FromObject(data, serializer); // Create JObject from data
+
+        // You can override each of the Assign attribute methods to customize the attributes
+        AssignEntityAttributes(callerInfo, jobjectData, dbrecord, now); // Assigns attributes from JObject data
+        AssignCreateUtcTickAttribute(callerInfo, jobjectData, dbrecord, now); // Adds CreateUtcTickAttribute attribute
+        var oldUpdateUtcTick = GetUpdateUtcTick(jobjectData); // The previous UpdateUtcTick, read before it is replaced
+        AssignOptionalAttributes(callerInfo, jobjectData, dbrecord, now); // Adds optional attributes
+        AssignTTLAttribute(callerInfo, jobjectData, dbrecord, now); // Adds TTL attribute when GetTTL() is not 0
+        AssignTopicsAttribute(callerInfo, jobjectData, dbrecord, now); // Adds Topics attribute
+        AssignUpdateUtcTickAttribute(callerInfo, jobjectData, dbrecord, now); // Adds UpdateUtcTickAttribute attribute
+        AssignDataAttribute(callerInfo, jobjectData, dbrecord, now); // Adds Data attribute containing JSON data
+        return (dbrecord, jobjectData, oldUpdateUtcTick);
+    }
+
+    /// <summary>The client a transaction sends through: every action in one transaction must share it.</summary>
+    internal IAmazonDynamoDB TransactionClient => client;
+
+    /// <summary>A create, as a transaction's Put: the item BuildRecord makes, under the create condition.</summary>
+    internal (TransactWriteItem Action, Func<T> Written, Dictionary<string, AttributeValue> Record) TransactCreate(
+        ICallerInfo callerInfo, T data, long now)
+    {
+        var (record, written, _) = BuildRecord(callerInfo, data, now);
+        return (new TransactWriteItem
+        {
+            Put = new Put { TableName = GetTableName(callerInfo), Item = record, ConditionExpression = CreateCondition }
+        }, () => written.ToObject<T>()!, record);
+    }
+
+    /// <summary>An update, as a transaction's Put: the item BuildRecord makes, under the update condition - or none,
+    /// when forced, as UpdateAsync does.</summary>
+    internal (TransactWriteItem Action, Func<T> Written, Dictionary<string, AttributeValue> Record) TransactUpdate(
+        ICallerInfo callerInfo, T data, long now, bool forceUpdate)
+    {
+        var (record, written, oldUpdateUtcTick) = BuildRecord(callerInfo, data, now);
+        var put = new Put { TableName = GetTableName(callerInfo), Item = record };
+        if (!forceUpdate)
+        {
+            put.ConditionExpression = UpdateCondition;
+            put.ExpressionAttributeValues = UpdateConditionValues(oldUpdateUtcTick);
+        }
+        return (new TransactWriteItem { Put = put }, () => written.ToObject<T>()!, record);
+    }
+
+    /// <summary>A delete by id, as a transaction's Delete. Hard delete only: soft delete is a separate concern, and no
+    /// transaction may take it until it works again (see DeleteAsync).</summary>
+    internal TransactWriteItem TransactDelete(ICallerInfo callerInfo, string id)
+    {
+        if (UseSoftDelete)
+            throw new InvalidOperationException($"{GetType().Name} soft-deletes; a transaction deletes outright.");
+        return new TransactWriteItem { Delete = new Delete { TableName = GetTableName(callerInfo), Key = KeyOf(id) } };
+    }
+
+    /// <summary>A condition on an item the transaction does not write: that it exists, or that it does not.</summary>
+    internal TransactWriteItem TransactCheck(ICallerInfo callerInfo, string id, bool mustExist)
+        => new()
+        {
+            ConditionCheck = new ConditionCheck
+            {
+                TableName = GetTableName(callerInfo),
+                Key = KeyOf(id),
+                ConditionExpression = mustExist ? "attribute_exists(PK)" : CreateCondition,
+            }
+        };
+
+    /// <summary>What the repo does after a write lands, for a transaction's committed actions: its notification.</summary>
+    internal Task AfterTransactionAsync(ICallerInfo callerInfo, Dictionary<string, AttributeValue> record, string action)
+        => UseNotifications && record != null ? WriteNotificationAsync(callerInfo, record, action) : Task.CompletedTask;
+
+    private Dictionary<string, AttributeValue> KeyOf(string id) => new()
+    {
+        { "PK", new AttributeValue { S = EntityType } },
+        { "SK", new AttributeValue { S = $"{id}:" } }
+    };
+
+    #endregion
+
     protected virtual void AssignEntityAttributes(ICallerInfo callerInfo, JObject jobjectData, Dictionary<string,AttributeValue> dbrecord, long now )
     {
         if (debug) Console.WriteLine("AddEntityAttributes() called");
