@@ -140,40 +140,26 @@ public abstract class LzControllerUtils : IControllerUtils
         return tenantKey; 
     }
 
-    // Extract user identity information
+    /// <summary>
+    /// The caller's identity, read ONLY from the validated principal in HttpContext.User - the same
+    /// fix as LzAuthorization.GetUserInfo (security note M0-1). This used to parse the raw
+    /// Authorization or LzIdentity header with ReadJwtToken, which checks no signature. Fails closed.
+    /// </summary>
     public virtual (string lzUserId, string userName) GetUserInfo(HttpRequest request)
     {
         if (!authenticate)
             return ("", "");
 
-        var foundAuthHeader = request.Headers.TryGetValue("Authorization", out Microsoft.Extensions.Primitives.StringValues authHeader);
-        // The original ApiGateway does not pass the Authorization header through to the 
-        // Lambda. Our LzHttpClient adds it's own header, LzIdentity, so we have the 
-        // information we need.
-        if (!foundAuthHeader || authHeader[0]!.ToString().StartsWith("AWS4-HMAC-SHA256 Credential="))
-            foundAuthHeader = request.Headers.TryGetValue("LzIdentity", out authHeader);
-        if (foundAuthHeader)
-            return GetUserInfo(authHeader);
+        var user = request?.HttpContext?.User;
+        if (user?.Identity?.IsAuthenticated != true)
+            throw new Exception("Request is not authenticated: no validated principal.");
 
-        throw new Exception("No Authorization or LzIdentity header");
-    }
-    public virtual (string lzUserId, string userName) GetUserInfo(string? header)
-    {
-        if(header != null)
-        {
-            var handler = new JwtSecurityTokenHandler();
-            if (handler.CanReadToken(header))
-            {
-                var jwtToken = handler.ReadJwtToken(header);
-                var userIdClaim = jwtToken?.Claims.Where(x => x.Type.Equals("sub")).FirstOrDefault();
-                var lzUserId = userIdClaim?.Value ?? string.Empty;
-                var userNameClaim = jwtToken?.Claims.Where(x => x.Type.Equals("cognito:username")).FirstOrDefault();
-                var userName = userNameClaim?.Value ?? string.Empty;
-                return(lzUserId, userName);
-            }
-            throw new Exception("Could not read token in Authorization or LzIdentity header.");
-        }
-        throw new Exception("No Authorization or LzIdentity header");
+        // JwtBearer's default inbound claim map renames sub to ClaimTypes.NameIdentifier.
+        var lzUserId = user.FindFirst("sub")?.Value ?? user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(lzUserId))
+            throw new Exception("Validated principal has no sub claim.");
+        var userName = user.FindFirst("cognito:username")?.Value ?? user.FindFirst("username")?.Value ?? string.Empty;
+        return (lzUserId, userName);
     }
     public abstract Task<List<string>> GetUserPermissionsAsync(string lzUserId, string userName, string table);
     protected abstract Task LoadPermissionsAsync();

@@ -28,6 +28,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\LazyMagic.Service.Authorization\LazyMagic.Service.Authorization.csproj" />
 		<ProjectReference Include="..\LazyMagic.Service.Shared\LazyMagic.Service.Shared.csproj" />
 		<ProjectReference Include="..\LazyMagic.Service.DynamoDBRepo\LazyMagic.Service.DynamoDBRepo.csproj" />
 		<ProjectReference Include="..\LazyMagic.Shared\LazyMagic.Shared.csproj" />

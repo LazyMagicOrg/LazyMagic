@@ -155,45 +155,33 @@ public abstract class LzAuthorization : ILzAuthorization
         return "";
     }
 
-    // Extract user identity information
+    /// <summary>
+    /// The caller's identity, read ONLY from the validated principal in HttpContext.User.
+    ///
+    /// The host's authentication (JwtBearer) has already checked the token's signature, issuer and
+    /// lifetime by the time a controller runs. This used to parse the raw Authorization (or
+    /// lz-config-identity) header with JwtSecurityTokenHandler.ReadJwtToken instead, which checks
+    /// nothing: an unsigned alg:none token with any sub became the caller (security note M0-1).
+    /// Fails closed - an unauthenticated request yields no identity and throws, so a host that never
+    /// validated the token cannot be talked into one. There is no raw-header fallback any more,
+    /// including for SigV4 requests that used to carry identity in lz-config-identity.
+    /// </summary>
     public virtual (string lzUserId, string userName) GetUserInfo(HttpRequest request)
     {
         if (!authenticate)
             return ("", "");
 
-        if (request?.Headers == null)
-            throw new Exception("Request or Headers is null");
+        var user = request?.HttpContext?.User;
+        if (user?.Identity?.IsAuthenticated != true)
+            throw new Exception("Request is not authenticated: no validated principal.");
 
-        var foundAuthHeader = request.Headers.TryGetValue("Authorization", out Microsoft.Extensions.Primitives.StringValues authHeader);
-        // When the Authorization header doesn't contain an identity token, we look for the lz-config-identity header.
-        // You can add a lz-config-identity header in the client code, in a reverse proxy, or in the container depending 
-        // on your deployment platform strategy.
-        if (!foundAuthHeader || authHeader.Count == 0 || string.IsNullOrEmpty(authHeader[0]) || authHeader[0]!.ToString().StartsWith("AWS4-HMAC-SHA256 Credential="))
-            foundAuthHeader = request.Headers.TryGetValue("lz-config-identity", out authHeader);
-        if (foundAuthHeader && authHeader.Count > 0 && !string.IsNullOrEmpty(authHeader[0]))
-            return GetUserInfo(authHeader);
-
-        throw new Exception("No Authorization or lz-config-identity header");
-    }
-    public virtual (string lzUserId, string userName) GetUserInfo(string? header)
-    {
-        if(header != null)
-        {
-            var handler = new JwtSecurityTokenHandler();
-            if(header.StartsWith("Bearer "))
-                header = header["Bearer ".Length..].Trim();
-            if (handler.CanReadToken(header))
-            {
-                var jwtToken = handler.ReadJwtToken(header);
-                var userIdClaim = jwtToken?.Claims.Where(x => x.Type.Equals("sub")).FirstOrDefault();
-                var lzUserId = userIdClaim?.Value ?? string.Empty;
-                var userNameClaim = jwtToken?.Claims.Where(x => x.Type.Equals("username")).FirstOrDefault();
-                var userName = userNameClaim?.Value ?? string.Empty;
-                return(lzUserId, userName);
-            }
-            throw new Exception("Could not read token in Authorization or lz-config-identity header.");
-        }
-        throw new Exception("No Authorization or lz-config-identity header");
+        // JwtBearer's default inbound claim map renames sub to ClaimTypes.NameIdentifier. Cognito's
+        // username (access token) and cognito:username (ID token) are not in that map.
+        var lzUserId = user.FindFirst("sub")?.Value ?? user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(lzUserId))
+            throw new Exception("Validated principal has no sub claim.");
+        var userName = user.FindFirst("username")?.Value ?? user.FindFirst("cognito:username")?.Value ?? string.Empty;
+        return (lzUserId, userName);
     }
     protected virtual async Task<List<string>> GetUserPermissionsAsync(string lzUserId, string userName, string tenancy)
     {
