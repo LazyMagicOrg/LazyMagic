@@ -229,7 +229,13 @@ public sealed class BffTokenClient : IBffTokenClient
             NameClaimType = "sub",
         };
 
-        var handler = new JwtSecurityTokenHandler();
+        // THE PRINCIPAL KEEPS THE TOKEN'S OWN CLAIM NAMES. Left to its default this handler renames some of them
+        // as it validates - "sub" and "email" become long schemas.xmlsoap.org types - while everything
+        // downstream asks for them as the token spells them: NameClaimType above, and BffClaimsMapper, which
+        // copies sub, name, email and preferred_username into the session cookie. With the renaming on it found
+        // neither sub nor email, so /bff/user answered a login in no group with no claims at all and a console
+        // could name nobody (found 2026-10-05; BffSignInTests walks it).
+        var handler = new JwtSecurityTokenHandler { MapInboundClaims = false };
         var principal = handler.ValidateToken(idToken, validationParameters, out var validated);
         var jwt = (JwtSecurityToken)validated;
 

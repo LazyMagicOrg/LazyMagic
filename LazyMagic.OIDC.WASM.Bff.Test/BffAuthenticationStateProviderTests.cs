@@ -201,6 +201,26 @@ public class BffAuthenticationStateProviderTests
         Assert.Equal(10, h.Published.Count);
     }
 
+    /// <summary>
+    /// The envelope as the server writes it: every claim a list, and for a login in no group, in a pool that keeps
+    /// no names, a subject and an address and nothing else. The login is named by the address, which is what a
+    /// console's login display then shows; LazyMagic.OIDC.Bff.Test's BffSignInTests pins the server's half.
+    /// </summary>
+    [Fact]
+    public async Task TheServersEnvelopeForALoginWithAnAddress_NamesItByThatAddress()
+    {
+        using var h = new Harness();
+        h.Server.Envelope =
+            """{"isAuthenticated":true,"claims":{"sub":["5b1f0c2e-8a41-4d6e-9c3b-2f7a6d1e4c90"],"email":["owner@example.invalid"]}}""";
+
+        var user = (await h.Provider.GetAuthenticationStateAsync()).User;
+
+        Assert.True(user.Identity?.IsAuthenticated);
+        Assert.Equal("owner@example.invalid", user.Identity?.Name);
+        Assert.Equal("owner@example.invalid", user.FindFirst("email")?.Value);
+        Assert.Equal("5b1f0c2e-8a41-4d6e-9c3b-2f7a6d1e4c90", user.FindFirst("sub")?.Value);
+    }
+
     private static bool IsAuthenticated(AuthenticationState state) => state.User.Identity?.IsAuthenticated == true;
 
     private sealed class Harness : IDisposable
@@ -262,6 +282,9 @@ public class BffAuthenticationStateProviderTests
         public int Requests => Volatile.Read(ref _requests);
         public volatile HttpStatusCode Status = HttpStatusCode.OK;
 
+        /// <summary>What a 200 answers with.</summary>
+        public volatile string Envelope = UserEnvelope;
+
         /// <summary>While set and incomplete, the server has not answered yet.</summary>
         public TaskCompletionSource? Hold;
 
@@ -273,7 +296,7 @@ public class BffAuthenticationStateProviderTests
                 await hold.Task.ConfigureAwait(false);
             var status = Status;
             return status == HttpStatusCode.OK
-                ? new HttpResponseMessage(status) { Content = new StringContent(UserEnvelope, Encoding.UTF8, "application/json") }
+                ? new HttpResponseMessage(status) { Content = new StringContent(Envelope, Encoding.UTF8, "application/json") }
                 : new HttpResponseMessage(status);
         }
     }
