@@ -26,4 +26,4 @@ Everything else here is ignored; see this repo's `.gitignore`.
 Each producing repo writes into its own `$(SolutionDir)Packages`. Until 2026-09-08 Service and
 BaseAppLib shared a single `repos/Packages` at the workspace root; splitting them retired the hazard
 that neither could publish with a `./Packages/*.nupkg` glob without pushing the other's packages
-under its own name. See `repos/Docs/specs/PerProducerPackages.md`.
+under its own name. See `repos/Docs/specs/Platform/PerProducerPackages.md`.
