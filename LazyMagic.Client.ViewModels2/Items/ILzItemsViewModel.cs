@@ -83,6 +83,22 @@ namespace LazyMagic.Client.ViewModels
         /// Reactive observable that contains the LastLoadTick
         /// </summary>
         public long LastLoadTick { get; set; }
+        /// <summary>
+        /// When true, a read makes the collection what was read, in the order it was returned: a view model whose
+        /// item the read did not return is removed. False by default - a read then adds and replaces and never
+        /// removes or moves.
+        /// </summary>
+        public bool ReplaceOnRead { get; set; }
+        /// <summary>
+        /// When true, the collection is read again (<see cref="ReadAgainAsync"/>) after an item is created, updated
+        /// or deleted. False by default. For a collection where a write to one item changes others in storage.
+        /// </summary>
+        public bool ReadAfterChange { get; set; }
+        /// <summary>
+        /// The exception that made the last ReadAsync return false, or null when it succeeded. ReadAsync returns a
+        /// message built for a log; this is the exception itself.
+        /// </summary>
+        public Exception? LastException { get; }
 
         // Public Methods
         /// <summary>
@@ -97,6 +113,15 @@ namespace LazyMagic.Client.ViewModels
         /// <param name="forceload"></param>
         /// <returns></returns>
         public Task<(bool, string)> ReadAsync(TId parentId, bool forceload = false);
+        /// <summary>
+        /// Read the list again as it was last read: with the same parent Id, or with none. Before any read, with Id.
+        /// </summary>
+        public Task<(bool, string)> ReadAgainAsync();
+        /// <summary>
+        /// Start a new item: a view model for the dto made by NewViewModel, in the New state and not loaded, as the
+        /// EditViewModel. It is not in the collection until it has been created in storage.
+        /// </summary>
+        public TVM NewItem(TDTO dto);
         /// <summary>
         /// Check if the user is authorized
         /// </summary>

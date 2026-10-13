@@ -20,6 +20,12 @@ public interface ILzItemViewModel<TId, TModel>  : IItemId<TId>
     public bool IsDeleted { get; }
     public bool IsDirty { get; set; }
     public bool IsBusy { get; set; }
+    /// <summary>
+    /// The exception that made the last CreateAsync, UpdateAsync, DeleteAsync or ReadAsync return false, or null
+    /// when it succeeded or failed without one. Those methods return a message built for a log; this is the
+    /// exception itself.
+    /// </summary>
+    public Exception? LastException { get; }
     public ILzParentViewModel<TId>? ParentViewModel { get; set; }
 
     // Public Methods

@@ -37,6 +37,32 @@ public class ItemsViewModelAdditionsTests : IClassFixture<ReactiveUi>
 
     private static int Lists(ThingStore store) => store.Calls.Count(c => c == "list");
 
+    // ---- all of it is on the interfaces ----------------------------------------------------------------------------
+
+    [Fact]
+    public async Task WhatWasAdded_CanBeUsedThroughTheInterfaces()
+    {
+        var (store, concrete) = Three();
+        ILzItemsViewModel<string, ThingViewModel, Thing, ThingModel> things = concrete;
+        things.ReplaceOnRead = true;
+        things.ReadAfterChange = true;
+        Assert.True((await things.ReadAsync()).Item1);
+        Assert.Null(things.LastException);
+
+        ILzItemViewModel<string, ThingModel> made = things.NewItem(new Thing { Id = "d", Name = "D" });
+        Assert.Same(made, things.EditViewModel);
+        var lists = Lists(store);
+        Assert.True((await made.CreateAsync()).Item1);       // and the collection read again after it
+        Assert.Equal(lists + 1, Lists(store));
+        Assert.Null(made.LastException);
+
+        store.FailOn = _ => new Refused(503, "throttled");
+        Assert.False((await things.ReadAgainAsync()).Item1);
+        Assert.IsType<Refused>(things.LastException);
+        Assert.False((await made.UpdateAsync()).Item1);
+        Assert.IsType<Refused>(made.LastException);
+    }
+
     // ---- 1. read after change --------------------------------------------------------------------------------------
 
     [Fact]
