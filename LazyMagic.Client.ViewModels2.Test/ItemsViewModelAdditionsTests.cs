@@ -232,6 +232,36 @@ public class ItemsViewModelAdditionsTests : IClassFixture<ReactiveUi>
     }
 
     [Fact]
+    public async Task WheneverTheCollectionAnnouncesAnything_EveryItemInItHasItsData()
+    {
+        // A component draws each item's Data when the collection says something changed. A deleted item has none,
+        // so it must be out of the collection before anything is announced - whichever item is deleted, with or
+        // without the read after it.
+        foreach (var readAfterChange in new[] { false, true })
+            foreach (var deleted in new[] { "a", "b", "c" })
+            {
+                var (_, things) = Three();
+                things.ReadAfterChange = things.ReplaceOnRead = readAfterChange;
+                await things.ReadAsync();
+                things.CurrentViewModel = things.ViewModels[deleted];
+                var announcements = 0;
+                things.PropertyChanged += (_, e) =>
+                {
+                    announcements++;
+                    Assert.All(things.ViewModels.Values, item => Assert.True(item.Data != null, $"{e.PropertyName} was announced with a deleted item still in the collection"));
+                };
+
+                Assert.True((await things.ViewModels[deleted].DeleteAsync()).Item1);
+
+                Assert.True(announcements > 0);
+                Assert.Equal(2, things.ViewModels.Count);
+                Assert.False(things.ViewModels.ContainsKey(deleted));
+                Assert.NotNull(things.CurrentViewModel);           // a neighbour is the current one now
+                Assert.NotNull(things.CurrentViewModel!.Data);
+            }
+    }
+
+    [Fact]
     public async Task TheOneBeingEdited_IsAnnouncedWhenItIsSetAndWhenItIsCleared()
     {
         var (_, things) = Three();

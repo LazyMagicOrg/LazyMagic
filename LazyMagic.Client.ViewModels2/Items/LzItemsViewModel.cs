@@ -354,16 +354,14 @@ public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewM
     public virtual async Task ItemDeleted(TId id)
     {
         await Task.Delay(0);
+        // OUT OF THE COLLECTION FIRST, and only then anything that is announced. A deleted item has no Data, and
+        // setting CurrentViewModel tells a component to draw: it used to be set while the deleted item was still
+        // in the collection, so a component drawing each item's Data met one that had none.
         var (prevKey, nextKey) = GetAdjacentKeys(id!);
-        if(prevKey != null)
-            CurrentViewModel = ViewModels[prevKey!];
-        else if (nextKey != null)
-            CurrentViewModel = ViewModels[nextKey!];
-        else
-            CurrentViewModel = null;
-
+        var next = prevKey != null ? ViewModels[prevKey!] : nextKey != null ? ViewModels[nextKey!] : null;
         ViewModels.Remove(id!);
-        EditViewModel = null;   
+        CurrentViewModel = next;
+        EditViewModel = null;
         CollectionHasChanged();
         if (ReadAfterChange) await ReadAgainAsync();
     }
