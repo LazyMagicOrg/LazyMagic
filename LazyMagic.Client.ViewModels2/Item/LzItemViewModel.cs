@@ -377,6 +377,7 @@ public abstract partial class LzItemViewModel<TId, TDTO, TModel>
                 throw new Exception("SvcReadIdAsync not assigned.");
             UpdateData(await _DTOReadAsync(id!));
             State = LzItemViewModelState.Current;
+            IsLoaded = true;    // as a create and an update say it: an item made to be read (isLoaded: false) is loaded once it has been
 
             if (AutoLoadChildren)
                 return await ReadChildrenAsync(forceload: true);

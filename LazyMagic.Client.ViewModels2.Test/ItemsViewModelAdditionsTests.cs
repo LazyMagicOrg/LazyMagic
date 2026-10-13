@@ -63,6 +63,45 @@ public class ItemsViewModelAdditionsTests : IClassFixture<ReactiveUi>
         Assert.IsType<Refused>(made.LastException);
     }
 
+    // ---- what a read leaves said -------------------------------------------------------------------------------------
+
+    [Fact]
+    public async Task AnItemMadeToBeRead_IsLoadedOnceItHasBeen_AndNotBefore()
+    {
+        var store = new ThingStore();
+        store.Things["a"] = new Thing { Id = "a", Name = "Alpha" };
+        var item = new ThingViewModel(NullLoggerFactory.Instance, store, null, new Thing { Id = "a" }) { IsLoaded = false };
+
+        store.FailOn = _ => new Refused(503, "throttled");
+        Assert.False((await item.ReadAsync()).Item1);
+        Assert.False(item.IsLoaded);                         // a read that failed has loaded nothing
+
+        store.FailOn = _ => null;
+        Assert.True((await item.ReadAsync()).Item1);
+        Assert.True(item.IsLoaded);
+        Assert.Equal("Alpha", item.Data!.Name);
+
+        store.FailOn = _ => new Refused(503, "throttled");
+        Assert.False((await item.ReadAsync()).Item1);
+        Assert.True(item.IsLoaded);                          // and one that fails later does not unload it
+    }
+
+    [Fact]
+    public async Task ACollectionSaysWhenItWasLastRead_AndAReadThatFailedIsNotWhen()
+    {
+        var (store, things) = Three();
+        Assert.Equal(0, things.LastLoadTick);
+
+        var before = DateTime.UtcNow.Ticks;
+        await things.ReadAsync();
+        var read = things.LastLoadTick;
+        Assert.InRange(read, before, DateTime.UtcNow.Ticks);
+
+        store.FailOn = _ => new Refused(503, "throttled");
+        await things.ReadAsync();
+        Assert.Equal(read, things.LastLoadTick);             // when it was last TRUE, not when it was last tried
+    }
+
     // ---- 1. read after change --------------------------------------------------------------------------------------
 
     [Fact]

@@ -209,6 +209,7 @@ public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewM
             .Select(x => x.Result)
             .FirstOrDefault((success: true, msg: string.Empty));
         IsLoaded = result.success;
+        if (result.success) LastLoadTick = DateTime.UtcNow.Ticks;   // declared, and never set before: when the collection was last read
         return result;
     }
     /// <inheritdoc/>
@@ -243,6 +244,7 @@ public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewM
         await Task.WhenAll(tasks);
         var result = tasks.Where(x => x.Result.success == false).Select(x => x.Result).FirstOrDefault((success: true, msg: string.Empty));
         IsLoaded = result.success;
+        if (result.success) LastLoadTick = DateTime.UtcNow.Ticks;   // declared, and never set before: when the collection was last read
         return result;
     }
     /// <inheritdoc/>
@@ -277,6 +279,7 @@ public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewM
         await Task.WhenAll(tasks);
         var result = tasks.Where(x => x.Result.success == false).Select(x => x.Result).FirstOrDefault((success: true, msg: string.Empty));
         IsLoaded = result.success;
+        if (result.success) LastLoadTick = DateTime.UtcNow.Ticks;   // declared, and never set before: when the collection was last read
         return result;
     }
 
