@@ -274,6 +274,18 @@ public class CustomersViewModel : LzItemsViewModel<string, CustomerViewModel, Cu
 }
 ```
 
+#### Options and helpers added 2026-10 (ViewModels2 only, except the first two)
+
+| Member | Default | What it does |
+|---|---|---|
+| `LastException` (also on `LzItemViewModel`, and in ViewModels) | null | The exception that made the last read (or the item's create, update, delete or read) return false. The methods return a message built for a log; read this to tell a refusal from an outage, or to show what the service said. Cleared at the start of each operation. |
+| `ReplaceOnRead` (also in ViewModels) | false | A read makes the collection what was read: a view model whose item was not returned is removed, and stops being the current, last or edited one. In ViewModels2 the rest are also put in the order the read returned, so `ViewModels.Values` is the service's order. |
+| `ReadAfterChange` | false | After an item is created, updated or deleted, read the collection again (`ReadAgainAsync`). For a collection where a write to one item changes others on the service. |
+| `ReadAgainAsync()` | | Read as it was last read - the same parent id, or none; before any read, with `Id`. |
+| `NewItem(dto)` | | A view model for `dto` made by `NewViewModel`, in the `New` state, not loaded, set as `EditViewModel`. Not in the collection until it is created in storage. Call its `OpenEditAsync` before binding a form to it. |
+| `EditViewModel` | | Now reactive: a component drawn from the collection redraws when a form is opened or closed. |
+| `CollectionChanged` / `IsChanged` | | Now raised after a read, after an item is created or deleted, and by `Clear`. The event was declared and never raised before. |
+
 ### ILzParentViewModel<TId>
 **Location:** `Items/ILzParentViewModel.cs`
 

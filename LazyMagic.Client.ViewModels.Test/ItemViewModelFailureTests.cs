@@ -42,7 +42,13 @@ public sealed class ThingStore
     public Task<Thing> ReadAsync(string id) { Called("read"); return Task.FromResult(Things[id]); }
     public Task<Thing> UpdateAsync(Thing thing) { Called("update"); Things[thing.Id] = thing; return Task.FromResult(thing); }
     public Task DeleteAsync(string id) { Called("delete"); Things.Remove(id); return Task.CompletedTask; }
-    public Task<ICollection<Thing>> ListAsync() { Called("list"); return Task.FromResult<ICollection<Thing>>(Things.Values.Select(t => new Thing { Id = t.Id, Name = t.Name }).ToList()); }
+    /// <summary>The order a list is answered in; as stored, unless a test says otherwise.</summary>
+    public Func<IEnumerable<Thing>, IEnumerable<Thing>> Arrange { get; set; } = things => things;
+    /// <summary>The parent ids the by-parent list was asked for.</summary>
+    public List<string> Parents { get; } = new();
+
+    public Task<ICollection<Thing>> ListAsync() { Called("list"); return Task.FromResult<ICollection<Thing>>(Arrange(Things.Values).Select(t => new Thing { Id = t.Id, Name = t.Name }).ToList()); }
+    public Task<ICollection<Thing>> ListOfAsync(string parent) { Parents.Add(parent); return ListAsync(); }
 }
 
 #if VIEWMODELS2

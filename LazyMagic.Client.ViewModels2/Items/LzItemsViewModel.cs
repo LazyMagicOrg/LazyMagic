@@ -31,7 +31,8 @@ public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewM
     }
 
     /// <inheritdoc/>
-    public TVM? EditViewModel { get; set; }
+    /// <remarks>Reactive: a component drawn from this collection draws again when a form is opened or closed.</remarks>
+    [Reactive] public partial TVM? EditViewModel { get; set; }
     /// <inheritdoc/>
     [Reactive] public partial TVM? LastViewModel { get; set; }
     protected int changeCount;
@@ -59,6 +60,16 @@ public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewM
     /// </summary>
     public bool ReplaceOnRead { get; set; }
     /// <summary>
+    /// When true, the collection is READ AGAIN after an item is created, updated or deleted - the read it was last
+    /// given (<see cref="ReadAgainAsync"/>). False by default, as it always was: an item's change touches that item
+    /// and no other. Set it for a collection where a write to one item changes others on the service - a flag only
+    /// one item may carry, an order, a total - so the collection is what the service holds, and every item has the
+    /// version it now needs for its own next write. Usually together with <see cref="ReplaceOnRead"/>.
+    /// </summary>
+    public bool ReadAfterChange { get; set; }
+    private bool _hasRead;
+    private TId? _lastReadId;
+    /// <summary>
     /// The exception that made the last ReadAsync return false, or null when it succeeded. ReadAsync returns a
     /// message built for a log; an application that has to tell a refusal from an outage, or show what the
     /// service said, reads it here. Cleared at the start of each read.
@@ -79,7 +90,7 @@ public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewM
     {
         ViewModels.Clear();
         IsLoaded = false;
-        IsChanged = true;
+        CollectionHasChanged();
     }
     /// <inheritdoc/>
     public virtual async Task<(bool, string)> ReadAsync(bool forceload = false)
@@ -89,6 +100,8 @@ public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewM
     {
         var userMsg = "Can't read " + _EntityName + " id:" + id;
         LastException = null;
+        _hasRead = true;
+        _lastReadId = id;
         try
         {
             CheckAuth();
@@ -111,6 +124,28 @@ public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewM
         }
         finally { IsLoading = false; }
     }
+    /// <summary>
+    /// Read the collection again as it was last read: with the same parent id, or with none. Before any read, with
+    /// <see cref="Id"/>. What <see cref="ReadAfterChange"/> calls.
+    /// </summary>
+    public virtual Task<(bool, string)> ReadAgainAsync()
+        => ReadAsync(_hasRead ? _lastReadId! : Id!, forceload: true);
+
+    /// <summary>
+    /// START A NEW ITEM: a view model for <paramref name="dto"/> made as every other is (<see cref="NewViewModel(TDTO)"/>),
+    /// in the New state and not loaded, as the one being edited (<see cref="EditViewModel"/>). It is not in the
+    /// collection until it has been created in storage, when it tells the collection so (ItemCreated). Call its
+    /// OpenEditAsync before binding a form to it, as for an item being changed.
+    /// </summary>
+    public virtual TVM NewItem(TDTO dto)
+    {
+        var (item, _) = NewViewModel(dto);
+        item.State = LzItemViewModelState.New;
+        item.IsLoaded = false;
+        EditViewModel = item;
+        return item;
+    }
+
     /// <inheritdoc/>
     public virtual string GetId(TDTO dto)
         => throw new NotImplementedException();
@@ -143,7 +178,7 @@ public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewM
     protected virtual async Task<(bool, string)> UpdateDataAsync(ICollection<TDTO> list, bool forceload)
     {
         var tasks = new List<Task<(bool success, string msg)>>();
-        var read = new HashSet<TId>();
+        var read = new List<TId>();
         foreach (var item in list)
         {
             try
@@ -166,7 +201,8 @@ public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewM
                 Console.WriteLine($"Could not load item:");
             }
         }
-        RemoveWhatWasNotRead(read);
+        MakeWhatWasRead(read);
+        CollectionHasChanged();
         await Task.WhenAll(tasks);
         var result = tasks
             .Where(x => x.Result.success == false)
@@ -179,7 +215,7 @@ public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewM
     protected virtual async Task<(bool, string)> UpdateDataAsync(IDictionary<string, TModel> list, bool forceload)
     {
         var tasks = new List<Task<(bool success, string msg)>>();
-        var read = new HashSet<TId>();
+        var read = new List<TId>();
         foreach (var item in list)
         {
             try
@@ -202,7 +238,8 @@ public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewM
                 Console.WriteLine($"Could not load item:");
             }
         }
-        RemoveWhatWasNotRead(read);
+        MakeWhatWasRead(read);
+        CollectionHasChanged();
         await Task.WhenAll(tasks);
         var result = tasks.Where(x => x.Result.success == false).Select(x => x.Result).FirstOrDefault((success: true, msg: string.Empty));
         IsLoaded = result.success;
@@ -212,7 +249,7 @@ public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewM
     protected virtual async Task<(bool, string)> UpdateDataAsync(IDictionary<string, TDTO> list, bool forceload)
     {
         var tasks = new List<Task<(bool success, string msg)>>();
-        var read = new HashSet<TId>();
+        var read = new List<TId>();
         foreach (var item in list)
         {
             try
@@ -235,7 +272,8 @@ public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewM
                 Console.WriteLine($"Could not load item:");
             }
         }
-        RemoveWhatWasNotRead(read);
+        MakeWhatWasRead(read);
+        CollectionHasChanged();
         await Task.WhenAll(tasks);
         var result = tasks.Where(x => x.Result.success == false).Select(x => x.Result).FirstOrDefault((success: true, msg: string.Empty));
         IsLoaded = result.success;
@@ -243,21 +281,46 @@ public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewM
     }
 
     /// <summary>
-    /// With <see cref="ReplaceOnRead"/>, drop every view model the read just made did not return. One that is the
-    /// current, the last or the one being edited stops being it: it is no longer in the collection.
+    /// With <see cref="ReplaceOnRead"/>, make the collection what the read returned, IN THE ORDER IT RETURNED IT:
+    /// a view model whose item was not returned is dropped - and stops being the current, the last or the one
+    /// being edited - and the rest are put in the read's order, so <c>ViewModels.Values</c> is the order the
+    /// service gave. (A Dictionary enumerates in insertion order while nothing is removed from it, which is what
+    /// GetAdjacentKeys has always relied on; this clears it and adds again.) Without ReplaceOnRead nothing is
+    /// dropped and nothing is moved, as before.
     /// </summary>
-    protected virtual void RemoveWhatWasNotRead(HashSet<TId> read)
+    protected virtual void MakeWhatWasRead(List<TId> read)
     {
         if (!ReplaceOnRead)
             return;
-        foreach (var gone in ViewModels.Keys.Where(key => !read.Contains(key)).ToList())
+
+        var kept = new List<KeyValuePair<TId, TVM>>();
+        var seen = new HashSet<TId>();
+        foreach (var id in read)
+            if (seen.Add(id) && ViewModels.TryGetValue(id, out var viewModel))
+                kept.Add(new KeyValuePair<TId, TVM>(id, viewModel));
+
+        foreach (var gone in ViewModels.Where(entry => !seen.Contains(entry.Key)).Select(entry => entry.Value).ToList())
         {
-            var removed = ViewModels[gone];
-            ViewModels.Remove(gone);
-            if (ReferenceEquals(CurrentViewModel, removed)) CurrentViewModel = null;
-            if (ReferenceEquals(LastViewModel, removed)) LastViewModel = null;
-            if (ReferenceEquals(EditViewModel, removed)) EditViewModel = null;
+            if (ReferenceEquals(CurrentViewModel, gone)) CurrentViewModel = null;
+            if (ReferenceEquals(LastViewModel, gone)) LastViewModel = null;
+            if (ReferenceEquals(EditViewModel, gone)) EditViewModel = null;
         }
+
+        ViewModels.Clear();
+        foreach (var entry in kept)
+            ViewModels.Add(entry.Key, entry.Value);
+    }
+
+    /// <summary>
+    /// SAY THAT THE COLLECTION CHANGED: <see cref="IsChanged"/> for a component that redraws on a property change,
+    /// and <see cref="CollectionChanged"/> for one that listens for it. Called after a read, after an item is
+    /// created or deleted, and by <see cref="Clear"/> - the event was declared and never raised, so a collection
+    /// that changed without a read redrew nothing.
+    /// </summary>
+    protected virtual void CollectionHasChanged()
+    {
+        IsChanged = true;
+        CollectionChanged?.Invoke(this, new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
     }
 
     // Callbacks from ItemViewModel 
@@ -284,6 +347,8 @@ public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewM
         {
             CurrentViewModel = itemViewModel; 
         }
+        CollectionHasChanged();
+        if (ReadAfterChange) await ReadAgainAsync();
     }
     /// <inheritdoc/>
     public virtual async Task ItemDeleted(TId id)
@@ -299,6 +364,8 @@ public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewM
 
         ViewModels.Remove(id!);
         EditViewModel = null;   
+        CollectionHasChanged();
+        if (ReadAfterChange) await ReadAgainAsync();
     }
 
     /// <inheritdoc/>
@@ -306,6 +373,7 @@ public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewM
     {
         EditViewModel = null;
         await Task.Delay(0);
+        if (ReadAfterChange) await ReadAgainAsync();
     }
 
     /// <inheritdoc/>
