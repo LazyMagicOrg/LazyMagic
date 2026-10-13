@@ -94,7 +94,9 @@ public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewM
             CheckAuth();
             if (id == null && _DTOReadListAsync == null)
                 throw new Exception("SvcReadList function not assigned");
-            if (id == null && _DTOReadListIdAsync == null)
+            // Was `id == null`: a read with no id threw here unless the by-id delegate was assigned too, so a
+            // collection given only _DTOReadListAsync could never be read. LazyMagic.Client.ViewModels has it right.
+            if (id != null && _DTOReadListIdAsync == null)
                 throw new Exception("SvcReadListId function not assigned");
             IsLoading = true;
             var items = (id != null)

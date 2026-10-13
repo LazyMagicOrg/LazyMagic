@@ -7,6 +7,11 @@ using Xunit;
 
 namespace LazyMagic.Client.ViewModels.Test;
 
+// THIS FILE IS COMPILED TWICE: by LazyMagic.Client.ViewModels.Test against LazyMagic.Client.ViewModels, and by
+// LazyMagic.Client.ViewModels2.Test, which links it and defines VIEWMODELS2, against LazyMagic.Client.ViewModels2 -
+// the same classes with the id's type as a parameter. The two libraries declare the same names in the same
+// namespace, so one test project cannot reference both. Every test below runs against each.
+
 // ---- a store and the two view models over it -------------------------------------------------------------------------
 
 public class Thing
@@ -40,9 +45,15 @@ public sealed class ThingStore
     public Task<ICollection<Thing>> ListAsync() { Called("list"); return Task.FromResult<ICollection<Thing>>(Things.Values.Select(t => new Thing { Id = t.Id, Name = t.Name }).ToList()); }
 }
 
+#if VIEWMODELS2
+public sealed class ThingViewModel : LzItemViewModel<string, Thing, ThingModel>
+{
+    public ThingViewModel(ILoggerFactory loggerFactory, ThingStore store, ILzParentViewModel<string>? parent, Thing? thing)
+#else
 public sealed class ThingViewModel : LzItemViewModel<Thing, ThingModel>
 {
     public ThingViewModel(ILoggerFactory loggerFactory, ThingStore store, ILzParentViewModel? parent, Thing? thing)
+#endif
         : base(loggerFactory, thing)
     {
         ParentViewModel = parent;
@@ -59,7 +70,11 @@ public sealed class ThingViewModel : LzItemViewModel<Thing, ThingModel>
     public override Task<(bool, string)> ValidateAsync() => Task.FromResult(Invalid == null ? (true, "") : (false, Invalid));
 }
 
+#if VIEWMODELS2
+public sealed class ThingsViewModel : LzItemsViewModel<string, ThingViewModel, Thing, ThingModel>
+#else
 public sealed class ThingsViewModel : LzItemsViewModel<ThingViewModel, Thing, ThingModel>
+#endif
 {
     private readonly ThingStore _store;
 
