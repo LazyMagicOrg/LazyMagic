@@ -92,6 +92,14 @@ public abstract partial class LzItemViewModel<TId, TDTO, TModel>
     [ObservableAsProperty] public partial bool IsDeleted { get; }
     [Reactive] public partial bool IsDirty { get; set; }
     [Reactive] public partial bool IsBusy { get; set; }
+    /// <summary>
+    /// The exception that made the last CreateAsync, UpdateAsync, DeleteAsync or ReadAsync return false, or null
+    /// when it succeeded or failed without one (validation, authorization or an id check, whose message is the
+    /// returned string). Those methods return a message built for a log; an application that has to tell a
+    /// refusal from an outage, or show what the service said, reads it here - the exception's own type, status
+    /// and body are otherwise lost. Cleared at the start of each of those operations.
+    /// </summary>
+    public Exception? LastException { get; protected set; }
     public ILzParentViewModel<TId>? ParentViewModel { get; set; } 
 
 
@@ -139,6 +147,7 @@ public abstract partial class LzItemViewModel<TId, TDTO, TModel>
     /// <returns></returns>
     public virtual async Task<(bool, string)> CreateAsync()
     {
+        LastException = null;
         IsBusy = true;
         try
         {
@@ -177,6 +186,7 @@ public abstract partial class LzItemViewModel<TId, TDTO, TModel>
         }
         catch (Exception ex)
         {
+            LastException = ex;
             return (false, Log(MethodBase.GetCurrentMethod()!, ex.Message));
         }
         finally
@@ -190,6 +200,7 @@ public abstract partial class LzItemViewModel<TId, TDTO, TModel>
     /// <returns></returns>
     public virtual async Task<(bool, string)> UpdateAsync()
     {
+        LastException = null;
         IsBusy = true;
         try
         {
@@ -221,6 +232,7 @@ public abstract partial class LzItemViewModel<TId, TDTO, TModel>
         }
         catch (Exception ex)
         {
+            LastException = ex;
             return (false, Log(MethodBase.GetCurrentMethod()!, ex.Message));
         }
         finally
@@ -256,6 +268,7 @@ public abstract partial class LzItemViewModel<TId, TDTO, TModel>
     /// <returns></returns>
     public virtual async Task<(bool, string)> DeleteAsync(TId? id = default)
     {
+        LastException = null;
         IsBusy = true;  
         try
         {
@@ -286,6 +299,7 @@ public abstract partial class LzItemViewModel<TId, TDTO, TModel>
         }
         catch (Exception ex)
         {
+            LastException = ex;
             return (false, Log(MethodBase.GetCurrentMethod()!, ex.Message));
         }
         finally
@@ -344,6 +358,7 @@ public abstract partial class LzItemViewModel<TId, TDTO, TModel>
     /// <returns></returns>
     public virtual async Task<(bool, string)> ReadAsync(TId? id = default)
     {
+        LastException = null;
         IsBusy = true;  
         var userMsg = "Can't load " + _EntityName;
         try
@@ -371,6 +386,7 @@ public abstract partial class LzItemViewModel<TId, TDTO, TModel>
         }
         catch (Exception ex)
         {
+            LastException = ex;
             return (false, Log(userMsg + " " + MethodBase.GetCurrentMethod()!, ex.Message));
         }
         finally

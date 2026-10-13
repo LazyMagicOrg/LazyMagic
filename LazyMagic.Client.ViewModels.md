@@ -50,6 +50,7 @@ public enum LzItemViewModelState
 - FluentValidation support
 - Dirty state tracking
 - Create/Update operations with optimistic locking
+- `LastException`: the exception that made the last create, update, delete or read return false. Those methods return a message built for a log; read this to tell a refusal from an outage or to show what the service said. Cleared at the start of each operation.
 
 ### Collection ViewModels
 
@@ -60,6 +61,8 @@ public enum LzItemViewModelState
 - Automatic child loading support
 - Navigation between items (previous/next)
 - CRUD callbacks from child ViewModels
+- `ReplaceOnRead` (false by default): when true, a read makes the collection what was read - a view model whose item the read did not return is removed. Leave it false for a collection filled a page or a parent at a time.
+- `LastException`: the exception that made the last `ReadAsync` return false; cleared at the start of each read.
 
 ### Session Management
 

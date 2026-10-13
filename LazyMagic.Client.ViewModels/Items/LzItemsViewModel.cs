@@ -51,6 +51,19 @@ public abstract partial class LzItemsViewModel<TVM, TDTO, TModel> : LzViewModel,
     [Reactive] public partial bool IsLoading { get; set; }
     /// <inheritdoc/>
     [Reactive] public partial long LastLoadTick { get; set; }
+    /// <summary>
+    /// When true, a read makes the collection WHAT WAS READ: a view model whose item the read did not return is
+    /// removed. False by default, as it always was - a read adds and replaces and never removes, which suits a
+    /// collection filled a page or a parent at a time. Set it for a collection whose read returns the whole set,
+    /// so an item deleted elsewhere does not stay on screen.
+    /// </summary>
+    public bool ReplaceOnRead { get; set; }
+    /// <summary>
+    /// The exception that made the last ReadAsync return false, or null when it succeeded. ReadAsync returns a
+    /// message built for a log; an application that has to tell a refusal from an outage, or show what the
+    /// service said, reads it here. Cleared at the start of each read.
+    /// </summary>
+    public Exception? LastException { get; protected set; }
     /// <inheritdoc/>
     public IDictionary<string, TDTO>? DTOs { get; set; }
     // Storage Access
@@ -75,6 +88,7 @@ public abstract partial class LzItemsViewModel<TVM, TDTO, TModel> : LzViewModel,
     public virtual async Task<(bool, string)> ReadAsync(string id, bool forceload = false)
     {
         var userMsg = "Can't read " + _EntityName + " id:" + id;
+        LastException = null;
         try
         {
             CheckAuth();
@@ -90,6 +104,7 @@ public abstract partial class LzItemsViewModel<TVM, TDTO, TModel> : LzViewModel,
         }
         catch (Exception ex)
         {
+            LastException = ex;
             return (false, Log(userMsg, ex.Message));
         }
         finally { IsLoading = false; }
@@ -126,6 +141,7 @@ public abstract partial class LzItemsViewModel<TVM, TDTO, TModel> : LzViewModel,
     protected virtual async Task<(bool, string)> UpdateDataAsync(ICollection<TDTO> list, bool forceload)
     {
         var tasks = new List<Task<(bool success, string msg)>>();
+        var read = new HashSet<string>();
         foreach (var item in list)
         {
             try
@@ -134,6 +150,7 @@ public abstract partial class LzItemsViewModel<TVM, TDTO, TModel> : LzViewModel,
                 var id = vm.Id;
                 if (id is null)
                     throw new Exception("NewViewModel return null id");
+                read.Add(id);
                 if (!ViewModels!.ContainsKey(id))
                     ViewModels!.Add(id, vm);
                 else
@@ -147,6 +164,7 @@ public abstract partial class LzItemsViewModel<TVM, TDTO, TModel> : LzViewModel,
                 Console.WriteLine($"Could not load item:");
             }
         }
+        RemoveWhatWasNotRead(read);
         await Task.WhenAll(tasks);
         var result = tasks
             .Where(x => x.Result.success == false)
@@ -159,6 +177,7 @@ public abstract partial class LzItemsViewModel<TVM, TDTO, TModel> : LzViewModel,
     protected virtual async Task<(bool, string)> UpdateDataAsync(IDictionary<string, TModel> list, bool forceload)
     {
         var tasks = new List<Task<(bool success, string msg)>>();
+        var read = new HashSet<string>();
         foreach (var item in list)
         {
             try
@@ -167,6 +186,7 @@ public abstract partial class LzItemsViewModel<TVM, TDTO, TModel> : LzViewModel,
                 var id = vm.Id;
                 if (id is null)
                     throw new Exception("NewViewModel return null id");
+                read.Add(id);
                 if (!ViewModels!.ContainsKey(id))
                     ViewModels!.Add(id, vm);
                 else
@@ -180,6 +200,7 @@ public abstract partial class LzItemsViewModel<TVM, TDTO, TModel> : LzViewModel,
                 Console.WriteLine($"Could not load item:");
             }
         }
+        RemoveWhatWasNotRead(read);
         await Task.WhenAll(tasks);
         var result = tasks.Where(x => x.Result.success == false).Select(x => x.Result).FirstOrDefault((success: true, msg: string.Empty));
         IsLoaded = result.success;
@@ -189,6 +210,7 @@ public abstract partial class LzItemsViewModel<TVM, TDTO, TModel> : LzViewModel,
     protected virtual async Task<(bool, string)> UpdateDataAsync(IDictionary<string, TDTO> list, bool forceload)
     {
         var tasks = new List<Task<(bool success, string msg)>>();
+        var read = new HashSet<string>();
         foreach (var item in list)
         {
             try
@@ -197,6 +219,7 @@ public abstract partial class LzItemsViewModel<TVM, TDTO, TModel> : LzViewModel,
                 var id = vm.Id;
                 if (id is null)
                     throw new Exception("NewViewModel return null id");
+                read.Add(id);
                 if (!ViewModels!.ContainsKey(id))
                     ViewModels!.Add(id, vm);
                 else
@@ -210,10 +233,29 @@ public abstract partial class LzItemsViewModel<TVM, TDTO, TModel> : LzViewModel,
                 Console.WriteLine($"Could not load item:");
             }
         }
+        RemoveWhatWasNotRead(read);
         await Task.WhenAll(tasks);
         var result = tasks.Where(x => x.Result.success == false).Select(x => x.Result).FirstOrDefault((success: true, msg: string.Empty));
         IsLoaded = result.success;
         return result;
+    }
+
+    /// <summary>
+    /// With <see cref="ReplaceOnRead"/>, drop every view model the read just made did not return. One that is the
+    /// current, the last or the one being edited stops being it: it is no longer in the collection.
+    /// </summary>
+    protected virtual void RemoveWhatWasNotRead(HashSet<string> read)
+    {
+        if (!ReplaceOnRead)
+            return;
+        foreach (var gone in ViewModels.Keys.Where(key => !read.Contains(key)).ToList())
+        {
+            var removed = ViewModels[gone];
+            ViewModels.Remove(gone);
+            if (ReferenceEquals(CurrentViewModel, removed)) CurrentViewModel = null;
+            if (ReferenceEquals(LastViewModel, removed)) LastViewModel = null;
+            if (ReferenceEquals(EditViewModel, removed)) EditViewModel = null;
+        }
     }
 
     // Callbacks from ItemViewModel 
