@@ -118,6 +118,14 @@ namespace LazyMagic.Client.ViewModels
         /// </summary>
         public Task<(bool, string)> ReadAgainAsync();
         /// <summary>
+        /// A quiet read, for a poll: no IsLoading, and the collection left alone when the read's signature (by default
+        /// the whole list) is the last applied one, or when another list was applied while it was out (it is then older
+        /// than what is shown).
+        /// </summary>
+        public Task<(bool, string)> RefreshAsync();
+        /// <summary>When the collection was last read or refreshed successfully; not reactive.</summary>
+        public long LastCheckedTick { get; }
+        /// <summary>
         /// Start a new item: a view model for the dto made by NewViewModel, in the New state and not loaded, as the
         /// EditViewModel. It is not in the collection until it has been created in storage.
         /// </summary>

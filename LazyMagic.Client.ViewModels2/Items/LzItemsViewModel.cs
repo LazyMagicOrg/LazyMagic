@@ -132,6 +132,77 @@ public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewM
         => ReadAsync(_hasRead ? _lastReadId! : Id!, forceload: true);
 
     /// <summary>
+    /// A QUIET READ, FOR A POLL (2026-10-17): the collection read again as it was last read (<see cref="ReadAgainAsync"/>),
+    /// but never setting <see cref="IsLoading"/>, and leaving the collection alone - no view model replaced, no
+    /// notification - when what came back has the same <see cref="ReadSignature"/> as the last read applied: by default
+    /// the whole list, serialized, field for field. Otherwise it is applied as a read applies it. A failure is kept in
+    /// <see cref="LastException"/>; the collection keeps what it showed. <see cref="LastCheckedTick"/> moves on every
+    /// success, announcing nothing.
+    /// </summary>
+    public virtual async Task<(bool, string)> RefreshAsync()
+    {
+        var id = _hasRead ? _lastReadId : Id;
+        var userMsg = "Can't refresh " + _EntityName + " id:" + id;
+        var failedBefore = LastException != null;
+        try
+        {
+            CheckAuth();
+            if (id == null && _DTOReadListAsync == null)
+                throw new Exception("SvcReadList function not assigned");
+            if (id != null && _DTOReadListIdAsync == null)
+                throw new Exception("SvcReadListId function not assigned");
+            var appliedAtStart = _applied;
+            var items = id != null ? await _DTOReadListIdAsync!(id) : await _DTOReadListAsync!();
+            LastException = null;
+            if (failedBefore) this.RaisePropertyChanged(nameof(LastException));   // a page saying it was stale stops saying so
+            if (_applied != appliedAtStart)
+                return (true, string.Empty);              // overtaken: a newer list was applied while this one was out
+            LastCheckedTick = DateTime.UtcNow.Ticks;
+            if (_appliedSignature != null && string.Equals(_appliedSignature, SignatureOf(items), StringComparison.Ordinal))
+                return (true, string.Empty);
+            return await UpdateDataAsync(items, forceload: true);
+        }
+        catch (Exception ex)
+        {
+            LastException = ex;
+            if (!failedBefore) this.RaisePropertyChanged(nameof(LastException));  // a failure is news: the page says it is stale
+            return (false, Log(userMsg, ex.Message));
+        }
+    }
+
+    /// <summary>When the collection was last read or refreshed successfully. Not reactive: a poll that changed nothing
+    /// announces nothing.</summary>
+    public long LastCheckedTick { get; protected set; }
+
+    /// <summary>The signature of the last list a read applied; null before one.</summary>
+    private string? _appliedSignature;
+
+    /// <summary>
+    /// How many times a list has been applied - by a read, a refresh, or anything else that applies one. A refresh notes
+    /// it as it starts, and a refresh that lands after another list was applied is OVERTAKEN: what it carries is older
+    /// than what is shown, and it is dropped (2026-10-18: a poll that started during a buyer's "clear my requests" landed
+    /// after the read that followed it, and put the cleared rows back until the next tick).
+    /// </summary>
+    private long _applied;
+
+    /// <summary>
+    /// What a refresh compares to tell a changed read from an unchanged one: the list, serialized. Override to take in
+    /// what else a read sets beside the list (a total, counts), so a change there is not missed.
+    /// </summary>
+    protected virtual string ReadSignature(ICollection<TDTO> list) => JsonConvert.SerializeObject(list);
+
+    /// <summary>
+    /// The signature, or null when it cannot be made: a generated DTO that marks a member DisallowNull refuses to be
+    /// written with it null, and a read must never fail for want of a comparison. Null compares unequal, so the read is
+    /// applied as a read always was.
+    /// </summary>
+    private string? SignatureOf(ICollection<TDTO> list)
+    {
+        try { return ReadSignature(list); }
+        catch (JsonException) { return null; }
+    }
+
+    /// <summary>
     /// START A NEW ITEM: a view model for <paramref name="dto"/> made as every other is (<see cref="NewViewModel(TDTO)"/>),
     /// in the New state and not loaded, as the one being edited (<see cref="EditViewModel"/>). It is not in the
     /// collection until it has been created in storage, when it tells the collection so (ItemCreated). Call its
@@ -177,6 +248,8 @@ public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewM
     /// <inheritdoc/>
     protected virtual async Task<(bool, string)> UpdateDataAsync(ICollection<TDTO> list, bool forceload)
     {
+        _applied++;
+        _appliedSignature = SignatureOf(list);
         var tasks = new List<Task<(bool success, string msg)>>();
         var read = new List<TId>();
         foreach (var item in list)
@@ -209,12 +282,13 @@ public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewM
             .Select(x => x.Result)
             .FirstOrDefault((success: true, msg: string.Empty));
         IsLoaded = result.success;
-        if (result.success) LastLoadTick = DateTime.UtcNow.Ticks;   // declared, and never set before: when the collection was last read
+        if (result.success) LastCheckedTick = LastLoadTick = DateTime.UtcNow.Ticks;   // declared, and never set before: when the collection was last read
         return result;
     }
     /// <inheritdoc/>
     protected virtual async Task<(bool, string)> UpdateDataAsync(IDictionary<string, TModel> list, bool forceload)
     {
+        _applied++;
         var tasks = new List<Task<(bool success, string msg)>>();
         var read = new List<TId>();
         foreach (var item in list)
@@ -250,6 +324,7 @@ public abstract partial class LzItemsViewModel<TId, TVM, TDTO, TModel> : LzViewM
     /// <inheritdoc/>
     protected virtual async Task<(bool, string)> UpdateDataAsync(IDictionary<string, TDTO> list, bool forceload)
     {
+        _applied++;
         var tasks = new List<Task<(bool success, string msg)>>();
         var read = new List<TId>();
         foreach (var item in list)

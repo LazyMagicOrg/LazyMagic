@@ -39,7 +39,26 @@ public sealed class ThingStore
     }
 
     public Task<Thing> CreateAsync(Thing thing) { Called("create"); Things[thing.Id] = thing; return Task.FromResult(thing); }
-    public Task<Thing> ReadAsync(string id) { Called("read"); return Task.FromResult(Things[id]); }
+    /// <summary>
+    /// When set, the NEXT read or list answers with what is stored at the moment it is asked, and only once this is
+    /// released - a slow request overtaken by another. Taken by that read; the ones after it answer at once.
+    /// </summary>
+    public TaskCompletionSource? HoldNext { get; set; }
+
+    private async Task<T> AnsweredAsync<T>(T answer)
+    {
+        if (HoldNext is not { } hold) return answer;
+        HoldNext = null;
+        await hold.Task;
+        return answer;
+    }
+
+    public Task<Thing> ReadAsync(string id)
+    {
+        Called("read");
+        var stored = Things[id];
+        return AnsweredAsync(new Thing { Id = stored.Id, Name = stored.Name, UpdateUtcTick = stored.UpdateUtcTick });
+    }
     public Task<Thing> UpdateAsync(Thing thing) { Called("update"); Things[thing.Id] = thing; return Task.FromResult(thing); }
     public Task DeleteAsync(string id) { Called("delete"); Things.Remove(id); return Task.CompletedTask; }
     /// <summary>The order a list is answered in; as stored, unless a test says otherwise.</summary>
@@ -47,7 +66,7 @@ public sealed class ThingStore
     /// <summary>The parent ids the by-parent list was asked for.</summary>
     public List<string> Parents { get; } = new();
 
-    public Task<ICollection<Thing>> ListAsync() { Called("list"); return Task.FromResult<ICollection<Thing>>(Arrange(Things.Values).Select(t => new Thing { Id = t.Id, Name = t.Name }).ToList()); }
+    public Task<ICollection<Thing>> ListAsync() { Called("list"); return AnsweredAsync<ICollection<Thing>>(Arrange(Things.Values).Select(t => new Thing { Id = t.Id, Name = t.Name }).ToList()); }
     public Task<ICollection<Thing>> ListOfAsync(string parent) { Parents.Add(parent); return ListAsync(); }
 }
 

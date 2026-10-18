@@ -356,6 +356,78 @@ public abstract partial class LzItemViewModel<TId, TDTO, TModel>
     /// </summary>
     /// <param name="id"></param>
     /// <returns></returns>
+    /// <summary>
+    /// A QUIET READ, FOR A POLL (2026-10-17): the item read again as <see cref="ReadAsync"/> reads it, but announcing
+    /// nothing that did not change. It never sets <see cref="IsBusy"/> - busy is for something the user started, and a
+    /// page that offers less while busy would empty and redraw on every tick - and it leaves <see cref="Data"/> alone
+    /// when what came back is, field for field, the DTO last applied (the whole of it serialized, not an update stamp:
+    /// a projection assembled from several rows can change without its stamp moving). Nor does it overwrite an edit in
+    /// progress. A failure is kept in <see cref="LastException"/>, the page keeping what it showed. Children are not
+    /// read again: a refresh is this item's.
+    /// </summary>
+    /// <returns>Whether it was read; the message, when not, is for a log.</returns>
+    public virtual async Task<(bool, string)> RefreshAsync(TId? id = default)
+    {
+        var userMsg = "Can't refresh " + _EntityName;
+        var failedBefore = LastException != null;
+        try
+        {
+            if (!CanRead) return (false, "Read not authorized");
+            var (success, msg) = await CheckAuthAsync();
+            if (!success) return (success, msg);
+
+            id ??= Id;
+            (success, msg) = await CheckIdAsync(id);
+            if (!success) return (success, msg);
+
+            if (_DTOReadAsync == null)
+                throw new Exception("SvcReadIdAsync not assigned.");
+            var appliedAtStart = _applied;
+            var item = await _DTOReadAsync(id!);
+            LastException = null;
+            if (failedBefore) this.RaisePropertyChanged(nameof(LastException));   // a page saying it was stale stops saying so
+            if (State == LzItemViewModelState.Edit || IsDirty)
+                return (true, string.Empty);                 // the user's edit is not overwritten by a poll
+            if (_applied != appliedAtStart)
+                return (true, string.Empty);                 // overtaken: a read or a write applied newer data meanwhile
+
+            if (!SameAsApplied(item))
+            {
+                UpdateData(item);
+                State = LzItemViewModelState.Current;
+                if (ParentViewModel is not null) await ParentViewModel.ItemRead(Id);
+            }
+            IsLoaded = true;                                 // already true after the first read: announces nothing
+            return (true, string.Empty);
+        }
+        catch (Exception ex)
+        {
+            LastException = ex;
+            if (!failedBefore) this.RaisePropertyChanged(nameof(LastException));  // a failure is news: the page says it is stale
+            return (false, Log(userMsg + " " + MethodBase.GetCurrentMethod()!, ex.Message));
+        }
+    }
+
+    /// <summary>The JSON of the DTO last applied to <see cref="Data"/> by <see cref="UpdateData(TDTO)"/>; null when
+    /// Data was last set some other way, which a refresh then always replaces.</summary>
+    private string? _appliedJson;
+
+    /// <summary>
+    /// How many times data has been applied (<see cref="UpdateData(TDTO)"/>, <see cref="UpdateData(TModel)"/>): by a read,
+    /// a create, an update or a refresh. A refresh notes it as it starts, and one that lands after something else was
+    /// applied is OVERTAKEN - it carries older data than the item holds - and is dropped (2026-10-18: a poll that started
+    /// before a buyer's act could land after the act's read and show the item as it was before it).
+    /// </summary>
+    private long _applied;
+
+    /// <summary>Is this DTO, field for field, the one last applied? Compared as JSON, the form UpdateData applies.</summary>
+    protected virtual bool SameAsApplied(TDTO item)
+    {
+        if (_appliedJson == null) return false;
+        try { return string.Equals(_appliedJson, JsonConvert.SerializeObject(item), StringComparison.Ordinal); }
+        catch (JsonException) { return false; }   // a DTO that cannot be written is applied, as a read applies it
+    }
+
     public virtual async Task<(bool, string)> ReadAsync(TId? id = default)
     {
         LastException = null;
@@ -422,9 +494,11 @@ public abstract partial class LzItemViewModel<TId, TDTO, TModel>
     /// <param name="item"></param>
     protected virtual void UpdateData(TDTO item)
     {
+        _applied++;
 
         Data ??= new();
         var json = JsonConvert.SerializeObject(item);
+        _appliedJson = json;
         var settings = new JsonSerializerSettings
         {
             ObjectCreationHandling = ObjectCreationHandling.Replace
@@ -486,6 +560,8 @@ public abstract partial class LzItemViewModel<TId, TDTO, TModel>
     /// <param name="item"></param>
     protected virtual void UpdateData(TModel item)
     {
+        _applied++;
+        _appliedJson = null;
         Data = item;
         IsDirty = false;
         this.RaisePropertyChanged(nameof(Data));

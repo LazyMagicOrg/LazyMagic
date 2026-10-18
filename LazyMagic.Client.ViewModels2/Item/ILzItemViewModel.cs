@@ -33,6 +33,9 @@ public interface ILzItemViewModel<TId, TModel>  : IItemId<TId>
     public Task<(bool, string)> CheckIdAsync(TId? id = default);  
     public Task<(bool, string)> CreateAsync();
     public Task<(bool, string)> ReadAsync(TId? id = default);
+    /// <summary>A quiet read, for a poll: no IsBusy, and Data left alone when what came back is the DTO last applied, or
+    /// when anything else applied data while it was out (it is then older than what is shown).</summary>
+    public Task<(bool, string)> RefreshAsync(TId? id = default);
     public Task<(bool, string)> UpdateAsync();
     public Task<(bool, string)> SaveEditAsync();
     public Task<(bool, string)> DeleteAsync(TId? id = default);

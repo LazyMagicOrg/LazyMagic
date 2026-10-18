@@ -199,6 +199,28 @@ public class CustomerViewModel : LzItemViewModel<string, CustomerDTO, CustomerMo
 }
 ```
 
+**Polling: `RefreshAsync(id)`, a quiet read** (2026-10-17). A page that reads an item again on a timer calls
+`RefreshAsync`, not `ReadAsync`:
+- It never sets `IsBusy`. Busy is for something the user started; a page that offers less while busy would empty
+  and redraw on every tick.
+- It leaves `Data` alone, and announces nothing, when what came back is field for field the DTO last applied. The
+  whole DTO is compared, serialized as `UpdateData` applies it - not an update stamp, since a projection assembled
+  from several rows can change without its stamp moving. `SameAsApplied(dto)` is the comparison, overridable.
+- It does not overwrite an edit in progress (`State == Edit` or `IsDirty`), and it does not read children.
+- A failure is kept in `LastException`; `Data` keeps what it showed.
+- **An overtaken refresh is dropped** (2026-10-18). If anything applied data while it was out - a read, a create, an
+  update, another refresh - what it carries is older than what is shown, and it applies nothing. A poll that starts
+  before a user's act and lands after the act's read no longer puts the item back as it was.
+
+Use `ReadAsync` for the first read of a page and after an act; `RefreshAsync` for every read nobody asked for.
+
+A collection has the same: `LzItemsViewModel.RefreshAsync()` reads the list again as it was last read, never sets
+`IsLoading`, and replaces nothing when the read's `ReadSignature(list)` - by default the list serialized - is the
+last applied one. Override `ReadSignature` when the list's read also sets other members (a total, counts), so a change
+there is not missed. `LastCheckedTick` (not reactive) moves on every successful read or refresh; `LastLoadTick` only
+when a read was applied. An overtaken refresh is dropped here too: a list applied while it was out (by a read, or
+another refresh) wins, so a poll that started before a "delete everything" does not put the deleted rows back.
+
 ---
 
 ## Items ViewModel
