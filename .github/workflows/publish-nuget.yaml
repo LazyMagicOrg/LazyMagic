@@ -19,6 +19,8 @@ on:
 permissions:
   contents: read
   packages: write
+  id-token: write       # the attestation's Sigstore certificate (below)
+  attestations: write   # to store the attestation
 
 jobs:
   build:
@@ -138,6 +140,14 @@ jobs:
       run: |
         dotnet run --project _lz/Lz.Cli/Lz.Cli.csproj -c Debug           -p:SolutionDir=${{ github.workspace }}/_lz/           -- packages check --packages ./Packages --commit ${{ github.sha }}
 
+    # PROVENANCE (DecoupledCd V-17, owner 2026-10-17): every package pushed below is attested - a Sigstore-signed
+    # SLSA statement binding its SHA-256 to this repository, workflow and commit, stored with GitHub's attestations API
+    # (free for public repositories). A consumer checks it with `gh attestation verify <nupkg> --repo LazyMagicOrg/{repo}`.
+    # The OIDC token it mints goes to GitHub's Sigstore only; nothing here reaches AWS (V-10).
+    - name: attest the packages
+      uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+      with:
+        subject-path: '${{ github.workspace }}/Packages/*.nupkg'
     - name: Publish
       run: |
         dotnet nuget push ./Packages/*.nupkg --source https://nuget.pkg.github.com/LazyMagicOrg/index.json --api-key ${{ secrets.GITHUB_TOKEN }}
