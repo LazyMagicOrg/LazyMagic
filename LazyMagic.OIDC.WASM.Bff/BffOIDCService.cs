@@ -36,6 +36,10 @@ public sealed class BffOIDCService : IOIDCService, IDisposable
     // BFF server fans this path back to the ORIGINATING host (subtenant-aware). Null = current page.
     private readonly string? _postLogoutRedirectPath;
 
+    // Land on the APEX after logout rather than the host logged out from (the BFF's apex=true; 2026-10-26). A client
+    // served on a subtenant host that has no public page of its own sends its users to the system's front door.
+    private readonly bool _postLogoutToApex;
+
     public event EventHandler<OIDCAuthenticationStateChangedEventArgs>? AuthenticationStateChanged;
     public event Action<string>? OnAuthenticationRequested;
 
@@ -45,9 +49,11 @@ public sealed class BffOIDCService : IOIDCService, IDisposable
         HttpClient http,
         ILogger<BffOIDCService> logger,
         string routePrefix = "/bff",
-        string? postLogoutRedirectPath = null)
+        string? postLogoutRedirectPath = null,
+        bool postLogoutToApex = false)
     {
         _authStateProvider = authStateProvider;
+        _postLogoutToApex = postLogoutToApex;
         _navigation = navigation;
         _http = http;
         _logger = logger;
@@ -143,7 +149,7 @@ public sealed class BffOIDCService : IOIDCService, IDisposable
         // Post-logout destination: the configured fixed path (e.g. /explore/home/) when set, else the
         // page we logged out from. The BFF server fans this back to the originating (subtenant) host.
         var returnUrl = _postLogoutRedirectPath ?? GetReturnUrl();
-        var logoutEndpoint = $"{_logoutPath}?returnUrl={Uri.EscapeDataString(returnUrl)}";
+        var logoutEndpoint = $"{_logoutPath}?returnUrl={Uri.EscapeDataString(returnUrl)}" + (_postLogoutToApex ? "&apex=true" : "");
 
         try
         {

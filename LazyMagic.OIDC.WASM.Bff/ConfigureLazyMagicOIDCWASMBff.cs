@@ -38,12 +38,18 @@ public static class ConfigureLazyMagicOIDCWASMBff
     /// public landing instead of bouncing back through the gated app to the login. Null = the page the
     /// user logged out from.
     /// </param>
+    /// <param name="postLogoutToApex">
+    /// Land on the system's APEX host after logout, at <paramref name="postLogoutRedirectPath"/>, instead of the host the
+    /// user logged out from. For a client on a subtenant host whose own public pages are not where a signed-out user
+    /// belongs. Needs a BFF behind a parent cookie domain; without one, the path stays on the current host.
+    /// </param>
     public static IServiceCollection AddLazyMagicOIDCWASMBff(
         this IServiceCollection services,
         string bffBaseAddress,
         string routePrefix = "/bff",
         TimeSpan? pollInterval = null,
-        string? postLogoutRedirectPath = null)
+        string? postLogoutRedirectPath = null,
+        bool postLogoutToApex = false)
     {
         if (string.IsNullOrWhiteSpace(bffBaseAddress))
             throw new ArgumentException("A same-origin BFF base address is required.", nameof(bffBaseAddress));
@@ -94,7 +100,7 @@ public static class ConfigureLazyMagicOIDCWASMBff
             var authStateProvider = sp.GetRequiredService<AuthenticationStateProvider>();
             var navigation = sp.GetRequiredService<NavigationManager>();
             var logger = sp.GetRequiredService<ILogger<BffOIDCService>>();
-            return new BffOIDCService(authStateProvider, navigation, http, logger, routePrefix, postLogoutRedirectPath);
+            return new BffOIDCService(authStateProvider, navigation, http, logger, routePrefix, postLogoutRedirectPath, postLogoutToApex);
         });
 
         // The shared LoginDisplay also injects IRememberMeService + IProfileManagementService.

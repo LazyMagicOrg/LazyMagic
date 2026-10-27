@@ -112,6 +112,32 @@ public class BffSignInTests
         Assert.Empty(h.Sessions.Created);
     }
 
+    // ---- signing out ----------------------------------------------------------------------------------------------
+
+    [Fact]
+    public async Task ALogout_ReturnsTheUserToTheHostItStartedOn()
+    {
+        using var h = new Harness();
+        Assert.Equal("https://match.example.test/seller/", await h.SignOutAsync("/seller/", apex: false));
+    }
+
+    [Fact]
+    public async Task ALogoutToTheApex_LeavesTheUserOnTheApex_NotTheHostItStartedOn()
+    {
+        // A client on a subtenant host sends its signed-out users to the system's front door (2026-10-26). The callback
+        // runs on the apex and, with no originating host recorded, stays there.
+        using var h = new Harness();
+        Assert.Equal("/", await h.SignOutAsync("/", apex: true));
+    }
+
+    [Fact]
+    public async Task ALogoutToTheApex_StillOnlyTakesAPath()
+    {
+        // The open-redirect guard holds: an absolute destination is refused for "/", on the apex.
+        using var h = new Harness();
+        Assert.Equal("/", await h.SignOutAsync("https://evil.example/", apex: true));
+    }
+
     private static string? Only(JsonElement claims, string name)
         => Assert.Single(claims.GetProperty(name).EnumerateArray()).GetString();
 
@@ -172,6 +198,23 @@ public class BffSignInTests
             var result = await callback.Callback("code-1", asked["state"].ToString(), null, CancellationToken.None);
 
             return new SignIn(result, SetCookie(callbackResponse, "__bff"), (result as RedirectResult)?.Url);
+        }
+
+        /// <summary>
+        /// /bff/logout, then the identity provider's redirect to /bff/logout-callback - each a request of its own, as a
+        /// browser makes them. Where the callback sent the user: a relative path stays on the callback's host, the apex.
+        /// </summary>
+        public async Task<string> SignOutAsync(string returnUrl, bool apex)
+        {
+            var (logout, logoutResponse) = Request();
+            logout.HttpContext.Request.Headers[BffConstants.CsrfHeader] = BffConstants.CsrfHeaderValue;
+            Assert.IsType<OkObjectResult>(await logout.Logout(returnUrl, CancellationToken.None, apex));
+
+            var carried = new[] { "__bff_logout", "__bff_logout_host" }
+                .Select(n => (Name: n, Value: SetCookie(logoutResponse, n)))
+                .Where(c => c.Value != null).Select(c => (c.Name, c.Value!)).ToArray();
+            var (callback, _) = Request(carried);
+            return Assert.IsType<RedirectResult>(callback.LogoutCallback()).Url;
         }
 
         /// <summary>GET /bff/user with a session cookie, as the envelope a console reads.</summary>

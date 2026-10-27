@@ -184,10 +184,16 @@ public sealed class BffAuthController : ControllerBase
     /// logout (§8.12). The credentialed SPA flow POSTs with <c>X-CSRF: 1</c> and reads the
     /// returned <c>logoutUrl</c>, then navigates (forceLoad) to it. Without the header, the
     /// endpoint returns 403 and does NOT touch server state.
+    ///
+    /// <para><b>TO THE APEX</b> (<paramref name="apex"/>; 2026-10-26): by default the logout callback fans the user back to
+    /// the host the logout started on. With <c>apex=true</c> the originating host is not recorded, so the callback - which
+    /// runs on the apex, the only sign-out URL registered with the IdP - leaves the user on the apex at
+    /// <paramref name="returnUrl"/>. The destination is still a sanitized path on a host the BFF itself owns: no open
+    /// redirect. Without a parent domain there is no apex, and the path stays on the current host as before.</para>
     /// </summary>
     [HttpGet("logout")]
     [HttpPost("logout")]
-    public async Task<IActionResult> Logout([FromQuery] string? returnUrl, CancellationToken ct)
+    public async Task<IActionResult> Logout([FromQuery] string? returnUrl, CancellationToken ct, [FromQuery] bool apex = false)
     {
         // CSRF: the destructive logout is state-changing and MUST carry the non-safelisted
         // header regardless of verb. A bare cross-site GET cannot attach it, so it is rejected.
@@ -224,8 +230,11 @@ public sealed class BffAuthController : ControllerBase
         var finalDest = SanitizeReturnUrl(returnUrl);
         Response.Cookies.Append(LogoutReturnCookieName, Uri.EscapeDataString(finalDest),
             BffCookieBuilder.Transaction(_options));
-        Response.Cookies.Append(LogoutOriginCookieName, Uri.EscapeDataString(ViewerHost),
-            BffCookieBuilder.Transaction(_options));
+        if (apex)
+            Response.Cookies.Append(LogoutOriginCookieName, string.Empty, BffCookieBuilder.Delete(_options));   // no fan-back
+        else
+            Response.Cookies.Append(LogoutOriginCookieName, Uri.EscapeDataString(ViewerHost),
+                BffCookieBuilder.Transaction(_options));
 
         var postLogoutRedirect = BuildCallbackUrl(LogoutCallbackPath);
         string logoutUrl;
@@ -236,7 +245,7 @@ public sealed class BffAuthController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogDebug(ex, "BFF logout URL build failed; returning the post-logout destination.");
-            logoutUrl = BuildAbsoluteUrl(finalDest);
+            logoutUrl = apex ? BuildCallbackUrl(finalDest) : BuildAbsoluteUrl(finalDest);
         }
 
         // Return the provider logout URL for the SPA to navigate to (credentialed POST flow).
