@@ -52,6 +52,10 @@ public class DYDBRepositoryGsiTests
         protected override TableKind TableKind => kind;
         protected override TableLevel TableLevel => level;
 
+        public int Concurrency { get; set; } = 8;
+        protected override int BatchReadConcurrency => Concurrency;
+        public bool Debug { set => debug = value; }
+
         public List<TimeSpan> Delays { get; } = new();
         protected override Task DelayBeforeRetryAsync(TimeSpan delay)
         {
@@ -90,6 +94,8 @@ public class DYDBRepositoryGsiTests
         public List<GetItemRequest> Gets { get; } = new();
         /// <summary>(call number from 0, the sort keys asked) => the sort keys to leave unprocessed.</summary>
         public Func<int, IReadOnlyList<string>, IEnumerable<string>> Unprocessed { get; set; } = (_, _) => [];
+        /// <summary>Awaited before each BatchGetItem answers: how a test holds calls in flight.</summary>
+        public Func<Task>? BeforeBatchAnswers { get; set; }
 
         public Store()
         {
@@ -102,7 +108,11 @@ public class DYDBRepositoryGsiTests
                 .ReturnsAsync(() => Pages.Dequeue());
             Client
                 .Setup(c => c.BatchGetItemAsync(It.IsAny<BatchGetItemRequest>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((BatchGetItemRequest r, CancellationToken _) => Answer(r));
+                .Returns(async (BatchGetItemRequest r, CancellationToken _) =>
+                {
+                    if (BeforeBatchAnswers is { } hold) await hold();
+                    lock (Batches) return Answer(r);
+                });
             Client
                 .Setup(c => c.GetItemAsync(It.IsAny<GetItemRequest>(), It.IsAny<CancellationToken>()))
                 .Callback<GetItemRequest, CancellationToken>((r, _) => Gets.Add(r))
@@ -476,6 +486,77 @@ public class DYDBRepositoryGsiTests
         Assert.Equal(250, IdsOf(result).Count);
         Assert.Equal(new[] { 100, 100, 50 }, store.Batches.Select(b => b.SortKeys.Count));
         Assert.Equal(entries.Select(e => e.Item1), IdsOf(result));
+    }
+
+    /// <summary>
+    /// The calls of one read are in flight together, up to the limit: 950 keys are 10 calls, and at 4 at a time
+    /// no more than 4 are ever waiting on the store at once - and 4 are. One after another, a 3,000-key read was
+    /// 30 round trips.
+    /// </summary>
+    [Theory]
+    [InlineData(4, 4)]
+    [InlineData(1, 1)]
+    [InlineData(64, 10)]
+    public async Task TheFetchesOfOneRead_AreInFlightTogether_UpToTheLimit(int limit, int expectedAtOnce)
+    {
+        var store = new Store();
+        var entries = Enumerable.Range(0, 950).Select(i => ($"id{i:D3}", "x")).ToArray();
+        foreach (var (id, sk1) in entries)
+            store.Put(id, sk1);
+        store.Page(null, entries);
+        int now = 0, most = 0;
+        var gate = new object();
+        store.BeforeBatchAnswers = async () =>
+        {
+            lock (gate) most = Math.Max(most, ++now);
+            await Task.Delay(40);
+            lock (gate) now--;
+        };
+        var repo = store.Repo();
+        repo.Concurrency = limit;
+
+        var result = await repo.ListAsync(Caller, "SK1", "x");
+
+        Assert.Equal(expectedAtOnce, most);
+        Assert.Equal(10, store.Batches.Count);
+        Assert.Equal(entries.Select(e => e.Item1), IdsOf(result));   // the index's order, whichever call answered first
+    }
+
+    /// <summary>
+    /// The line an index read writes is for a read with something to say: a key the table no longer has, an item
+    /// dropped by the re-check, a list cut short. A read that found everything writes nothing unless debug is on.
+    /// </summary>
+    [Fact]
+    public async Task AnIndexReadThatFoundEverything_WritesNoLine_AndOneThatDidNot_Does()
+    {
+        var console = Console.Out;
+        var written = new StringWriter();
+        Console.SetOut(written);
+        try
+        {
+            var whole = new Store();
+            whole.Put("a", "x");
+            whole.Page(null, ("a", "x"));
+            await whole.Repo().ListAsync(Caller, "SK1", "x");
+            Assert.DoesNotContain("ListAndSizeAsync(", written.ToString());
+
+            var lagging = new Store();
+            lagging.Put("a", "x");
+            lagging.Page(null, ("a", "x"), ("gone", "x"));
+            await lagging.Repo().ListAsync(Caller, "SK1", "x");
+            Assert.Contains("gone 1", written.ToString());
+
+            written.GetStringBuilder().Clear();
+            var debugging = whole.Repo();
+            debugging.Debug = true;
+            whole.Page(null, ("a", "x"));
+            await debugging.ListAsync(Caller, "SK1", "x");
+            Assert.Contains("ListAndSizeAsync(", written.ToString());
+        }
+        finally
+        {
+            Console.SetOut(console);
+        }
     }
 
     // ---- UNPROCESSED KEYS AND THROTTLING -------------------------------------------------------

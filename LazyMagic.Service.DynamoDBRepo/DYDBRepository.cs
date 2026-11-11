@@ -109,6 +109,12 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
     protected const int BatchReadAttemptsWithoutProgress = 6;
     /// <summary>BatchGetItem's documented ceiling on keys per call.</summary>
     protected const int BatchGetItemMaxKeys = 100;
+    /// <summary>
+    /// How many BatchGetItem calls a batched read has in flight at once. A read of 3,000 keys is 30 calls: one
+    /// after another that is 30 round trips, and at 8 at a time about 4. Each call still retries its own
+    /// unprocessed keys. 1 is the old behaviour, one call after another.
+    /// </summary>
+    protected virtual int BatchReadConcurrency => 8;
     private bool _UpdateReturnOkResults = true;
     protected bool UpdateReturnsOkResult
     {
@@ -719,8 +725,12 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
             var statusCode = sizeTruncated || (lastEvaluatedKey is not null && lastEvaluatedKey.Count > 0)
                 ? 206
                 : 200;
-            // Always logged: gone and dropped are how the index's lag shows up in production.
-            Console.WriteLine($"ListAndSizeAsync({table}, {index}) keys {keysQueried}, duplicates {duplicates}, fetched {fetched}, gone {gone}, dropped by re-check {dropped}, listed {list.Count}, status {statusCode}");
+            // LOGGED WHEN IT HAS SOMETHING TO SAY: gone and dropped are how the index's lag shows up in production,
+            // and a cut list is one a caller must not take for the whole. A read that found every key it was
+            // given and returned them all says nothing unless debug is on: written for every read, this line was
+            // three quarters of a quiet host's log.
+            if (debug || gone > 0 || dropped > 0 || duplicates > 0 || statusCode != 200)
+                Console.WriteLine($"ListAndSizeAsync({table}, {index}) keys {keysQueried}, duplicates {duplicates}, fetched {fetched}, gone {gone}, dropped by re-check {dropped}, listed {list.Count}, status {statusCode}");
             return new ObjectResult(list) { StatusCode = statusCode };
         }
         catch (BatchReadIncompleteException ex)
@@ -822,10 +832,32 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
     {
         var found = new Dictionary<(string PK, string SK), Dictionary<string, AttributeValue>>();
         // DynamoDB refuses a call that names one key twice.
-        var distinct = keys.Distinct().ToList();
-        for (var start = 0; start < distinct.Count; start += BatchGetItemMaxKeys)
+        var chunks = keys.Distinct().Chunk(BatchGetItemMaxKeys).ToList();
+        if (chunks.Count == 0)
+            return found;
+
+        // SEVERAL CALLS AT A TIME (BatchReadConcurrency). Each chunk is its own keys, so the calls share nothing
+        // but the limit on how many are in flight; a chunk that fails fails the read, as it did in turn.
+        using var inFlight = new System.Threading.SemaphoreSlim(Math.Max(1, BatchReadConcurrency));
+        var read = await Task.WhenAll(chunks.Select(async chunk =>
         {
-            var pending = distinct.Skip(start).Take(BatchGetItemMaxKeys)
+            await inFlight.WaitAsync();
+            try { return await BatchReadChunkAsync(table, chunk, consistentRead); }
+            finally { inFlight.Release(); }
+        }));
+        foreach (var items in read)
+            foreach (var item in items)
+                found[(item["PK"].S, item["SK"].S)] = item;
+        return found;
+    }
+
+    /// <summary>One BatchGetItem call's keys, asked again for whatever comes back unprocessed.</summary>
+    private async Task<List<Dictionary<string, AttributeValue>>> BatchReadChunkAsync(
+        string table, IReadOnlyList<(string PK, string SK)> chunk, bool consistentRead)
+    {
+        var found = new List<Dictionary<string, AttributeValue>>();
+        {
+            var pending = chunk
                 .Select(key => new Dictionary<string, AttributeValue>
                 {
                     ["PK"] = new AttributeValue { S = key.PK },
@@ -845,8 +877,7 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
                 var response = await client.BatchGetItemAsync(request);
                 List<Dictionary<string, AttributeValue>> items = null;
                 response?.Responses?.TryGetValue(table, out items);
-                foreach (var item in items ?? [])
-                    found[(item["PK"].S, item["SK"].S)] = item;
+                found.AddRange(items ?? []);
 
                 KeysAndAttributes unprocessed = null;
                 response?.UnprocessedKeys?.TryGetValue(table, out unprocessed);

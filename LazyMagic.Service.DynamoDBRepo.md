@@ -172,6 +172,13 @@ Subclasses also get reads by key: `ReadAsync(callerInfo, id, consistentRead)`, a
 `BatchGetItem` (100 keys a call, consistent by default). They are protected so a repository that checks access in
 its public `ReadAsync` cannot be read around.
 
+A batched read sends its `BatchGetItem` calls several at a time: `BatchReadConcurrency`, 8 unless a repository
+overrides it, and 1 is one call after another. This covers the fetch of a Gsi index list too. Each call retries its
+own unprocessed keys, and the result keeps the order asked for.
+
+A Gsi index list writes one line to the console only when it has something to say: a key the table no longer has,
+an item dropped by the re-check, a duplicate, or a list cut short (206). Set `debug` to see it for every read.
+
 ### Notifications
 ```csharp
 protected override List<string> AssignTopics(Order order)
