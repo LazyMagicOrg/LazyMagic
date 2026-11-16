@@ -112,6 +112,124 @@ public class BffSignInTests
         Assert.Empty(h.Sessions.Created);
     }
 
+    // ---- a callback with no sign-in of its own to finish (2026-11-16) ---------------------------------------------
+    // On test, a staff sign-in came back from the identity provider 8 minutes after it began, past the transaction's
+    // 5 minutes, and the callback answered {"error":"missing_transaction"} on a blank page; reloading it answered the
+    // same. Each case below is still refused - no code exchanged, no session - but sends the user back to the page the
+    // sign-in started from, which signs them in again.
+
+    [Fact]
+    public async Task ACallbackWhoseTransactionIsGone_SendsTheUserBackToThePageTheyStartedOn()
+    {
+        using var h = new Harness();
+
+        var back = await h.SignInAsync(new Interference(DropTransaction: true));
+
+        Assert.Equal("https://match.example.test/seller/", Assert.IsType<RedirectResult>(back.Result).Url);
+        Assert.Null(back.Cookie);
+        Assert.Empty(h.Sessions.Created);
+        Assert.Equal(0, h.Idp.TokenRequests);
+        Assert.True(back.RestartCleared);
+    }
+
+    [Fact]
+    public async Task ACallbackForAnotherSignIn_SendsTheUserBackToo_WithoutExchangingTheCode()
+    {
+        using var h = new Harness();
+
+        var back = await h.SignInAsync(new Interference(State: "another-sign-ins-state"));
+
+        Assert.Equal("https://match.example.test/seller/", Assert.IsType<RedirectResult>(back.Result).Url);
+        Assert.Null(back.Cookie);
+        Assert.Empty(h.Sessions.Created);
+        Assert.Equal(0, h.Idp.TokenRequests);
+    }
+
+    [Fact]
+    public async Task ACallbackWhoseTransactionDoesNotRead_SendsTheUserBack()
+    {
+        using var h = new Harness();
+
+        var back = await h.SignInAsync(new Interference(Transaction: "not-a-transaction"));
+
+        Assert.Equal("https://match.example.test/seller/", Assert.IsType<RedirectResult>(back.Result).Url);
+        Assert.Empty(h.Sessions.Created);
+        Assert.Equal(0, h.Idp.TokenRequests);
+    }
+
+    [Fact]
+    public async Task WithNothingToSayWhereItStarted_TheUserLandsOnTheRoot_SoASecondFailureCannotLoop()
+    {
+        // The restart cookie is spent by the first failure (asserted above): the next one lands here.
+        using var h = new Harness();
+
+        var back = await h.SignInAsync(new Interference(DropTransaction: true, DropRestart: true));
+
+        Assert.Equal("/", Assert.IsType<RedirectResult>(back.Result).Url);
+        Assert.Empty(h.Sessions.Created);
+    }
+
+    [Theory]
+    [InlineData("evil.example", "/seller/", "/seller/")]                                        // a host outside the root: no hop to it
+    [InlineData("match.example.test", "https://evil.example/", "https://match.example.test/")]  // an absolute destination: "/"
+    [InlineData("match.example.test", "//evil.example/", "https://match.example.test/")]
+    [InlineData("match.example.test", "/\\evil.example/", "https://match.example.test/")]
+    public async Task ARestartCookieIsNotTrusted_ItsHostAndPathAreGuardedAsTheCallbacksAre(string host, string path, string expected)
+    {
+        using var h = new Harness();
+
+        var back = await h.SignInAsync(new Interference(DropTransaction: true, Restart: Harness.Restart(host, path)));
+
+        Assert.Equal(expected, Assert.IsType<RedirectResult>(back.Result).Url);
+    }
+
+    [Fact]
+    public async Task ARestartCookieThatDoesNotRead_LandsOnTheRoot()
+    {
+        using var h = new Harness();
+
+        var back = await h.SignInAsync(new Interference(DropTransaction: true, Restart: "not-base64-json"));
+
+        Assert.Equal("/", Assert.IsType<RedirectResult>(back.Result).Url);
+    }
+
+    [Fact]
+    public async Task AFinishedSignIn_SpendsTheRestartCookie()
+    {
+        using var h = new Harness();
+
+        var session = await h.SignInAsync();
+
+        Assert.NotNull(session.Cookie);
+        Assert.True(session.RestartCleared);
+    }
+
+    [Fact]
+    public async Task ASignInMayTakeFifteenMinutes()
+    {
+        // The transaction cookie lives as long as its encryption allows: both read TransactionLifetime.
+        Assert.Equal(TimeSpan.FromMinutes(15), BffCookieBuilder.TransactionLifetime);
+        using var h = new Harness();
+
+        var expires = await h.TransactionExpiresAsync();
+
+        Assert.InRange(expires - DateTimeOffset.UtcNow, TimeSpan.FromMinutes(14), TimeSpan.FromMinutes(15));
+    }
+
+    [Fact]
+    public void TheTransactionsEncryption_AllowsFifteenMinutesToo()
+    {
+        // The cookie's expiry is what a browser honours; this is what the server enforces, read back from the payload.
+        var keys = new EphemeralDataProtectionProvider();
+        var codec = new BffTransactionCodec(keys, NullLogger<BffTransactionCodec>.Instance);
+
+        var value = codec.Protect(new BffTransaction { State = "s", CodeVerifier = "v", Nonce = "n", ReturnUrl = "/" });
+        keys.CreateProtector(BffTransactionCodec.Purpose).ToTimeLimitedDataProtector()
+            .Unprotect(WebEncoders.Base64UrlDecode(value), out var expires);
+
+        Assert.InRange(expires - DateTimeOffset.UtcNow, TimeSpan.FromMinutes(14), TimeSpan.FromMinutes(15));
+    }
+
     // ---- signing out ----------------------------------------------------------------------------------------------
 
     [Fact]
@@ -141,8 +259,15 @@ public class BffSignInTests
     private static string? Only(JsonElement claims, string name)
         => Assert.Single(claims.GetProperty(name).EnumerateArray()).GetString();
 
-    /// <summary>What a sign-in ended with: the callback's result, and the session cookie and destination when it gave them.</summary>
-    private sealed record SignIn(IActionResult Result, string? Cookie, string? ReturnedTo);
+    /// <summary>What a sign-in ended with: the callback's result, the session cookie and destination when it gave them,
+    /// and whether the callback cleared the restart cookie.</summary>
+    private sealed record SignIn(IActionResult Result, string? Cookie, string? ReturnedTo, bool RestartCleared);
+
+    /// <summary>What happens to a sign-in between /bff/login and /bff/callback: the browser loses or replaces a cookie,
+    /// or the identity provider returns another sign-in's state.</summary>
+    private sealed record Interference(
+        bool DropTransaction = false, string? Transaction = null, bool DropRestart = false, string? Restart = null,
+        string? State = null);
 
     /// <summary>
     /// One BFF instance as a deployment runs it behind a parent domain: the callback is the apex's, and a sign-in
@@ -186,19 +311,41 @@ public class BffSignInTests
         }
 
         /// <summary>/bff/login, the identity provider's redirect back, and /bff/callback - each a request of its own.</summary>
-        public async Task<SignIn> SignInAsync()
+        public async Task<SignIn> SignInAsync(Interference? meddle = null)
         {
+            meddle ??= new Interference();
             var (login, loginResponse) = Request();
             var toProvider = Assert.IsType<RedirectResult>(await login.Login("/seller/", CancellationToken.None));
             var asked = QueryHelpers.ParseQuery(new Uri(toProvider.Url).Query);
             Assert.Equal("https://example.test/bff/callback", asked["redirect_uri"].ToString());
             Idp.Nonce = asked["nonce"].ToString();
 
-            var (callback, callbackResponse) = Request(("__bff_txn", SetCookie(loginResponse, "__bff_txn")!));
-            var result = await callback.Callback("code-1", asked["state"].ToString(), null, CancellationToken.None);
+            var carried = new List<(string Name, string Value)>();
+            var txn = meddle.Transaction ?? SetCookie(loginResponse, "__bff_txn");
+            if (!meddle.DropTransaction && txn != null) carried.Add(("__bff_txn", txn));
+            var restart = meddle.Restart ?? SetCookie(loginResponse, "__bff_restart");
+            Assert.NotNull(restart);
+            if (!meddle.DropRestart) carried.Add(("__bff_restart", restart!));
 
-            return new SignIn(result, SetCookie(callbackResponse, "__bff"), (result as RedirectResult)?.Url);
+            var (callback, callbackResponse) = Request(carried.ToArray());
+            var result = await callback.Callback("code-1", meddle.State ?? asked["state"].ToString(), null, CancellationToken.None);
+
+            return new SignIn(result, SetCookie(callbackResponse, "__bff"), (result as RedirectResult)?.Url,
+                Cleared(callbackResponse, "__bff_restart"));
         }
+
+        /// <summary>When the transaction cookie /bff/login set runs out.</summary>
+        public async Task<DateTimeOffset> TransactionExpiresAsync()
+        {
+            var (login, loginResponse) = Request();
+            await login.Login("/seller/", CancellationToken.None);
+            var set = SetCookieHeaderValue.ParseList(loginResponse.Headers.SetCookie.ToArray()).Single(c => c.Name == "__bff_txn");
+            return set.Expires!.Value;
+        }
+
+        /// <summary>A restart cookie as a tampering browser might send it.</summary>
+        public static string Restart(string host, string returnUrl)
+            => WebEncoders.Base64UrlEncode(JsonSerializer.SerializeToUtf8Bytes(new { Host = host, ReturnUrl = returnUrl }));
 
         /// <summary>
         /// /bff/logout, then the identity provider's redirect to /bff/logout-callback - each a request of its own, as a
@@ -251,6 +398,13 @@ public class BffSignInTests
             return set is null || set.Value.Length == 0 ? null : set.Value.ToString();
         }
 
+        /// <summary>True when a response cleared the cookie: set it empty and already expired.</summary>
+        private static bool Cleared(HttpResponse response, string name)
+        {
+            var set = SetCookieHeaderValue.ParseList(response.Headers.SetCookie.ToArray()).LastOrDefault(c => c.Name == name);
+            return set is not null && set.Value.Length == 0 && set.Expires <= DateTimeOffset.UtcNow;
+        }
+
         public void Dispose() => Idp.Dispose();
     }
 
@@ -271,6 +425,9 @@ public class BffSignInTests
 
         /// <summary>Claims a test adds to the id token.</summary>
         public Dictionary<string, object> Extra { get; } = new();
+
+        /// <summary>How many codes were brought to the token endpoint.</summary>
+        public int TokenRequests { get; private set; }
 
         /// <summary>The one thing wrong with the id token the token endpoint hands out; null for none.</summary>
         public string? Wrong { get; set; }
@@ -337,7 +494,7 @@ public class BffSignInTests
                 });
             }
 
-            if (url == "https://signin.example.test/oauth2/token" && request.Method == HttpMethod.Post)
+            if (url == "https://signin.example.test/oauth2/token" && request.Method == HttpMethod.Post && ++TokenRequests > 0)
                 return Json(new
                 {
                     access_token = "access-token-1",

@@ -1,4 +1,5 @@
 using System.Security.Cryptography;
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -44,6 +45,7 @@ public sealed class BffAuthController : ControllerBase
     // options so the two pools never collide; for tenantauth these equal the historical
     // __bff_txn / __bff_logout / __bff_logout_host / /bff/logout-callback values.
     private string TxnCookieName => _options.CookieName + "_txn";
+    private string RestartCookieName => _options.CookieName + "_restart";
     private string LogoutReturnCookieName => _options.CookieName + "_logout";
     private string LogoutOriginCookieName => _options.CookieName + "_logout_host";
     private string LogoutCallbackPath => _options.RoutePrefix.TrimEnd('/') + "/logout-callback";
@@ -70,6 +72,7 @@ public sealed class BffAuthController : ControllerBase
             IssuedAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
         };
         Response.Cookies.Append(TxnCookieName, _txnCodec.Protect(txn), BffCookieBuilder.Transaction(_options));
+        Response.Cookies.Append(RestartCookieName, EncodeRestart(ViewerHost, safeReturn), BffCookieBuilder.Restart(_options));
 
         return Redirect(authorize.AuthorizeUrl);
     }
@@ -89,16 +92,16 @@ public sealed class BffAuthController : ControllerBase
 
         // Recover and immediately clear the transaction cookie.
         if (!Request.Cookies.TryGetValue(TxnCookieName, out var txnCookie) || string.IsNullOrEmpty(txnCookie))
-            return BadRequest(new { error = "missing_transaction" });
+            return RestartSignIn("missing_transaction");
         Response.Cookies.Append(TxnCookieName, string.Empty, BffCookieBuilder.Delete(_options));
 
         var txn = _txnCodec.Unprotect(txnCookie);
         if (txn is null)
-            return BadRequest(new { error = "invalid_transaction" });
+            return RestartSignIn("invalid_transaction");
 
         // CSRF/replay: returned state MUST equal the stashed state.
         if (!FixedTimeEquals(state, txn.State))
-            return BadRequest(new { error = "state_mismatch" });
+            return RestartSignIn("state_mismatch");
 
         // Must EXACTLY match the redirect_uri sent at /bff/login (apex), independent of which host
         // this callback landed on. BuildCallbackUrl is deterministic from the parent CookieDomain.
@@ -154,6 +157,7 @@ public sealed class BffAuthController : ControllerBase
         };
 
         Response.Cookies.Append(_options.CookieName, _cookieCodec.Protect(payload), BffCookieBuilder.Session(_options, DateTimeOffset.FromUnixTimeSeconds(ttlEpoch)));
+        Response.Cookies.Append(RestartCookieName, string.Empty, BffCookieBuilder.Delete(_options));
 
         // Re-sanitize at the sink: the value was sanitized at /bff/login time, but never
         // hand a stashed value straight to Redirect — close the open-redirect path defensively.
@@ -291,6 +295,51 @@ public sealed class BffAuthController : ControllerBase
     }
 
     // ---- helpers ----
+
+    /// <summary>
+    /// A CALLBACK WITH NO SIGN-IN OF ITS OWN TO FINISH (2026-11-16): the transaction is gone (it outlived
+    /// <see cref="BffCookieBuilder.TransactionLifetime"/>, or the callback page was reloaded after it was used), cannot be
+    /// read, or belongs to another sign-in (two tabs). Nothing is exchanged and no session is made - the refusal stands -
+    /// but the user is sent back to the page the sign-in started from, which signs them in again, rather than left on a
+    /// JSON error with no way back. That page comes from the restart cookie /bff/login set, re-sanitized here; without it
+    /// the user lands on <c>/</c> of the callback's host. The restart cookie is spent either way, so a second failure in a
+    /// row lands on <c>/</c> and cannot loop.
+    /// </summary>
+    private IActionResult RestartSignIn(string reason)
+    {
+        _logger.LogInformation("BFF callback had no usable sign-in ({Reason}); sending the user back to sign in again.", reason);
+        Response.Cookies.Append(TxnCookieName, string.Empty, BffCookieBuilder.Delete(_options));
+
+        var dest = "/";
+        if (Request.Cookies.TryGetValue(RestartCookieName, out var restart) && !string.IsNullOrEmpty(restart))
+        {
+            Response.Cookies.Append(RestartCookieName, string.Empty, BffCookieBuilder.Delete(_options));
+            var (originHost, returnUrl) = DecodeRestart(restart);
+            if (returnUrl is not null)
+                dest = BuildFanBackUrl(originHost, SanitizeReturnUrl(returnUrl));
+        }
+        return Redirect(dest);
+    }
+
+    private sealed record SignInRestart(string? Host, string? ReturnUrl);
+
+    private static string EncodeRestart(string originHost, string returnUrl)
+        => Base64Url(JsonSerializer.SerializeToUtf8Bytes(new SignInRestart(originHost, returnUrl)));
+
+    /// <summary>The restart cookie's host and path, or (null, null) for a value that does not read. Neither is trusted:
+    /// the caller sanitizes the path and <see cref="BuildFanBackUrl"/> keeps the host inside the root domain.</summary>
+    private static (string? Host, string? ReturnUrl) DecodeRestart(string value)
+    {
+        try
+        {
+            var restart = JsonSerializer.Deserialize<SignInRestart>(Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlDecode(value));
+            return (restart?.Host, restart?.ReturnUrl);
+        }
+        catch
+        {
+            return (null, null);
+        }
+    }
 
     private bool HasCsrfHeader() =>
         Request.Headers.TryGetValue(BffConstants.CsrfHeader, out var v) &&

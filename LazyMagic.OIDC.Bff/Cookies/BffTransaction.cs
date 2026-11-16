@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 namespace LazyMagic.OIDC.Bff;
 
 /// <summary>
-/// Short-lived (5-min) DP-encrypted transaction stashed between /bff/login and
+/// Short-lived (BffCookieBuilder.TransactionLifetime) DP-encrypted transaction stashed between /bff/login and
 /// /bff/callback (§8.10). Carries the PKCE verifier + CSRF/replay guards.
 /// </summary>
 public sealed class BffTransaction
