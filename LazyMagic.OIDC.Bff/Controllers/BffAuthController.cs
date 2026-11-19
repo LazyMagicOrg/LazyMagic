@@ -51,8 +51,13 @@ public sealed class BffAuthController : ControllerBase
     private string LogoutCallbackPath => _options.RoutePrefix.TrimEnd('/') + "/logout-callback";
 
     /// <summary>GET /bff/login?returnUrl=… → 302 to the IdP authorize endpoint.</summary>
+    /// <para><b>SIGN UP</b> (<paramref name="signup"/>; 2026-11-19): with <c>signup=true</c> a Cognito provider is sent to
+    /// its sign-up form instead of its sign-in - the same request with <c>/oauth2/authorize</c> become <c>/signup</c>, every
+    /// parameter kept (state, nonce, PKCE challenge, redirect_uri), which is exactly the address Cognito's own "Create an
+    /// account" link on its sign-in page carries. So a new account comes back through this callback as any sign-in does.
+    /// Any other provider, or an authorize endpoint not at <c>/oauth2/authorize</c>, gets its sign-in as before.</para>
     [HttpGet("login")]
-    public async Task<IActionResult> Login([FromQuery] string? returnUrl, CancellationToken ct)
+    public async Task<IActionResult> Login([FromQuery] string? returnUrl, CancellationToken ct, [FromQuery] bool signup = false)
     {
         var safeReturn = SanitizeReturnUrl(returnUrl);
         // Pin the redirect_uri to the APEX /bff/callback — the only one registered with the IdP.
@@ -74,7 +79,19 @@ public sealed class BffAuthController : ControllerBase
         Response.Cookies.Append(TxnCookieName, _txnCodec.Protect(txn), BffCookieBuilder.Transaction(_options));
         Response.Cookies.Append(RestartCookieName, EncodeRestart(ViewerHost, safeReturn), BffCookieBuilder.Restart(_options));
 
-        return Redirect(authorize.AuthorizeUrl);
+        return Redirect(signup ? SignUpUrl(authorize.AuthorizeUrl) : authorize.AuthorizeUrl);
+    }
+
+    private const string CognitoAuthorizePath = "/oauth2/authorize";
+
+    /// <summary>Cognito's sign-up form for this sign-in request, or the request itself where there is none.</summary>
+    private string SignUpUrl(string authorizeUrl)
+    {
+        if (_options.Provider != BffProvider.Cognito) return authorizeUrl;
+        var url = new UriBuilder(authorizeUrl);
+        if (!url.Path.EndsWith(CognitoAuthorizePath, StringComparison.Ordinal)) return authorizeUrl;
+        url.Path = url.Path[..^CognitoAuthorizePath.Length] + "/signup";
+        return url.Uri.AbsoluteUri;
     }
 
     /// <summary>GET /bff/callback?code=&amp;state= → exchange + validate + set session cookie + 302 returnUrl.</summary>

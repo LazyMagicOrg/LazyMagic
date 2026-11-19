@@ -118,6 +118,28 @@ public class BffSignInTests
     // same. Each case below is still refused - no code exchanged, no session - but sends the user back to the page the
     // sign-in started from, which signs them in again.
 
+    // SIGN UP (2026-11-19): the buyer's client's own "Create an account" button. Cognito's sign-up form for the same request
+    // - only the path changes - and a new account comes back through the callback with a session, as a sign-in does.
+    [Fact]
+    public async Task ASignUp_GoesToCognitosSignUpForm_WithTheSameRequest_AndComesBackSignedIn()
+    {
+        using var h = new Harness();
+        var signIn = await h.SignInAsync();
+        var signInUrl = new Uri(h.LastProviderUrl!);
+
+        var signedUp = await h.SignInAsync(signup: true);
+        var signUpUrl = new Uri(h.LastProviderUrl!);
+
+        Assert.Equal("https://signin.example.test/signup", signUpUrl.GetLeftPart(UriPartial.Path));
+        Assert.Equal("https://signin.example.test/oauth2/authorize", signInUrl.GetLeftPart(UriPartial.Path));
+        var asked = QueryHelpers.ParseQuery(signUpUrl.Query);
+        foreach (var key in new[] { "response_type", "client_id", "redirect_uri", "scope", "state", "nonce", "code_challenge", "code_challenge_method" })
+            Assert.False(string.IsNullOrEmpty(asked[key].ToString()), key);
+        Assert.Equal("https://match.example.test/seller/", signedUp.ReturnedTo);
+        Assert.NotNull(signedUp.Cookie);
+        Assert.NotNull(signIn.Cookie);
+    }
+
     [Fact]
     public async Task ACallbackWhoseTransactionIsGone_SendsTheUserBackToThePageTheyStartedOn()
     {
@@ -283,6 +305,9 @@ public class BffSignInTests
         public FakeSessionStore Sessions { get; } = new();
         public BffTokenClient Tokens { get; }
 
+        /// <summary>Where the last <see cref="SignInAsync"/> sent the browser: the provider's sign-in or sign-up.</summary>
+        public string? LastProviderUrl { get; private set; }
+
         public Harness()
         {
             var options = new BffOptions
@@ -311,11 +336,12 @@ public class BffSignInTests
         }
 
         /// <summary>/bff/login, the identity provider's redirect back, and /bff/callback - each a request of its own.</summary>
-        public async Task<SignIn> SignInAsync(Interference? meddle = null)
+        public async Task<SignIn> SignInAsync(Interference? meddle = null, bool signup = false)
         {
             meddle ??= new Interference();
             var (login, loginResponse) = Request();
-            var toProvider = Assert.IsType<RedirectResult>(await login.Login("/seller/", CancellationToken.None));
+            var toProvider = Assert.IsType<RedirectResult>(await login.Login("/seller/", CancellationToken.None, signup));
+            LastProviderUrl = toProvider.Url;
             var asked = QueryHelpers.ParseQuery(new Uri(toProvider.Url).Query);
             Assert.Equal("https://example.test/bff/callback", asked["redirect_uri"].ToString());
             Idp.Nonce = asked["nonce"].ToString();
