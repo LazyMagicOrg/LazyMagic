@@ -103,6 +103,18 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
     /// </summary>
     protected virtual TableKind TableKind => TableKind.Lsi;
     /// <summary>
+    /// The sequence this entity's ids are numbered from (<c>B-1042</c>), or null for the default: a create with no id
+    /// is given a GUID. A repository that overrides it needs <see cref="KeyAllocator"/>: a create with no id then takes
+    /// the sequence's next key, and fails closed (500) rather than fall back to a GUID when there is no allocator.
+    /// A create that carries an id keeps it - the caller that set it answers for it (a party taking its profile's
+    /// number, say); refusing an id from a request body is the API's job, not the store's.
+    /// </summary>
+#nullable enable
+    protected virtual NumberedKeySequence? KeySequence => null;
+    /// <summary>The process's allocator, for a repository with a <see cref="KeySequence"/>. One per process.</summary>
+    public INumberedKeyAllocator? KeyAllocator { get; set; }
+#nullable restore
+    /// <summary>
     /// After this many BatchGetItem responses in a row that settle none of the keys asked, a batched read gives up
     /// with <see cref="BatchReadIncompleteException"/>. Each retry waits first (BackoffFor).
     /// </summary>
@@ -189,6 +201,17 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
         if (debug) Console.WriteLine("CreateAsync() called");
         callerInfo ??= new CallerInfo();
         var table = GetTableName(callerInfo);
+
+        // A NUMBERED ENTITY'S ID IS TAKEN BEFORE THE WRITE, outside the write's own error handling: a counter that could
+        // not be written is the service failing, never the caller's "bad request".
+        if (KeySequence != null && data != null && string.IsNullOrEmpty(data.Id))
+        {
+            var key = await NextKeyAsync(callerInfo);
+            if (key.Value == null)
+                return new ActionResult<T>(key.Result!);
+            data.Id = key.Value;
+        }
+
         try
         {
             var now = DateTime.UtcNow.Ticks;
@@ -236,6 +259,26 @@ public abstract class DYDBRepository<T> : IDYDBRepository<T>
             return new StatusCodeResult(500);
         }
     }
+    /// <summary>
+    /// The next key of this entity's <see cref="KeySequence"/>, for a caller that needs the id before the write - a
+    /// transaction that writes the record beside rows that name it. 500 when the repository has no sequence or no
+    /// allocator, 503 when the counter could not be written; no number is handed out then.
+    /// </summary>
+    public async Task<ActionResult<string>> NextKeyAsync(ICallerInfo callerInfo)
+    {
+        if (KeySequence == null || KeyAllocator == null)
+            return new ObjectResult($"{typeof(T).Name} has no numbered-key sequence and allocator") { StatusCode = 500 };
+        try
+        {
+            return await KeyAllocator.NextKeyAsync(callerInfo ?? new CallerInfo(), KeySequence);
+        }
+        catch (Exception ex)
+        {
+            if (debug) Console.WriteLine($"NextKeyAsync() could not take a number. {ex.Message}");
+            return new StatusCodeResult(503);
+        }
+    }
+
     public virtual async Task<ActionResult<T>> ReadAsync(ICallerInfo callerInfo, string id)
         => await ReadAsync(callerInfo, id, consistentRead: false);
 

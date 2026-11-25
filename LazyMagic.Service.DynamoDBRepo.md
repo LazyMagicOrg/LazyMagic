@@ -133,6 +133,40 @@ if (result is ConflictObjectResult)
 var result = await repository.UpdateAsync(callerInfo, customer, force: true);
 ```
 
+### Numbered Keys
+By default a create with no id is given a GUID. A repository can number its ids instead - `B-1042`, a prefix of
+one to four upper-case letters, a hyphen and a decimal number - by naming a `NumberedKeySequence`:
+
+```csharp
+public partial class BusinessRepo
+{
+    public static readonly NumberedKeySequence Accounts = new("account", "B");
+    protected override NumberedKeySequence? KeySequence => Accounts;
+}
+
+// once per process (a singleton): it holds the blocks the process has reserved
+services.AddSingleton<INumberedKeyAllocator>(sp =>
+    new DYDBNumberedKeyAllocator(sp.GetRequiredService<IAmazonDynamoDB>(), start: 100000));
+// and set each numbered repository's KeyAllocator from it
+```
+
+- **A create with no id takes the sequence's next key**; one that carries an id keeps it. Refusing an id a request
+  body sent is the API's job, not the store's.
+- **No allocator fails closed**: the create answers 500 and writes nothing, never a GUID. A counter that could not be
+  written answers 503.
+- **`NextKeyAsync(callerInfo)`** hands out a key before the write, for a transaction that writes the record beside
+  rows that name it.
+- **A counter is one row**, `PK = LzCounter`, `SK = <name>:`, incremented with `ADD`, in the caller's `DefaultDB`
+  table whichever table the records live in (the allocator's `counterTable` names another). Sequences with the same
+  name share one counter, so a business `B-1042` and a party `P-1043` never share a number.
+- **The first number is the allocator's `start`**, so an environment's range is set once, where it is registered.
+- **A number is taken before its record is written and never handed back.** A failed write, or a block a process did
+  not finish, leaves a gap; read a number as a name, never as a count.
+- **Blocks**: `sequence.WithBlockSize(100)` reserves a hundred with one counter write and hands them out in memory,
+  for a bulk writer. Blocks from one counter never overlap, in one process or in several.
+- **`NumberedKey`** formats keys, checks a stored one exactly (`IsCanonical`), and reads a person's typing
+  forgivingly (`TryRead`: case, spaces and a missing hyphen are forgiven; leading zeros are refused).
+
 ### Soft Delete with TTL
 ```csharp
 public class MyRepository : DYDBRepository<MyEntity>
